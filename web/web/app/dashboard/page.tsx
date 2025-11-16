@@ -3,7 +3,6 @@ import { getUserIdFromCookies } from '@/lib/auth/user'
 import Card from '../components/ui/Card'
 import Monthly from '../components/charts/Monthly'
 import MetricCard from '../components/MetricCard'
-import PageHeader from '../components/PageHeader'
 import type { Transaction, Expense, Appointment, Customer, Product } from '@/types/entities'
 
 function getTodayRange() {
@@ -37,7 +36,7 @@ async function getKpis({ start, end }: { start: string; end: string }) {
 
   const { monthStart, monthEnd } = monthBounds()
 
-  const [apRes, trRes, cuRes, apRecent, trRecent, exMonth, trMonth, productsRes] = await Promise.all([
+  const [apRes, trRes, cuRes, apRecent, trRecent, exRecent, exMonth, trMonth, productsRes] = await Promise.all([
     supabase
       .from('appointments')
       .select('id, appointment_date')
@@ -68,6 +67,12 @@ async function getKpis({ start, end }: { start: string; end: string }) {
       .eq('owner_id', userId)
       .order('transaction_date', { ascending: false })
       .limit(5),
+    supabase
+      .from('expenses')
+      .select('id, amount, expense_date, created_at, memo, category')
+      .eq('owner_id', userId)
+      .order('expense_date', { ascending: false })
+      .limit(5),
     // 월간 집계용
     supabase.from('expenses').select('amount, expense_date').eq('owner_id', userId).gte('expense_date', monthStart).lt('expense_date', monthEnd),
     supabase.from('transactions').select('amount, transaction_date').eq('owner_id', userId).gte('transaction_date', monthStart).lt('transaction_date', monthEnd),
@@ -75,7 +80,6 @@ async function getKpis({ start, end }: { start: string; end: string }) {
       .from('products')
       .select('id, name, price, active')
       .eq('owner_id', userId)
-      .eq('active', true)
       .order('created_at', { ascending: false })
       .limit(10)
   ])
@@ -103,8 +107,10 @@ async function getKpis({ start, end }: { start: string; end: string }) {
   const weeklyNames = ['1주','2주','3주','4주','5주']
   const monthlySeries = weeklyNames.map((name, i) => ({ name, income: incomeBuckets[i], expense: expenseBuckets[i] }))
 
-  // 판매중인 상품
-  const activeProducts = Array.isArray(productsRes.data) ? productsRes.data : []
+  // 판매중인 상품: active가 true이거나 null인 경우만 필터링 (기본값이 true로 간주)
+  const activeProducts = Array.isArray(productsRes.data) 
+    ? productsRes.data.filter((p: any) => p.active !== false)
+    : []
 
   // 최근 예약: 고객 이름/시간/상품 이름으로 표시하기 위해 보조 조회
   const apIds = (apRecent.data || [])
@@ -122,6 +128,30 @@ async function getKpis({ start, end }: { start: string; end: string }) {
     ;(data || []).forEach((p: any) => { productsById[p.id] = p.name })
   }
 
+  // 최근 거래: 수입과 지출을 합쳐서 날짜순으로 정렬
+  const combinedTransactions = [
+    ...(trRecent.data || []).map((t: any) => ({
+      id: t.id,
+      type: 'income' as const,
+      date: t.transaction_date || t.created_at || '',
+      amount: Number(t.amount || 0),
+      memo: t.memo || '',
+    })),
+    ...(exRecent.data || []).map((e: any) => ({
+      id: e.id,
+      type: 'expense' as const,
+      date: e.expense_date || e.created_at || '',
+      amount: Number(e.amount || 0),
+      memo: e.memo || e.category || '',
+    })),
+  ]
+    .sort((a, b) => {
+      const dateA = new Date(a.date).getTime()
+      const dateB = new Date(b.date).getTime()
+      return dateB - dateA // 최신순
+    })
+    .slice(0, 5) // 최대 5개만
+
   return {
     todayAppointments,
     todayRevenue,
@@ -132,7 +162,7 @@ async function getKpis({ start, end }: { start: string; end: string }) {
       customer_name: a.customer_id ? (customersById[a.customer_id] || '-') : '-',
       product_name: a.service_id ? (productsById[a.service_id] || '-') : '-',
     })),
-    recentTransactions: trRecent.data || [],
+    recentTransactions: combinedTransactions,
     monthlySeries,
     activeProducts
   }
@@ -151,13 +181,8 @@ export default async function DashboardPage() {
   } = await getKpis({ start, end })
 
   return (
-    <main className="space-y-8">
-      <PageHeader
-        title="대시보드"
-        subtitle="오늘의 예약, 매출, 고객 현황과 월간 수입·지출 흐름을 한눈에 확인하세요."
-      />
-
-      <div className="space-y-8">
+    <main className="space-y-2 md:space-y-3">
+      <div className="space-y-2 md:space-y-3">
 
         {/* 핵심 지표 카드 */}
         <section className="grid grid-cols-1 gap-6 sm:grid-cols-3">
@@ -166,59 +191,65 @@ export default async function DashboardPage() {
             value={todayAppointments}
             hint="오늘 기준"
             className="h-full"
+            colorIndex={0}
           />
           <MetricCard
             label="오늘 매출"
             value={`₩${Number(todayRevenue).toLocaleString()}`}
             className="h-full"
+            colorIndex={1}
           />
           <MetricCard
             label="오늘 신규 고객"
             value={todayNewCustomers}
             className="h-full"
+            colorIndex={2}
           />
         </section>
 
         {/* 그래프 & 판매중인 상품 */}
         <section className="grid grid-cols-1 gap-6 lg:grid-cols-3">
           <Card className="p-5 lg:col-span-2">
-            <div className="text-sm font-semibold text-neutral-800 mb-3">
+            <div className="text-sm font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent mb-3">
               이번 달 수입/지출
             </div>
             <Monthly data={monthlySeries} />
           </Card>
-          <Card className="p-5">
-            <div className="text-sm font-semibold text-neutral-800 mb-3">
+          <Card className="p-4">
+            <div className="text-xs font-bold bg-gradient-to-r from-emerald-600 to-teal-600 bg-clip-text text-transparent mb-2">
               판매중인 상품
             </div>
-            <ul className="divide-y divide-neutral-100">
-              {activeProducts.map((p: any) => (
-                <li
-                  key={p.id}
-                  className="py-3 text-sm flex items-center justify-between"
-                >
-                  <span className="font-medium text-neutral-900">{p.name}</span>
-                  <span className="text-neutral-500">
-                    ₩{Number(p.price || 0).toLocaleString()}
-                  </span>
-                </li>
-              ))}
-              {activeProducts.length === 0 && (
-                <li className="py-4 text-sm text-neutral-500">
-                  <a className="underline" href="/products">
-                    판매중인 상품이 없습니다 · 상품 추가
+            <div className="space-y-1.5 max-h-[200px] overflow-y-auto">
+              {activeProducts.length > 0 ? (
+                activeProducts.slice(0, 5).map((p: any, index: number) => (
+                  <div
+                    key={p.id}
+                    className={`text-xs py-1.5 px-2 rounded-md flex items-center justify-between ${
+                      index % 2 === 0 ? 'bg-emerald-50/50' : 'bg-teal-50/50'
+                    }`}
+                  >
+                    <span className="font-medium text-neutral-800 truncate flex-1 min-w-0">{p.name}</span>
+                    <span className="text-emerald-700 font-semibold ml-2 whitespace-nowrap">
+                      ₩{Number(p.price || 0).toLocaleString()}
+                    </span>
+                  </div>
+                ))
+              ) : (
+                <div className="text-xs text-neutral-500 py-2">
+                  <a className="underline hover:text-emerald-600" href="/products">
+                    상품 추가
                   </a>
-                </li>
+                </div>
               )}
-            </ul>
+            </div>
           </Card>
         </section>
 
         {/* 최근 예약 / 최근 거래 */}
         <section className="grid grid-cols-1 gap-6 lg:grid-cols-2">
           <Card>
-            <div className="p-4 border-b border-neutral-100">
-              <h2 className="text-sm font-semibold text-neutral-800">최근 예약</h2>
+            <div className="p-4 border-b border-purple-100">
+              <h2 className="text-sm font-bold bg-gradient-to-r from-pink-600 to-rose-600 bg-clip-text text-transparent">최근 예약</h2>
             </div>
             <ul className="divide-y divide-neutral-100">
               {recentAppointments.map((a: any) => (
@@ -248,31 +279,41 @@ export default async function DashboardPage() {
             </ul>
           </Card>
           <Card>
-            <div className="p-4 border-b border-neutral-100">
-              <h2 className="text-sm font-semibold text-neutral-800">최근 거래</h2>
+            <div className="p-4 border-b border-purple-100">
+              <h2 className="text-sm font-bold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">최근 거래</h2>
             </div>
             <ul className="divide-y divide-neutral-100">
               {recentTransactions.map((t: any) => {
-                const dateLabel = String(
-                  t.transaction_date || t.created_at || '',
-                )
+                const dateLabel = String(t.date || '')
                   .replace('T', ' ')
                   .slice(0, 16)
+                const isExpense = t.type === 'expense'
                 return (
                   <li
-                    key={t.id}
+                    key={`${t.type}-${t.id}`}
                     className="p-4 text-sm flex items-center justify-between gap-4"
                   >
-                    <div className="min-w-0">
-                      <div className="font-medium text-neutral-900 truncate">
-                        {t.memo || '-'}
+                    <div className="min-w-0 flex-1">
+                      <div className="flex items-center gap-2">
+                        <span className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-medium ${
+                          isExpense 
+                            ? 'bg-rose-50 text-rose-700 border border-rose-200' 
+                            : 'bg-emerald-50 text-emerald-700 border border-emerald-200'
+                        }`}>
+                          {isExpense ? '지출' : '수입'}
+                        </span>
+                        <div className="font-medium text-neutral-900 truncate">
+                          {t.memo || '-'}
+                        </div>
                       </div>
-                      <div className="text-xs text-neutral-500">
+                      <div className="text-xs text-neutral-500 mt-1">
                         {dateLabel}
                       </div>
                     </div>
-                    <div className="text-neutral-900 font-semibold whitespace-nowrap">
-                      ₩{Number(t.amount || 0).toLocaleString()}
+                    <div className={`font-semibold whitespace-nowrap ${
+                      isExpense ? 'text-rose-600' : 'text-emerald-600'
+                    }`}>
+                      {isExpense ? '-' : '+'}₩{Number(t.amount || 0).toLocaleString()}
                     </div>
                   </li>
                 )

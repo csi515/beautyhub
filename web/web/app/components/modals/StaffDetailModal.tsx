@@ -53,24 +53,24 @@ export default function StaffDetailModal({ open, onClose, item, onSaved, onDelet
     <Modal open={open} onClose={onClose} size="lg">
       <ModalHeader title="직원 상세" description="직원 정보를 관리합니다. 이름은 필수입니다." />
       <ModalBody>
-        <div className="space-y-6">
+        <div className="space-y-3">
           {error && (
-            <div className="p-3 rounded-md bg-rose-50 border border-rose-200" role="alert">
-              <p className="text-sm text-rose-600">{error}</p>
+            <div className="p-2 rounded-md bg-rose-50 border border-rose-200" role="alert">
+              <p className="text-xs text-rose-600">{error}</p>
             </div>
           )}
           
           {/* 기본정보 섹션 */}
-          <div className="space-y-4">
-            <h3 className="text-sm font-semibold text-neutral-900">기본정보</h3>
-            <div className="space-y-4">
+          <div className="space-y-2">
+            <h3 className="text-xs font-semibold text-neutral-900">기본정보</h3>
+            <div className="space-y-2">
               <div>
-                <label htmlFor="staff-name" className="block text-sm font-medium text-neutral-700 mb-2">
+                <label htmlFor="staff-name" className="block text-xs font-medium text-neutral-700 mb-0.5">
                   이름 <span className="text-rose-600">*</span>
                 </label>
                 <input
                   id="staff-name"
-                  className="border border-gray-300 rounded-md px-3 py-2 w-full text-base focus:outline-none focus:ring-2 focus:ring-indigo-200 focus:border-indigo-500 transition-all"
+                  className="border border-gray-300 rounded-lg px-2.5 py-1.5 h-9 w-full text-sm focus:outline-none focus:ring-2 focus:ring-indigo-200 focus:border-indigo-500 transition-all"
                   value={form.name}
                   onChange={e => setForm({ ...form, name: e.target.value })}
                   required
@@ -78,24 +78,24 @@ export default function StaffDetailModal({ open, onClose, item, onSaved, onDelet
                 />
               </div>
               <div>
-                <label htmlFor="staff-id" className="block text-sm font-medium text-neutral-700 mb-2">
+                <label htmlFor="staff-id" className="block text-xs font-medium text-neutral-700 mb-0.5">
                   직원ID
                 </label>
                 <input
                   id="staff-id"
-                  className="border border-gray-300 rounded-md px-3 py-2 w-full text-base focus:outline-none focus:ring-2 focus:ring-indigo-200 focus:border-indigo-500 transition-all"
+                  className="border border-gray-300 rounded-lg px-2.5 py-1.5 h-9 w-full text-sm focus:outline-none focus:ring-2 focus:ring-indigo-200 focus:border-indigo-500 transition-all bg-neutral-50"
                   value={form.id || ''}
                   disabled
                   readOnly
                 />
               </div>
               <div>
-                <label htmlFor="staff-role" className="block text-sm font-medium text-neutral-700 mb-2">
+                <label htmlFor="staff-role" className="block text-xs font-medium text-neutral-700 mb-0.5">
                   직책
                 </label>
                 <select
                   id="staff-role"
-                  className="border border-gray-300 rounded-md px-3 py-2 w-full text-base focus:outline-none focus:ring-2 focus:ring-indigo-200 focus:border-indigo-500 transition-all bg-white"
+                  className="border border-gray-300 rounded-lg px-2.5 py-1.5 h-9 w-full text-sm focus:outline-none focus:ring-2 focus:ring-indigo-200 focus:border-indigo-500 transition-all bg-white"
                   value={form.role || ''}
                   onChange={e => setForm({ ...form, role: e.target.value })}
                 >
@@ -110,30 +110,30 @@ export default function StaffDetailModal({ open, onClose, item, onSaved, onDelet
           </div>
 
           {/* 연락처 섹션 */}
-          <div className="space-y-4 pt-4 border-t border-gray-200">
-            <h3 className="text-sm font-semibold text-neutral-900">연락처</h3>
-            <div className="space-y-4">
+          <div className="space-y-2 pt-2 border-t border-gray-200">
+            <h3 className="text-xs font-semibold text-neutral-900">연락처</h3>
+            <div className="space-y-2">
               <div>
-                <label htmlFor="staff-email" className="block text-sm font-medium text-neutral-700 mb-2">
+                <label htmlFor="staff-email" className="block text-xs font-medium text-neutral-700 mb-0.5">
                   이메일(선택)
                 </label>
                 <input
                   id="staff-email"
                   type="email"
-                  className="border border-gray-300 rounded-md px-3 py-2 w-full text-base focus:outline-none focus:ring-2 focus:ring-indigo-200 focus:border-indigo-500 transition-all"
+                  className="border border-gray-300 rounded-lg px-2.5 py-1.5 h-9 w-full text-sm focus:outline-none focus:ring-2 focus:ring-indigo-200 focus:border-indigo-500 transition-all"
                   value={form.email || ''}
                   onChange={e => setForm({ ...form, email: e.target.value })}
                   placeholder="예: staff@example.com"
                 />
               </div>
               <div>
-                <label htmlFor="staff-phone" className="block text-sm font-medium text-neutral-700 mb-2">
+                <label htmlFor="staff-phone" className="block text-xs font-medium text-neutral-700 mb-0.5">
                   휴대폰(선택)
                 </label>
                 <input
                   id="staff-phone"
                   type="tel"
-                  className="border border-gray-300 rounded-md px-3 py-2 w-full text-base focus:outline-none focus:ring-2 focus:ring-indigo-200 focus:border-indigo-500 transition-all"
+                  className="border border-gray-300 rounded-lg px-2.5 py-1.5 h-9 w-full text-sm focus:outline-none focus:ring-2 focus:ring-indigo-200 focus:border-indigo-500 transition-all"
                   value={form.phone || ''}
                   onChange={e => setForm({ ...form, phone: e.target.value })}
                   placeholder="예: 010-1234-5678"
@@ -143,15 +143,15 @@ export default function StaffDetailModal({ open, onClose, item, onSaved, onDelet
           </div>
 
           {/* 권한/소속 섹션 */}
-          <div className="space-y-4 pt-4 border-t border-gray-200">
-            <h3 className="text-sm font-semibold text-neutral-900">권한/소속</h3>
-            <div className="space-y-4">
+          <div className="space-y-2 pt-2 border-t border-gray-200">
+            <h3 className="text-xs font-semibold text-neutral-900">권한/소속</h3>
+            <div className="space-y-2">
               <div className="flex items-center">
-                <label htmlFor="staff-active" className="inline-flex items-center gap-2 text-sm font-medium text-neutral-700 cursor-pointer">
+                <label htmlFor="staff-active" className="inline-flex items-center gap-1.5 text-xs font-medium text-neutral-700 cursor-pointer">
                   <input
                     id="staff-active"
                     type="checkbox"
-                    className="w-4 h-4 rounded border-gray-300 text-indigo-600 focus:ring-2 focus:ring-indigo-200"
+                    className="w-3.5 h-3.5 rounded border-gray-300 text-indigo-600 focus:ring-2 focus:ring-indigo-200"
                     checked={form.active !== false}
                     onChange={e => setForm({ ...form, active: e.target.checked })}
                   />

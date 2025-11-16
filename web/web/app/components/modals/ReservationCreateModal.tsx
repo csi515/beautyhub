@@ -170,7 +170,7 @@ export default function ReservationCreateModal({ open, onClose, draft, onSaved }
                       customerQuery.trim() &&
                       filteredCustomers.length > 0 && (
                         <ul
-                          className="absolute z-20 mt-1 max-h-56 w-full overflow-auto rounded-none border-2 border-neutral-500 bg-white"
+                          className="absolute z-50 mt-1 max-h-56 w-full overflow-auto rounded-none border-2 border-neutral-500 bg-white"
                           role="listbox"
                         >
                           {filteredCustomers.map((c: any) => (

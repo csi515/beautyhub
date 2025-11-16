@@ -7,7 +7,6 @@ import { Pencil, Plus } from 'lucide-react'
 import EmptyState from '../components/EmptyState'
 import { Skeleton } from '../components/ui/Skeleton'
 import { useAppToast } from '../lib/ui/toast'
-import PageHeader from '../components/PageHeader'
 import FilterBar from '../components/filters/FilterBar'
 import Button from '../components/ui/Button'
 import { usePagination } from '../lib/hooks/usePagination'
@@ -199,21 +198,24 @@ export default function FinancePage() {
   }
 
   return (
-    <main className="space-y-6">
-      <PageHeader title="재무관리" />
+    <main className="space-y-2 md:space-y-3">
 
       <section className="grid grid-cols-1 sm:grid-cols-3 gap-6">
-        <div className="bg-white rounded-xl border border-neutral-200 p-6 shadow-md hover:shadow-lg transition-shadow duration-300">
-          <div className="text-sm font-medium text-neutral-700 mb-2">월간 수입</div>
-          <div className="text-3xl font-semibold text-emerald-600">₩{Number(sumIncome).toLocaleString()}</div>
+        <div className="bg-gradient-to-br from-emerald-50 to-teal-100 rounded-xl border-2 border-emerald-200 p-6 shadow-md hover:shadow-xl transition-all duration-300">
+          <div className="text-sm font-semibold text-emerald-700 mb-2">월간 수입</div>
+          <div className="text-3xl font-bold text-emerald-700">₩{Number(sumIncome).toLocaleString()}</div>
         </div>
-        <div className="bg-white rounded-xl border border-neutral-200 p-6 shadow-md hover:shadow-lg transition-shadow duration-300">
-          <div className="text-sm font-medium text-neutral-700 mb-2">월간 지출</div>
-          <div className="text-3xl font-semibold text-rose-600">₩{Number(sumExpense).toLocaleString()}</div>
+        <div className="bg-gradient-to-br from-rose-50 to-pink-100 rounded-xl border-2 border-rose-200 p-6 shadow-md hover:shadow-xl transition-all duration-300">
+          <div className="text-sm font-semibold text-rose-700 mb-2">월간 지출</div>
+          <div className="text-3xl font-bold text-rose-700">₩{Number(sumExpense).toLocaleString()}</div>
         </div>
-        <div className="bg-white rounded-xl border border-neutral-200 p-6 shadow-md hover:shadow-lg transition-shadow duration-300">
-          <div className="text-sm font-medium text-neutral-700 mb-2">월간 순이익</div>
-          <div className={`text-3xl font-semibold ${profit >= 0 ? 'text-emerald-600' : 'text-rose-600'}`}>₩{Number(profit).toLocaleString()}</div>
+        <div className={`rounded-xl border-2 p-6 shadow-md hover:shadow-xl transition-all duration-300 ${
+          profit >= 0 
+            ? 'bg-gradient-to-br from-emerald-50 to-teal-100 border-emerald-200' 
+            : 'bg-gradient-to-br from-rose-50 to-pink-100 border-rose-200'
+        }`}>
+          <div className={`text-sm font-semibold mb-2 ${profit >= 0 ? 'text-emerald-700' : 'text-rose-700'}`}>월간 순이익</div>
+          <div className={`text-3xl font-bold ${profit >= 0 ? 'text-emerald-700' : 'text-rose-700'}`}>₩{Number(profit).toLocaleString()}</div>
         </div>
       </section>
 
@@ -246,21 +248,21 @@ export default function FinancePage() {
           </Button>
         </div>
           <table className="min-w-full text-sm">
-            <thead className="bg-neutral-100 border-b border-neutral-200 sticky top-0 z-10">
+            <thead className="bg-gradient-to-r from-pink-100 via-purple-100 to-blue-100 border-b-2 border-purple-200 sticky top-0 z-[1010]">
               <tr>
-                <th className={density==='compact' ? 'text-left p-3 font-medium text-neutral-900' : 'text-left p-4 font-medium text-neutral-900'}>
-                  <button className="inline-flex items-center gap-1 hover:text-[#F472B6] transition-colors duration-300 font-medium" onClick={() => { setSortKey('date'); setSortDir(d => (sortKey==='date' && d==='asc') ? 'desc' : 'asc'); setPage(1) }}>
+                <th className={density==='compact' ? 'text-left p-3 font-semibold text-pink-700' : 'text-left p-4 font-semibold text-pink-700'}>
+                  <button className="inline-flex items-center gap-1 hover:text-pink-900 transition-colors duration-300 font-semibold" onClick={() => { setSortKey('date'); setSortDir(d => (sortKey==='date' && d==='asc') ? 'desc' : 'asc'); setPage(1) }}>
                     일자 {sortKey==='date' ? (sortDir==='asc' ? '▲' : '▼') : ''}
                   </button>
                 </th>
-              <th className={density==='compact' ? 'text-left p-3 font-medium text-neutral-900' : 'text-left p-4 font-medium text-neutral-900'}>유형</th>
-                <th className={density==='compact' ? 'text-right p-3 font-medium text-neutral-900' : 'text-right p-4 font-medium text-neutral-900'}>
-                  <button className="inline-flex items-center gap-1 hover:text-[#F472B6] transition-colors duration-300 font-medium" onClick={() => { setSortKey('amount'); setSortDir(d => (sortKey==='amount' && d==='asc') ? 'desc' : 'asc'); setPage(1) }}>
+              <th className={density==='compact' ? 'text-left p-3 font-semibold text-purple-700' : 'text-left p-4 font-semibold text-purple-700'}>유형</th>
+                <th className={density==='compact' ? 'text-right p-3 font-semibold text-blue-700' : 'text-right p-4 font-semibold text-blue-700'}>
+                  <button className="inline-flex items-center gap-1 hover:text-blue-900 transition-colors duration-300 font-semibold" onClick={() => { setSortKey('amount'); setSortDir(d => (sortKey==='amount' && d==='asc') ? 'desc' : 'asc'); setPage(1) }}>
                     금액 {sortKey==='amount' ? (sortDir==='asc' ? '▲' : '▼') : ''}
                   </button>
                 </th>
-              <th className={density==='compact' ? 'text-left p-3 font-medium text-neutral-900' : 'text-left p-4 font-medium text-neutral-900'}>메모/카테고리</th>
-                <th className={density==='compact' ? 'text-right p-3 font-medium text-neutral-900' : 'text-right p-4 font-medium text-neutral-900'}></th>
+              <th className={density==='compact' ? 'text-left p-3 font-semibold text-emerald-700' : 'text-left p-4 font-semibold text-emerald-700'}>메모/카테고리</th>
+                <th className={density==='compact' ? 'text-right p-3 font-semibold text-amber-700' : 'text-right p-4 font-semibold text-amber-700'}></th>
               </tr>
             </thead>
             <tbody className="divide-y divide-neutral-200">
@@ -446,7 +448,7 @@ export default function FinancePage() {
         aria-label="내역 추가"
         title="내역 추가"
         onClick={() => { setNewType('income'); setNewDate(new Date().toISOString().slice(0,10)); setNewAmount(''); setNewCategory(''); setNewMemo(''); setNewOpen(true) }}
-        className="fixed right-4 bottom-4 h-12 w-12 rounded-full bg-blue-600 text-white shadow-lg hover:bg-blue-700 active:scale-[0.98] inline-flex items-center justify-center"
+        className="fixed right-4 bottom-4 h-12 w-12 rounded-full bg-blue-600 text-white shadow-lg hover:bg-blue-700 active:scale-[0.98] inline-flex items-center justify-center z-[1000]"
       >
         +
       </button>

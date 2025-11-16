@@ -4,7 +4,6 @@ import { Pencil, Plus } from 'lucide-react'
 import { useEffect, useState, useMemo, lazy, Suspense } from 'react'
 import EmptyState from '../components/EmptyState'
 import { Skeleton } from '../components/ui/Skeleton'
-import PageHeader from '../components/PageHeader'
 import FilterBar from '../components/filters/FilterBar'
 import CustomerHoldingsBadge from '../components/CustomerHoldingsBadge'
 import Button from '../components/ui/Button'
@@ -91,27 +90,11 @@ export default function CustomersPage() {
   }, [paginatedRows])
 
   return (
-    <main className="space-y-8">
+    <main className="space-y-2 md:space-y-3">
       {/** 안전 가드: 빌드/핫리로드 타이밍 이슈 대비 */}
       {(() => { void (typeof pointsByCustomer); return null })()}
-      <PageHeader
-        title="고객 목록"
-        actions={
-          <Button
-            variant="primary"
-            size="md"
-            leftIcon={<Plus className="h-4 w-4" />}
-            onClick={() => {
-              setSelected({ id: '', owner_id: '', name: '', phone: '', email: '', address: '' } as Customer)
-              setDetailOpen(true)
-            }}
-          >
-            새 고객
-          </Button>
-        }
-      />
       <FilterBar>
-        <div className="flex flex-wrap items-end gap-4 w-full">
+        <div className="flex flex-wrap items-end gap-2 md:gap-3 w-full">
           <div className="flex-1 min-w-0">
             <div className="mb-1.5 text-xs sm:text-[11px] font-medium text-neutral-600">검색</div>
             <div className="relative w-full">
@@ -123,6 +106,19 @@ export default function CustomersPage() {
               />
             </div>
           </div>
+          <div className="flex items-end">
+            <Button
+              variant="primary"
+              size="md"
+              leftIcon={<Plus className="h-4 w-4" />}
+              onClick={() => {
+                setSelected({ id: '', owner_id: '', name: '', phone: '', email: '', address: '' } as Customer)
+                setDetailOpen(true)
+              }}
+            >
+              새 고객
+            </Button>
+          </div>
         </div>
       </FilterBar>
 
@@ -132,71 +128,83 @@ export default function CustomersPage() {
         <div className="max-h-[60vh] sm:max-h-[70vh] overflow-auto rounded-lg border border-neutral-200 bg-white shadow-sm">
           <div className="overflow-x-auto">
             <table className="min-w-full text-sm" role="table" aria-label="고객 목록">
-            <thead className="sticky top-0 z-10 bg-neutral-100">
+            <thead className="sticky top-0 z-[1010] bg-gradient-to-r from-pink-100 via-purple-100 to-blue-100">
               <tr>
-                <th className={dense==='compact' ? 'p-3' : 'p-4'} scope="col">
+                <th className={`${dense==='compact' ? 'p-3' : 'p-4'} text-left align-top`} scope="col">
                   <button
-                    className="inline-flex items-center gap-1 hover:underline text-secondary-600"
+                    className="inline-flex items-center gap-1 hover:underline text-pink-700 font-semibold"
                     onClick={() => { toggleSort('name'); setPage(1) }}
                     aria-label={`이름으로 정렬, 현재: ${sortKey === 'name' ? (sortDirection === 'asc' ? '오름차순' : '내림차순') : '정렬 안됨'}`}
                   >
                     이름 {sortKey==='name' ? (sortDirection==='asc' ? '▲' : '▼') : ''}
                   </button>
                 </th>
-                <th className={(dense==='compact' ? 'p-3' : 'p-4') + ' hidden sm:table-cell'}>
+                <th className={`${dense==='compact' ? 'p-3' : 'p-4'} hidden sm:table-cell text-left align-top`}>
                   <button
-                    className="inline-flex items-center gap-1 hover:underline text-secondary-600"
+                    className="inline-flex items-center gap-1 hover:underline text-purple-700 font-semibold"
                     onClick={() => { toggleSort('phone'); setPage(1) }}
                   >
                     연락처 {sortKey==='phone' ? (sortDirection==='asc' ? '▲' : '▼') : ''}
                   </button>
                 </th>
-                <th className={(dense==='compact' ? 'p-3' : 'p-4') + ' hidden md:table-cell'}>
+                <th className={`${dense==='compact' ? 'p-3' : 'p-4'} hidden md:table-cell text-left align-top`}>
                   <button
-                    className="inline-flex items-center gap-1 hover:underline text-secondary-600"
+                    className="inline-flex items-center gap-1 hover:underline text-blue-700 font-semibold"
                     onClick={() => { toggleSort('email'); setPage(1) }}
                   >
                     이메일 {sortKey==='email' ? (sortDirection==='asc' ? '▲' : '▼') : ''}
                   </button>
                 </th>
-                <th className={(dense==='compact' ? 'p-3' : 'p-4') + ' hidden sm:table-cell'}>보유상품</th>
-                <th className={(dense==='compact' ? 'p-3' : 'p-4') + ' hidden md:table-cell'}>포인트</th>
-                <th className={dense==='compact' ? 'p-3' : 'p-4'}></th>
+                <th className={`${dense==='compact' ? 'p-3' : 'p-4'} hidden sm:table-cell text-left align-top text-emerald-700 font-semibold`}>보유상품</th>
+                <th className={`${dense==='compact' ? 'p-3' : 'p-4'} hidden md:table-cell text-right align-top text-amber-700 font-semibold whitespace-nowrap`}>포인트</th>
+                <th className={`${dense==='compact' ? 'p-3' : 'p-4'} text-center align-top text-indigo-700 font-semibold whitespace-nowrap`} scope="col">
+                  상세보기
+                </th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-neutral-100">
+            <tbody className="divide-y divide-purple-100">
               {loading && Array.from({ length: 6 }).map((_, i) => (
                 <tr key={`s-${i}`}>
                   <td className={dense==='compact' ? 'p-3' : 'p-4'}><Skeleton className="h-4 w-40" /></td>
-                  <td className={dense==='compact' ? 'p-3' : 'p-4'}><Skeleton className="h-4 w-28" /></td>
-                  <td className={dense==='compact' ? 'p-3' : 'p-4'}><Skeleton className="h-4 w-32" /></td>
-                  <td className={dense==='compact' ? 'p-3' : 'p-4'}><Skeleton className="h-8 w-24 ml-auto" /></td>
+                  <td className={`${dense==='compact' ? 'p-3' : 'p-4'} hidden sm:table-cell`}><Skeleton className="h-4 w-28" /></td>
+                  <td className={`${dense==='compact' ? 'p-3' : 'p-4'} hidden md:table-cell`}><Skeleton className="h-4 w-32" /></td>
+                  <td className={`${dense==='compact' ? 'p-3' : 'p-4'} hidden sm:table-cell`}><Skeleton className="h-8 w-24" /></td>
+                  <td className={`${dense==='compact' ? 'p-3' : 'p-4'} hidden md:table-cell`}><Skeleton className="h-4 w-16 ml-auto" /></td>
+                  <td className={dense==='compact' ? 'p-3' : 'p-4'}><Skeleton className="h-8 w-8 mx-auto" /></td>
                 </tr>
               ))}
-              {!loading && paginatedRows.map((c) => (
+              {!loading && paginatedRows.map((c, index) => (
                 <tr
                   key={c.id}
-                  className="outline-none odd:bg-neutral-50/40 hover:bg-neutral-100 min-h-[48px]"
+                  className={`outline-none min-h-[48px] transition-colors ${
+                    index % 4 === 0 
+                      ? 'bg-pink-50/50 hover:bg-pink-100' 
+                      : index % 4 === 1 
+                      ? 'bg-purple-50/50 hover:bg-purple-100'
+                      : index % 4 === 2
+                      ? 'bg-blue-50/50 hover:bg-blue-100'
+                      : 'bg-emerald-50/50 hover:bg-emerald-100'
+                  }`}
                   tabIndex={0}
                   onKeyDown={(e)=>{ if(e.key==='Enter'){ setSelected(c); setDetailOpen(true) }}}
                 >
-                  <td className={dense==='compact' ? 'p-3' : 'p-4'}>{c.name}</td>
-                  <td className={(dense==='compact' ? 'p-3' : 'p-4') + ' hidden sm:table-cell'}>{c.phone || '-'}</td>
-                  <td className={(dense==='compact' ? 'p-3' : 'p-4') + ' hidden md:table-cell'}>{c.email || '-'}</td>
-                  <td className={(dense==='compact' ? 'p-3' : 'p-4') + ' hidden sm:table-cell'}>
+                  <td className={`${dense==='compact' ? 'p-3' : 'p-4'} text-left align-top`}>{c.name}</td>
+                  <td className={`${dense==='compact' ? 'p-3' : 'p-4'} hidden sm:table-cell text-left align-top`}>{c.phone || '-'}</td>
+                  <td className={`${dense==='compact' ? 'p-3' : 'p-4'} hidden md:table-cell text-left align-top`}>{c.email || '-'}</td>
+                  <td className={`${dense==='compact' ? 'p-3' : 'p-4'} hidden sm:table-cell text-left align-top`}>
                     <CustomerHoldingsBadge customerId={c.id} />
                   </td>
-                  <td className={(dense==='compact' ? 'p-3' : 'p-4') + ' hidden md:table-cell'}>
+                  <td className={`${dense==='compact' ? 'p-3' : 'p-4'} hidden md:table-cell text-right align-top whitespace-nowrap`}>
                     {Number(((typeof pointsByCustomer !== 'undefined' && (pointsByCustomer as any)?.[c.id] != null) ? (pointsByCustomer as any)[c.id] : 0)).toLocaleString()}
                   </td>
-                  <td className={dense==='compact' ? 'p-3' : 'p-4'}>
+                  <td className={`${dense==='compact' ? 'p-3' : 'p-4'} text-center align-top`}>
                     <Button
                       size="sm"
                       variant="secondary"
                       onClick={() => { setSelected(c); setDetailOpen(true) }}
                       aria-label="상세보기"
                       title="상세보기"
-                      className="h-9 w-9 sm:h-8 sm:w-8 p-0 touch-manipulation"
+                      className="h-9 w-9 sm:h-8 sm:w-8 p-0 touch-manipulation mx-auto"
                     >
                       <Pencil className="h-4 w-4" />
                     </Button>
@@ -204,7 +212,7 @@ export default function CustomersPage() {
                 </tr>
               ))}
               {!loading && rows.length === 0 && (
-              <tr><td colSpan={4}>
+              <tr><td colSpan={6}>
                 <EmptyState
                   title="고객 데이터가 없습니다."
                   actionLabel="새 고객"

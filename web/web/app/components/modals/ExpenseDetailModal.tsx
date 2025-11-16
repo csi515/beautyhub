@@ -57,21 +57,21 @@ export default function ExpenseDetailModal({ open, onClose, item, onSaved, onDel
     <Modal open={open} onClose={onClose} size="lg">
       <ModalHeader title="지출 상세" description="지출 일자와 금액을 확인·수정합니다. 일자와 금액은 필수입니다." />
       <ModalBody>
-        <div className="grid gap-4 md:grid-cols-[280px,1fr]">
-          <div className="space-y-3">
-            {error && <p className="text-sm text-rose-600">{error}</p>}
+        <div className="grid gap-3 md:grid-cols-[200px,1fr]">
+          <div className="space-y-2">
+            {error && <p className="text-xs text-rose-600">{error}</p>}
           </div>
-          <div className="space-y-3">
-            <div className="space-y-3">
-              <div className="grid grid-cols-2 gap-3">
+          <div className="space-y-2">
+            <div className="space-y-2">
+              <div className="grid grid-cols-2 gap-2">
                 <div>
-                  <label className="block text-sm text-neutral-700 mb-1">지출 일자 <span className="text-rose-600">*</span></label>
-                  <input className="h-10 w-full rounded-lg border border-neutral-300 px-3 outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-300" type="date" value={form.expense_date} onChange={e => setForm(f => f && ({ ...f, expense_date: e.target.value }))} />
+                  <label className="block text-xs font-medium text-neutral-700 mb-0.5">지출 일자 <span className="text-rose-600">*</span></label>
+                  <input className="h-9 w-full rounded-lg border border-neutral-300 px-2.5 text-sm outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-300" type="date" value={form.expense_date} onChange={e => setForm(f => f && ({ ...f, expense_date: e.target.value }))} />
                 </div>
                 <div>
-                  <label className="block text-sm text-neutral-700 mb-1">금액 <span className="text-rose-600">*</span></label>
+                  <label className="block text-xs font-medium text-neutral-700 mb-0.5">금액 <span className="text-rose-600">*</span></label>
                   <input 
-                    className="h-10 w-full rounded-lg border border-neutral-300 px-3 outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-300 text-right placeholder:text-neutral-400" 
+                    className="h-9 w-full rounded-lg border border-neutral-300 px-2.5 text-sm outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-300 text-right placeholder:text-neutral-400" 
                     type="number" 
                     placeholder="예: 12,000" 
                     value={form.amount === null || form.amount === undefined || form.amount === '' ? '' : form.amount} 
@@ -82,12 +82,12 @@ export default function ExpenseDetailModal({ open, onClose, item, onSaved, onDel
                   />
                 </div>
                 <div className="col-span-2">
-                  <label className="block text-sm text-neutral-700 mb-1">카테고리(선택)</label>
-                  <input className="h-10 w-full rounded-lg border border-neutral-300 px-3 outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-300" placeholder="예) 소모품, 임대료 등" value={form.category || ''} onChange={e => setForm(f => f && ({ ...f, category: e.target.value }))} />
+                  <label className="block text-xs font-medium text-neutral-700 mb-0.5">카테고리(선택)</label>
+                  <input className="h-9 w-full rounded-lg border border-neutral-300 px-2.5 text-sm outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-300" placeholder="예) 소모품, 임대료 등" value={form.category || ''} onChange={e => setForm(f => f && ({ ...f, category: e.target.value }))} />
                 </div>
                 <div className="col-span-2">
-                  <label className="block text-sm text-neutral-700 mb-1">메모(선택)</label>
-                  <input className="h-10 w-full rounded-lg border border-neutral-300 px-3 outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-300" placeholder="추가 설명을 입력하세요" value={form.memo || ''} onChange={e => setForm(f => f && ({ ...f, memo: e.target.value }))} />
+                  <label className="block text-xs font-medium text-neutral-700 mb-0.5">메모(선택)</label>
+                  <input className="h-9 w-full rounded-lg border border-neutral-300 px-2.5 text-sm outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-300" placeholder="추가 설명을 입력하세요" value={form.memo || ''} onChange={e => setForm(f => f && ({ ...f, memo: e.target.value }))} />
                 </div>
               </div>
             </div>

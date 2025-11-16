@@ -3,7 +3,6 @@
 import { useState, useRef, lazy, Suspense } from 'react'
 import ReservationCreateModal from '../components/modals/ReservationCreateModal'
 import ReservationDetailModal from '../components/modals/ReservationDetailModal'
-import PageHeader from '../components/PageHeader'
 import FilterBar from '../components/filters/FilterBar'
 import { Plus, Pencil, Trash2 } from 'lucide-react'
 import Button from '../components/ui/Button'
@@ -238,6 +237,7 @@ type CalendarHeaderProps = {
   onToday: () => void
   onPrev: () => void
   onNext: () => void
+  actions?: React.ReactNode
 }
 
 function CalendarHeader({
@@ -247,20 +247,28 @@ function CalendarHeader({
   onToday,
   onPrev,
   onNext,
+  actions,
 }: CalendarHeaderProps) {
 
   return (
     <FilterBar>
-      <div className="flex w-full flex-col gap-3 md:gap-4 md:flex-row md:items-center md:justify-between">
-        <div className="flex w-full flex-col items-center justify-center space-y-1 md:items-start">
-          <div className="text-xl sm:text-2xl font-semibold tracking-tight text-neutral-900 text-center md:text-left">
+      <div className="flex w-full flex-col gap-2 md:flex-row md:items-center md:justify-between">
+        <div className="flex w-full flex-col items-center justify-center md:items-start gap-2 md:flex-row md:gap-3">
+          <div className="text-base md:text-lg font-bold tracking-tight bg-gradient-to-r from-pink-600 to-purple-600 bg-clip-text text-transparent">
             {rangeLabel || '로딩 중...'}
           </div>
         </div>
 
-        <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-end">
+        <div className="flex flex-col gap-2 md:flex-row md:items-center md:justify-end">
+          {/* 액션 버튼들 (데스크톱) */}
+          {actions && (
+            <div className="hidden md:flex items-center gap-2">
+              {actions}
+            </div>
+          )}
+          
           {/* 월 / 주 / 일 토글 */}
-          <div className="inline-flex items-center rounded-full border border-neutral-200 bg-neutral-50 p-1 shadow-sm">
+          <div className="inline-flex items-center rounded-full border-2 border-purple-200 bg-gradient-to-r from-purple-50 to-pink-50 p-1 shadow-md">
             {[
               { key: 'dayGridMonth', label: '월' },
               { key: 'timeGridWeek', label: '주' },
@@ -272,10 +280,10 @@ function CalendarHeader({
                   key={tab.key}
                   type="button"
                   onClick={() => onChangeView(tab.key as CalendarView)}
-                  className={`relative min-w-[64px] rounded-full px-4 py-1.5 text-sm font-medium transition-colors ${
+                  className={`relative min-w-[64px] rounded-full px-4 py-1.5 text-sm font-medium transition-all duration-300 ${
                     active
-                      ? 'bg-blue-600 text-white shadow-sm'
-                      : 'text-neutral-700 hover:bg-white'
+                      ? 'bg-gradient-to-r from-pink-500 to-purple-500 text-white shadow-lg scale-105'
+                      : 'text-purple-700 hover:bg-white hover:text-purple-900'
                   }`}
                 >
                   {tab.label}
@@ -490,11 +498,16 @@ export default function AppointmentsPage() {
   }
 
   return (
-    <main className="space-y-8">
-      <PageHeader
-        title="예약 관리"
+    <main className="space-y-2 md:space-y-3">
+      <CalendarHeader
+        view={view}
+        rangeLabel={rangeLabel}
+        onChangeView={handleChangeView}
+        onToday={handleToday}
+        onPrev={handlePrev}
+        onNext={handleNext}
         actions={
-          <div className="hidden md:flex items-center gap-2">
+          <div className="flex items-center gap-2">
             <Button
               variant="primary"
               leftIcon={<Plus className="h-4 w-4" />}
@@ -529,15 +542,6 @@ export default function AppointmentsPage() {
             </button>
           </div>
         }
-      />
-
-      <CalendarHeader
-        view={view}
-        rangeLabel={rangeLabel}
-        onChangeView={handleChangeView}
-        onToday={handleToday}
-        onPrev={handlePrev}
-        onNext={handleNext}
       />
 
       {/* 캘린더 본문 */}
@@ -578,7 +582,7 @@ export default function AppointmentsPage() {
       </div>
       {/* Mobile FAB for quick create */}
       <button
-        className="md:hidden fixed right-4 bottom-4 h-12 w-12 rounded-full bg-blue-600 text-white shadow-lg hover:bg-blue-700 active:scale-[0.98] inline-flex items-center justify-center"
+        className="md:hidden fixed right-4 bottom-4 h-12 w-12 rounded-full bg-blue-600 text-white shadow-lg hover:bg-blue-700 active:scale-[0.98] inline-flex items-center justify-center z-[1000]"
         aria-label="예약 추가"
         onClick={() => { setDraft({ date: new Date().toISOString().slice(0,10), start: '10:00', end: '11:00', status: 'scheduled', notes: '' }); setCreateOpen(true) }}
       >

@@ -8,6 +8,7 @@ export function middleware(req: NextRequest) {
   const publicPaths = [
     '/login',
     '/reset-password',
+    '/update-password',
     '/auth',
     '/api',
     '/_next',
