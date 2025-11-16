@@ -73,7 +73,7 @@ export default function StaffAutoComplete({ value, onChange }: { value?: string;
         }}
       />
       {open && filtered.length > 0 && (
-        <ul className="absolute z-20 mt-1 w-full max-h-56 overflow-auto border border-neutral-200 bg-white rounded-md shadow-sm">
+        <ul className="absolute z-50 mt-1 w-full max-h-56 overflow-auto border border-neutral-200 bg-white rounded-md shadow-sm">
           {filtered.map(s => (
             <li
               key={s.id}

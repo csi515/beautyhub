@@ -76,21 +76,21 @@ export default function TransactionDetailModal({ open, onClose, item, onSaved, o
     <Modal open={open} onClose={onClose} size="lg">
       <ModalHeader title="거래 상세" description="거래 일자와 금액을 확인·수정합니다. 일자와 금액을 정확히 입력해주세요." />
       <ModalBody>
-        <div className="grid gap-4 md:grid-cols-[280px,1fr]">
-          <div className="space-y-3">
-            {error && <p className="text-sm text-rose-600">{error}</p>}
+        <div className="grid gap-3 md:grid-cols-[200px,1fr]">
+          <div className="space-y-2">
+            {error && <p className="text-xs text-rose-600">{error}</p>}
           </div>
-          <div className="space-y-3">
-            <div className="space-y-3">
-              <div className="grid grid-cols-2 gap-3">
+          <div className="space-y-2">
+            <div className="space-y-2">
+              <div className="grid grid-cols-2 gap-2">
                 <div>
-                  <label className="block text-sm text-neutral-700 mb-1">거래 일자 <span className="text-rose-600">*</span></label>
-                  <input className="h-10 w-full rounded-lg border border-neutral-300 px-3 outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-300" type="date" value={(form.transaction_date || '').slice(0,10)} onChange={e => setForm(f => f && ({ ...f, transaction_date: e.target.value }))} />
+                  <label className="block text-xs font-medium text-neutral-700 mb-0.5">거래 일자 <span className="text-rose-600">*</span></label>
+                  <input className="h-9 w-full rounded-lg border border-neutral-300 px-2.5 text-sm outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-300" type="date" value={(form.transaction_date || '').slice(0,10)} onChange={e => setForm(f => f && ({ ...f, transaction_date: e.target.value }))} />
                 </div>
                 <div>
-                  <label className="block text-sm text-neutral-700 mb-1">금액 <span className="text-rose-600">*</span></label>
+                  <label className="block text-xs font-medium text-neutral-700 mb-0.5">금액 <span className="text-rose-600">*</span></label>
                   <input 
-                    className="h-10 w-full rounded-lg border border-neutral-300 px-3 outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-300 text-right placeholder:text-neutral-400" 
+                    className="h-9 w-full rounded-lg border border-neutral-300 px-2.5 text-sm outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-300 text-right placeholder:text-neutral-400" 
                     type="number" 
                     placeholder="예: 12,000" 
                     value={form.amount === null || form.amount === undefined || form.amount === '' ? '' : form.amount} 
@@ -101,15 +101,15 @@ export default function TransactionDetailModal({ open, onClose, item, onSaved, o
                   />
                 </div>
                 <div className="col-span-2">
-                  <label className="block text-sm text-neutral-700 mb-1">고객(선택)</label>
-                  <select className="h-10 w-full rounded-lg border border-neutral-300 px-3 outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-300" value={form.customer_id || ''} onChange={e => setForm(f => f && ({ ...f, customer_id: e.target.value || undefined }))}>
+                  <label className="block text-xs font-medium text-neutral-700 mb-0.5">고객(선택)</label>
+                  <select className="h-9 w-full rounded-lg border border-neutral-300 px-2.5 text-sm outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-300" value={form.customer_id || ''} onChange={e => setForm(f => f && ({ ...f, customer_id: e.target.value || undefined }))}>
                     <option value="">선택 안 함</option>
                     {customers.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
                   </select>
                 </div>
                 <div className="col-span-2">
-                  <label className="block text-sm text-neutral-700 mb-1">메모(선택)</label>
-                  <input className="h-10 w-full rounded-lg border border-neutral-300 px-3 outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-300 placeholder:text-neutral-400" placeholder="추가 설명을 입력하세요" value={form.notes || ''} onChange={e => setForm(f => f && ({ ...f, notes: e.target.value }))} />
+                  <label className="block text-xs font-medium text-neutral-700 mb-0.5">메모(선택)</label>
+                  <input className="h-9 w-full rounded-lg border border-neutral-300 px-2.5 text-sm outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-300 placeholder:text-neutral-400" placeholder="추가 설명을 입력하세요" value={form.notes || ''} onChange={e => setForm(f => f && ({ ...f, notes: e.target.value }))} />
                 </div>
               </div>
             </div>

@@ -3,7 +3,7 @@
 import { Bars3Icon } from '@heroicons/react/24/outline'
 import { useEffect, useState } from 'react'
 
-export default function TopBar({ title, onMenu }: { title: string; onMenu?: () => void }) {
+export default function TopBar({ onMenu }: { onMenu?: () => void }) {
   const [userName, setUserName] = useState<string | null>(null)
 
   useEffect(() => {
@@ -31,7 +31,7 @@ export default function TopBar({ title, onMenu }: { title: string; onMenu?: () =
 
   return (
     <header className="sticky top-0 z-[1021] bg-white border-b border-neutral-200 shadow-md">
-      <div className="container h-14 flex items-center justify-between px-4 gap-2 sm:gap-3">
+      <div className="container h-10 flex items-center justify-between px-4 gap-2 sm:gap-3">
         <button 
           aria-label="메뉴" 
           onClick={onMenu} 
@@ -39,11 +39,7 @@ export default function TopBar({ title, onMenu }: { title: string; onMenu?: () =
         >
           <Bars3Icon className="h-5 w-5 text-neutral-700" />
         </button>
-        <div className="flex-1 min-w-0 flex items-center gap-3 sm:gap-3">
-          <h1 className="text-base sm:text-lg md:text-xl font-medium tracking-tight truncate text-neutral-900">
-            {title}
-          </h1>
-        </div>
+        <div className="flex-1" />
         <div className="flex items-center gap-2 sm:gap-3">
           {userName && (
             <span className="text-xs sm:text-sm font-medium text-neutral-700 whitespace-nowrap">

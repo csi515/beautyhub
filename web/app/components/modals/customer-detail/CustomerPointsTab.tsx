@@ -107,7 +107,7 @@ export default function CustomerPointsTab({
           )}
           {!loadingHistory && (
             <table className="min-w-full text-sm">
-              <thead className="sticky top-0 z-10 bg-neutral-300 border-b-2 border-neutral-400">
+              <thead className="sticky top-0 z-[1010] bg-neutral-300 border-b-2 border-neutral-400">
                 <tr>
                   <th className="p-3 text-left font-semibold text-neutral-900">일시</th>
                   <th className="p-3 text-left font-semibold text-neutral-900">사유</th>

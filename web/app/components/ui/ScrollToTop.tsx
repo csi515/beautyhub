@@ -43,7 +43,7 @@ export default function ScrollToTop({
   if (!isVisible) return null
 
   return (
-    <FadeIn triggerOnce={false} className={clsx('fixed bottom-8 right-8 z-50', className)}>
+    <FadeIn triggerOnce={false} className={clsx('fixed bottom-8 right-8 z-[1000]', className)}>
       <Button
         variant="primary"
         size="md"

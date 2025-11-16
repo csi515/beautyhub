@@ -56,26 +56,26 @@ export default function ProductDetailModal({ open, onClose, item, onSaved, onDel
     <Modal open={open} onClose={onClose} size="lg">
       <ModalHeader title="제품 상세" description="제품의 기본 정보를 수정합니다. 이름과 가격은 필수입니다." />
       <ModalBody>
-        <div className="grid gap-4 md:grid-cols-[280px,1fr]">
-          <div className="space-y-3">
-            {error && <p className="text-sm text-rose-600">{error}</p>}
+        <div className="grid gap-3 md:grid-cols-[200px,1fr]">
+          <div className="space-y-2">
+            {error && <p className="text-xs text-rose-600">{error}</p>}
           </div>
-          <div className="space-y-3">
-            <div className="space-y-3">
-              <div className="grid gap-3 md:grid-cols-3">
+          <div className="space-y-2">
+            <div className="space-y-2">
+              <div className="grid gap-2 md:grid-cols-3">
                 <div className="md:col-span-2">
-                  <label className="block text-sm text-neutral-700 mb-1">이름 <span className="text-rose-600">*</span></label>
+                  <label className="block text-xs font-medium text-neutral-700 mb-0.5">이름 <span className="text-rose-600">*</span></label>
                   <input
-                    className="h-10 w-full rounded-lg border border-neutral-300 px-3 outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-300 placeholder:text-neutral-400"
+                    className="h-9 w-full rounded-lg border border-neutral-300 px-2.5 text-sm outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-300 placeholder:text-neutral-400"
                     placeholder="예) 로션 기획세트"
                     value={form.name}
                     onChange={e => setForm(f => f && ({ ...f, name: e.target.value }))}
                   />
                 </div>
                 <div>
-                  <label className="block text-sm text-neutral-700 mb-1">가격 <span className="text-rose-600">*</span></label>
+                  <label className="block text-xs font-medium text-neutral-700 mb-0.5">가격 <span className="text-rose-600">*</span></label>
                   <input
-                    className="h-10 w-full rounded-lg border border-neutral-300 px-3 outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-300 text-right placeholder:text-neutral-400"
+                    className="h-9 w-full rounded-lg border border-neutral-300 px-2.5 text-sm outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-300 text-right placeholder:text-neutral-400"
                     type="number"
                     placeholder="예: 12,000"
                     value={form.price === null || form.price === undefined || form.price === '' ? '' : form.price}
@@ -93,13 +93,13 @@ export default function ProductDetailModal({ open, onClose, item, onSaved, onDel
                   value={form.description || ''}
                   onChange={e => setForm(f => f && ({ ...f, description: e.target.value }))}
                 />
-                <p className="mt-1 text-xs text-neutral-500">부가세 포함 여부는 별도 표시 기준을 따릅니다.</p>
+                <p className="mt-0.5 text-xs text-neutral-400">부가세 포함 여부는 별도 표시 기준을 따릅니다.</p>
               </div>
-              <div className="border border-dashed border-gray-300 rounded-lg p-4 bg-white">
-                <div className="text-sm text-neutral-700 mb-2">이미지 업로드(선택)</div>
-                <div className="text-xs text-neutral-500">이미지 업로드 영역(향후 구현 가능)</div>
+              <div className="border border-dashed border-gray-300 rounded-lg p-2.5 bg-white">
+                <div className="text-xs text-neutral-700 mb-1">이미지 업로드(선택)</div>
+                <div className="text-xs text-neutral-400">이미지 업로드 영역(향후 구현 가능)</div>
               </div>
-              <label className="inline-flex items-center gap-2 text-sm">
+              <label className="inline-flex items-center gap-1.5 text-xs">
                 <input type="checkbox" checked={form.active !== false} onChange={e => setForm(f => f && ({ ...f, active: e.target.checked }))} />
                 <span>활성</span>
               </label>

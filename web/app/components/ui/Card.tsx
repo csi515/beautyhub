@@ -28,11 +28,11 @@ export default function Card({
     <div
       onClick={onClick}
       className={clsx(
-        'bg-white rounded-lg border border-neutral-200 shadow-md transition-all duration-300',
+        'bg-gradient-to-br from-white to-purple-50/30 rounded-xl border-2 border-purple-100 shadow-md transition-all duration-300',
         compact ? 'p-5' : 'p-6',
-        hover && 'hover:shadow-lg hover:border-neutral-300',
+        hover && 'hover:shadow-xl hover:border-purple-200 hover:from-purple-50/50',
         isClickable && 'cursor-pointer active:scale-[0.99] focus-visible:ring-[2px] focus-visible:ring-pink-300 focus-visible:ring-offset-2',
-        divider && 'divide-y divide-neutral-200',
+        divider && 'divide-y divide-purple-100',
         className,
       )}
       role={isClickable ? 'button' : undefined}

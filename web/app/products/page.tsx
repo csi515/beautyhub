@@ -1,7 +1,6 @@
 "use client"
 
 import { useEffect, useState, useMemo, lazy, Suspense } from 'react'
-import PageHeader from '../components/PageHeader'
 import FilterBar from '../components/filters/FilterBar'
 import { Pencil, Plus } from 'lucide-react'
 import EmptyState from '../components/EmptyState'
@@ -151,26 +150,11 @@ export default function ProductsPage() {
   }
 
   return (
-    <main className="space-y-8">
-      <PageHeader
-        title="제품 관리"
-        subtitle="판매 중인 제품을 등록·수정하고 가격과 설명, 상태를 한눈에 관리하세요."
-        actions={
-          <Button
-            variant="primary"
-            size="md"
-            leftIcon={<Plus className="h-4 w-4" />}
-            onClick={openCreate}
-          >
-            제품 추가
-          </Button>
-        }
-      />
-
+    <main className="space-y-2 md:space-y-3">
       {error && <p className="text-sm text-red-600">{error}</p>}
 
       <FilterBar>
-        <div className="flex flex-wrap items-end gap-4 w-full">
+        <div className="flex flex-wrap items-end gap-2 md:gap-3 w-full">
           <div className="flex-1 min-w-0 sm:min-w-[200px]">
             <div className="mb-1.5 text-xs sm:text-[11px] font-medium text-neutral-600">검색</div>
             <div className="relative w-full">
@@ -194,32 +178,56 @@ export default function ProductsPage() {
               <option value="inactive">비활성</option>
             </select>
           </div>
+          <div className="flex items-end">
+            <Button
+              variant="primary"
+              size="md"
+              leftIcon={<Plus className="h-4 w-4" />}
+              onClick={openCreate}
+            >
+              제품 추가
+            </Button>
+          </div>
         </div>
       </FilterBar>
 
       <section className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-5">
         {loading && Array.from({ length: 8 }).map((_, i) => (
-          <div key={`s-${i}`} className="bg-white rounded-lg border border-neutral-200 shadow-sm p-4 sm:p-5">
+          <div key={`s-${i}`} className="bg-gradient-to-br from-white to-purple-50/30 rounded-xl border-2 border-purple-100 shadow-sm p-4 sm:p-5">
             <Skeleton className="h-5 w-1/2" />
-            <div className="mt-2 h-4 w-1/3 bg-neutral-100 rounded" />
-            <div className="mt-3 h-8 w-24 bg-neutral-100 rounded" />
+            <div className="mt-2 h-4 w-1/3 bg-purple-100 rounded" />
+            <div className="mt-3 h-8 w-24 bg-purple-100 rounded" />
           </div>
         ))}
-        {!loading && paginatedProducts.map((p) => (
-          <div key={String(p.id)} className="bg-white rounded-lg border border-neutral-200 shadow-sm p-4 sm:p-5 flex flex-col gap-2 sm:gap-3 hover:shadow-md transition-shadow duration-fast">
+        {!loading && paginatedProducts.map((p, index) => {
+          const colorSchemes = [
+            { bg: 'from-pink-50 to-rose-100', border: 'border-pink-200', text: 'text-pink-700', label: 'text-pink-600' },
+            { bg: 'from-blue-50 to-cyan-100', border: 'border-blue-200', text: 'text-blue-700', label: 'text-blue-600' },
+            { bg: 'from-emerald-50 to-teal-100', border: 'border-emerald-200', text: 'text-emerald-700', label: 'text-emerald-600' },
+            { bg: 'from-amber-50 to-yellow-100', border: 'border-amber-200', text: 'text-amber-700', label: 'text-amber-600' },
+            { bg: 'from-purple-50 to-violet-100', border: 'border-purple-200', text: 'text-purple-700', label: 'text-purple-600' },
+            { bg: 'from-indigo-50 to-blue-100', border: 'border-indigo-200', text: 'text-indigo-700', label: 'text-indigo-600' },
+          ]
+          const scheme = colorSchemes[index % colorSchemes.length]
+          return (
+          <div key={String(p.id)} className={`bg-gradient-to-br ${scheme.bg} rounded-xl border-2 ${scheme.border} shadow-md p-4 sm:p-5 flex flex-col gap-2 sm:gap-3 hover:shadow-xl transition-all duration-300`}>
             <div className="flex items-start justify-between gap-2">
               <div>
-                <div className="text-sm text-neutral-500">제품명</div>
-                <button className="text-base font-medium underline-offset-2 hover:underline" onClick={() => { setSelected(p as any); setDetailOpen(true) }}>
+                <div className={`text-sm font-medium ${scheme.label}`}>제품명</div>
+                <button className={`text-base font-semibold ${scheme.text} underline-offset-2 hover:underline`} onClick={() => { setSelected(p as any); setDetailOpen(true) }}>
                   {p.name}
                 </button>
               </div>
-              <span className={`text-xs px-2 py-0.5 rounded-full border ${p.active === false ? 'bg-neutral-100 text-neutral-600 border-neutral-200' : 'bg-secondary-50 text-secondary-700 border-secondary-200'}`}>
+              <span className={`text-xs px-2 py-0.5 rounded-full border font-medium ${
+                p.active === false 
+                  ? 'bg-gray-100 text-gray-600 border-gray-200' 
+                  : 'bg-emerald-100 text-emerald-700 border-emerald-300'
+              }`}>
                 {p.active === false ? '비활성' : '활성'}
               </span>
             </div>
-            <div className="text-sm text-neutral-600">가격</div>
-            <div className="text-lg font-semibold">₩{Number(p.price || 0).toLocaleString()}</div>
+            <div className={`text-sm font-medium ${scheme.label}`}>가격</div>
+            <div className={`text-lg font-bold ${scheme.text}`}>₩{Number(p.price || 0).toLocaleString()}</div>
             <div className="mt-2 sm:mt-3">
               <Button
                 size="sm"
@@ -234,7 +242,7 @@ export default function ProductsPage() {
               </Button>
             </div>
           </div>
-        ))}
+        )})}
         {!loading && products.length === 0 && (
           <div className="col-span-full">
             <EmptyState

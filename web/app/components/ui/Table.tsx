@@ -57,7 +57,7 @@ export default function Table({ children, className }: Props) {
 
 export function THead({ children }: { children: React.ReactNode }) {
   return (
-    <thead className="bg-neutral-50 sticky top-0 z-10 border-b border-neutral-200">
+    <thead className="bg-neutral-50 sticky top-0 z-[1010] border-b border-neutral-200">
       {children}
     </thead>
   )
