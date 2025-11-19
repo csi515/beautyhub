@@ -204,7 +204,6 @@ export async function getAuthApi() {
     throw new Error('인증 API는 클라이언트 사이드에서만 사용할 수 있습니다.')
   }
 
-  const { createClient } = await import('@supabase/supabase-js')
   const { getEnv } = await import('@/app/lib/env')
 
   // 환경변수는 빌드 타임에 검증되므로 안전하게 사용 가능
