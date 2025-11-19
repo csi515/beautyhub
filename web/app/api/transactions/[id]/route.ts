@@ -1,33 +1,54 @@
 import { NextRequest } from 'next/server'
 import { withAuth } from '@/app/lib/api/middleware'
-import { parseBody, createSuccessResponse } from '@/app/lib/api/handlers'
+import { parseAndValidateBody, createSuccessResponse } from '@/app/lib/api/handlers'
 import { TransactionsRepository } from '@/app/lib/repositories/transactions.repository'
-import type { TransactionUpdateInput } from '@/types/entities'
+import { transactionUpdateSchema } from '@/app/lib/api/schemas'
+import { NotFoundError } from '@/app/lib/api/errors'
 
 export const GET = withAuth(async (_req: NextRequest, { userId, params }) => {
-  if (!params?.id || typeof params.id !== "string") {
-    return createSuccessResponse({ ok: false, error: "Missing or invalid transaction ID" })
+  const id = params?.['id']
+  if (!id || typeof id !== "string") {
+    throw new NotFoundError("Missing or invalid transaction ID")
   }
   const repository = new TransactionsRepository(userId)
-  const data = await repository.findById(params.id)
+  const data = await repository.findById(id)
+  if (!data) {
+    throw new NotFoundError("Transaction not found")
+  }
   return createSuccessResponse(data)
 })
 
 export const PUT = withAuth(async (req: NextRequest, { userId, params }) => {
-  if (!params?.id || typeof params.id !== "string") {
-    return createSuccessResponse({ ok: false, error: "Missing or invalid transaction ID" })
+  const id = params?.['id']
+  if (!id || typeof id !== "string") {
+    throw new NotFoundError("Missing or invalid transaction ID")
   }
-  const body = await parseBody<TransactionUpdateInput>(req)
+  const validatedBody = await parseAndValidateBody(req, transactionUpdateSchema)
   const repository = new TransactionsRepository(userId)
-  const data = await repository.updateTransaction(params.id, body)
+  // exactOptionalPropertyTypes를 위한 타입 변환
+  const body: Parameters<typeof repository.updateTransaction>[1] = {}
+  if (validatedBody.customer_id !== undefined) {
+    body.customer_id = validatedBody.customer_id
+  }
+  if (validatedBody.notes !== undefined) {
+    body.notes = validatedBody.notes
+  }
+  if (validatedBody.amount !== undefined) {
+    body.amount = validatedBody.amount
+  }
+  if (validatedBody.transaction_date !== undefined) {
+    body.transaction_date = validatedBody.transaction_date
+  }
+  const data = await repository.updateTransaction(id, body)
   return createSuccessResponse(data)
 })
 
 export const DELETE = withAuth(async (_req: NextRequest, { userId, params }) => {
-  if (!params?.id || typeof params.id !== "string") {
-    return createSuccessResponse({ ok: false, error: "Missing or invalid transaction ID" })
+  const id = params?.['id']
+  if (!id || typeof id !== "string") {
+    throw new NotFoundError("Missing or invalid transaction ID")
   }
   const repository = new TransactionsRepository(userId)
-  await repository.delete(params.id)
+  await repository.delete(id)
   return createSuccessResponse({ ok: true })
 })

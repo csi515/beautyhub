@@ -1,8 +1,8 @@
 import { NextRequest } from 'next/server'
 import { withAuth } from '@/app/lib/api/middleware'
-import { parseQueryParams, parseBody, createSuccessResponse } from '@/app/lib/api/handlers'
+import { parseQueryParams, parseAndValidateBody, createSuccessResponse } from '@/app/lib/api/handlers'
 import { CustomersRepository } from '@/app/lib/repositories/customers.repository'
-import type { CustomerCreateInput } from '@/types/entities'
+import { customerCreateSchema } from '@/app/lib/api/schemas'
 
 export const GET = withAuth(async (req: NextRequest, { userId }) => {
   const params = parseQueryParams(req)
@@ -12,8 +12,21 @@ export const GET = withAuth(async (req: NextRequest, { userId }) => {
 })
 
 export const POST = withAuth(async (req: NextRequest, { userId }) => {
-  const body = await parseBody<CustomerCreateInput>(req)
+  const validatedBody = await parseAndValidateBody(req, customerCreateSchema)
   const repository = new CustomersRepository(userId)
+  // exactOptionalPropertyTypes를 위한 타입 변환
+  const body: Parameters<typeof repository.createCustomer>[0] = {
+    name: validatedBody.name,
+  }
+  if (validatedBody.email !== undefined) {
+    body.email = validatedBody.email
+  }
+  if (validatedBody.address !== undefined) {
+    body.address = validatedBody.address
+  }
+  if (validatedBody.phone !== undefined) {
+    body.phone = validatedBody.phone
+  }
   const data = await repository.createCustomer(body)
   return createSuccessResponse(data, 201)
 })

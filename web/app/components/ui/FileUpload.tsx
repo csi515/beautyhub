@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useRef, useCallback } from 'react'
+import Image from 'next/image'
 import clsx from 'clsx'
 import { Upload, X, File } from 'lucide-react'
 import Button from './Button'
@@ -40,12 +41,12 @@ export default function FileUpload({
   const [files, setFiles] = useState<FileWithPreview[]>(value)
   const fileInputRef = useRef<HTMLInputElement>(null)
 
-  const validateFile = (file: File): string | null => {
+  const validateFile = useCallback((file: File): string | null => {
     if (maxSize && file.size > maxSize) {
       return `파일 크기는 ${Math.round(maxSize / 1024 / 1024)}MB를 초과할 수 없습니다.`
     }
     return null
-  }
+  }, [maxSize])
 
   const processFiles = useCallback(
     (fileList: FileList | File[]) => {
@@ -74,7 +75,7 @@ export default function FileUpload({
       setFiles(newFiles)
       onChange?.(newFiles)
     },
-    [files, multiple, maxSize, onChange, onError]
+    [files, multiple, onChange, onError, validateFile]
   )
 
   const handleDragOver = (e: React.DragEvent) => {
@@ -197,10 +198,13 @@ export default function FileUpload({
               className="flex items-center gap-3 p-3 bg-neutral-50 rounded-lg border border-neutral-200"
             >
               {file.preview ? (
-                <img
+                <Image
                   src={file.preview}
                   alt={file.name}
+                  width={48}
+                  height={48}
                   className="h-12 w-12 object-cover rounded"
+                  unoptimized
                 />
               ) : (
                 <div className="h-12 w-12 flex items-center justify-center bg-neutral-200 rounded">

@@ -4,11 +4,12 @@ export const dynamic = 'force-dynamic'
 
 import { Suspense, useEffect, useState } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
+import type { SupabaseClient } from '@supabase/supabase-js'
 
 function UpdatePasswordContent() {
   const router = useRouter()
   const searchParams = useSearchParams()
-  const [supabase, setSupabase] = useState<any>(null)
+  const [supabase, setSupabase] = useState<SupabaseClient | null>(null)
   const [newPassword, setNewPassword] = useState('')
   const [error, setError] = useState('')
   const [info, setInfo] = useState('')
@@ -36,7 +37,7 @@ function UpdatePasswordContent() {
               setSessionReady(true)
               setInfo('비밀번호를 재설정할 수 있습니다.')
             }
-          } catch (exchangeError: any) {
+          } catch (exchangeError) {
             console.error('세션 교환 예외:', exchangeError)
             setError('세션 복원 중 오류가 발생했습니다.')
           }
@@ -76,8 +77,9 @@ function UpdatePasswordContent() {
       }
       setInfo('비밀번호가 변경되었습니다. 잠시 후 로그인 페이지로 이동합니다.')
       setTimeout(() => router.push('/login'), 1200)
-    } catch (err: any) {
-      setError(err?.message || '비밀번호 변경 중 오류가 발생했습니다.')
+    } catch (err) {
+      const message = err instanceof Error ? err.message : '비밀번호 변경 중 오류가 발생했습니다.'
+      setError(message)
       setBusy(false)
     }
   }

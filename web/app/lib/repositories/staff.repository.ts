@@ -23,7 +23,7 @@ export class StaffRepository extends BaseRepository<Staff> {
       throw new Error('name required')
     }
 
-    const payload: any = {
+    const payload: Record<string, unknown> = {
       name,
       phone: input.phone || null,
       email: input.email || null,

@@ -7,14 +7,18 @@ export function middleware(req: NextRequest) {
   // 로그인/인증, 정적 자원, API는 공개로 통과
   const publicPaths = [
     '/login',
+    '/signup',
+    '/forgot-password',
     '/reset-password',
     '/update-password',
-    '/auth',
     '/api',
     '/_next',
     '/favicon.ico',
     '/robots.txt',
-    '/sitemap.xml'
+    '/sitemap.xml',
+    '/manifest.json',
+    '/service-worker.js',
+    '/icons'
   ]
   if (publicPaths.some(p => pathname === p || pathname.startsWith(p + '/'))) {
     return NextResponse.next()

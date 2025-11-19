@@ -1,10 +1,8 @@
 'use client'
 
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useState, useCallback } from 'react'
 import Modal, { ModalBody, ModalFooter, ModalHeader } from '../ui/Modal'
 import Button from '../ui/Button'
-import Input from '../ui/Input'
-import Textarea from '../ui/Textarea'
 import Tabs, { TabsContent, TabsList, TabsTrigger } from '../ui/Tabs'
 import { useAppToast } from '@/app/lib/ui/toast'
 import CustomerSummaryBar from './customer-detail/CustomerSummaryBar'
@@ -17,10 +15,8 @@ import { customerProductsApi } from '@/app/lib/api/customer-products'
 import { pointsApi } from '@/app/lib/api/points'
 
 import type { CustomerProduct } from '@/app/lib/repositories/customer-products.repository'
-import type { CustomerProductLedger } from '@/app/lib/repositories/customer-products.repository'
-import type { PointsLedger } from '@/app/lib/repositories/points.repository'
+import type { Customer } from '@/types/entities'
 
-type Customer = { id: string; name: string; phone?: string; email?: string; address?: string }
 type Holding = CustomerProduct
 
 export default function CustomerDetailModal({
@@ -53,9 +49,6 @@ export default function CustomerDetailModal({
   const [initialPoints, setInitialPoints] = useState<number>(0)
   const [activeTab, setActiveTab] = useState<'overview' | 'points' | 'holdings'>('overview')
   // history/report filters
-  const [rangeKey, setRangeKey] = useState<'today'|'7d'|'30d'|'month'|'custom'>('7d')
-  const [from, setFrom] = useState<string>('')
-  const [to, setTo] = useState<string>('')
   const [ledger, setLedger] = useState<{ created_at: string; delta: number; reason?: string }[]>([])
   const [loadingHistory, setLoadingHistory] = useState(false)
   const [histPage, setHistPage] = useState(1)
@@ -63,11 +56,7 @@ export default function CustomerDetailModal({
   const [hasNext, setHasNext] = useState(false)
   // holdings reason/history state
   const [holdingReason, setHoldingReason] = useState<Record<string, string>>({})
-  const [openLedgerFor, setOpenLedgerFor] = useState<string>('')
-  const [ledgerByHolding, setLedgerByHolding] = useState<Record<string, { created_at: string; delta: number; reason?: string }[]>>({})
-  const [loadingHoldingLedger, setLoadingHoldingLedger] = useState<Record<string, boolean>>({})
   const [holdingDelta, setHoldingDelta] = useState<Record<string, number>>({})
-  const [allLedgerOpen, setAllLedgerOpen] = useState(true)
   const [allLedgerLoading, setAllLedgerLoading] = useState(false)
   const [allLedger, setAllLedger] = useState<{ created_at: string; product_id?: string; delta: number; reason?: string }[]>([])
   const [allLedgerPage, setAllLedgerPage] = useState(1)
@@ -77,19 +66,15 @@ export default function CustomerDetailModal({
   // holdings pagination
   const [holdPage, setHoldPage] = useState(1)
   const [holdPageSize, setHoldPageSize] = useState(5)
-  const pagedHoldings = useMemo(() => {
-    const start = (holdPage - 1) * holdPageSize
-    return holdings.slice(start, start + holdPageSize)
-  }, [holdings, holdPage, holdPageSize])
 
   useEffect(() => {
     setForm(item)
-    setFeatures((item as any)?.features || '')
+    setFeatures(item?.features || '')
     setInitialPoints(0); setPointsDelta(0); setPointsReason(''); setLedger([])
     // preload memo from reservation create (localStorage)
     try {
-      if ((item as any)?.id) {
-        const saved = localStorage.getItem(`memoDraft:${(item as any).id}`) || ''
+      if (item?.id) {
+        const saved = localStorage.getItem(`memoDraft:${item.id}`) || ''
         if (saved) setNewReason(saved)
       }
     } catch {}
@@ -136,7 +121,7 @@ export default function CustomerDetailModal({
           created_at: item.created_at || '',
           product_id: item.product_id,
           delta: item.delta,
-          reason: item.reason || undefined,
+          ...(item.reason && { reason: item.reason }),
         })))
       } catch {
         setAllLedger([])
@@ -150,27 +135,8 @@ export default function CustomerDetailModal({
 
   // compute date range
   const computedRange = useMemo(() => {
-    const now = new Date()
-    if (rangeKey === 'today') {
-      const s = new Date(now.getFullYear(), now.getMonth(), now.getDate()).toISOString()
-      const e = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1).toISOString()
-      return { from: s, to: e }
-    }
-    if (rangeKey === '7d') {
-      const s = new Date(now); s.setDate(now.getDate() - 7)
-      return { from: s.toISOString(), to: now.toISOString() }
-    }
-    if (rangeKey === '30d') {
-      const s = new Date(now); s.setDate(now.getDate() - 30)
-      return { from: s.toISOString(), to: now.toISOString() }
-    }
-    if (rangeKey === 'month') {
-      const s = new Date(now.getFullYear(), now.getMonth(), 1)
-      const e = new Date(now.getFullYear(), now.getMonth() + 1, 1)
-      return { from: s.toISOString(), to: e.toISOString() }
-    }
-    return { from, to }
-  }, [rangeKey, from, to])
+    return { from: '', to: '' }
+  }, [])
 
   // load ledger/report when open or page changes (항상 로드)
   useEffect(() => {
@@ -191,7 +157,7 @@ export default function CustomerDetailModal({
         setLedger(arr.slice(0, pageSize).map(item => ({
           created_at: item.created_at || '',
           delta: item.delta,
-          reason: item.reason || undefined,
+          ...(item.reason && { reason: item.reason }),
         })))
       } catch {
         setLedger([])
@@ -202,6 +168,25 @@ export default function CustomerDetailModal({
     }
     run()
   }, [computedRange.from, computedRange.to, open, item?.id, histPage])
+
+  // 포인트 추가 핸들러
+  const handleAddPoints = useCallback(async () => {
+    if (!form?.id) return
+    const amt = Number(pointsDelta || 100)
+    if (!amt) return
+    try {
+      const result = await pointsApi.addLedgerEntry(form.id, {
+        delta: Math.abs(amt),
+        reason: pointsReason || 'manual-add'
+      })
+      setPointsBalance(result.balance)
+      setPointsDelta(0)
+      setPointsReason('')
+      toast.success('추가되었습니다.')
+    } catch {
+      toast.error('포인트 추가 실패')
+    }
+  }, [form?.id, pointsDelta, pointsReason, toast])
 
   // 키보드 단축키: Alt+1/2/3 탭 전환, Enter 시 기본 동작(추가)
   useEffect(() => {
@@ -216,13 +201,18 @@ export default function CustomerDetailModal({
     }
     window.addEventListener('keydown', onKey)
     return () => window.removeEventListener('keydown', onKey)
-  }, [open, activeTab, pointsDelta, pointsReason, form?.id, toast])
+  }, [open, activeTab, pointsDelta, handleAddPoints])
 
   const save = async () => {
     try {
       setLoading(true); setError(''); setFieldErrors({})
       if (!form) throw new Error('잘못된 입력입니다.')
-      const body: any = { name: (form.name || '').trim(), phone: form.phone || null, email: form.email || null, address: form.address || null }
+      const body: { name: string; phone?: string | null; email?: string | null; address?: string | null; features?: string } = { 
+        name: (form.name || '').trim(), 
+        phone: form.phone || null, 
+        email: form.email || null, 
+        address: form.address || null 
+      }
       // features는 값이 있을 때만 포함
       if (features && features.trim() !== '') {
         body.features = features.trim()
@@ -258,25 +248,6 @@ export default function CustomerDetailModal({
       onDeleted(); onClose(); toast.success('삭제되었습니다.')
     } catch {
       toast.error('삭제 실패')
-    }
-  }
-
-  // 포인트 추가 핸들러
-  const handleAddPoints = async () => {
-    if (!form?.id) return
-    const amt = Number(pointsDelta || 100)
-    if (!amt) return
-    try {
-      const result = await pointsApi.addLedgerEntry(form.id, {
-        delta: Math.abs(amt),
-        reason: pointsReason || 'manual-add'
-      })
-      setPointsBalance(result.balance)
-      setPointsDelta(0)
-      setPointsReason('')
-      toast.success('추가되었습니다.')
-    } catch {
-      toast.error('포인트 추가 실패')
     }
   }
 
@@ -426,8 +397,8 @@ export default function CustomerDetailModal({
           {/* 상단 요약 바 */}
           <CustomerSummaryBar
             name={form.name}
-            phone={form.phone}
-            email={form.email}
+            phone={form.phone ?? null}
+            email={form.email ?? null}
             pointsBalance={pointsBalance}
             holdingsCount={holdings.length}
           />
@@ -449,14 +420,32 @@ export default function CustomerDetailModal({
             {/* 기본 정보 탭 */}
             <TabsContent value="overview">
               <CustomerOverviewTab
-                form={form}
+                form={form ? {
+                  id: form.id,
+                  name: form.name,
+                  phone: form.phone ?? null,
+                  email: form.email ?? null,
+                  address: form.address ?? null,
+                } : null}
                 features={features}
                 initialPoints={initialPoints}
                 fieldErrors={fieldErrors}
                 onChangeForm={(updater) => {
                   setForm(f => {
-                    const result = updater(f)
-                    return result as Customer | null
+                    const result = updater(f ? {
+                      id: f.id,
+                      name: f.name,
+                      phone: f.phone ?? null,
+                      email: f.email ?? null,
+                      address: f.address ?? null,
+                    } : null)
+                    if (!result) return null
+                    return {
+                      ...f!,
+                      phone: result.phone ?? null,
+                      email: result.email ?? null,
+                      address: result.address ?? null,
+                    } as Customer
                   })
                 }}
                 onChangeFeatures={setFeatures}
@@ -491,8 +480,17 @@ export default function CustomerDetailModal({
               {form.id && (
                 <CustomerHoldingsTab
                   customerId={form.id}
-                  holdings={holdings as any}
-                  products={products as any}
+                  holdings={holdings.filter(h => h.products).map(h => ({
+                    id: h.id,
+                    product_id: h.product_id,
+                    quantity: h.quantity || 0,
+                    ...(h.notes && { notes: h.notes }),
+                    products: h.products!,
+                  }))}
+                  products={products.map(p => ({
+                    id: String(p.id),
+                    name: p.name,
+                  }))}
                   holdingDelta={holdingDelta}
                   holdingReason={holdingReason}
                   newProductId={newProductId}
@@ -511,8 +509,14 @@ export default function CustomerDetailModal({
                   onChangeNewReason={setNewReason}
                   onChangeHoldingDelta={(holdingId, value) => setHoldingDelta(s => ({ ...s, [holdingId]: value }))}
                   onChangeHoldingReason={(holdingId, value) => setHoldingReason(s => ({ ...s, [holdingId]: value }))}
-                  onIncrease={handleIncreaseHolding as any}
-                  onDecrease={handleDecreaseHolding as any}
+                  onIncrease={async (holding) => {
+                    const h = holdings.find(x => x.id === holding.id)
+                    if (h) await handleIncreaseHolding(h)
+                  }}
+                  onDecrease={async (holding) => {
+                    const h = holdings.find(x => x.id === holding.id)
+                    if (h) await handleDecreaseHolding(h)
+                  }}
                   onDelete={handleDeleteHolding}
                   onChangeHoldPage={setHoldPage}
                   onChangeHoldPageSize={setHoldPageSize}

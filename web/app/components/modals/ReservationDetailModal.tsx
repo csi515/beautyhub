@@ -10,6 +10,7 @@ import { useAppToast } from '@/app/lib/ui/toast'
 import StaffAutoComplete from '../StaffAutoComplete'
 import { useCustomerAndProductLists } from '../hooks/useCustomerAndProductLists'
 import { appointmentsApi } from '@/app/lib/api/appointments'
+import type { AppointmentUpdateInput } from '@/types/entities'
 
 type Item = { id: string; date: string; start: string; end?: string; status: string; notes?: string; customer_id?: string; staff_id?: string; service_id?: string }
 
@@ -26,7 +27,7 @@ export default function ReservationDetailModal({ open, onClose, item, onSaved, o
     try {
       setLoading(true); setError('')
       if (!form.date || !form.start) { setError('날짜와 시작 시간은 필수입니다.'); setLoading(false); return }
-      const payload: any = { status: form.status }
+      const payload: AppointmentUpdateInput = { status: form.status }
       // notes는 값이 있을 때만 포함
       if (form.notes && form.notes.trim() !== '') {
         payload.notes = form.notes.trim()
@@ -38,7 +39,7 @@ export default function ReservationDetailModal({ open, onClose, item, onSaved, o
         // 로컬 날짜/시간을 UTC ISO 문자열로 변환하여 TZ 오차 방지
         const [y, m, d] = (form.date || '').split('-').map(Number)
         const [hh, mm] = (form.start || '').split(':').map(Number)
-        payload.appointment_date = new Date(y, (m || 1) - 1, d, hh, mm, 0).toISOString()
+        payload.appointment_date = new Date(y || 2024, (m || 1) - 1, d || 1, hh || 0, mm || 0, 0).toISOString()
       }
       await appointmentsApi.update(form.id, payload)
       onSaved(); onClose(); toast.success('예약이 저장되었습니다.')
@@ -72,9 +73,13 @@ export default function ReservationDetailModal({ open, onClose, item, onSaved, o
           </div>
           <div className="space-y-3">
             <div className="space-y-3">
-              <div className="grid grid-cols-2 gap-3">
-                <Input label="날짜" type="date" value={form.date} onChange={e => setForm(f => f && ({ ...f, date: e.target.value }))} />
-                <Input label="시작" type="time" value={form.start} onChange={e => setForm(f => f && ({ ...f, start: e.target.value }))} />
+              <div className="grid grid-cols-2 gap-2 sm:gap-3">
+                <div className="min-w-0">
+                  <Input label="날짜" type="date" value={form.date} onChange={e => setForm(f => f && ({ ...f, date: e.target.value }))} className="text-xs sm:text-sm" />
+                </div>
+                <div className="min-w-0">
+                  <Input label="시작" type="time" value={form.start} onChange={e => setForm(f => f && ({ ...f, start: e.target.value }))} className="text-xs sm:text-sm" />
+                </div>
                 <Select label="상태" value={form.status} onChange={e => setForm(f => f && ({ ...f, status: e.target.value }))}>
                   <option value="scheduled">예약확정</option>
                   <option value="pending">대기</option>
@@ -82,27 +87,51 @@ export default function ReservationDetailModal({ open, onClose, item, onSaved, o
                   <option value="complete">완료</option>
                 </Select>
                 <label className="block">
-                  <div className="mb-1 text-sm text-neutral-700">고객(선택)</div>
-                  <select className="w-full h-10 rounded-lg border border-neutral-300 px-3 outline-none focus:border-brand-500 focus:ring-2 focus:ring-brand-300" value={form.customer_id || ''} onChange={e => setForm(f => f && ({ ...f, customer_id: e.target.value || undefined }))}>
+                  <div className="mb-1 text-sm font-medium text-neutral-700">고객(선택)</div>
+                  <select className="w-full h-10 rounded-lg border border-neutral-300 px-3 outline-none focus:border-brand-500 focus:ring-2 focus:ring-brand-300" value={form.customer_id || ''} onChange={e => setForm(f => {
+                    if (!f) return f
+                    const value = e.target.value
+                    if (value) {
+                      return { ...f, customer_id: value }
+                    }
+                    const next = { ...f }
+                    delete next.customer_id
+                    return next
+                  })}>
                     <option value="">선택 안 함</option>
                     {customers.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
                   </select>
                 </label>
                 <label className="col-span-2 block">
-                  <div className="mb-1 text-sm text-neutral-700">담당 직원(선택)</div>
-                  <StaffAutoComplete value={form.staff_id || ''} onChange={(v) => setForm(f => f && ({ ...f, staff_id: v || undefined }))} />
+                  <div className="mb-1 text-sm font-medium text-neutral-700">담당 직원(선택)</div>
+                  <StaffAutoComplete value={form.staff_id || ''} onChange={(v) => setForm(f => {
+                    if (!f) return f
+                    if (v) {
+                      return { ...f, staff_id: v }
+                    }
+                    const next = { ...f }
+                    delete next.staff_id
+                    return next
+                  })} />
                 </label>
                 <label className="block">
-                  <div className="mb-1 text-sm font-medium text-gray-700">
+                  <div className="mb-1 text-sm font-medium text-neutral-700">
                     서비스/상품(선택)
                   </div>
                   <select
                     className="h-10 w-full rounded-none border-2 border-neutral-500 bg-white px-3 text-sm text-neutral-900 outline-none hover:border-neutral-600 focus:border-[#1D4ED8] focus:ring-[4px] focus:ring-[#1D4ED8]/20"
                     value={form.service_id || ''}
                     onChange={(e) =>
-                      setForm(
-                        (f) => f && ({ ...f, service_id: e.target.value || undefined }),
-                      )
+                      setForm((f) => {
+                        if (!f) return f
+                        const value = e.target.value
+                        if (value) {
+                          return { ...f, service_id: value }
+                        }
+                        const next = { ...f }
+                        delete next.service_id
+                        return next
+                      })
                     }
                   >
                     <option value="">선택 안 함</option>

@@ -103,6 +103,7 @@ export default function NumberInput({
       error={error}
       type="text"
       inputMode="numeric"
+      step={step}
       value={displayValue}
       onChange={handleChange}
       onBlur={handleBlur}

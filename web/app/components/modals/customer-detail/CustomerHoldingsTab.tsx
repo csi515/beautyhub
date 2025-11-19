@@ -149,7 +149,6 @@ export default function CustomerHoldingsTab({
       {/* 보유 상품 리스트 */}
       <div className="space-y-3 pt-2 border-t border-neutral-200">
         {pagedHoldings.map(h => {
-          const newQuantity = Math.max(0, Number(h.quantity || 0) + Number(holdingDelta[h.id] ?? 1))
           return (
             <div key={h.id} className="bg-white rounded-lg border border-neutral-200 p-4 hover:bg-neutral-50 hover:border-neutral-300 transition-all duration-300 space-y-3">
               {/* 상품 정보 */}
@@ -187,14 +186,14 @@ export default function CustomerHoldingsTab({
                     onChange={e => onChangeHoldingReason(h.id, e.target.value)}
                   />
                 </div>
-                <div className="flex flex-col md:flex-row items-stretch md:items-center gap-2 md:gap-1.5 md:shrink-0">
-                  <Button size="sm" variant="outline" onClick={() => onDecrease(h)} className="w-full md:w-auto">
+                <div className="flex flex-row items-center gap-1.5 md:gap-1.5 shrink-0">
+                  <Button size="sm" variant="outline" onClick={() => onDecrease(h)} className="flex-1 md:flex-none md:w-auto min-w-0">
                     차감
                   </Button>
-                  <Button size="sm" variant="primary" onClick={() => onIncrease(h)} className="w-full md:w-auto">
+                  <Button size="sm" variant="primary" onClick={() => onIncrease(h)} className="flex-1 md:flex-none md:w-auto min-w-0">
                     추가
                   </Button>
-                  <Button size="sm" variant="danger" onClick={() => onDelete(h.id)} className="w-full md:w-auto">
+                  <Button size="sm" variant="danger" onClick={() => onDelete(h.id)} className="flex-1 md:flex-none md:w-auto min-w-0">
                     삭제
                   </Button>
                 </div>

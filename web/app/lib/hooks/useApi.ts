@@ -12,7 +12,7 @@ export interface UseApiOptions<T> {
   immediate?: boolean
 }
 
-export interface UseApiReturn<T, P extends any[] = []> {
+export interface UseApiReturn<T, P extends unknown[] = []> {
   data: T | null
   loading: boolean
   error: Error | null
@@ -33,7 +33,7 @@ export interface UseApiReturn<T, P extends any[] = []> {
  *   execute('customer-id')
  * }, [])
  */
-export function useApi<T, P extends any[] = []>(
+export function useApi<T, P extends unknown[] = []>(
   apiFunction: (...args: P) => Promise<T>,
   options: UseApiOptions<T> = {}
 ): UseApiReturn<T, P> {

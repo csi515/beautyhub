@@ -4,14 +4,14 @@ export const dynamic = 'force-dynamic'
 
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
-import {
-  Box, Button, FormControl, FormErrorMessage, FormLabel,
-  Heading, Input, VStack, Alert, AlertIcon, Text, HStack
-} from '@chakra-ui/react'
+import type { SupabaseClient } from '@supabase/supabase-js'
+import Button from '@/app/components/ui/Button'
+import Input from '@/app/components/ui/Input'
+import Alert from '@/app/components/ui/Alert'
 
 export default function ForgotPasswordPage() {
   const router = useRouter()
-  const [supabase, setSupabase] = useState<any>(null)
+  const [supabase, setSupabase] = useState<SupabaseClient | null>(null)
   const [email, setEmail] = useState('')
   const [error, setError] = useState('')
   const [info, setInfo] = useState('')
@@ -44,47 +44,60 @@ export default function ForgotPasswordPage() {
       })
       if (error) { setError(error.message); setBusy(false); return }
       setInfo('비밀번호 재설정 이메일을 확인해 주세요.')
-    } catch (e: any) {
-      setError(e?.message || '요청 처리 중 오류가 발생했습니다.')
+    } catch (e: unknown) {
+      const errorMessage = e instanceof Error ? e.message : '요청 처리 중 오류가 발생했습니다.'
+      setError(errorMessage)
     } finally {
       setBusy(false)
     }
   }
 
+  const isEmailInvalid = !!email && !/.+@.+\..+/.test(email)
+  const canSubmit = !busy && /.+@.+\..+/.test(email.trim()) && !!supabase
+
   return (
-    <main className="min-h-screen flex items-center justify-center bg-[var(--neutral-50)] px-4">
-      <Box w="full" maxW="md" bg="whiteAlpha.900" borderWidth="1px" borderColor="blackAlpha.100" rounded="2xl" shadow="lg" p={7}>
-        <VStack spacing={5} align="stretch">
-          <Heading size="md">비밀번호 재설정</Heading>
-          <Text fontSize="sm" color="gray.600">계정 이메일을 입력하면 재설정 링크를 보내드립니다.</Text>
+    <main className="min-h-screen flex items-center justify-center bg-neutral-50 px-4">
+      <div className="w-full max-w-md bg-white border border-neutral-200 rounded-2xl shadow-lg p-7">
+        <div className="space-y-5">
+          <h1 className="text-2xl font-semibold">비밀번호 재설정</h1>
+          <p className="text-sm text-neutral-600">계정 이메일을 입력하면 재설정 링크를 보내드립니다.</p>
 
           {error && (
-            <Alert status="error" rounded="md">
-              <AlertIcon />
-              {error}
-            </Alert>
+            <Alert variant="error" title={error} />
           )}
           {info && (
-            <Alert status="success" rounded="md">
-              <AlertIcon />
-              {info}
-            </Alert>
+            <Alert variant="success" title={info} />
           )}
 
-          <FormControl isInvalid={!!email && !/.+@.+\..+/.test(email)}>
-            <FormLabel>이메일</FormLabel>
-            <Input type="email" value={email} onChange={e => setEmail(e.target.value)} placeholder="you@example.com" />
-            <FormErrorMessage>유효한 이메일을 입력하세요.</FormErrorMessage>
-          </FormControl>
+          <Input
+            label="이메일"
+            type="email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            placeholder="you@example.com"
+            {...(isEmailInvalid ? { error: '유효한 이메일을 입력하세요.' } : {})}
+          />
 
-          <VStack spacing={3} align="stretch">
-            <Button colorScheme="brand" onClick={submit} isLoading={busy} isDisabled={busy || !/.+@.+\..+/.test(email.trim()) || !supabase}>재설정 메일 보내기</Button>
-            <Button variant="ghost" onClick={() => router.push('/login')}>로그인으로 돌아가기</Button>
-          </VStack>
-        </VStack>
-      </Box>
+          <div className="space-y-3">
+            <Button
+              variant="primary"
+              onClick={submit}
+              loading={busy}
+              disabled={!canSubmit}
+              className="w-full"
+            >
+              재설정 메일 보내기
+            </Button>
+            <Button
+              variant="ghost"
+              onClick={() => router.push('/login')}
+              className="w-full"
+            >
+              로그인으로 돌아가기
+            </Button>
+          </div>
+        </div>
+      </div>
     </main>
   )
 }
-
-

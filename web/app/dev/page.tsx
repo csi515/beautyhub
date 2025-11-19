@@ -4,10 +4,29 @@ import { useEffect, useState } from 'react'
 import Card from '../components/ui/Card'
 import Button from '../components/ui/Button'
 
+type HealthStatus = {
+  customers?: number
+  products?: number
+  expenses?: number
+}
+
+type EnvInfo = {
+  NEXT_PUBLIC_SUPABASE_URL?: string
+}
+
+type SessionData = {
+  user?: {
+    id?: string
+    email?: string
+  }
+  access_token?: string
+  expires_at?: number
+}
+
 export default function DevPage() {
-  const [info, setInfo] = useState<any>({})
-  const [session, setSession] = useState<any>(null)
-  const [envInfo, setEnvInfo] = useState<any>({})
+  const [info, setInfo] = useState<HealthStatus>({})
+  const [session, setSession] = useState<SessionData | null>(null)
+  const [envInfo, setEnvInfo] = useState<EnvInfo>({})
 
   useEffect(() => {
     const load = async () => {

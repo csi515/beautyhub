@@ -5,32 +5,35 @@ import { CustomerProductsRepository } from '@/app/lib/repositories/customer-prod
 
 export const GET = withAuth(async (req: NextRequest, { userId, params }) => {
   const queryParams = parseQueryParams(req)
-  if (!params?.id || typeof params.id !== "string") {
+  const id = params?.['id']
+  if (!id || typeof id !== "string") {
     return createSuccessResponse({ ok: false, error: "Missing or invalid product ID" })
   }
   const repository = new CustomerProductsRepository(userId)
-  const data = await repository.getLedger(params.id, queryParams)
+  const data = await repository.getLedger(id, queryParams)
   return createSuccessResponse(data)
 })
 
 export const POST = withAuth(async (req: NextRequest, { userId, params }) => {
-  if (!params?.id || typeof params.id !== "string") {
+  const id = params?.['id']
+  if (!id || typeof id !== "string") {
     return createSuccessResponse({ ok: false, error: "Missing or invalid product ID" })
   }
   const body = await parseBody<{ delta: number; reason?: string }>(req)
   const repository = new CustomerProductsRepository(userId)
-  await repository.addLedgerEntry(params.id, body.delta, body.reason || '')
+  await repository.addLedgerEntry(id, body.delta, body.reason || '')
   return createSuccessResponse({ ok: true })
 })
 
 export const PUT = withAuth(async (req: NextRequest, { userId, params }) => {
-  if (!params?.id || typeof params.id !== "string") {
+  const id = params?.['id']
+  if (!id || typeof id !== "string") {
     return createSuccessResponse({ ok: false, error: "Missing or invalid product ID" })
   }
   const body = await parseBody<{ replace_from?: string; replace_to?: string; delta_override?: number }>(req)
   const repository = new CustomerProductsRepository(userId)
   await repository.updateLedgerEntry(
-    params.id,
+    id,
     body.replace_from || '',
     body.replace_to || '',
     body.delta_override

@@ -65,7 +65,7 @@ export class ExpensesRepository extends BaseRepository<Expense> {
       throw new Error('category required')
     }
 
-    const payload: any = {
+    const payload: Record<string, unknown> = {
       expense_date,
       amount,
       category,

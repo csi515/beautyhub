@@ -72,11 +72,11 @@ export default function CustomerPointsTab({
             value={pointsReason}
             onChange={e => onChangeReason(e.target.value)}
           />
-          <div className="flex flex-col md:flex-row gap-2 md:gap-3">
-            <Button size="md" variant="outline" onClick={onDeductPoints} className="w-full md:w-auto">
+          <div className="flex flex-row gap-2 md:gap-3">
+            <Button size="md" variant="outline" onClick={onDeductPoints} className="flex-1 md:flex-none md:w-auto">
               차감
             </Button>
-            <Button size="md" variant="primary" onClick={onAddPoints} className="w-full md:w-auto">
+            <Button size="md" variant="primary" onClick={onAddPoints} className="flex-1 md:flex-none md:w-auto">
               추가
             </Button>
           </div>
@@ -146,13 +146,13 @@ export default function CustomerPointsTab({
           )}
             <div className="flex flex-col md:flex-row items-stretch md:items-center justify-between gap-3 pt-4">
               <div className="text-sm text-neutral-600 font-medium">페이지 {histPage}</div>
-              <div className="flex flex-col md:flex-row items-stretch md:items-center gap-2 md:gap-3">
+              <div className="flex flex-row items-center gap-2 md:gap-3">
                 <Button
                   size="sm"
                   variant="secondary"
                   disabled={histPage === 1}
                   onClick={() => onChangePage(Math.max(1, histPage - 1))}
-                  className="w-full md:w-auto"
+                  className="flex-1 md:flex-none md:w-auto"
                 >
                   이전
                 </Button>
@@ -161,7 +161,7 @@ export default function CustomerPointsTab({
                   variant="secondary"
                   disabled={!hasNext}
                   onClick={() => onChangePage(histPage + 1)}
-                  className="w-full md:w-auto"
+                  className="flex-1 md:flex-none md:w-auto"
                 >
                   다음
                 </Button>

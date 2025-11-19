@@ -1,7 +1,6 @@
 "use client"
 
-import { useEffect, useState, useMemo, lazy, Suspense } from 'react'
-import FilterBar from '../components/filters/FilterBar'
+import { useEffect, useState, useMemo, lazy, Suspense, useCallback } from 'react'
 import { Pencil, Plus } from 'lucide-react'
 import EmptyState from '../components/EmptyState'
 import { Skeleton } from '../components/ui/Skeleton'
@@ -12,6 +11,7 @@ import { useSearch } from '../lib/hooks/useSearch'
 import { useSort } from '../lib/hooks/useSort'
 import { usePagination } from '../lib/hooks/usePagination'
 import { useForm } from '../lib/hooks/useForm'
+import Pagination from '../components/common/Pagination'
 
 const ProductDetailModal = lazy(() => import('../components/modals/ProductDetailModal'))
 
@@ -28,17 +28,16 @@ export default function ProductsPage() {
   const [products, setProducts] = useState<Product[]>([])
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
-  const [density, setDensity] = useState<'compact' | 'comfortable'>('comfortable')
-  const { sortKey, sortDirection, toggleSort, sortFn } = useSort<Product & Record<string, unknown>>({
+  const { sortFn } = useSort<Product & Record<string, unknown>>({
     initialKey: 'name',
     initialDirection: 'asc',
   })
   const pagination = usePagination({
     initialPage: 1,
-    initialPageSize: 10,
-    totalItems: products.length,
+    initialPageSize: 12,
+    totalItems: 0, // filteredProducts.length로 업데이트됨
   })
-  const { page, pageSize, setPage, setPageSize } = pagination
+  const { page, pageSize, setPage, setPageSize, setTotalItems } = pagination
   const [showModal, setShowModal] = useState(false)
   const [editing, setEditing] = useState<Product | null>(null)
   const [detailOpen, setDetailOpen] = useState(false)
@@ -76,7 +75,7 @@ export default function ProductsPage() {
     },
   })
 
-  const load = async () => {
+  const load = useCallback(async () => {
     try {
       setLoading(true); setError('')
       const { productsApi } = await import('@/app/lib/api/products')
@@ -88,9 +87,9 @@ export default function ProductsPage() {
     } finally {
       setLoading(false)
     }
-  }
+  }, [debouncedQuery])
 
-  useEffect(() => { load() }, [debouncedQuery])
+  useEffect(() => { load() }, [load])
 
   // 필터링된 데이터
   const filteredProducts = useMemo(() => {
@@ -119,6 +118,18 @@ export default function ProductsPage() {
 
   // totalPages 계산 (필터링된 데이터 기준)
   const totalPages = Math.max(1, Math.ceil(filteredProducts.length / pageSize))
+  
+  // 필터링된 데이터의 길이로 totalItems 업데이트
+  useEffect(() => {
+    setTotalItems(filteredProducts.length)
+  }, [filteredProducts.length, setTotalItems])
+  
+  // 페이지 변경 시 필터/검색 변경으로 인해 현재 페이지가 유효 범위를 벗어나면 첫 페이지로 이동
+  useEffect(() => {
+    if (page > totalPages && totalPages > 0) {
+      setPage(1)
+    }
+  }, [totalPages, page, setPage])
 
   const openCreate = () => {
     setEditing(null)
@@ -126,54 +137,29 @@ export default function ProductsPage() {
     setShowModal(true)
   }
 
-  const openEdit = (p: Product) => {
-    setEditing(p)
-    form.setValues({
-      name: p.name || '',
-      price: p.price || 0,
-      description: p.description || '',
-      active: p.active ?? true,
-    })
-    setShowModal(true)
-  }
-
-  const remove = async (p: Product) => {
-    if (!p.id) return
-    if (!confirm('삭제하시겠습니까?')) return
-    try {
-      setLoading(true); setError('')
-      const { productsApi } = await import('@/app/lib/api/products')
-      await productsApi.delete(String(p.id))
-      await load()
-      toast.success('제품을 삭제했습니다.')
-    } catch (e: any) { setError(e?.message || '에러가 발생했습니다.'); toast.error('삭제 실패', e?.message) } finally { setLoading(false) }
-  }
-
   return (
-    <main className="space-y-2 md:space-y-3">
-      {error && <p className="text-sm text-red-600">{error}</p>}
+    <main className="space-y-3 sm:space-y-4">
+      {error && <p className="text-sm text-error-600 bg-error-50 border border-error-200 rounded-lg p-3">{error}</p>}
 
-      <FilterBar>
-        <div className="flex flex-wrap items-end gap-2 md:gap-3 w-full">
-          <div className="flex-1 min-w-0 sm:min-w-[200px]">
-            <div className="mb-1.5 text-xs sm:text-[11px] font-medium text-neutral-600">검색</div>
-            <div className="relative w-full">
-              <input
-                className="h-10 sm:h-10 w-full rounded-lg border border-neutral-300 bg-white px-3 sm:px-4 text-sm text-neutral-800 outline-none shadow-sm placeholder:text-neutral-400 focus:border-secondary-500 focus:ring-2 focus:ring-secondary-200 transition-all duration-fast touch-manipulation"
-                placeholder="상품명 또는 설명으로 검색"
-                value={query}
-                onChange={e => setQuery(e.target.value)}
-              />
-            </div>
+      <div className="bg-white rounded-xl border border-neutral-200 shadow-sm p-3 sm:p-4">
+        <div className="flex flex-col sm:flex-row items-stretch sm:items-end gap-3 w-full">
+          <div className="flex-1 min-w-0">
+            <label className="block text-xs sm:text-sm font-semibold text-neutral-700 mb-1.5">검색</label>
+            <input
+              className="h-11 w-full rounded-lg border border-neutral-300 bg-white px-4 text-sm text-neutral-800 outline-none shadow-sm placeholder:text-neutral-400 focus:border-secondary-500 focus:ring-2 focus:ring-secondary-200 transition-all duration-200 touch-manipulation"
+              placeholder="상품명 또는 설명으로 검색"
+              value={query}
+              onChange={e => setQuery(e.target.value)}
+            />
           </div>
           <div className="w-full sm:w-auto sm:min-w-[160px]">
-            <div className="mb-1.5 text-xs sm:text-[11px] font-medium text-neutral-600">상태</div>
+            <label className="block text-xs sm:text-sm font-semibold text-neutral-700 mb-1.5">상태</label>
             <select
               value={statusFilter}
-              onChange={e => setStatusFilter(e.target.value as any)}
-              className="h-10 sm:h-10 w-full rounded-lg border border-neutral-300 bg-white px-3 sm:px-4 text-sm text-neutral-800 outline-none shadow-sm hover:border-neutral-400 focus:border-secondary-500 focus:ring-2 focus:ring-secondary-200 transition-all duration-fast touch-manipulation"
+              onChange={e => setStatusFilter(e.target.value as 'all' | 'active' | 'inactive')}
+              className="h-11 w-full rounded-lg border border-neutral-300 bg-white px-4 text-sm text-neutral-800 outline-none shadow-sm hover:border-neutral-400 focus:border-secondary-500 focus:ring-2 focus:ring-secondary-200 transition-all duration-200 touch-manipulation"
             >
-              <option value="all">전체 상태</option>
+              <option value="all">전체</option>
               <option value="active">활성</option>
               <option value="inactive">비활성</option>
             </select>
@@ -184,19 +170,20 @@ export default function ProductsPage() {
               size="md"
               leftIcon={<Plus className="h-4 w-4" />}
               onClick={openCreate}
+              className="w-full sm:w-auto"
             >
               제품 추가
             </Button>
           </div>
         </div>
-      </FilterBar>
+      </div>
 
-      <section className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-5">
-        {loading && Array.from({ length: 8 }).map((_, i) => (
-          <div key={`s-${i}`} className="bg-gradient-to-br from-white to-purple-50/30 rounded-xl border-2 border-purple-100 shadow-sm p-4 sm:p-5">
-            <Skeleton className="h-5 w-1/2" />
-            <div className="mt-2 h-4 w-1/3 bg-purple-100 rounded" />
-            <div className="mt-3 h-8 w-24 bg-purple-100 rounded" />
+      <section className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-2 sm:gap-3">
+        {loading && Array.from({ length: 12 }).map((_, i) => (
+          <div key={`s-${i}`} className="bg-gradient-to-br from-white to-purple-50/30 rounded-lg border border-purple-100 shadow-sm p-2.5 sm:p-3">
+            <Skeleton className="h-4 w-3/4 mb-1.5" />
+            <div className="mt-1.5 h-3 w-1/2 bg-purple-100 rounded" />
+            <div className="mt-2 h-7 w-20 bg-purple-100 rounded" />
           </div>
         ))}
         {!loading && paginatedProducts.map((p, index) => {
@@ -210,15 +197,15 @@ export default function ProductsPage() {
           ]
           const scheme = colorSchemes[index % colorSchemes.length]
           return (
-          <div key={String(p.id)} className={`bg-gradient-to-br ${scheme.bg} rounded-xl border-2 ${scheme.border} shadow-md p-4 sm:p-5 flex flex-col gap-2 sm:gap-3 hover:shadow-xl transition-all duration-300`}>
-            <div className="flex items-start justify-between gap-2">
-              <div>
-                <div className={`text-sm font-medium ${scheme.label}`}>제품명</div>
-                <button className={`text-base font-semibold ${scheme.text} underline-offset-2 hover:underline`} onClick={() => { setSelected(p as any); setDetailOpen(true) }}>
+          <div key={String(p.id)} className={`bg-gradient-to-br ${scheme.bg} rounded-lg border ${scheme.border} shadow-sm p-2.5 sm:p-3 flex flex-col gap-1.5 hover:shadow-md transition-all duration-200`}>
+            <div className="flex items-start justify-between gap-1.5">
+              <div className="min-w-0 flex-1">
+                <div className={`text-xs font-medium ${scheme.label} mb-0.5`}>제품명</div>
+                <button className={`text-sm font-semibold ${scheme.text} underline-offset-2 hover:underline truncate block w-full text-left`} onClick={() => { setSelected(p); setDetailOpen(true) }}>
                   {p.name}
                 </button>
               </div>
-              <span className={`text-xs px-2 py-0.5 rounded-full border font-medium ${
+              <span className={`text-[10px] px-1.5 py-0.5 rounded-full border font-medium whitespace-nowrap flex-shrink-0 ${
                 p.active === false 
                   ? 'bg-gray-100 text-gray-600 border-gray-200' 
                   : 'bg-emerald-100 text-emerald-700 border-emerald-300'
@@ -226,33 +213,52 @@ export default function ProductsPage() {
                 {p.active === false ? '비활성' : '활성'}
               </span>
             </div>
-            <div className={`text-sm font-medium ${scheme.label}`}>가격</div>
-            <div className={`text-lg font-bold ${scheme.text}`}>₩{Number(p.price || 0).toLocaleString()}</div>
-            <div className="mt-2 sm:mt-3">
+            <div className={`text-xs font-medium ${scheme.label}`}>가격</div>
+            <div className={`text-base font-bold ${scheme.text}`}>₩{Number(p.price || 0).toLocaleString()}</div>
+            <div className="mt-1">
               <Button
                 size="sm"
                 variant="secondary"
-                onClick={() => { setSelected(p as any); setDetailOpen(true) }}
+                onClick={() => { setSelected(p); setDetailOpen(true) }}
                 aria-label="상세보기"
                 title="상세보기"
-                className="w-full sm:w-auto h-10 sm:h-9 px-4 sm:px-3 text-sm touch-manipulation"
-                leftIcon={<Pencil className="h-4 w-4" />}
+                className="w-full h-8 px-2 text-xs touch-manipulation"
+                leftIcon={<Pencil className="h-3 w-3" />}
               >
                 수정
               </Button>
             </div>
           </div>
         )})}
-        {!loading && products.length === 0 && (
+        {!loading && filteredProducts.length === 0 && (
           <div className="col-span-full">
             <EmptyState
-              title="제품이 없습니다."
+              title={products.length === 0 ? "제품이 없습니다." : "검색 결과가 없습니다."}
               actionLabel="제품 추가"
               actionOnClick={openCreate}
             />
           </div>
         )}
       </section>
+
+      {/* 페이지네이션 */}
+      {!loading && filteredProducts.length > 0 && (
+        <div className="bg-white rounded-xl border border-neutral-200 shadow-sm overflow-hidden">
+          <Pagination
+            page={page}
+            pageSize={pageSize}
+            totalItems={filteredProducts.length}
+            totalPages={totalPages}
+            onPageChange={setPage}
+            onPageSizeChange={(size) => {
+              setPageSize(size)
+              setPage(1)
+            }}
+            pageSizeOptions={[12, 24, 48, 96]}
+            showInfo={true}
+          />
+        </div>
+      )}
 
       {showModal && (
         <Modal
@@ -363,13 +369,13 @@ export default function ProductsPage() {
         <Suspense fallback={<div>로딩 중...</div>}>
           <ProductDetailModal
             open={detailOpen}
-            item={selected as any}
+            item={selected}
             onClose={() => setDetailOpen(false)}
             onSaved={load}
             onDeleted={load}
           />
         </Suspense>
       )}
-    </main>
+      </main>
   )
 }

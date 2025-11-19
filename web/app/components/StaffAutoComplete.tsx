@@ -9,20 +9,17 @@ export default function StaffAutoComplete({ value, onChange }: { value?: string;
   const [q, setQ] = useState('')
   const [open, setOpen] = useState(false)
   const [list, setList] = useState<Staff[]>([])
-  const [selected, setSelected] = useState<Staff | null>(null)
   const wrapperRef = useClickOutside<HTMLDivElement>(() => setOpen(false), open)
 
   useEffect(() => {
     // Load selected staff display
     const loadSelected = async () => {
-      if (!value) { setSelected(null); return }
+      if (!value) { setQ(''); return }
       try {
         const { staffApi } = await import('@/app/lib/api/staff')
         const data = await staffApi.get(value)
-        setSelected(data || null)
         setQ(data?.name || '')
       } catch {
-        setSelected(null)
         setQ('')
       }
     }
@@ -64,10 +61,12 @@ export default function StaffAutoComplete({ value, onChange }: { value?: string;
         onKeyDown={e => {
           if (e.key === 'Enter' && filtered.length > 0) {
             const s = filtered[0]
-            onChange(s.id)
-            setQ(s.name || '')
-            setOpen(false)
-            e.preventDefault()
+            if (s) {
+              onChange(s.id)
+              setQ(s.name || '')
+              setOpen(false)
+              e.preventDefault()
+            }
           }
           if (e.key === 'Escape') setOpen(false)
         }}
@@ -94,7 +93,7 @@ export default function StaffAutoComplete({ value, onChange }: { value?: string;
         <button
           type="button"
           className="absolute right-2 top-1/2 -translate-y-1/2 text-neutral-400 hover:text-neutral-600"
-          onClick={() => { onChange(undefined); setQ(''); setSelected(null) }}
+          onClick={() => { onChange(undefined); setQ('') }}
         >지움</button>
       )}
     </div>

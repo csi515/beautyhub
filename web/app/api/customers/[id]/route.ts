@@ -1,33 +1,54 @@
 import { NextRequest } from 'next/server'
 import { withAuth } from '@/app/lib/api/middleware'
-import { parseBody, createSuccessResponse } from '@/app/lib/api/handlers'
+import { parseAndValidateBody, createSuccessResponse } from '@/app/lib/api/handlers'
 import { CustomersRepository } from '@/app/lib/repositories/customers.repository'
-import type { CustomerUpdateInput } from '@/types/entities'
+import { customerUpdateSchema } from '@/app/lib/api/schemas'
+import { NotFoundError } from '@/app/lib/api/errors'
 
 export const GET = withAuth(async (_req: NextRequest, { userId, params }) => {
-  if (!params?.id || typeof params.id !== "string") {
-    return createSuccessResponse({ ok: false, error: "Missing or invalid customer ID" })
+  const id = params?.['id']
+  if (!id || typeof id !== "string") {
+    throw new NotFoundError("Missing or invalid customer ID")
   }
   const repository = new CustomersRepository(userId)
-  const data = await repository.findById(params.id)
+  const data = await repository.findById(id)
+  if (!data) {
+    throw new NotFoundError("Customer not found")
+  }
   return createSuccessResponse(data)
 })
 
 export const PUT = withAuth(async (req: NextRequest, { userId, params }) => {
-  if (!params?.id || typeof params.id !== "string") {
-    return createSuccessResponse({ ok: false, error: "Missing or invalid customer ID" })
+  const id = params?.['id']
+  if (!id || typeof id !== "string") {
+    throw new NotFoundError("Missing or invalid customer ID")
   }
-  const body = await parseBody<CustomerUpdateInput>(req)
+  const validatedBody = await parseAndValidateBody(req, customerUpdateSchema)
   const repository = new CustomersRepository(userId)
-  const data = await repository.updateCustomer(params.id, body)
+  // exactOptionalPropertyTypes를 위한 타입 변환
+  const body: Parameters<typeof repository.updateCustomer>[1] = {}
+  if (validatedBody.name !== undefined) {
+    body.name = validatedBody.name
+  }
+  if (validatedBody.email !== undefined) {
+    body.email = validatedBody.email
+  }
+  if (validatedBody.address !== undefined) {
+    body.address = validatedBody.address
+  }
+  if (validatedBody.phone !== undefined) {
+    body.phone = validatedBody.phone
+  }
+  const data = await repository.updateCustomer(id, body)
   return createSuccessResponse(data)
 })
 
 export const DELETE = withAuth(async (_req: NextRequest, { userId, params }) => {
-  if (!params?.id || typeof params.id !== "string") {
-    return createSuccessResponse({ ok: false, error: "Missing or invalid customer ID" })
+  const id = params?.['id']
+  if (!id || typeof id !== "string") {
+    throw new NotFoundError("Missing or invalid customer ID")
   }
   const repository = new CustomersRepository(userId)
-  await repository.delete(params.id)
+  await repository.delete(id)
   return createSuccessResponse({ ok: true })
 })

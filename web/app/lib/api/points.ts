@@ -31,8 +31,8 @@ export const pointsApi = {
   /**
    * 포인트 ledger 항목 추가
    */
-  addLedgerEntry: (customerId: string, input: PointsLedgerCreateInput): Promise<{ ok: boolean; balance: number }> => {
-    return apiClient.post<{ ok: boolean; balance: number }>(`/api/customers/${customerId}/points`, input)
+  addLedgerEntry: (customerId: string, input: PointsLedgerCreateInput): Promise<PointsBalance> => {
+    return apiClient.post<PointsBalance>(`/api/customers/${customerId}/points`, input)
   },
 
   /**

@@ -53,9 +53,9 @@ export default function Landing() {
               window.location.href = '/login'
             }}
           >
-            <Input placeholder="이름" value={fullName} onChange={(e: any) => setFullName(e.target.value)} />
-            <Input placeholder="이메일" type="email" value={email} onChange={(e: any) => setEmail(e.target.value)} />
-            <Input placeholder="전화번호" value={phone} onChange={(e: any) => setPhone(e.target.value)} />
+            <Input placeholder="이름" value={fullName} onChange={(e) => setFullName(e.target.value)} />
+            <Input placeholder="이메일" type="email" value={email} onChange={(e) => setEmail(e.target.value)} />
+            <Input placeholder="전화번호" value={phone} onChange={(e) => setPhone(e.target.value)} />
             <textarea
               placeholder="메모(선택)"
               value={note}

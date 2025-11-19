@@ -6,7 +6,7 @@ import Button from '../ui/Button'
 import { useAppToast } from '@/app/lib/ui/toast'
 import { customersApi } from '@/app/lib/api/customers'
 import { transactionsApi } from '@/app/lib/api/transactions'
-import type { Transaction } from '@/types/entities'
+import type { Transaction, TransactionUpdateInput, Customer } from '@/types/entities'
 
 type Tx = Omit<Transaction, 'amount' | 'notes'> & { amount: number | string; notes?: string | null }
 
@@ -15,7 +15,7 @@ export default function TransactionDetailModal({ open, onClose, item, onSaved, o
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
   const toast = useAppToast()
-  const [customers, setCustomers] = useState<any[]>([])
+  const [customers, setCustomers] = useState<Customer[]>([])
 
   useEffect(() => { 
     setForm(item ? { ...item, amount: item.amount } : null) 
@@ -43,7 +43,7 @@ export default function TransactionDetailModal({ open, onClose, item, onSaved, o
         setLoading(false)
         return
       }
-      const payload: any = {
+      const payload: TransactionUpdateInput = {
         amount: amountValue,
         transaction_date: form.transaction_date,
         customer_id: form.customer_id || null,
@@ -82,15 +82,15 @@ export default function TransactionDetailModal({ open, onClose, item, onSaved, o
           </div>
           <div className="space-y-2">
             <div className="space-y-2">
-              <div className="grid grid-cols-2 gap-2">
-                <div>
+              <div className="grid grid-cols-2 gap-1.5 sm:gap-2">
+                <div className="min-w-0">
                   <label className="block text-xs font-medium text-neutral-700 mb-0.5">거래 일자 <span className="text-rose-600">*</span></label>
-                  <input className="h-9 w-full rounded-lg border border-neutral-300 px-2.5 text-sm outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-300" type="date" value={(form.transaction_date || '').slice(0,10)} onChange={e => setForm(f => f && ({ ...f, transaction_date: e.target.value }))} />
+                  <input className="h-9 w-full min-w-0 rounded-lg border border-neutral-300 px-1.5 sm:px-2.5 text-xs sm:text-sm outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-300" type="date" value={(form.transaction_date || '').slice(0,10)} onChange={e => setForm(f => f && ({ ...f, transaction_date: e.target.value }))} />
                 </div>
-                <div>
+                <div className="min-w-0">
                   <label className="block text-xs font-medium text-neutral-700 mb-0.5">금액 <span className="text-rose-600">*</span></label>
                   <input 
-                    className="h-9 w-full rounded-lg border border-neutral-300 px-2.5 text-sm outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-300 text-right placeholder:text-neutral-400" 
+                    className="h-9 w-full min-w-0 rounded-lg border border-neutral-300 px-1.5 sm:px-2.5 text-xs sm:text-sm outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-300 text-right placeholder:text-neutral-400" 
                     type="number" 
                     placeholder="예: 12,000" 
                     value={form.amount === null || form.amount === undefined || form.amount === '' ? '' : form.amount} 
@@ -102,7 +102,7 @@ export default function TransactionDetailModal({ open, onClose, item, onSaved, o
                 </div>
                 <div className="col-span-2">
                   <label className="block text-xs font-medium text-neutral-700 mb-0.5">고객(선택)</label>
-                  <select className="h-9 w-full rounded-lg border border-neutral-300 px-2.5 text-sm outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-300" value={form.customer_id || ''} onChange={e => setForm(f => f && ({ ...f, customer_id: e.target.value || undefined }))}>
+                  <select className="h-9 w-full rounded-lg border border-neutral-300 px-2.5 text-sm outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-300" value={form.customer_id || ''} onChange={e => setForm(f => f && ({ ...f, customer_id: e.target.value || null }))}>
                     <option value="">선택 안 함</option>
                     {customers.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
                   </select>

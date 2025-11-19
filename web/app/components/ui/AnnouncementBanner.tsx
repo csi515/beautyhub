@@ -62,8 +62,8 @@ export default function AnnouncementBanner({
     <div className={clsx('mb-4', className)}>
       <Alert
         variant={variant}
-        title={title}
-        description={description}
+        {...(title && { title })}
+        {...(description && { description })}
         dismissible={dismissible}
         onDismiss={handleDismiss}
       >

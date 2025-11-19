@@ -1,4 +1,6 @@
-export default function MetricCard({
+import { memo } from 'react'
+
+function MetricCard({
   label,
   value,
   delta,
@@ -29,7 +31,11 @@ export default function MetricCard({
     { bg: 'bg-gradient-to-br from-indigo-50 to-blue-100', border: 'border-indigo-200', text: 'text-indigo-700' },
   ]
   
-  const scheme = colorSchemes[colorIndex % colorSchemes.length]
+  const scheme = colorSchemes[colorIndex % colorSchemes.length] || colorSchemes[0] || {
+    bg: 'bg-gradient-to-br from-gray-50 to-gray-100',
+    border: 'border-gray-200',
+    text: 'text-gray-700'
+  }
   
   return (
     <div className={`${scheme.bg} rounded-xl border-2 ${scheme.border} shadow-md hover:shadow-lg transition-all duration-300 p-4 md:p-6 ${className}`}>
@@ -44,5 +50,7 @@ export default function MetricCard({
     </div>
   )
 }
+
+export default memo(MetricCard)
 
 

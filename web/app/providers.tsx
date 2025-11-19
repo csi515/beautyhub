@@ -1,17 +1,19 @@
 'use client'
 
-import { ChakraProvider } from '@chakra-ui/react'
-import theme from './theme'
 import { ThemeProvider } from './lib/context/ThemeContext'
 import { AuthProvider } from './components/AuthProvider'
+import { ToastProvider } from './components/ui/Toast'
+import { QueryProvider } from './lib/providers/QueryProvider'
 
 export default function Providers({ children }: { children: React.ReactNode }) {
   return (
-    <AuthProvider>
-      <ThemeProvider>
-        <ChakraProvider theme={theme}>{children}</ChakraProvider>
-      </ThemeProvider>
-    </AuthProvider>
+    <QueryProvider>
+      <AuthProvider>
+        <ThemeProvider>
+          <ToastProvider>{children}</ToastProvider>
+        </ThemeProvider>
+      </AuthProvider>
+    </QueryProvider>
   )
 }
 

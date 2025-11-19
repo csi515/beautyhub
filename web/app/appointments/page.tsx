@@ -1,12 +1,16 @@
 'use client'
 
-import { useState, useRef, lazy, Suspense } from 'react'
+import React, { useState, useRef, lazy, Suspense } from 'react'
 import ReservationCreateModal from '../components/modals/ReservationCreateModal'
 import ReservationDetailModal from '../components/modals/ReservationDetailModal'
-import FilterBar from '../components/filters/FilterBar'
-import { Plus, Pencil, Trash2 } from 'lucide-react'
+import MobileTimelineView, { type MobileTimelineViewRef } from '../components/appointments/MobileTimelineView'
+import type { AppointmentEvent } from '../components/appointments/types'
+import { Plus, ChevronLeft, ChevronRight, Calendar } from 'lucide-react'
 import Button from '../components/ui/Button'
 import { Skeleton } from '../components/ui/Skeleton'
+
+// FullCalendar API 타입 import (실제로 사용되므로 유지)
+import type { EventApi, DateSelectArg, EventClickArg } from '@fullcalendar/core'
 
 // FullCalendar를 동적 import로 로드하여 번들 크기 감소
 const FullCalendarWrapper = lazy(async () => {
@@ -22,10 +26,27 @@ const FullCalendarWrapper = lazy(async () => {
     import('@fullcalendar/interaction')
   ])
   
-  return {
-    default: function FullCalendarWrapperComponent(props: any) {
-      return <FullCalendar {...props} plugins={[dayGridPlugin, timeGridPlugin, interactionPlugin]} />
+  // forwardRef로 감싸서 ref 전달 지원
+  type FullCalendarComponent = typeof FullCalendar
+  type FullCalendarComponentProps = React.ComponentProps<FullCalendarComponent>
+  type FullCalendarComponentRef = React.ComponentRef<FullCalendarComponent>
+
+  const WrappedComponent = React.forwardRef<FullCalendarComponentRef, FullCalendarComponentProps>(
+    function FullCalendarWrapperComponent(props, ref) {
+      return (
+        <FullCalendar
+          {...props}
+          ref={ref}
+          plugins={[dayGridPlugin, timeGridPlugin, interactionPlugin]}
+        />
+      )
     }
+  )
+  
+  WrappedComponent.displayName = 'FullCalendarWrapper'
+  
+  return {
+    default: WrappedComponent
   }
 })
 
@@ -141,21 +162,7 @@ type Product = {
   name: string
 }
 
-type AppointmentEvent = {
-  id: string
-  title: string
-  start: string
-  end: string
-  allDay: boolean
-  extendedProps: {
-    status?: string
-    notes?: string | null
-    service_id?: string | null
-    customer_id?: string | null
-    staff_id?: string | null
-    product_name?: string
-  }
-}
+// AppointmentEvent 타입은 types.ts에서 import
 
 type DateRange = { from?: string; to?: string }
 
@@ -182,7 +189,7 @@ const mapAppointments = (rows: AppointmentRow[], products: Product[]): Appointme
     const titleParts: string[] = []
     titleParts.push(formatKoreanHour(a.appointment_date))
     if (a.service_id && idToName[String(a.service_id)]) {
-      titleParts.push(idToName[String(a.service_id)])
+      titleParts.push(idToName[String(a.service_id)] || '')
     }
     const baseTitle = titleParts.filter(Boolean).join(' · ') || '예약'
     const title = a.notes ? `${baseTitle} · ${a.notes}` : baseTitle
@@ -199,7 +206,7 @@ const mapAppointments = (rows: AppointmentRow[], products: Product[]): Appointme
         service_id: a.service_id ?? null,
         customer_id: a.customer_id ?? null,
         staff_id: a.staff_id ?? null,
-        product_name: a.service_id ? idToName[String(a.service_id)] : undefined,
+        product_name: a.service_id ? idToName[String(a.service_id)] || '' : '',
       },
     }
   })
@@ -249,26 +256,57 @@ function CalendarHeader({
   onNext,
   actions,
 }: CalendarHeaderProps) {
-
   return (
-    <FilterBar>
-      <div className="flex w-full flex-col gap-2 md:flex-row md:items-center md:justify-between">
-        <div className="flex w-full flex-col items-center justify-center md:items-start gap-2 md:flex-row md:gap-3">
-          <div className="text-base md:text-lg font-bold tracking-tight bg-gradient-to-r from-pink-600 to-purple-600 bg-clip-text text-transparent">
-            {rangeLabel || '로딩 중...'}
+    <div className="bg-white rounded-xl border border-neutral-200 shadow-sm p-3 sm:p-4">
+      <div className="flex w-full flex-col gap-3 md:flex-row md:items-center md:justify-between">
+        {/* 날짜 표시 */}
+        <div className="flex items-center justify-between md:justify-start gap-3">
+          <div className="flex items-center gap-2">
+            <Calendar className="h-5 w-5 text-blue-600" />
+            <h1 className="text-lg sm:text-xl font-bold text-neutral-900">
+              {rangeLabel || '로딩 중...'}
+            </h1>
+          </div>
+          
+          {/* 모바일 네비게이션 */}
+          <div className="flex items-center gap-1 md:hidden">
+            <button
+              type="button"
+              onClick={onPrev}
+              aria-label="이전"
+              className="h-9 w-9 flex items-center justify-center rounded-lg border border-neutral-200 bg-white hover:bg-neutral-50 active:scale-[0.98] transition touch-manipulation"
+            >
+              <ChevronLeft className="h-4 w-4 text-neutral-700" />
+            </button>
+            <button
+              type="button"
+              onClick={onToday}
+              className="h-9 px-3 flex items-center rounded-lg border border-neutral-200 bg-white hover:bg-neutral-50 active:scale-[0.98] transition text-sm font-medium text-neutral-700 touch-manipulation"
+            >
+              오늘
+            </button>
+            <button
+              type="button"
+              onClick={onNext}
+              aria-label="다음"
+              className="h-9 w-9 flex items-center justify-center rounded-lg border border-neutral-200 bg-white hover:bg-neutral-50 active:scale-[0.98] transition touch-manipulation"
+            >
+              <ChevronRight className="h-4 w-4 text-neutral-700" />
+            </button>
           </div>
         </div>
 
-        <div className="flex flex-col gap-2 md:flex-row md:items-center md:justify-end">
-          {/* 액션 버튼들 (데스크톱) */}
+        {/* 데스크톱 컨트롤 */}
+        <div className="hidden md:flex items-center gap-3">
+          {/* 액션 버튼들 */}
           {actions && (
-            <div className="hidden md:flex items-center gap-2">
+            <div className="flex items-center gap-2">
               {actions}
             </div>
           )}
           
-          {/* 월 / 주 / 일 토글 */}
-          <div className="inline-flex items-center rounded-full border-2 border-purple-200 bg-gradient-to-r from-purple-50 to-pink-50 p-1 shadow-md">
+          {/* 뷰 토글 */}
+          <div className="inline-flex items-center rounded-lg border border-neutral-200 bg-neutral-50 p-1">
             {[
               { key: 'dayGridMonth', label: '월' },
               { key: 'timeGridWeek', label: '주' },
@@ -280,10 +318,10 @@ function CalendarHeader({
                   key={tab.key}
                   type="button"
                   onClick={() => onChangeView(tab.key as CalendarView)}
-                  className={`relative min-w-[64px] rounded-full px-4 py-1.5 text-sm font-medium transition-all duration-300 ${
+                  className={`relative min-w-[60px] rounded-md px-3 py-1.5 text-sm font-medium transition-all duration-200 touch-manipulation ${
                     active
-                      ? 'bg-gradient-to-r from-pink-500 to-purple-500 text-white shadow-lg scale-105'
-                      : 'text-purple-700 hover:bg-white hover:text-purple-900'
+                      ? 'bg-white text-blue-600 shadow-sm'
+                      : 'text-neutral-600 hover:text-neutral-900'
                   }`}
                 >
                   {tab.label}
@@ -292,37 +330,35 @@ function CalendarHeader({
             })}
           </div>
 
-          {/* 이전 / 오늘 / 다음 이동 */}
-          <div className="flex items-center justify-end gap-2 flex-wrap">
-            <div className="flex items-center gap-2">
-              <button
-                type="button"
-                onClick={onPrev}
-                aria-label="이전 기간"
-                className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-neutral-200 bg-white text-base text-neutral-700 shadow-sm hover:bg-neutral-50 active:scale-[0.98] transition"
-              >
-                &lt;
-              </button>
-              <button
-                type="button"
-                onClick={onToday}
-                className="inline-flex h-9 items-center rounded-full border border-neutral-200 bg-white px-3 text-sm font-medium text-neutral-800 shadow-sm hover:bg-neutral-50 active:scale-[0.98] transition whitespace-nowrap"
-              >
-                오늘
-              </button>
-              <button
-                type="button"
-                onClick={onNext}
-                aria-label="다음 기간"
-                className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-neutral-200 bg-white text-base text-neutral-700 shadow-sm hover:bg-neutral-50 active:scale-[0.98] transition"
-              >
-                &gt;
-              </button>
-            </div>
+          {/* 네비게이션 */}
+          <div className="flex items-center gap-1">
+            <button
+              type="button"
+              onClick={onPrev}
+              aria-label="이전 기간"
+              className="h-9 w-9 flex items-center justify-center rounded-lg border border-neutral-200 bg-white hover:bg-neutral-50 active:scale-[0.98] transition touch-manipulation"
+            >
+              <ChevronLeft className="h-4 w-4 text-neutral-700" />
+            </button>
+            <button
+              type="button"
+              onClick={onToday}
+              className="h-9 px-3 flex items-center rounded-lg border border-neutral-200 bg-white hover:bg-neutral-50 active:scale-[0.98] transition text-sm font-medium text-neutral-700 touch-manipulation"
+            >
+              오늘
+            </button>
+            <button
+              type="button"
+              onClick={onNext}
+              aria-label="다음 기간"
+              className="h-9 w-9 flex items-center justify-center rounded-lg border border-neutral-200 bg-white hover:bg-neutral-50 active:scale-[0.98] transition touch-manipulation"
+            >
+              <ChevronRight className="h-4 w-4 text-neutral-700" />
+            </button>
           </div>
         </div>
       </div>
-    </FilterBar>
+    </div>
   )
 }
 
@@ -342,21 +378,26 @@ export default function AppointmentsPage() {
     notes: '',
   })
   const [selected, setSelected] = useState<SelectedAppointment | null>(null)
-  const calendarRef = useRef<any>(null)
+  const calendarRef = useRef<FullCalendarComponentRef>(null)
+  const timelineRef = useRef<MobileTimelineViewRef>(null)
+  const [mobileViewMode, setMobileViewMode] = useState<'timeline' | 'calendar'>('calendar')
 
   const reloadCalendar = async (opt?: { from?: string; to?: string }): Promise<void> => {
     try {
       const from = opt?.from ?? range.from
       const to = opt?.to ?? range.to
-      const qs = new URLSearchParams()
-      if (from) qs.set('from', from)
-      if (to) qs.set('to', to)
-      const aUrl = `/api/appointments${qs.toString() ? `?${qs.toString()}` : ''}`
 
       const { appointmentsApi } = await import('@/app/lib/api/appointments')
       const { productsApi } = await import('@/app/lib/api/products')
+      const options: Parameters<typeof appointmentsApi.list>[0] = {}
+      if (from) {
+        options.from = from
+      }
+      if (to) {
+        options.to = to
+      }
       const [rows, products] = await Promise.all([
-        appointmentsApi.list({ from, to }),
+        appointmentsApi.list(options),
         productsApi.list({ limit: 1000 }),
       ])
       const rowsArray = Array.isArray(rows) ? (rows as AppointmentRow[]) : []
@@ -374,8 +415,8 @@ export default function AppointmentsPage() {
 
   const getCalendarApi = () => {
     const inst = calendarRef.current
-    if (!inst || typeof inst.getApi !== 'function') return null
-    return inst.getApi()
+    if (!inst) return null
+    return inst
   }
 
   const handlePrev = () => {
@@ -416,10 +457,10 @@ export default function AppointmentsPage() {
     const to = gridEnd ? gridEnd.toISOString() : undefined
     const viewType: CalendarView = (arg.view.type as CalendarView) || view
 
-    setRange({ from, to })
+    setRange({ from: from || '', to: to || '' })
     setCurrentDate(viewStart || new Date())
     setRangeLabel(formatRangeLabel(viewStart, viewEnd, viewType))
-    reloadCalendar({ from, to })
+    reloadCalendar({ from: from || '', to: to || '' })
   }
 
   const handleDateClick = (info: DateClickArg) => {
@@ -441,9 +482,9 @@ export default function AppointmentsPage() {
       end: (event.endStr || '').slice(11, 16),
       status: event.extendedProps?.status || 'scheduled',
       notes: event.extendedProps?.notes || '',
-      service_id: event.extendedProps?.service_id || undefined,
-      customer_id: event.extendedProps?.customer_id || undefined,
-      staff_id: event.extendedProps?.staff_id || undefined,
+      service_id: event.extendedProps?.service_id || '',
+      customer_id: event.extendedProps?.customer_id || '',
+      staff_id: event.extendedProps?.staff_id || '',
     })
     setDetailOpen(true)
   }
@@ -487,18 +528,43 @@ export default function AppointmentsPage() {
     if (arg.view?.type === 'dayGridMonth') {
       const container = document.createElement('div')
       container.className =
-        'flex items-start gap-1 text-[11px] leading-tight text-neutral-800 break-words whitespace-normal'
+        'flex items-center gap-0 text-xs leading-tight text-neutral-800 break-words whitespace-normal px-1 py-0.5'
       container.innerHTML = `
-        <span class="inline-flex h-1.5 w-1.5 rounded-full bg-blue-500 mt-0.5 flex-shrink-0"></span>
-        <span class="break-words whitespace-normal flex-1 min-w-0">${arg.event.title || '예약'}</span>
+        <span class="break-words whitespace-normal flex-1 min-w-0 font-medium">${arg.event.title || '예약'}</span>
       `
       return { domNodes: [container] }
     }
     return true
   }
 
+  const handleMobileEventClick = (event: AppointmentEvent) => {
+    setSelected({
+      id: event.id,
+      date: (event.start || '').slice(0, 10),
+      start: (event.start || '').slice(11, 16),
+      end: (event.end || '').slice(11, 16),
+      status: event.extendedProps?.status || 'scheduled',
+      notes: event.extendedProps?.notes || '',
+      service_id: event.extendedProps?.service_id || '',
+      customer_id: event.extendedProps?.customer_id || '',
+      staff_id: event.extendedProps?.staff_id || '',
+    })
+    setDetailOpen(true)
+  }
+
+  const handleMobileDateClick = (date: Date) => {
+    setDraft({
+      date: date.toISOString().slice(0, 10),
+      start: '10:00',
+      end: '11:00',
+      status: 'scheduled',
+      notes: '',
+    })
+    setCreateOpen(true)
+  }
+
   return (
-    <main className="space-y-2 md:space-y-3">
+    <main className="space-y-3 sm:space-y-4">
       <CalendarHeader
         view={view}
         rangeLabel={rangeLabel}
@@ -507,54 +573,141 @@ export default function AppointmentsPage() {
         onPrev={handlePrev}
         onNext={handleNext}
         actions={
-          <div className="flex items-center gap-2">
-            <Button
-              variant="primary"
-              leftIcon={<Plus className="h-4 w-4" />}
-              onClick={() => {
-                setDraft({
-                  date: new Date().toISOString().slice(0, 10),
-                  start: '10:00',
-                  end: '11:00',
-                  status: 'scheduled',
-                  notes: '',
-                })
-                setCreateOpen(true)
-              }}
-            >
-              예약 추가
-            </Button>
-            <button
-              className="h-10 w-10 inline-flex items-center justify-center rounded-[12px] border border-neutral-200 hover:bg-neutral-100 disabled:opacity-40"
-              onClick={() => selected && setDetailOpen(true)}
-              disabled={!selected}
-              aria-label="수정"
-            >
-              <Pencil className="h-4 w-4" />
-            </button>
-            <button
-              className="h-10 w-10 inline-flex items-center justify-center rounded-[12px] border border-neutral-200 hover:bg-neutral-100 disabled:opacity-40"
-              onClick={() => selected && setDetailOpen(true)}
-              disabled={!selected}
-              aria-label="삭제"
-            >
-              <Trash2 className="h-4 w-4" />
-            </button>
-          </div>
+          <Button
+            variant="primary"
+            size="md"
+            leftIcon={<Plus className="h-4 w-4" />}
+            onClick={() => {
+              setDraft({
+                date: new Date().toISOString().slice(0, 10),
+                start: '10:00',
+                end: '11:00',
+                status: 'scheduled',
+                notes: '',
+              })
+              setCreateOpen(true)
+            }}
+          >
+            예약 추가
+          </Button>
         }
       />
 
-      {/* 캘린더 본문 */}
-      <div className="bg-white rounded-[20px] shadow-lg border border-neutral-200 p-2 sm:p-3 md:p-4 lg:p-6 overflow-x-auto">
-        <Suspense fallback={<div className="h-96 w-full flex items-center justify-center"><Skeleton className="h-full w-full" /></div>}>
-          <div className="min-w-[600px]">
+      {/* 모바일 뷰 전환 버튼 */}
+      <div className="md:hidden bg-white rounded-xl border border-neutral-200 shadow-sm p-3">
+        <div className="inline-flex items-center rounded-lg border border-neutral-200 bg-neutral-50 p-1 w-full">
+          <button
+            type="button"
+            onClick={() => {
+              setMobileViewMode('timeline')
+              // 타임라인으로 전환 후 오늘의 위치로 스크롤
+              setTimeout(() => {
+                timelineRef.current?.scrollToToday()
+              }, 100)
+            }}
+            className={`flex-1 rounded-md px-3 py-2 text-sm font-medium transition-all duration-200 touch-manipulation ${
+              mobileViewMode === 'timeline'
+                ? 'bg-white text-blue-600 shadow-sm'
+                : 'text-neutral-600 hover:text-neutral-900'
+            }`}
+          >
+            타임라인
+          </button>
+          <button
+            type="button"
+            onClick={() => setMobileViewMode('calendar')}
+            className={`flex-1 rounded-md px-3 py-2 text-sm font-medium transition-all duration-200 touch-manipulation ${
+              mobileViewMode === 'calendar'
+                ? 'bg-white text-blue-600 shadow-sm'
+                : 'text-neutral-600 hover:text-neutral-900'
+            }`}
+          >
+            달력
+          </button>
+        </div>
+      </div>
+
+      {/* 모바일 타임라인 뷰 */}
+      {mobileViewMode === 'timeline' && (
+        <div className="md:hidden bg-white rounded-xl border border-neutral-200 shadow-sm p-4">
+          <Suspense fallback={
+            <div className="space-y-4">
+              {Array.from({ length: 3 }).map((_, i) => (
+                <div key={i} className="space-y-2">
+                  <Skeleton className="h-6 w-32" />
+                  <div className="pl-4 space-y-2">
+                    <Skeleton className="h-20 w-full" />
+                    <Skeleton className="h-20 w-full" />
+                  </div>
+                </div>
+              ))}
+            </div>
+          }>
+            <MobileTimelineView
+              ref={timelineRef}
+              events={events}
+              selectedDate={currentDate}
+              onEventClick={handleMobileEventClick}
+              onDateClick={handleMobileDateClick}
+            />
+          </Suspense>
+        </div>
+      )}
+
+      {/* 모바일 달력 뷰 */}
+      {mobileViewMode === 'calendar' && (
+        <div className="md:hidden bg-white rounded-xl border border-neutral-200 shadow-sm p-1 overflow-hidden">
+          <Suspense fallback={
+            <div className="h-[calc(100vh-280px)] min-h-[500px] w-full flex items-center justify-center">
+              <Skeleton className="h-full w-full" />
+            </div>
+          }>
+            <div className="w-full fc-mobile-calendar" style={{ minHeight: 'calc(100vh - 280px)' }}>
+              <FullCalendarWrapper
+                ref={calendarRef}
+                initialView="dayGridMonth"
+                initialDate={currentDate}
+                headerToolbar={false}
+                events={events}
+                displayEventTime={false}
+                slotMinTime={'00:00:00'}
+                slotMaxTime={'23:00:00'}
+                datesSet={handleDatesSet}
+                dayCellClassNames={handleDayCellClassNames}
+                dayCellDidMount={handleDayCellDidMount}
+                eventDidMount={handleEventDidMount}
+                dateClick={handleDateClick}
+                eventContent={renderEventContent}
+                eventClick={handleEventClick}
+                selectable
+                nowIndicator
+                height="auto"
+                eventBackgroundColor={'#3b82f6'}
+                eventBorderColor={'#3b82f6'}
+                eventTextColor={'#ffffff'}
+                dayMaxEvents={5}
+                aspectRatio={1.2}
+              />
+            </div>
+          </Suspense>
+        </div>
+      )}
+
+      {/* 데스크톱 캘린더 뷰 */}
+      <div className="hidden md:block bg-white rounded-xl border border-neutral-200 shadow-sm p-3 lg:p-4 overflow-x-auto">
+        <Suspense fallback={
+          <div className="h-[600px] w-full flex items-center justify-center">
+            <Skeleton className="h-full w-full" />
+          </div>
+        }>
+          <div className="min-w-[800px]">
             <FullCalendarWrapper
               ref={calendarRef}
               initialView={view}
               initialDate={currentDate}
               headerToolbar={false}
               events={events}
-              displayEventTime={false}
+              displayEventTime={true}
               slotMinTime={'00:00:00'}
               slotMaxTime={'23:00:00'}
               slotLabelFormat={{
@@ -572,21 +725,34 @@ export default function AppointmentsPage() {
               selectable
               nowIndicator
               height="auto"
-              eventBackgroundColor={'#2563eb'}
-              eventBorderColor={'#2563eb'}
+              eventBackgroundColor={'#3b82f6'}
+              eventBorderColor={'#3b82f6'}
               eventTextColor={'#ffffff'}
-              dayMaxEvents
+              dayMaxEvents={3}
             />
           </div>
         </Suspense>
       </div>
-      {/* Mobile FAB for quick create */}
+
+      {/* 모바일 FAB */}
       <button
-        className="md:hidden fixed right-4 bottom-4 h-12 w-12 rounded-full bg-blue-600 text-white shadow-lg hover:bg-blue-700 active:scale-[0.98] inline-flex items-center justify-center z-[1000]"
+        className="md:hidden fixed right-4 bottom-4 h-14 w-14 rounded-full bg-gradient-to-r from-blue-600 to-blue-700 text-white shadow-xl hover:shadow-2xl active:scale-[0.95] inline-flex items-center justify-center z-[1000] touch-manipulation transition-all duration-200 safe-area-inset-bottom"
+        style={{
+          bottom: 'calc(1rem + env(safe-area-inset-bottom))',
+        }}
         aria-label="예약 추가"
-        onClick={() => { setDraft({ date: new Date().toISOString().slice(0,10), start: '10:00', end: '11:00', status: 'scheduled', notes: '' }); setCreateOpen(true) }}
+        onClick={() => {
+          setDraft({
+            date: new Date().toISOString().slice(0, 10),
+            start: '10:00',
+            end: '11:00',
+            status: 'scheduled',
+            notes: '',
+          })
+          setCreateOpen(true)
+        }}
       >
-        <Plus className="h-5 w-5" />
+        <Plus className="h-6 w-6" />
       </button>
       <ReservationCreateModal
         open={createOpen}
@@ -607,6 +773,6 @@ export default function AppointmentsPage() {
           await reloadCalendar()
         }}
       />
-    </main>
+      </main>
   )
 }

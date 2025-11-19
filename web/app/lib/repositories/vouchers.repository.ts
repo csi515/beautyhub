@@ -86,7 +86,7 @@ export class VouchersRepository extends BaseRepository<Voucher> {
         remaining_amount: total_amount,
         expires_at: expires_at || null,
         owner_id: this.userId,
-      } as any)
+      } as VoucherCreateInput)
       .select('*')
       .single()
 
@@ -144,7 +144,7 @@ export class VouchersRepository extends BaseRepository<Voucher> {
         amount,
         transaction_id: transaction_id || null,
         owner_id: this.userId,
-      } as any)
+      } as VoucherUseInput & { voucher_id: string; owner_id: string })
       .select('*')
       .single()
 

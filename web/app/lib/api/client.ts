@@ -18,6 +18,8 @@ export class ApiClient {
   private autoRefreshToken: boolean
   private showToastOnError: boolean
   private refreshPromise: Promise<boolean> | null = null
+  private refreshFailed: boolean = false // refresh 실패 플래그
+  private refreshAbortController: AbortController | null = null // refresh 요청 취소용
 
   constructor(options: ApiClientOptions = {}) {
     this.baseURL = options.baseURL || ''
@@ -87,21 +89,52 @@ export class ApiClient {
    * 인증 토큰 리프레시
    */
   private async refreshAuthToken(): Promise<boolean> {
+    // 이미 refresh가 실패한 경우 재시도하지 않음
+    if (this.refreshFailed) {
+      return false
+    }
+
+    // 이미 진행 중인 요청이 있으면 기다림
     if (this.refreshPromise) {
       return this.refreshPromise
     }
+
+    // 이전 요청 취소 (있다면)
+    if (this.refreshAbortController) {
+      this.refreshAbortController.abort()
+    }
+
+    // 새 AbortController 생성
+    this.refreshAbortController = new AbortController()
 
     this.refreshPromise = (async () => {
       try {
         const response = await fetch(`${this.baseURL}/api/auth/refresh`, {
           method: 'POST',
           credentials: 'include',
+          signal: this.refreshAbortController?.signal,
         })
-        return response.ok
-      } catch {
+        
+        if (!response.ok) {
+          // refresh 실패 시 플래그 설정
+          this.refreshFailed = true
+          return false
+        }
+        
+        // 성공 시 플래그 리셋
+        this.refreshFailed = false
+        return true
+      } catch (error) {
+        // AbortError는 정상적인 취소이므로 무시
+        if (error instanceof Error && error.name === 'AbortError') {
+          return false
+        }
+        // 네트워크 에러 등으로 실패한 경우도 플래그 설정
+        this.refreshFailed = true
         return false
       } finally {
         this.refreshPromise = null
+        this.refreshAbortController = null
       }
     })()
 
@@ -146,7 +179,8 @@ export class ApiClient {
       this.autoRefreshToken &&
       !skipAuthRefresh &&
       !url.includes('/api/auth/refresh') &&
-      !url.includes('/api/auth/logout')
+      !url.includes('/api/auth/logout') &&
+      !this.refreshFailed // refresh가 이미 실패한 경우 재시도하지 않음
     ) {
       const refreshed = await this.refreshAuthToken()
       if (refreshed) {
@@ -162,24 +196,37 @@ export class ApiClient {
       } else {
         // 리프레시 실패 시 로그인 페이지로 리다이렉트
         if (typeof window !== 'undefined') {
-          const errorData = await response.json().catch(() => ({}))
-          if ((errorData as any)?.error === 'TOKEN_EXPIRED') {
-            window.location.href = '/login?error=expired'
-            throw new Error('세션이 만료되었습니다. 다시 로그인해주세요.')
-          }
+          // response.json()은 한 번만 호출 가능하므로, 여기서는 클론된 응답을 사용하거나
+          // 텍스트로 읽어서 처리해야 합니다. 하지만 간단하게 리다이렉트만 수행합니다.
+          window.location.href = '/login?error=expired'
+          throw new Error('세션이 만료되었습니다. 다시 로그인해주세요.')
         }
       }
     }
 
-    // 에러 응답 처리
-    if (!response.ok) {
+    // 응답 데이터 파싱 (안전하게 처리)
+    let responseData: any
+    try {
+      const text = await response.text()
+      responseData = text ? JSON.parse(text) : {}
+    } catch {
+      // JSON 파싱 실패 시 빈 객체 사용
+      responseData = {}
+    }
+    
+    // 통일된 응답 형식 처리: { success: boolean, data?: T, error?: string }
+    if (!response.ok || (responseData && typeof responseData === 'object' && 'success' in responseData && !responseData.success)) {
       let errorMessage = '요청을 처리할 수 없습니다.'
-      let errorData: unknown = null
-      try {
-        errorData = await response.json()
-        errorMessage = (errorData as { message?: string })?.message || errorMessage
-      } catch {
-        // JSON 파싱 실패 시 기본 메시지 사용
+      
+      if (responseData && typeof responseData === 'object') {
+        // 새로운 형식: { success: false, error: string }
+        if ('error' in responseData && typeof responseData.error === 'string') {
+          errorMessage = responseData.error
+        }
+        // 기존 형식: { message: string }
+        else if ('message' in responseData && typeof responseData.message === 'string') {
+          errorMessage = responseData.message
+        }
       }
 
       // 에러 로깅
@@ -188,7 +235,7 @@ export class ApiClient {
         logger.error(`API 요청 실패: ${url}`, {
           status: response.status,
           statusText: response.statusText,
-          errorData,
+          errorData: responseData,
         }, 'ApiClient')
       }
 
@@ -206,9 +253,13 @@ export class ApiClient {
       throw new Error(errorMessage)
     }
 
-    // 응답 데이터 파싱
-    const data = await response.json()
-    return { data, response }
+    // 성공 응답 처리: { success: true, data: T }
+    if (responseData && typeof responseData === 'object' && 'success' in responseData && responseData.success) {
+      return { data: responseData.data, response }
+    }
+    
+    // 기존 형식 호환성 (data가 직접 반환되는 경우)
+    return { data: responseData, response }
   }
 
   /**
@@ -225,7 +276,7 @@ export class ApiClient {
   /**
    * POST 요청
    */
-  async post<T>(url: string, body?: any, options?: ApiRequestOptions): Promise<T> {
+  async post<T>(url: string, body?: unknown, options?: ApiRequestOptions): Promise<T> {
     const { data } = await this.executeRequest<T>(url, {
       ...options,
       method: 'POST',
@@ -237,7 +288,7 @@ export class ApiClient {
   /**
    * PUT 요청
    */
-  async put<T>(url: string, body?: any, options?: ApiRequestOptions): Promise<T> {
+  async put<T>(url: string, body?: unknown, options?: ApiRequestOptions): Promise<T> {
     const { data } = await this.executeRequest<T>(url, {
       ...options,
       method: 'PUT',
