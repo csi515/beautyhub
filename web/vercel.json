@@ -1,5 +1,9 @@
 {
-  "framework": "nextjs",
-  "regions": ["icn1"],
-  "buildCommand": "npm run build"
+  "builds": [
+    {
+      "src": "web/package.json",
+      "use": "@vercel/next"
+    }
+  ],
+  "regions": ["icn1"]
 }
