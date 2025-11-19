@@ -9,8 +9,6 @@ import { Plus, ChevronLeft, ChevronRight, Calendar } from 'lucide-react'
 import Button from '../components/ui/Button'
 import { Skeleton } from '../components/ui/Skeleton'
 
-// FullCalendar API 타입 import (실제로 사용되므로 유지)
-import type { EventApi, DateSelectArg, EventClickArg } from '@fullcalendar/core'
 
 // FullCalendar를 동적 import로 로드하여 번들 크기 감소
 const FullCalendarWrapper = lazy(async () => {
