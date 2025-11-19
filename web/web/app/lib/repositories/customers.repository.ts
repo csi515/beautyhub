@@ -4,14 +4,13 @@
 
 import { BaseRepository } from './base.repository'
 import type { Customer, CustomerCreateInput, CustomerUpdateInput } from '@/types/entities'
-import type { QueryOptions } from './base.repository'
 
 export class CustomersRepository extends BaseRepository<Customer> {
   constructor(userId: string) {
     super(userId, 'customers')
   }
 
-  protected getSearchFields(): string[] {
+  protected override getSearchFields(): string[] {
     return ['name', 'email', 'phone']
   }
 
@@ -24,7 +23,7 @@ export class CustomersRepository extends BaseRepository<Customer> {
       throw new Error('name required')
     }
 
-    const payload: any = {
+    const payload: Partial<Customer> = {
       name,
       phone: input.phone || null,
       email: input.email || null,
@@ -33,14 +32,16 @@ export class CustomersRepository extends BaseRepository<Customer> {
     
     // features는 값이 있을 때만 포함 (스키마에 없을 수 있음)
     const featuresValue = input.features
-    if (featuresValue !== undefined && featuresValue !== null && featuresValue !== '' && String(featuresValue).trim() !== '') {
-      payload.features = String(featuresValue).trim()
-    }
-    if (payload.features === undefined || payload.features === null || payload.features === '' || String(payload.features).trim() === '') {
-      delete payload.features
+    if (featuresValue !== undefined) {
+      if (featuresValue === null) {
+        payload.features = null
+      } else {
+        const trimmed = String(featuresValue).trim()
+        payload.features = trimmed ? trimmed : null
+      }
     }
     
-    return this.create(payload as Customer)
+    return this.create(payload)
   }
 
   /**
@@ -62,11 +63,13 @@ export class CustomersRepository extends BaseRepository<Customer> {
     if (input.address !== undefined) payload.address = input.address || null
     // features는 값이 있을 때만 업데이트 (스키마에 없을 수 있음)
     const featuresValue = input.features
-    if (featuresValue !== undefined && featuresValue !== null && featuresValue !== '' && String(featuresValue).trim() !== '') {
-      payload.features = String(featuresValue).trim()
-    }
-    if (payload.features === undefined || payload.features === null || payload.features === '' || String(payload.features).trim() === '') {
-      delete payload.features
+    if (featuresValue !== undefined) {
+      if (featuresValue === null) {
+        payload.features = null
+      } else {
+        const trimmed = String(featuresValue).trim()
+        payload.features = trimmed ? trimmed : null
+      }
     }
 
     return this.update(id, payload)

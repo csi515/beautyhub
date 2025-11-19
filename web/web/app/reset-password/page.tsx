@@ -4,10 +4,11 @@ export const dynamic = 'force-dynamic'
 
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
+import type { SupabaseClient } from '@supabase/supabase-js'
 
 export default function ResetPasswordPage() {
   const router = useRouter()
-  const [supabase, setSupabase] = useState<any>(null)
+  const [supabase, setSupabase] = useState<SupabaseClient | null>(null)
   const [newPassword, setNewPassword] = useState('')
   const [error, setError] = useState('')
   const [info, setInfo] = useState('')

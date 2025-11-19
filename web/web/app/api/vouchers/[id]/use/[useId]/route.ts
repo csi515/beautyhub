@@ -5,10 +5,12 @@ import { createSupabaseServerClient } from '@/lib/supabase/server'
 import { NotFoundError, ApiError } from '@/app/lib/api/errors'
 
 export const DELETE = withAuth(async (_req: NextRequest, { userId, params }) => {
-  if (!params?.id || typeof params.id !== "string") {
+  const id = params?.['id']
+  const useId = params?.['useId']
+  if (!id || typeof id !== "string") {
     return createSuccessResponse({ ok: false, error: "Missing or invalid voucher ID" })
   }
-  if (!params?.useId || typeof params.useId !== "string") {
+  if (!useId || typeof useId !== "string") {
     return createSuccessResponse({ ok: false, error: "Missing or invalid use ID" })
   }
   const supabase = createSupabaseServerClient()
@@ -17,7 +19,7 @@ export const DELETE = withAuth(async (_req: NextRequest, { userId, params }) => 
   const { data: useRow, error: uErr } = await supabase
     .from('voucher_uses')
     .select('*')
-    .eq('id', params.useId)
+    .eq('id', useId)
     .single()
 
   if (uErr || !useRow) {
@@ -28,7 +30,7 @@ export const DELETE = withAuth(async (_req: NextRequest, { userId, params }) => 
   const { data: voucher, error: vErr } = await supabase
     .from('vouchers')
     .select('*')
-    .eq('id', params.id)
+    .eq('id', id)
     .eq('owner_id', userId)
     .single()
 
@@ -42,7 +44,7 @@ export const DELETE = withAuth(async (_req: NextRequest, { userId, params }) => 
   const { error: upErr } = await supabase
     .from('vouchers')
     .update({ remaining_amount: newRemaining })
-    .eq('id', params.id)
+    .eq('id', id)
     .eq('owner_id', userId)
 
   if (upErr) {
@@ -50,7 +52,7 @@ export const DELETE = withAuth(async (_req: NextRequest, { userId, params }) => 
   }
 
   // 사용 내역 삭제
-  const { error: delErr } = await supabase.from('voucher_uses').delete().eq('id', params.useId)
+  const { error: delErr } = await supabase.from('voucher_uses').delete().eq('id', useId)
 
   if (delErr) {
     throw new ApiError(delErr.message, 400)

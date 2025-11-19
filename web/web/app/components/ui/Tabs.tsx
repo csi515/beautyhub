@@ -22,21 +22,18 @@ export function Tabs({ defaultValue, value: controlled, onValueChange, className
     <div data-tabs-value={value} className={className}>
       {childArray.map((child) => {
         if (!React.isValidElement(child)) return child
-        const displayName = (child.type as any)?.displayName
 
-        if (displayName === 'TabsList') {
-          return React.cloneElement(child, {
-            ...child.props,
+        if (child.type === TabsList) {
+          return React.cloneElement(child as React.ReactElement<TabsListProps>, {
             value,
-            onValueChange: setValue
+            onValueChange: setValue,
           })
         }
 
-        if (displayName === 'TabsContent') {
-          const childValue = (child.props as any).value
-          return React.cloneElement(child, {
-            ...child.props,
-            selected: childValue === value
+        if (child.type === TabsContent) {
+          const childValue = child.props.value as string
+          return React.cloneElement(child as React.ReactElement<TabsContentProps>, {
+            selected: childValue === value,
           })
         }
 
@@ -56,18 +53,16 @@ export function TabsList({ children, value, onValueChange, className }: TabsList
   const childArray = React.Children.toArray(children)
 
   return (
-    <div className={clsx('flex items-center gap-6 border-b border-neutral-200', className)} role="tablist">
+    <div className={clsx('flex items-center gap-1 sm:gap-6 border-b border-neutral-200 overflow-x-auto', className)} role="tablist">
       {childArray.map((child) => {
         if (!React.isValidElement(child)) return child
-        const displayName = (child.type as any)?.displayName
 
-        if (displayName === 'TabsTrigger') {
-          const childValue = (child.props as any).value
+        if (child.type === TabsTrigger) {
+          const childValue = child.props.value as string
           const selected = childValue === value
-          return React.cloneElement(child, {
-            ...child.props,
+          return React.cloneElement(child as React.ReactElement<TabsTriggerProps>, {
             selected,
-            onSelect: () => onValueChange?.(childValue)
+            onSelect: () => onValueChange?.(childValue),
           })
         }
 
@@ -91,7 +86,7 @@ export function TabsTrigger({ value: _v, children, selected, onSelect, className
       type="button"
       onClick={onSelect}
       className={clsx(
-        'relative px-6 py-3 text-sm font-medium text-neutral-600 hover:text-neutral-900 rounded-lg transition-all duration-300',
+        'relative px-3 sm:px-6 py-2 sm:py-3 text-xs sm:text-sm font-medium text-neutral-600 hover:text-neutral-900 rounded-lg transition-all duration-300 whitespace-nowrap flex-shrink-0',
         selected 
           ? 'text-[#F472B6] bg-[#FDF2F8]' 
           : 'hover:bg-neutral-50',

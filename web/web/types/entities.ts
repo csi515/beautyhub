@@ -49,7 +49,7 @@ export interface Product {
  */
 export interface ProductCreateInput {
   name: string
-  price: number
+  price?: number
   description?: string | null
   active?: boolean
 }
@@ -94,6 +94,7 @@ export interface Appointment {
   owner_id: string
   customer_id?: string | null
   staff_id?: string | null
+  service_id?: string | null
   appointment_date: string
   status?: string
   total_price?: number | null
@@ -112,6 +113,10 @@ export interface AppointmentCreateInput {
   status?: string
   total_price?: number | null
   notes?: string | null
+}
+
+export interface AppointmentCreateInputExtended extends AppointmentCreateInput {
+  service_id?: string | null
 }
 
 export interface AppointmentUpdateInput extends Partial<AppointmentCreateInput> {}

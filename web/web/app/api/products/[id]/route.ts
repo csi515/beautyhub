@@ -1,33 +1,54 @@
 import { NextRequest } from 'next/server'
 import { withAuth } from '@/app/lib/api/middleware'
-import { parseBody, createSuccessResponse } from '@/app/lib/api/handlers'
+import { parseAndValidateBody, createSuccessResponse } from '@/app/lib/api/handlers'
 import { ProductsRepository } from '@/app/lib/repositories/products.repository'
-import type { ProductUpdateInput } from '@/types/entities'
+import { productUpdateSchema } from '@/app/lib/api/schemas'
+import { NotFoundError } from '@/app/lib/api/errors'
 
 export const GET = withAuth(async (_req: NextRequest, { userId, params }) => {
-  if (!params?.id || typeof params.id !== "string") {
-    return createSuccessResponse({ ok: false, error: "Missing or invalid product ID" })
+  const id = params?.['id']
+  if (!id || typeof id !== "string") {
+    throw new NotFoundError("Missing or invalid product ID")
   }
   const repository = new ProductsRepository(userId)
-  const data = await repository.findById(params.id)
+  const data = await repository.findById(id)
+  if (!data) {
+    throw new NotFoundError("Product not found")
+  }
   return createSuccessResponse(data)
 })
 
 export const PUT = withAuth(async (req: NextRequest, { userId, params }) => {
-  if (!params?.id || typeof params.id !== "string") {
-    return createSuccessResponse({ ok: false, error: "Missing or invalid product ID" })
+  const id = params?.['id']
+  if (!id || typeof id !== "string") {
+    throw new NotFoundError("Missing or invalid product ID")
   }
-  const body = await parseBody<ProductUpdateInput>(req)
+  const validatedBody = await parseAndValidateBody(req, productUpdateSchema)
   const repository = new ProductsRepository(userId)
-  const data = await repository.updateProduct(params.id, body)
+  // exactOptionalPropertyTypes를 위한 타입 변환
+  const body: Parameters<typeof repository.updateProduct>[1] = {}
+  if (validatedBody.name !== undefined) {
+    body.name = validatedBody.name
+  }
+  if (validatedBody.price !== undefined) {
+    body.price = validatedBody.price
+  }
+  if (validatedBody.description !== undefined) {
+    body.description = validatedBody.description
+  }
+  if (validatedBody.active !== undefined) {
+    body.active = validatedBody.active
+  }
+  const data = await repository.updateProduct(id, body)
   return createSuccessResponse(data)
 })
 
 export const DELETE = withAuth(async (_req: NextRequest, { userId, params }) => {
-  if (!params?.id || typeof params.id !== "string") {
-    return createSuccessResponse({ ok: false, error: "Missing or invalid product ID" })
+  const id = params?.['id']
+  if (!id || typeof id !== "string") {
+    throw new NotFoundError("Missing or invalid product ID")
   }
   const repository = new ProductsRepository(userId)
-  await repository.delete(params.id)
+  await repository.delete(id)
   return createSuccessResponse({ ok: true })
 })

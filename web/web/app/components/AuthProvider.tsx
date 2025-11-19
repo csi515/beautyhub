@@ -1,15 +1,17 @@
 'use client'
 
-import { useEffect, useState, createContext, useContext, ReactNode } from 'react'
+import { useEffect, useState, createContext, useContext, ReactNode, useMemo } from 'react'
 import { createSupabaseBrowserClient } from '@/lib/supabase/client'
 import type { User, Session, AuthChangeEvent } from '@supabase/supabase-js'
 import { useRouter } from 'next/navigation'
+
+type SupabaseBrowserClient = ReturnType<typeof createSupabaseBrowserClient> | null
 
 interface AuthContextType {
   user: User | null
   session: Session | null
   loading: boolean
-  supabase: ReturnType<typeof createSupabaseBrowserClient>
+  supabase: SupabaseBrowserClient
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined)
@@ -27,13 +29,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null)
   const [session, setSession] = useState<Session | null>(null)
   const [loading, setLoading] = useState(true)
-  const [supabase] = useState(() => {
+  const supabase = useMemo<SupabaseBrowserClient>(() => {
     if (typeof window === 'undefined') {
-      // 서버 사이드에서는 더미 객체 반환 (실제로는 사용되지 않음)
-      return null as any
+      return null
     }
     return createSupabaseBrowserClient()
-  })
+  }, [])
   const router = useRouter()
 
   useEffect(() => {
@@ -64,14 +65,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const {
       data: { subscription },
     } = supabase.auth.onAuthStateChange(async (event: AuthChangeEvent, currentSession: Session | null) => {
-      console.log('Auth state changed:', event, currentSession?.user?.id)
+      // auth state change debug logs removed for production safety
 
       setSession(currentSession)
       setUser(currentSession?.user ?? null)
 
       // 토큰 갱신 이벤트 처리
       if (event === 'TOKEN_REFRESHED' && currentSession) {
-        console.log('Token refreshed successfully')
+        // token refreshed
         
         // 쿠키에 새 토큰 동기화
         try {
@@ -92,7 +93,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
       // 로그아웃 이벤트 처리
       if (event === 'SIGNED_OUT') {
-        console.log('User signed out')
+        // user signed out
         // 쿠키 삭제
         try {
           await fetch('/api/auth/logout', {
@@ -107,7 +108,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
       // 로그인 이벤트 처리
       if (event === 'SIGNED_IN' && currentSession) {
-        console.log('User signed in')
+        // user signed in
         // 쿠키에 세션 저장
         try {
           await fetch('/api/auth/session', {

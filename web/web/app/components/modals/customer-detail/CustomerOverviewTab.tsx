@@ -2,14 +2,10 @@
 
 import Input from '../../ui/Input'
 import Textarea from '../../ui/Textarea'
+import CustomerRevenueCard from './CustomerRevenueCard'
+import type { Customer } from '@/types/entities'
 
-type CustomerForm = {
-  id?: string
-  name: string
-  phone?: string
-  email?: string
-  address?: string
-}
+type CustomerForm = Pick<Customer, 'id' | 'name' | 'phone' | 'email' | 'address'>
 
 type CustomerOverviewTabProps = {
   form: CustomerForm | null
@@ -33,8 +29,14 @@ export default function CustomerOverviewTab({
   if (!form) return null
 
   return (
-    <div className="bg-white rounded-sm border-2 border-neutral-500 shadow-lg p-4 md:p-5 space-y-3 md:space-y-4">
-      <div className="grid grid-cols-1 gap-3 md:gap-4 md:grid-cols-2">
+    <div className="space-y-4">
+      {/* 고객별 매출 요약 카드 */}
+      {form?.id && (
+        <CustomerRevenueCard customerId={form.id} />
+      )}
+      
+      <div className="bg-white rounded-sm border-2 border-neutral-500 shadow-lg p-4 md:p-5 space-y-3 md:space-y-4">
+        <div className="grid grid-cols-1 gap-3 md:gap-4 md:grid-cols-2">
         <div>
           <Input
             label="이름"
@@ -42,7 +44,7 @@ export default function CustomerOverviewTab({
             placeholder="예) 홍길동"
             value={form.name}
             onChange={e => onChangeForm(f => f ? ({ ...f, name: e.target.value }) : null)}
-            error={fieldErrors?.name}
+            {...(fieldErrors?.name && { error: fieldErrors.name })}
           />
         </div>
         <div>
@@ -95,6 +97,7 @@ export default function CustomerOverviewTab({
             </p>
           </div>
         )}
+        </div>
       </div>
     </div>
   )

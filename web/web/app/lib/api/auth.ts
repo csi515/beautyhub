@@ -4,7 +4,6 @@
  */
 
 import type { SupabaseClient } from '@supabase/supabase-js'
-import type { Session } from '@supabase/supabase-js'
 
 export interface LoginCredentials {
   email: string

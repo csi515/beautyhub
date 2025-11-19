@@ -49,6 +49,16 @@ const config: Config = {
           800: '#1E293B',
           900: '#1C1A1B',
         },
+        // Cancel Gray (취소 버튼용)
+        'cancel-gray': {
+          600: '#6c757d',
+          700: '#5a6268',
+        },
+        // Action Blue (저장 버튼용)
+        'action-blue': {
+          600: '#4263eb',
+          700: '#364fc7',
+        },
         // Status colors
         success: {
           50: '#F0FDF4',

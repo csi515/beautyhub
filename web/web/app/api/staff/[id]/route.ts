@@ -1,34 +1,61 @@
 import { NextRequest } from 'next/server'
 import { withAuth } from '@/app/lib/api/middleware'
-import { parseBody, createSuccessResponse } from '@/app/lib/api/handlers'
+import { parseAndValidateBody, createSuccessResponse } from '@/app/lib/api/handlers'
 import { StaffRepository } from '@/app/lib/repositories/staff.repository'
-import type { StaffUpdateInput } from '@/types/entities'
+import { staffUpdateSchema } from '@/app/lib/api/schemas'
+import { NotFoundError } from '@/app/lib/api/errors'
 
 export const GET = withAuth(async (_req: NextRequest, { userId, params }) => {
-  if (!params?.id || typeof params.id !== "string") {
-    return createSuccessResponse({ ok: false, error: "Missing or invalid staff ID" })
+  const id = params?.['id']
+  if (!id || typeof id !== "string") {
+    throw new NotFoundError("Missing or invalid staff ID")
   }
   const repository = new StaffRepository(userId)
-  const data = await repository.findById(params.id)
+  const data = await repository.findById(id)
+  if (!data) {
+    throw new NotFoundError("Staff not found")
+  }
   return createSuccessResponse(data)
 })
 
 export const PUT = withAuth(async (req: NextRequest, { userId, params }) => {
-  if (!params?.id || typeof params.id !== "string") {
-    return createSuccessResponse({ ok: false, error: "Missing or invalid staff ID" })
+  const id = params?.['id']
+  if (!id || typeof id !== "string") {
+    throw new NotFoundError("Missing or invalid staff ID")
   }
-  const body = await parseBody<StaffUpdateInput>(req)
+  const validatedBody = await parseAndValidateBody(req, staffUpdateSchema)
   const repository = new StaffRepository(userId)
-  const data = await repository.updateStaff(params.id, body)
+  // exactOptionalPropertyTypes를 위한 타입 변환
+  const body: Parameters<typeof repository.updateStaff>[1] = {}
+  if (validatedBody.name !== undefined) {
+    body.name = validatedBody.name
+  }
+  if (validatedBody.email !== undefined) {
+    body.email = validatedBody.email
+  }
+  if (validatedBody.role !== undefined) {
+    body.role = validatedBody.role
+  }
+  if (validatedBody.phone !== undefined) {
+    body.phone = validatedBody.phone
+  }
+  if (validatedBody.notes !== undefined) {
+    body.notes = validatedBody.notes
+  }
+  if (validatedBody.active !== undefined) {
+    body.active = validatedBody.active
+  }
+  const data = await repository.updateStaff(id, body)
   return createSuccessResponse(data)
 })
 
 export const DELETE = withAuth(async (_req: NextRequest, { userId, params }) => {
-  if (!params?.id || typeof params.id !== "string") {
-    return createSuccessResponse({ ok: false, error: "Missing or invalid staff ID" })
+  const id = params?.['id']
+  if (!id || typeof id !== "string") {
+    throw new NotFoundError("Missing or invalid staff ID")
   }
   const repository = new StaffRepository(userId)
-  await repository.delete(params.id)
+  await repository.delete(id)
   return createSuccessResponse({ ok: true })
 })
 

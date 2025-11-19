@@ -19,6 +19,7 @@ export interface UsePaginationReturn {
   totalItems: number
   setPage: (page: number) => void
   setPageSize: (size: number) => void
+  setTotalItems: (items: number) => void
   nextPage: () => void
   prevPage: () => void
   goToFirstPage: () => void
@@ -49,7 +50,7 @@ export function usePagination(
 
   const [page, setPageState] = useState(initialPage)
   const [pageSize, setPageSizeState] = useState(initialPageSize)
-  const [totalItems, setTotalItems] = useState(initialTotalItems)
+  const [totalItems, setTotalItemsState] = useState(initialTotalItems)
 
   const totalPages = useMemo(() => {
     return Math.max(1, Math.ceil(totalItems / pageSize))
@@ -84,6 +85,17 @@ export function usePagination(
     }
   }
 
+  const setTotalItems = (items: number) => {
+    if (items >= 0) {
+      setTotalItemsState(items)
+      // totalItems 변경 시 현재 페이지가 유효한 범위 내에 있는지 확인
+      const newTotalPages = Math.max(1, Math.ceil(items / pageSize))
+      if (page > newTotalPages && newTotalPages > 0) {
+        setPageState(newTotalPages)
+      }
+    }
+  }
+
   const nextPage = () => {
     if (hasNextPage) {
       setPageState((prev) => prev + 1)
@@ -111,6 +123,7 @@ export function usePagination(
     totalItems,
     setPage,
     setPageSize,
+    setTotalItems,
     nextPage,
     prevPage,
     goToFirstPage,

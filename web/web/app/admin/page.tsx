@@ -52,7 +52,7 @@ async function getPendingUsers(): Promise<PendingUser[]> {
       .select('id,email,name,phone,birthdate,approved,created_at')
       .eq('approved', false)
       .order('created_at', { ascending: true })
-    return (data as any) || []
+    return Array.isArray(data) ? (data as PendingUser[]) : []
   } catch (error) {
     console.error('Failed to fetch pending users:', error)
     return []

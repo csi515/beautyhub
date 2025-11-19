@@ -50,14 +50,14 @@ const Input = React.forwardRef<HTMLInputElement, Props>(
     const getBorderColor = () => {
       if (error) return 'border-error-600 focus:border-error-700 focus:ring-error-200'
       if (validating) return 'border-warning-500 focus:border-warning-600 focus:ring-warning-200'
-      if (isFocused) return 'border-[#F472B6] focus:border-[#F472B6] focus:ring-[#F472B6]/20'
-      return 'border-neutral-300 hover:border-neutral-400'
+      if (isFocused) return 'border-secondary-500 focus:border-secondary-500 focus:ring-secondary-500/20'
+      return 'border-neutral-400 hover:border-neutral-500'
     }
 
     return (
       <label className="block">
         {label && (
-          <div className="mb-2 flex items-center gap-1 text-sm font-medium text-neutral-700">
+          <div className="mb-2 flex items-center gap-1 text-base font-semibold text-neutral-700">
             {label}
             {required && <span className="text-error-600">*</span>}
           </div>
@@ -76,6 +76,15 @@ const Input = React.forwardRef<HTMLInputElement, Props>(
             autoFocus={autoFocus}
             onFocus={(e) => {
               setIsFocused(true)
+              // 모바일에서 입력 필드 포커스 시 자동 스크롤
+              if (typeof window !== 'undefined' && window.innerWidth < 768) {
+                setTimeout(() => {
+                  e.target.scrollIntoView({
+                    behavior: 'smooth',
+                    block: 'center',
+                  })
+                }, 300)
+              }
               rest.onFocus?.(e)
             }}
             onBlur={(e) => {
@@ -87,7 +96,7 @@ const Input = React.forwardRef<HTMLInputElement, Props>(
               rest.onChange?.(e)
             }}
             className={clsx(
-              'w-full h-10 rounded-lg border border-neutral-300 bg-white px-3 text-sm text-neutral-900 outline-none shadow-sm transition-all duration-300 focus:ring-[2px]',
+              'w-full h-11 rounded-lg border border-neutral-400 bg-white px-3 text-[16px] sm:text-sm text-neutral-900 outline-none shadow-sm transition-all duration-200 focus:ring-2 focus:ring-secondary-500/20 touch-manipulation min-w-0',
               leftIcon ? 'pl-10 pr-3' : 'px-3',
               rightIcon ? 'pr-10' : '',
               'placeholder:text-neutral-500 placeholder:transition-opacity placeholder:duration-300',
@@ -96,6 +105,10 @@ const Input = React.forwardRef<HTMLInputElement, Props>(
               showError && 'input-shake',
               className,
             )}
+            autoComplete={rest.type === 'email' ? 'email' : rest.type === 'tel' ? 'tel' : 'off'}
+            autoCorrect="off"
+            autoCapitalize="off"
+            spellCheck="false"
             aria-required={required}
             aria-invalid={!!error}
           />
@@ -106,9 +119,11 @@ const Input = React.forwardRef<HTMLInputElement, Props>(
           )}
         </div>
         {error ? (
-          <div className="mt-1 text-xs text-error-600 animate-slide-in-up animate-fade-in">{error}</div>
+          <div className="mt-1.5 text-xs sm:text-sm text-error-600 bg-error-50 border border-error-200 rounded-md px-2 py-1.5 animate-slide-in-up">
+            {error}
+          </div>
         ) : helpText ? (
-          <div className="mt-1 text-xs text-neutral-500">{helpText}</div>
+          <div className="mt-1 text-xs sm:text-sm text-neutral-500">{helpText}</div>
         ) : null}
       </label>
     )

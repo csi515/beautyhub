@@ -33,7 +33,7 @@ export function useCustomerDetail({ item }: UseCustomerDetailOptions): UseCustom
 
   useEffect(() => {
     setForm(item)
-    setFeatures((item as any)?.features || '')
+    setFeatures(item?.features ?? '')
   }, [item])
 
   return {

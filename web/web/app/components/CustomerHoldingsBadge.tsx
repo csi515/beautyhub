@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useCallback } from 'react'
 import { customerProductsApi } from '@/app/lib/api/customer-products'
 import type { CustomerProduct } from '@/types/entities'
 
@@ -15,7 +15,7 @@ interface HoldingsUpdatedEvent extends CustomEvent {
 export default function CustomerHoldingsBadge({ customerId }: { customerId: string }) {
   const [label, setLabel] = useState<string>('보유 없음')
 
-  const reload = async () => {
+  const reload = useCallback(async () => {
     try {
       const arr = await customerProductsApi.list(customerId)
       const items = Array.isArray(arr)
@@ -40,9 +40,9 @@ export default function CustomerHoldingsBadge({ customerId }: { customerId: stri
     } catch {
       setLabel('보유 없음')
     }
-  }
+  }, [customerId])
 
-  useEffect(() => { reload() }, [customerId])
+  useEffect(() => { reload() }, [reload])
 
   useEffect(() => {
     const handler = (e: Event) => {
@@ -53,7 +53,7 @@ export default function CustomerHoldingsBadge({ customerId }: { customerId: stri
     }
     window.addEventListener('holdings-updated', handler)
     return () => window.removeEventListener('holdings-updated', handler)
-  }, [customerId])
+  }, [customerId, reload])
 
   return <span>{label}</span>
 }

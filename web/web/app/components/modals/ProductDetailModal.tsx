@@ -6,11 +6,12 @@ import Button from '../ui/Button'
 import Textarea from '../ui/Textarea'
 import { useAppToast } from '@/app/lib/ui/toast'
 import { productsApi } from '@/app/lib/api/products'
+import type { Product as ProductEntity, ProductUpdateInput } from '@/types/entities'
 
-type Product = { id: string | number; name: string; price?: number | string; description?: string; active?: boolean }
+type ProductForm = Omit<ProductEntity, 'price'> & { price?: number | string }
 
-export default function ProductDetailModal({ open, onClose, item, onSaved, onDeleted }: { open: boolean; onClose: () => void; item: Product | null; onSaved: () => void; onDeleted: () => void }) {
-  const [form, setForm] = useState<Product | null>(item)
+export default function ProductDetailModal({ open, onClose, item, onSaved, onDeleted }: { open: boolean; onClose: () => void; item: ProductEntity | null; onSaved: () => void; onDeleted: () => void }) {
+  const [form, setForm] = useState<ProductForm | null>(item)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
   const toast = useAppToast()
@@ -27,7 +28,7 @@ export default function ProductDetailModal({ open, onClose, item, onSaved, onDel
         setLoading(false)
         return
       }
-      const body: any = { name: form.name, price: priceValue, active: form.active !== false }
+      const body: ProductUpdateInput = { name: form.name, price: priceValue, active: form.active !== false }
       // description은 값이 있을 때만 포함
       if (form.description && form.description.trim() !== '') {
         body.description = form.description.trim()
@@ -94,10 +95,6 @@ export default function ProductDetailModal({ open, onClose, item, onSaved, onDel
                   onChange={e => setForm(f => f && ({ ...f, description: e.target.value }))}
                 />
                 <p className="mt-0.5 text-xs text-neutral-400">부가세 포함 여부는 별도 표시 기준을 따릅니다.</p>
-              </div>
-              <div className="border border-dashed border-gray-300 rounded-lg p-2.5 bg-white">
-                <div className="text-xs text-neutral-700 mb-1">이미지 업로드(선택)</div>
-                <div className="text-xs text-neutral-400">이미지 업로드 영역(향후 구현 가능)</div>
               </div>
               <label className="inline-flex items-center gap-1.5 text-xs">
                 <input type="checkbox" checked={form.active !== false} onChange={e => setForm(f => f && ({ ...f, active: e.target.checked }))} />

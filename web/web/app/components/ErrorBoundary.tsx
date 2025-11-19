@@ -32,7 +32,7 @@ export class ErrorBoundary extends Component<Props, State> {
     }
   }
 
-  async componentDidCatch(error: Error, errorInfo: ErrorInfo) {
+  override async componentDidCatch(error: Error, errorInfo: ErrorInfo) {
     // 로깅 유틸리티 사용 (동적 import로 변경하여 Vercel 빌드 최적화)
     if (typeof window !== 'undefined') {
       try {
@@ -55,7 +55,7 @@ export class ErrorBoundary extends Component<Props, State> {
     })
   }
 
-  render() {
+  override render() {
     if (this.state.hasError) {
       if (this.props.fallback) {
         return this.props.fallback

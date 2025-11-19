@@ -1,4 +1,4 @@
-export default function PageHeader({ title, subtitle, actions }: { title: string; subtitle?: string; actions?: React.ReactNode }) {
+export default function PageHeader({ title, actions }: { title: string; subtitle?: string; actions?: React.ReactNode }) {
   return (
     <div className="-mx-4 md:-mx-0 bg-white/90 backdrop-blur-sm border-b border-neutral-200 shadow-sm sticky top-10 z-sticky">
       <div className="container py-1.5 md:py-2 px-3 md:px-4">

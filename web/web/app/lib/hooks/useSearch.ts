@@ -4,12 +4,11 @@
  * 검색 기능 훅
  */
 
-import { useState, useEffect, useMemo } from 'react'
+import { useState, useMemo } from 'react'
 import { useDebounce } from './useDebounce'
 
 export interface UseSearchOptions {
   debounceMs?: number
-  minLength?: number
 }
 
 export interface UseSearchReturn {
@@ -27,7 +26,7 @@ export interface UseSearchReturn {
  * const { query, debouncedQuery, setQuery } = useSearch({ debounceMs: 300 })
  */
 export function useSearch(options: UseSearchOptions = {}): UseSearchReturn {
-  const { debounceMs = 300, minLength = 0 } = options
+  const { debounceMs = 300 } = options
   const [query, setQuery] = useState('')
   const debouncedQuery = useDebounce(query, debounceMs)
 

@@ -89,7 +89,7 @@ export abstract class BaseRepository<T> {
   async create(payload: Partial<T>): Promise<T> {
     const { data, error } = await this.supabase
       .from(this.tableName)
-      .insert({ ...payload, owner_id: this.userId } as any)
+      .insert({ ...payload, owner_id: this.userId } as Record<string, unknown>)
       .select('*')
       .single()
 
@@ -106,7 +106,7 @@ export abstract class BaseRepository<T> {
   async update(id: string, payload: Partial<T>): Promise<T> {
     const { data, error } = await this.supabase
       .from(this.tableName)
-      .update(payload as any)
+      .update(payload as Record<string, unknown>)
       .eq('id', id)
       .eq('owner_id', this.userId)
       .select('*')

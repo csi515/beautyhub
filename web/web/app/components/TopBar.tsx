@@ -30,23 +30,33 @@ export default function TopBar({ onMenu }: { onMenu?: () => void }) {
   }, [])
 
   return (
-    <header className="sticky top-0 z-[1021] bg-white border-b border-neutral-200 shadow-md">
-      <div className="container h-10 flex items-center justify-between px-4 gap-2 sm:gap-3">
+    <header className="sticky top-0 z-[1021] bg-white border-b border-neutral-200 shadow-sm safe-area-inset-top">
+      <div className="h-14 sm:h-16 flex items-center justify-between px-4 sm:px-6 md:px-8 gap-3 sm:gap-4">
+        {/* 모바일 메뉴 버튼 */}
         <button 
-          aria-label="메뉴" 
+          aria-label="메뉴 열기" 
           onClick={onMenu} 
-          className="md:hidden p-2.5 rounded-lg border border-transparent hover:bg-neutral-50 hover:border-neutral-200 active:bg-neutral-100 focus-visible:ring-2 focus-visible:ring-pink-300 focus-visible:ring-offset-1 transition-all duration-300 touch-manipulation"
+          className="md:hidden p-2.5 rounded-lg border border-transparent hover:bg-neutral-50 hover:border-neutral-200 active:bg-neutral-100 focus-visible:ring-2 focus-visible:ring-pink-300 focus-visible:ring-offset-1 transition-all duration-200 touch-manipulation min-h-[44px] min-w-[44px] flex items-center justify-center"
         >
-          <Bars3Icon className="h-5 w-5 text-neutral-700" />
+          <Bars3Icon className="h-6 w-6 text-neutral-700" />
         </button>
-        <div className="flex-1" />
-        <div className="flex items-center gap-2 sm:gap-3">
+        
+        {/* 데스크톱 빈 공간 */}
+        <div className="hidden md:block flex-1" />
+        
+        {/* 사용자 정보 */}
+        <div className="flex items-center gap-2 sm:gap-3 md:gap-4">
           {userName && (
-            <span className="text-xs sm:text-sm font-medium text-neutral-700 whitespace-nowrap">
-              {userName}님 환영합니다.
+            <span className="text-xs sm:text-sm md:text-base font-medium text-neutral-700 whitespace-nowrap">
+              {userName}님
             </span>
           )}
-          <div className="h-8 w-8 sm:h-9 sm:w-9 rounded-full bg-gradient-to-br from-[#FDF2F8] to-[#FCE7F3] border border-neutral-200 shadow-sm flex-shrink-0" aria-label="사용자 아바타" />
+          <div 
+            className="h-10 w-10 sm:h-11 sm:w-11 md:h-12 md:w-12 rounded-full bg-gradient-to-br from-[#FDF2F8] to-[#FCE7F3] border-2 border-neutral-200 shadow-sm flex-shrink-0 touch-manipulation" 
+            aria-label="사용자 아바타"
+            role="button"
+            tabIndex={0}
+          />
         </div>
       </div>
     </header>

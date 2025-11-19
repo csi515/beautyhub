@@ -83,7 +83,7 @@ export class CustomerProductsRepository extends BaseRepository<CustomerProduct> 
       throw new Error('invalid quantity')
     }
 
-    const payload: any = {
+    const payload: Record<string, unknown> = {
       customer_id,
       product_id,
       quantity,
@@ -99,7 +99,7 @@ export class CustomerProductsRepository extends BaseRepository<CustomerProduct> 
 
     const { data, error } = await this.supabase
       .from(this.tableName)
-      .insert({ ...payload, owner_id: this.userId } as any)
+      .insert({ ...payload, owner_id: this.userId } as Omit<CustomerProduct, 'id' | 'created_at' | 'updated_at'>)
       .select('*, products(name)')
       .single()
 
@@ -128,7 +128,7 @@ export class CustomerProductsRepository extends BaseRepository<CustomerProduct> 
       throw new NotFoundError('holding not found')
     }
 
-    const patch: any = {}
+    const patch: Record<string, unknown> = {}
     if (typeof input.quantity !== 'undefined') {
       patch.quantity = Number(input.quantity)
     }
@@ -143,7 +143,7 @@ export class CustomerProductsRepository extends BaseRepository<CustomerProduct> 
 
     const { data, error } = await this.supabase
       .from(this.tableName)
-      .update(patch as any)
+      .update(patch as Partial<CustomerProduct>)
       .eq('id', id)
       .eq('owner_id', this.userId)
       .select('*, products(name)')
@@ -258,7 +258,7 @@ export class CustomerProductsRepository extends BaseRepository<CustomerProduct> 
       const currentReason = (matching.reason || '').toString()
       const newReason = currentReason.replace(replaceFrom, replaceTo)
 
-      const updatePayload: any = { reason: newReason }
+      const updatePayload: Record<string, unknown> = { reason: newReason }
       if (typeof deltaOverride !== 'undefined' && !Number.isNaN(deltaOverride)) {
         updatePayload.delta = deltaOverride
       }
@@ -286,7 +286,7 @@ export class CustomerProductsRepository extends BaseRepository<CustomerProduct> 
         throw new NotFoundError('ledger not found')
       }
 
-      const updatePayload: any = { reason: replaceTo || latest.reason }
+      const updatePayload: Record<string, unknown> = { reason: replaceTo || latest.reason }
       if (typeof deltaOverride !== 'undefined' && !Number.isNaN(deltaOverride)) {
         updatePayload.delta = deltaOverride
       }

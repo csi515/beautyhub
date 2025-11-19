@@ -38,11 +38,10 @@ export default function Autocomplete({
   onSearch,
   placeholder = '검색하거나 선택하세요',
   loading = false,
-  multiple = false,
   clearable = true,
   filterable = true,
   className,
-  ...rest
+  ...inputProps
 }: Props) {
   const [isOpen, setIsOpen] = useState(false)
   const [searchQuery, setSearchQuery] = useState('')
@@ -112,9 +111,12 @@ export default function Autocomplete({
     } else if (e.key === 'ArrowUp') {
       e.preventDefault()
       setHighlightedIndex((prev) => (prev > 0 ? prev - 1 : -1))
-    } else if (e.key === 'Enter' && highlightedIndex >= 0) {
+    } else if (e.key === 'Enter' && highlightedIndex >= 0 && highlightedIndex < filteredOptions.length) {
       e.preventDefault()
-      handleSelect(filteredOptions[highlightedIndex])
+      const selectedOption = filteredOptions[highlightedIndex]
+      if (selectedOption) {
+        handleSelect(selectedOption)
+      }
     } else if (e.key === 'Escape') {
       setIsOpen(false)
     }
@@ -124,7 +126,7 @@ export default function Autocomplete({
     <div ref={containerRef} className={clsx('relative', className)}>
       <div className="relative">
         <Input
-          {...rest}
+          {...inputProps}
           ref={inputRef}
           label={label}
           helpText={helpText}

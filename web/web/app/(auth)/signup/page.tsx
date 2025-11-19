@@ -4,25 +4,14 @@ export const dynamic = 'force-dynamic'
 
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
-import {
-  Box,
-  Button,
-  FormControl,
-  FormErrorMessage,
-  FormLabel,
-  Heading,
-  Input,
-  InputGroup,
-  Text,
-  VStack,
-  HStack,
-  Alert,
-  AlertIcon,
-} from '@chakra-ui/react'
+import type { SupabaseClient } from '@supabase/supabase-js'
+import Button from '@/app/components/ui/Button'
+import Input from '@/app/components/ui/Input'
+import Alert from '@/app/components/ui/Alert'
 
 export default function SignupPage() {
   const router = useRouter()
-  const [supabase, setSupabase] = useState<any>(null)
+  const [supabase, setSupabase] = useState<SupabaseClient | null>(null)
   const [name, setName] = useState('')
   const [phone, setPhone] = useState('')
   const [email, setEmail] = useState('')
@@ -69,71 +58,107 @@ export default function SignupPage() {
       })
       if (error) { setError(error.message); setBusy(false); return }
       setInfo('회원가입이 완료되었습니다. 관리자 승인 후 로그인 가능합니다.')
-    } catch (e: any) {
-      setError(e?.message || '회원가입 중 오류가 발생했습니다.')
+    } catch (e: unknown) {
+      const errorMessage = e instanceof Error ? e.message : '회원가입 중 오류가 발생했습니다.'
+      setError(errorMessage)
     } finally {
       setBusy(false)
     }
   }
 
   return (
-    <main className="min-h-screen flex items-center justify-center bg-[var(--neutral-50)] px-4">
-      <Box w="full" maxW="md" bg="whiteAlpha.900" borderWidth="1px" borderColor="blackAlpha.100" rounded="2xl" shadow="lg" p={7}>
-        <VStack spacing={5} align="stretch">
-          <Heading size="md">회원가입</Heading>
-          <Text fontSize="sm" color="gray.600">이름, 전화번호, 이메일, 비밀번호, 생년월일을 입력하세요.</Text>
+    <main className="min-h-screen flex items-center justify-center bg-neutral-50 px-4">
+      <div className="w-full max-w-md bg-white border border-neutral-200 rounded-2xl shadow-lg p-7">
+        <div className="space-y-5">
+          <h1 className="text-2xl font-semibold">회원가입</h1>
+          <p className="text-sm text-neutral-600">이름, 전화번호, 이메일, 비밀번호, 생년월일을 입력하세요.</p>
 
           {error && (
-            <Alert status="error" rounded="md">
-              <AlertIcon />
-              {error}
-            </Alert>
+            <Alert variant="error" title={error} />
           )}
           {info && (
-            <Alert status="success" rounded="md">
-              <AlertIcon />
-              {info}
-            </Alert>
+            <Alert variant="success" title={info} />
           )}
 
-          <FormControl isInvalid={!name.trim() && !!name}>
-            <FormLabel>이름</FormLabel>
-            <Input value={name} onChange={e => setName(e.target.value)} placeholder="홍길동" />
-            <FormErrorMessage>이름을 입력하세요.</FormErrorMessage>
-          </FormControl>
+          <Input
+            label="이름"
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+            placeholder="홍길동"
+            required
+            {...((!name.trim() && !!name) ? { error: '이름을 입력하세요.' } : {})}
+          />
 
-          <FormControl isInvalid={!phone.trim() && !!phone}>
-            <FormLabel>전화번호</FormLabel>
-            <Input value={phone} onChange={e => setPhone(e.target.value)} placeholder="010-1234-5678" />
-            <FormErrorMessage>전화번호를 입력하세요.</FormErrorMessage>
-          </FormControl>
+          <Input
+            label="전화번호"
+            value={phone}
+            onChange={(e) => setPhone(e.target.value)}
+            placeholder="010-1234-5678"
+            required
+            {...((!phone.trim() && !!phone) ? { error: '전화번호를 입력하세요.' } : {})}
+          />
 
-          <FormControl isInvalid={!!email && !/.+@.+\..+/.test(email)}>
-            <FormLabel>이메일</FormLabel>
-            <Input type="email" value={email} onChange={e => setEmail(e.target.value)} placeholder="you@example.com" />
-            <FormErrorMessage>유효한 이메일을 입력하세요.</FormErrorMessage>
-          </FormControl>
+          <Input
+            label="이메일"
+            type="email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            placeholder="you@example.com"
+            required
+            {...((!!email && !/.+@.+\..+/.test(email)) ? { error: '유효한 이메일을 입력하세요.' } : {})}
+          />
 
-          <FormControl isInvalid={!!password && password.length < 6}>
-            <FormLabel>비밀번호</FormLabel>
-            <Input type="password" value={password} onChange={e => setPassword(e.target.value)} placeholder="6자 이상" />
-            <FormErrorMessage>비밀번호는 6자 이상이어야 합니다.</FormErrorMessage>
-          </FormControl>
+          <Input
+            label="비밀번호"
+            type="password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            placeholder="6자 이상"
+            required
+            {...((!!password && password.length < 6) ? { error: '비밀번호는 6자 이상이어야 합니다.' } : {})}
+          />
 
-          <FormControl isInvalid={!birthdate && !!birthdate}>
-            <FormLabel>생년월일</FormLabel>
-            <Input type="date" value={birthdate} onChange={e => setBirthdate(e.target.value)} />
-            <FormErrorMessage>생년월일을 선택하세요.</FormErrorMessage>
-          </FormControl>
+          <Input
+            label="생년월일"
+            type="date"
+            value={birthdate}
+            onChange={(e) => setBirthdate(e.target.value)}
+            required
+            {...((!birthdate && !!birthdate) ? { error: '생년월일을 선택하세요.' } : {})}
+          />
 
-          <VStack spacing={3} align="stretch">
-            <Button colorScheme="brand" onClick={submit} isLoading={busy} isDisabled={!canSubmit || busy || !supabase}>회원가입하기</Button>
-            <Button variant="ghost" onClick={() => router.push('/login')}>로그인으로 돌아가기</Button>
-          </VStack>
-        </VStack>
-      </Box>
+          <div className="space-y-3">
+            <Button
+              variant="primary"
+              onClick={submit}
+              loading={busy}
+              disabled={!canSubmit || busy || !supabase}
+              className="w-full relative z-10"
+              style={{ 
+                position: 'relative',
+                zIndex: 10,
+                touchAction: 'manipulation',
+                WebkitTapHighlightColor: 'transparent'
+              }}
+            >
+              회원가입하기
+            </Button>
+            <Button
+              variant="ghost"
+              onClick={() => router.push('/login')}
+              className="w-full relative z-10"
+              style={{ 
+                position: 'relative',
+                zIndex: 10,
+                touchAction: 'manipulation',
+                WebkitTapHighlightColor: 'transparent'
+              }}
+            >
+              로그인으로 돌아가기
+            </Button>
+          </div>
+        </div>
+      </div>
     </main>
   )
 }
-
-

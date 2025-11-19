@@ -35,7 +35,7 @@ export default function AnimatedList<T>({
     })
   }, [items, keyExtractor, staggerDelay])
 
-  const getAnimationClass = (index: number, isVisible: boolean) => {
+  const getAnimationClass = (_index: number, isVisible: boolean) => {
     if (!isVisible) {
       switch (animationType) {
         case 'slide':

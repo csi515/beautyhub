@@ -1,6 +1,6 @@
 import { NextRequest } from 'next/server'
 import { withAuth } from '@/app/lib/api/middleware'
-import { parseQueryParams, parseBody, createSuccessResponse } from '@/app/lib/api/handlers'
+import { parseBody, createSuccessResponse } from '@/app/lib/api/handlers'
 import { CustomerProductsRepository } from '@/app/lib/repositories/customer-products.repository'
 import type { CustomerProductCreateInput } from '@/app/lib/repositories/customer-products.repository'
 

@@ -22,9 +22,11 @@ export default function FormField({ label, required, helpText, error, children, 
         {children}
       </div>
       {error ? (
-        <div className="mt-1 text-xs text-rose-600">{error}</div>
+        <div className="mt-1.5 text-xs sm:text-sm text-error-600 bg-error-50 border border-error-200 rounded-md px-2 py-1.5 animate-slide-in-up">
+          {error}
+        </div>
       ) : helpText ? (
-        <div className="mt-1 text-xs text-neutral-500">{helpText}</div>
+        <div className="mt-1 text-xs sm:text-sm text-neutral-500">{helpText}</div>
       ) : null}
     </div>
   )

@@ -24,7 +24,7 @@ export class ProductsRepository extends BaseRepository<Product> {
       throw new Error('invalid price')
     }
 
-    const payload: any = {
+    const payload: Record<string, unknown> = {
       name,
       price,
       active: input.active !== false,

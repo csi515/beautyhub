@@ -15,26 +15,44 @@ const Textarea = React.forwardRef<HTMLTextAreaElement, Props>(
     return (
       <label className="block">
         {label && (
-          <div className="mb-0.5 text-xs font-medium text-gray-700">
+          <div className="mb-2 text-base font-semibold text-neutral-700">
             {label}
-            {required && <span className="ml-0.5 text-rose-600">*</span>}
+            {required && <span className="ml-1 text-error-600">*</span>}
           </div>
         )}
-        <textarea
-          ref={ref}
-          {...rest}
-          className={clsx(
-            'min-h-20 w-full rounded-lg border border-gray-300 bg-white px-2.5 py-1.5 text-sm text-gray-700 outline-none shadow-sm transition-all duration-200 placeholder:text-gray-400 focus:border-blue-500 focus:ring-2 focus:ring-blue-200',
-            error && 'border-rose-400 focus:border-rose-500 focus:ring-rose-200',
-            className,
-          )}
-          aria-invalid={!!error}
-          aria-required={required}
-        />
+                 <textarea
+                   ref={ref}
+                   {...rest}
+                   onFocus={(e) => {
+                     // 모바일에서 입력 필드 포커스 시 자동 스크롤
+                     if (typeof window !== 'undefined' && window.innerWidth < 768) {
+                       setTimeout(() => {
+                         e.target.scrollIntoView({
+                           behavior: 'smooth',
+                           block: 'center',
+                         })
+                       }, 300)
+                     }
+                     rest.onFocus?.(e)
+                   }}
+                   className={clsx(
+                     'min-h-24 w-full min-w-0 rounded-lg border border-neutral-400 bg-white px-3 py-2.5 text-[16px] sm:text-sm text-neutral-900 outline-none shadow-sm transition-all duration-200 placeholder:text-neutral-500 focus:border-secondary-500 focus:ring-2 focus:ring-secondary-500/20 touch-manipulation',
+                     error && 'border-error-600 focus:border-error-700 focus:ring-error-200',
+                     className,
+                   )}
+                   autoComplete="off"
+                   autoCorrect="off"
+                   autoCapitalize="off"
+                   spellCheck="false"
+                   aria-invalid={!!error}
+                   aria-required={required}
+                 />
         {error ? (
-          <div className="mt-0.5 text-xs text-rose-600">{error}</div>
+          <div className="mt-1.5 text-xs sm:text-sm text-error-600 bg-error-50 border border-error-200 rounded-md px-2 py-1.5 animate-slide-in-up">
+            {error}
+          </div>
         ) : helpText ? (
-          <div className="mt-0.5 text-xs text-gray-400">{helpText}</div>
+          <div className="mt-1 text-xs sm:text-sm text-neutral-500">{helpText}</div>
         ) : null}
       </label>
     )

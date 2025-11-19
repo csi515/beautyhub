@@ -1,8 +1,11 @@
 import { createClient } from '@supabase/supabase-js'
 import { getEnv } from '@/app/lib/env'
 
+// 싱글톤 패턴으로 Supabase 클라이언트 인스턴스 관리
+let supabaseClientInstance: ReturnType<typeof createClient> | null = null
+
 /**
- * 브라우저 클라이언트용 Supabase 클라이언트 생성
+ * 브라우저 클라이언트용 Supabase 클라이언트 생성 (싱글톤)
  * 클라이언트 컴포넌트에서만 사용 가능
  * 
  * JWT 자동 갱신 설정:
@@ -15,6 +18,11 @@ export function createSupabaseBrowserClient() {
     throw new Error('createSupabaseBrowserClient()는 클라이언트 사이드에서만 사용할 수 있습니다.')
   }
   
+  // 이미 생성된 인스턴스가 있으면 재사용
+  if (supabaseClientInstance) {
+    return supabaseClientInstance
+  }
+  
   const url = getEnv.supabaseUrl()
   const anon = getEnv.supabaseAnonKey()
   
@@ -22,7 +30,7 @@ export function createSupabaseBrowserClient() {
     throw new Error('Supabase 환경변수가 설정되지 않았습니다.')
   }
   
-  const supabase = createClient(url, anon, {
+  supabaseClientInstance = createClient(url, anon, {
     auth: {
       persistSession: true,
       autoRefreshToken: true,
@@ -32,5 +40,5 @@ export function createSupabaseBrowserClient() {
     },
   })
 
-  return supabase
+  return supabaseClientInstance
 }

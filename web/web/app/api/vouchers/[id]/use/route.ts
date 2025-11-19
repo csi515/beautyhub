@@ -5,12 +5,13 @@ import { VouchersRepository } from '@/app/lib/repositories/vouchers.repository'
 import type { VoucherUseInput } from '@/app/lib/repositories/vouchers.repository'
 
 export const POST = withAuth(async (req: NextRequest, { userId, params }) => {
-  if (!params?.id || typeof params.id !== "string") {
+  const id = params?.['id']
+  if (!id || typeof id !== "string") {
     return createSuccessResponse({ ok: false, error: "Missing or invalid voucher ID" })
   }
   const body = await parseBody<VoucherUseInput>(req)
   const repository = new VouchersRepository(userId)
-  const data = await repository.useVoucher(params.id, body)
+  const data = await repository.useVoucher(id, body)
   return createSuccessResponse(data)
 })
 

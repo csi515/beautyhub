@@ -22,7 +22,13 @@ export default function StaffDetailModal({ open, onClose, item, onSaved, onDelet
   const save = async () => {
     try {
       setLoading(true); setError('')
-      const body: any = { name: (form.name||'').trim(), phone: form.phone || null, email: form.email || null, role: form.role || null, active: form.active !== false }
+      const body: { name: string; phone: string | null; email: string | null; role: string | null; active: boolean; notes?: string } = { 
+        name: (form.name||'').trim(), 
+        phone: form.phone || null, 
+        email: form.email || null, 
+        role: form.role || null, 
+        active: form.active !== false 
+      }
       // notes는 값이 있을 때만 포함
       if (form.notes && form.notes.trim() !== '') {
         body.notes = form.notes.trim()
@@ -34,7 +40,13 @@ export default function StaffDetailModal({ open, onClose, item, onSaved, onDelet
         await staffApi.create(body)
       }
       onSaved(); onClose(); toast.success('직원이 저장되었습니다.')
-    } catch (e:any) { setError(e?.message || '에러가 발생했습니다.'); toast.error('저장 실패', e?.message) } finally { setLoading(false) }
+    } catch (e: unknown) { 
+      const errorMessage = e instanceof Error ? e.message : '에러가 발생했습니다.'
+      setError(errorMessage)
+      toast.error('저장 실패', errorMessage) 
+    } finally { 
+      setLoading(false) 
+    }
   }
 
   const removeItem = async () => {

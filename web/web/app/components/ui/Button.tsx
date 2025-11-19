@@ -1,9 +1,10 @@
 'use client'
 
 import clsx from 'clsx'
-import { useRipple } from '@/app/lib/hooks/useRipple'
-import { useState } from 'react'
+import { memo, useState } from 'react'
 import type { ReactNode } from 'react'
+import { useRipple } from '@/app/lib/hooks/useRipple'
+import { useHapticFeedback } from '@/app/lib/hooks/useHapticFeedback'
 
 type Props = React.ButtonHTMLAttributes<HTMLButtonElement> & {
   variant?: 'primary' | 'secondary' | 'danger' | 'ghost' | 'outline' | 'contrast'
@@ -14,7 +15,7 @@ type Props = React.ButtonHTMLAttributes<HTMLButtonElement> & {
   loading?: boolean
 }
 
-export default function Button({ 
+function Button({ 
   variant = 'primary', 
   size = 'md', 
   className, 
@@ -30,105 +31,125 @@ export default function Button({
   const [isHovered, setIsHovered] = useState(false)
 
   const base =
-    'relative inline-flex items-center justify-center font-medium transition-all duration-300 focus:outline-none focus-visible:ring-[2px] focus-visible:ring-offset-2 overflow-hidden disabled:opacity-50 disabled:cursor-not-allowed'
+    'relative inline-flex items-center justify-center font-semibold transition-all duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 overflow-hidden disabled:opacity-50 disabled:cursor-not-allowed'
   
   const variants: Record<string, string> = {
-    // Primary: 로즈 핑크 배경, 흰색 텍스트 (저장 버튼용) - 인라인 스타일로 색상 적용
+    // Primary: action-blue 배경, 흰색 텍스트 (저장 버튼용)
     primary:
-      'rounded-lg border-2 active:scale-[0.99] focus-visible:ring-pink-300 shadow-md hover:shadow-lg',
-    // Secondary: 흰색 배경, 로즈 핑크 테두리 (취소 버튼용) - 인라인 스타일로 색상 적용
+      'rounded-xl active:scale-[0.98] focus-visible:ring-action-blue-300 shadow-md hover:shadow-lg',
+    // Secondary: cancel-gray 배경, 흰색 텍스트 (취소 버튼용)
     secondary:
-      'rounded-lg border-2 active:scale-[0.99] focus-visible:ring-pink-300 shadow-sm hover:shadow-md',
-    // Outline: 투명 배경, 로즈 핑크 테두리 - 인라인 스타일로 색상 적용
+      'rounded-xl active:scale-[0.98] focus-visible:ring-cancel-gray-300 shadow-md hover:shadow-lg',
+    // Outline: 투명 배경, 테두리
     outline:
-      'rounded-lg border-2 active:scale-[0.99] focus-visible:ring-pink-300',
-    // Ghost: 투명 배경, 호버 시 로즈 핑크 배경 - 인라인 스타일로 색상 적용
+      'rounded-xl border-2 active:scale-[0.98] focus-visible:ring-secondary-300',
+    // Ghost: 투명 배경, 호버 시 배경
     ghost:
-      'rounded-lg active:scale-[0.99] focus-visible:ring-pink-300',
-    // Danger: 흰색 배경, 부드러운 로즈 테두리 (삭제 버튼용) - 인라인 스타일로 색상 적용
+      'rounded-xl active:scale-[0.98] focus-visible:ring-secondary-300',
+    // Danger: 에러 색상 배경, 흰색 텍스트 (삭제 버튼용)
     danger:
-      'rounded-lg border-2 active:scale-[0.99] focus-visible:ring-rose-300 shadow-sm hover:shadow-md',
-    // Contrast: 흰색 배경, 로즈 핑크 테두리 - 인라인 스타일로 색상 적용
+      'rounded-xl active:scale-[0.98] focus-visible:ring-error-300 shadow-md hover:shadow-lg',
+    // Contrast: 흰색 배경, 테두리
     contrast:
-      'rounded-lg border-2 active:scale-[0.99] focus-visible:ring-pink-300 shadow-sm hover:shadow-md',
+      'rounded-xl border-2 active:scale-[0.98] focus-visible:ring-secondary-300 shadow-sm hover:shadow-md',
   }
   
   const sizes: Record<string, string> = {
-    sm: 'h-10 px-5 py-2.5 text-sm gap-2 min-w-[80px]',
-    md: 'h-12 px-8 py-3 text-base gap-2 min-w-[100px]',
-    lg: 'h-14 px-10 py-3.5 text-lg gap-2 min-w-[120px]'
+    sm: 'h-10 px-5 py-2.5 text-sm gap-2 min-w-[80px] min-h-[44px]',
+    md: 'h-11 px-5 py-2.5 text-base gap-2 min-w-[100px] min-h-[44px]',
+    lg: 'h-14 px-10 py-3.5 text-lg gap-2 min-w-[120px] min-h-[48px]'
   }
 
   const isDisabled = disabled || loading
 
+  const haptic = useHapticFeedback()
+
   const handleClick = (e: React.MouseEvent<HTMLButtonElement>) => {
-    if (!isDisabled && ripple) {
-      addRipple(e)
+    if (!isDisabled) {
+      if (ripple) {
+        addRipple(e)
+      }
+      // 모바일에서 햅틱 피드백 제공
+      if (typeof window !== 'undefined' && window.innerWidth < 768) {
+        haptic.light()
+      }
     }
     onClick?.(e)
   }
 
+  const handleTouchStart = (_e: React.TouchEvent<HTMLButtonElement>) => {
+    // 모바일에서만 터치 이벤트 처리
+    // onClick과 중복 실행 방지
+    if (!isDisabled && onClick && typeof window !== 'undefined' && window.innerWidth < 768) {
+      // 기본 동작은 prevent하지 않음 (브라우저 기본 터치 처리 유지)
+      // onClick이 자동으로 처리됨
+    }
+  }
+
   const getStyle = () => {
-    const roseColor = '#F472B6' // 로즈 핑크
-    const roseHover = '#EC4899' // 진한 로즈 핑크
-    const roseLight = '#FBCFE8' // 밝은 로즈
-    const dangerColor = '#FCA5A5' // 부드러운 로즈 (에러)
-    const dangerHover = '#FB7185' // 진한 부드러운 로즈
-    
+    // Primary (저장 버튼): action-blue
     if (variant === 'primary') {
-      // 로즈 핑크 배경 → 흰 글자, 그라데이션 효과
       return { 
-        background: isHovered 
-          ? `linear-gradient(135deg, ${roseHover} 0%, ${roseColor} 100%)`
-          : `linear-gradient(135deg, ${roseColor} 0%, ${roseLight} 100%)`,
-        borderColor: isHovered ? roseHover : roseColor, 
+        backgroundColor: isHovered ? '#364fc7' : '#4263eb',
         color: '#ffffff' 
       }
     }
-    if (variant === 'secondary' || variant === 'contrast') {
-      // 흰 배경 → 검은 글자, 호버 시 로즈 핑크 배경 → 흰 글자
+    // Secondary (취소 버튼): cancel-gray
+    if (variant === 'secondary') {
       return { 
-        backgroundColor: isHovered ? roseColor : '#ffffff', 
-        borderColor: roseColor, 
-        color: isHovered ? '#ffffff' : '#1C1A1B' 
+        backgroundColor: isHovered ? '#5a6268' : '#6c757d',
+        color: '#ffffff' 
       }
     }
+    // Danger (삭제 버튼): error 색상
     if (variant === 'danger') {
-      // 흰 배경 → 검은 글자, 호버 시 부드러운 로즈 배경 → 흰 글자
       return { 
-        backgroundColor: isHovered ? dangerColor : '#ffffff', 
-        borderColor: dangerColor, 
-        color: isHovered ? '#ffffff' : '#1C1A1B' 
+        backgroundColor: isHovered ? '#DC2626' : '#EF4444',
+        color: '#ffffff' 
       }
     }
+    // Outline: 투명 배경 + secondary 색상 테두리
     if (variant === 'outline') {
-      // 기본: 투명 배경 + 로즈 핑크 글자, 호버: 로즈 핑크 배경 + 흰 글자
       return { 
-        backgroundColor: isHovered ? roseColor : 'transparent', 
-        borderColor: roseColor, 
-        color: isHovered ? '#ffffff' : roseColor 
+        backgroundColor: isHovered ? 'rgba(66, 99, 235, 0.1)' : 'transparent', 
+        borderColor: '#4263eb', 
+        color: isHovered ? '#4263eb' : '#4263eb' 
       }
     }
+    // Ghost: 투명 배경
     if (variant === 'ghost') {
-      // 기본: 투명 배경 + 로즈 핑크 글자, 호버: 로즈 핑크 배경 + 흰 글자
       return { 
-        backgroundColor: isHovered ? roseColor : 'transparent', 
+        backgroundColor: isHovered ? 'rgba(66, 99, 235, 0.1)' : 'transparent', 
         borderColor: 'transparent', 
-        color: isHovered ? '#ffffff' : roseColor 
+        color: isHovered ? '#4263eb' : '#64748B' 
+      }
+    }
+    // Contrast: 흰 배경 + 테두리
+    if (variant === 'contrast') {
+      return { 
+        backgroundColor: isHovered ? '#F3F4F6' : '#ffffff', 
+        borderColor: '#D1D5DB', 
+        color: isHovered ? '#1C1A1B' : '#1C1A1B' 
       }
     }
     return {}
   }
 
+  // 접근성: aria-label이 없고 children이 문자열이 아닐 때 자동 생성
+  const ariaLabel = rest['aria-label'] || (typeof rest.children === 'string' ? rest.children : undefined)
+  
   return (
     <button 
       className={clsx(base, variants[variant], sizes[size], className)} 
       style={getStyle()}
       disabled={isDisabled}
       onClick={handleClick}
+      onTouchStart={handleTouchStart}
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
       aria-disabled={isDisabled}
+      aria-label={ariaLabel}
+      aria-busy={loading}
       {...rest}
     >
       <span className={clsx('inline-flex items-center gap-inherit', loading && 'opacity-70')}>
@@ -159,5 +180,7 @@ export default function Button({
     </button>
   )
 }
+
+export default memo(Button)
 
 

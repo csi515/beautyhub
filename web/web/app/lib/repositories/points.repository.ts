@@ -66,7 +66,7 @@ export class PointsRepository {
       throw new ApiError(e1.message, 500)
     }
 
-    const balance = (allRows || []).reduce((s: number, r: any) => s + Number(r.delta || 0), 0)
+    const balance = (allRows || []).reduce((s: number, r: { delta?: number }) => s + Number(r.delta || 0), 0)
 
     if (!withLedger) {
       return { balance }
@@ -131,7 +131,7 @@ export class PointsRepository {
       throw new ApiError(error.message, 500)
     }
 
-    const balance = (ledger || []).reduce((s: number, r: any) => s + Number(r.delta || 0), 0)
+    const balance = (ledger || []).reduce((s: number, r: { delta?: number }) => s + Number(r.delta || 0), 0)
 
     return { balance }
   }
@@ -166,13 +166,13 @@ export class PointsRepository {
     const by_reason_map: Record<string, { sum: number; count: number }> = {}
 
     for (const r of rows) {
-      const d = Number((r as any).delta || 0)
+      const d = Number((r as { delta?: number }).delta || 0)
       if (d >= 0) {
         total_add += d
       } else {
         total_deduct += Math.abs(d)
       }
-      const reason = String((r as any).reason || '기타')
+      const reason = String((r as { reason?: string }).reason || '기타')
       if (!by_reason_map[reason]) {
         by_reason_map[reason] = { sum: 0, count: 0 }
       }

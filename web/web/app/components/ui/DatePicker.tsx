@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useRef, useEffect } from 'react'
+import { useState, useEffect } from 'react'
 import clsx from 'clsx'
 import { Calendar } from 'lucide-react'
 import { useClickOutside } from '@/app/lib/hooks/useClickOutside'
