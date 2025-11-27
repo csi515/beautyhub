@@ -34,7 +34,6 @@ export default function FinancePage() {
   const [transactions, setTransactions] = useState<Transaction[]>([])
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
-  const density: 'compact' | 'comfortable' = 'comfortable'
   // combined는 특별한 형태이므로 useSort를 직접 사용하지 않고 상태만 관리
   const [sortKey, setSortKey] = useState<'date' | 'amount'>('date')
   const [sortDir, setSortDir] = useState<'asc' | 'desc'>('desc')
@@ -189,13 +188,26 @@ export default function FinancePage() {
       toast.info('엑셀 파일을 생성하는 중입니다...')
       
       // 내보낼 데이터 준비
-      const exportData: FinanceExportData[] = combined.map((row) => ({
-        date: row.date,
-        type: row.type === 'income' ? '수입' : '지출',
-        amount: row.amount,
-        category: row.type === 'expense' ? (row.raw as Expense).category : undefined,
-        memo: row.note || undefined,
-      }))
+      const exportData: FinanceExportData[] = combined.map((row) => {
+        const baseData = {
+          date: row.date,
+          type: row.type === 'income' ? '수입' as const : '지출' as const,
+          amount: row.amount,
+        }
+
+        if (row.type === 'expense') {
+          return {
+            ...baseData,
+            category: (row.raw as Expense).category,
+            ...(row.note && { memo: row.note }),
+          }
+        } else {
+          return {
+            ...baseData,
+            ...(row.note && { memo: row.note }),
+          }
+        }
+      })
 
       const summary = {
         totalIncome: sumIncome,
@@ -226,15 +238,15 @@ export default function FinancePage() {
         .map(t => ({
           date: (t.transaction_date || t.created_at || '').slice(0, 10),
           amount: Number(t.amount || 0),
-          customer: t.customer_id ? '고객' : undefined,
-          notes: t.notes || undefined,
+          ...(t.customer_id && { customer: '고객' }),
+          ...(t.notes && { notes: t.notes }),
         }))
 
       const expenseData = expenses.map(e => ({
         date: e.expense_date,
         amount: Number(e.amount || 0),
         category: e.category,
-        memo: e.memo || undefined,
+        ...(e.memo && { memo: e.memo }),
       }))
 
       generateTaxReport({
@@ -348,50 +360,50 @@ export default function FinancePage() {
           <table className="w-full text-sm table-fixed">
             <thead className="bg-gradient-to-r from-pink-100 via-purple-100 to-blue-100 border-b-2 border-purple-200 sticky top-0 z-[40]">
               <tr>
-                <th className={density==='compact' ? 'text-left p-3 font-semibold text-pink-700 whitespace-nowrap w-[100px]' : 'text-left p-4 font-semibold text-pink-700 whitespace-nowrap w-[100px]'}>
+                <th className="text-left p-4 font-semibold text-pink-700 whitespace-nowrap w-[100px]">
                   <button className="inline-flex items-center gap-1 hover:text-pink-900 transition-colors duration-300 font-semibold" onClick={() => { setSortKey('date'); setSortDir(d => (sortKey==='date' && d==='asc') ? 'desc' : 'asc'); setPage(1) }}>
                     일자 {sortKey==='date' ? (sortDir==='asc' ? '▲' : '▼') : ''}
                   </button>
                 </th>
-              <th className={density==='compact' ? 'text-left p-3 font-semibold text-purple-700 whitespace-nowrap w-[80px]' : 'text-left p-4 font-semibold text-purple-700 whitespace-nowrap w-[80px]'}>유형</th>
-                <th className={density==='compact' ? 'text-right p-3 font-semibold text-blue-700 whitespace-nowrap w-[120px]' : 'text-right p-4 font-semibold text-blue-700 whitespace-nowrap w-[120px]'}>
+              <th className="text-left p-4 font-semibold text-purple-700 whitespace-nowrap w-[80px]">유형</th>
+                <th className="text-right p-4 font-semibold text-blue-700 whitespace-nowrap w-[120px]">
                   <button className="inline-flex items-center gap-1 hover:text-blue-900 transition-colors duration-300 font-semibold" onClick={() => { setSortKey('amount'); setSortDir(d => (sortKey==='amount' && d==='asc') ? 'desc' : 'asc'); setPage(1) }}>
                     금액 {sortKey==='amount' ? (sortDir==='asc' ? '▲' : '▼') : ''}
                   </button>
                 </th>
-              <th className={density==='compact' ? 'text-left p-3 font-semibold text-emerald-700 whitespace-nowrap' : 'text-left p-4 font-semibold text-emerald-700 whitespace-nowrap'}>메모/카테고리</th>
-                <th className={density==='compact' ? 'text-right p-3 font-semibold text-amber-700 w-[60px]' : 'text-right p-4 font-semibold text-amber-700 w-[60px]'}></th>
+              <th className="text-left p-4 font-semibold text-emerald-700 whitespace-nowrap">메모/카테고리</th>
+                <th className="text-right p-4 font-semibold text-amber-700 w-[60px]"></th>
               </tr>
             </thead>
             <tbody className="divide-y divide-neutral-200">
               {loading && Array.from({ length: 6 }).map((_, i) => (
               <tr key={`ex-s-${i}`}>
-                  <td className={density==='compact' ? 'p-3' : 'p-4'}><Skeleton className="h-4 w-28" /></td>
-                <td className={density==='compact' ? 'p-3' : 'p-4'}><Skeleton className="h-4 w-16" /></td>
-                  <td className={density==='compact' ? 'p-3 text-right' : 'p-4 text-right'}><Skeleton className="h-4 w-20 ml-auto" /></td>
-                <td className={density==='compact' ? 'p-3' : 'p-4'}><Skeleton className="h-4 w-24" /></td>
-                  <td className={density==='compact' ? 'p-3' : 'p-4'}><Skeleton className="h-8 w-24 ml-auto" /></td>
+                  <td className="p-4"><Skeleton className="h-4 w-28" /></td>
+                <td className="p-4"><Skeleton className="h-4 w-16" /></td>
+                  <td className="p-4 text-right"><Skeleton className="h-4 w-20 ml-auto" /></td>
+                <td className="p-4"><Skeleton className="h-4 w-24" /></td>
+                  <td className="p-4"><Skeleton className="h-8 w-24 ml-auto" /></td>
                 </tr>
               ))}
             {!loading && pagedCombined.map(row => (
               <tr key={`${row.type}-${row.id}`} className="hover:bg-neutral-50 transition-colors duration-300 min-h-[48px] border-b border-neutral-200">
-                <td className={density==='compact' ? 'p-3 text-neutral-900' : 'p-4 text-neutral-900'}>{row.date}</td>
-                <td className={density==='compact' ? 'p-3' : 'p-4'}>
+                <td className="p-4 text-neutral-900">{row.date}</td>
+                <td className="p-4">
                   <span className={`inline-flex items-center px-2 py-1 rounded-lg text-xs font-medium ${
-                    row.type === 'income' 
-                      ? 'bg-emerald-50 text-emerald-700 border border-emerald-200' 
+                    row.type === 'income'
+                      ? 'bg-emerald-50 text-emerald-700 border border-emerald-200'
                       : 'bg-rose-50 text-rose-700 border border-rose-200'
                   }`}>
                     {row.type === 'income' ? '수입' : '지출'}
                   </span>
                 </td>
-                <td className={`${density==='compact' ? 'p-3 text-right font-medium' : 'p-4 text-right font-medium'} ${
+                <td className={`p-4 text-right font-medium ${
                   row.type === 'income' ? 'text-emerald-600' : 'text-rose-600'
                 }`}>₩{Number(row.amount || 0).toLocaleString()}</td>
-                <td className={density==='compact' ? 'p-3 text-neutral-600 min-w-0' : 'p-4 text-neutral-600 min-w-0'}>
+                <td className="p-4 text-neutral-600 min-w-0">
                   <div className="truncate max-w-[200px] sm:max-w-none" title={row.note || '-'}>{row.note || '-'}</div>
                 </td>
-                  <td className={density==='compact' ? 'p-3' : 'p-4'}>
+                  <td className="p-4">
                     <button
                     onClick={() => {
                       if (row.type === 'income') { setTxDetail(row.raw); setTxOpen(true) }
