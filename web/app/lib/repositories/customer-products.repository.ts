@@ -47,8 +47,8 @@ export interface CustomerProductUpdateInput {
 }
 
 export class CustomerProductsRepository extends BaseRepository<CustomerProduct> {
-  constructor(userId: string) {
-    super(userId, 'customer_products')
+  constructor(userId: string, supabase: any) {
+    super(userId, 'customer_products', supabase)
   }
 
   /**

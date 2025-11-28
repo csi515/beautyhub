@@ -5,9 +5,9 @@ import { AppointmentsRepository } from '@/app/lib/repositories/appointments.repo
 import { appointmentCreateSchema } from '@/app/lib/api/schemas'
 import type { AppointmentCreateInputExtended } from '@/types/entities'
 
-export const GET = withAuth(async (req: NextRequest, { userId }) => {
+export const GET = withAuth(async (req: NextRequest, { userId, supabase }) => {
   const params = parseQueryParams(req)
-  const repository = new AppointmentsRepository(userId)
+  const repository = new AppointmentsRepository(userId, supabase)
   const options: Parameters<typeof repository.findAll>[0] = {
     ...params,
   }
@@ -21,9 +21,9 @@ export const GET = withAuth(async (req: NextRequest, { userId }) => {
   return createSuccessResponse(data)
 })
 
-export const POST = withAuth(async (req: NextRequest, { userId }) => {
+export const POST = withAuth(async (req: NextRequest, { userId, supabase }) => {
   const validatedBody = await parseAndValidateBody(req, appointmentCreateSchema)
-  const repository = new AppointmentsRepository(userId)
+  const repository = new AppointmentsRepository(userId, supabase)
   // exactOptionalPropertyTypes를 위한 타입 변환
   const body: Parameters<typeof repository.createAppointment>[0] = {
     appointment_date: validatedBody.appointment_date,

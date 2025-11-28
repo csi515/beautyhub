@@ -240,8 +240,8 @@ const getCachedKpis = unstable_cache(
 async function getKpis({ start, end }: { start: string; end: string }) {
   // cookies()는 캐시 함수 밖에서 호출
   const { cookies } = await import('next/headers')
-  const cookieStore = cookies()
-  const userId = getUserIdFromCookies()
+  const cookieStore = await cookies()
+  const userId = await getUserIdFromCookies()
   const accessToken = cookieStore.get('sb:token')?.value || cookieStore.get('sb-access-token')?.value
 
   if (!userId) {

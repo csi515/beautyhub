@@ -9,7 +9,7 @@ import { getEnv } from '@/app/lib/env'
  * 중요: 서버 사이드에서는 getUser()를 사용하여 토큰을 검증해야 합니다.
  * getSession()은 쿠키에서 직접 읽어서 검증되지 않을 수 있습니다.
  */
-export function createSupabaseServerClient() {
+export async function createSupabaseServerClient() {
   const url = getEnv.supabaseUrl()
   const anon = getEnv.supabaseAnonKey()
 
@@ -17,8 +17,8 @@ export function createSupabaseServerClient() {
     throw new Error('Supabase 환경변수가 설정되지 않았습니다.')
   }
 
-  // 쿠키에서 토큰 가져오기
-  const cookieStore = cookies()
+  // 쿠키에서 토큰 가져오기 (Next.js 15에서는 cookies()가 async)
+  const cookieStore = await cookies()
   const accessToken = cookieStore.get('sb:token')?.value || cookieStore.get('sb-access-token')?.value
   const refreshToken = cookieStore.get('sb:refresh')?.value
 
@@ -49,7 +49,7 @@ export function createSupabaseServerClient() {
  * getSession()보다 안전하지만 네트워크 요청이 필요합니다.
  */
 export async function getServerUser() {
-  const supabase = createSupabaseServerClient()
+  const supabase = await createSupabaseServerClient()
   const { data: { user }, error } = await supabase.auth.getUser()
 
   if (error) {
@@ -62,3 +62,4 @@ export async function getServerUser() {
 
   return { user, error: null }
 }
+

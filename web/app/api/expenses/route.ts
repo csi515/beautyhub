@@ -4,9 +4,9 @@ import { parseQueryParams, parseAndValidateBody, createSuccessResponse } from '@
 import { ExpensesRepository } from '@/app/lib/repositories/expenses.repository'
 import { expenseCreateSchema } from '@/app/lib/api/schemas'
 
-export const GET = withAuth(async (req: NextRequest, { userId }) => {
+export const GET = withAuth(async (req: NextRequest, { userId, supabase }) => {
   const params = parseQueryParams(req)
-  const repository = new ExpensesRepository(userId)
+  const repository = new ExpensesRepository(userId, supabase)
   const options: Parameters<typeof repository.findAll>[0] = {
     ...params,
   }
@@ -20,9 +20,9 @@ export const GET = withAuth(async (req: NextRequest, { userId }) => {
   return createSuccessResponse(data)
 })
 
-export const POST = withAuth(async (req: NextRequest, { userId }) => {
+export const POST = withAuth(async (req: NextRequest, { userId, supabase }) => {
   const validatedBody = await parseAndValidateBody(req, expenseCreateSchema)
-  const repository = new ExpensesRepository(userId)
+  const repository = new ExpensesRepository(userId, supabase)
   // exactOptionalPropertyTypes를 위한 타입 변환
   const body: Parameters<typeof repository.createExpense>[0] = {
     amount: validatedBody.amount,

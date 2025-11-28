@@ -5,12 +5,12 @@ import { StaffRepository } from '@/app/lib/repositories/staff.repository'
 import { staffUpdateSchema } from '@/app/lib/api/schemas'
 import { NotFoundError } from '@/app/lib/api/errors'
 
-export const GET = withAuth(async (_req: NextRequest, { userId, params }) => {
+export const GET = withAuth(async (_req: NextRequest, { userId, supabase, params }) => {
   const id = params?.['id']
   if (!id || typeof id !== "string") {
     throw new NotFoundError("Missing or invalid staff ID")
   }
-  const repository = new StaffRepository(userId)
+  const repository = new StaffRepository(userId, supabase)
   const data = await repository.findById(id)
   if (!data) {
     throw new NotFoundError("Staff not found")
@@ -18,13 +18,13 @@ export const GET = withAuth(async (_req: NextRequest, { userId, params }) => {
   return createSuccessResponse(data)
 })
 
-export const PUT = withAuth(async (req: NextRequest, { userId, params }) => {
+export const PUT = withAuth(async (req: NextRequest, { userId, supabase, params }) => {
   const id = params?.['id']
   if (!id || typeof id !== "string") {
     throw new NotFoundError("Missing or invalid staff ID")
   }
   const validatedBody = await parseAndValidateBody(req, staffUpdateSchema)
-  const repository = new StaffRepository(userId)
+  const repository = new StaffRepository(userId, supabase)
   // exactOptionalPropertyTypes를 위한 타입 변환
   const body: Parameters<typeof repository.updateStaff>[1] = {}
   if (validatedBody.name !== undefined) {
@@ -49,12 +49,12 @@ export const PUT = withAuth(async (req: NextRequest, { userId, params }) => {
   return createSuccessResponse(data)
 })
 
-export const DELETE = withAuth(async (_req: NextRequest, { userId, params }) => {
+export const DELETE = withAuth(async (_req: NextRequest, { userId, supabase, params }) => {
   const id = params?.['id']
   if (!id || typeof id !== "string") {
     throw new NotFoundError("Missing or invalid staff ID")
   }
-  const repository = new StaffRepository(userId)
+  const repository = new StaffRepository(userId, supabase)
   await repository.delete(id)
   return createSuccessResponse({ ok: true })
 })

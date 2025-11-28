@@ -6,9 +6,9 @@ function base64UrlToString(input: string): string {
   return Buffer.from(b64, 'base64').toString('utf8')
 }
 
-export function getUserIdFromCookies(): string | null {
+export async function getUserIdFromCookies(): Promise<string | null> {
   try {
-    const cookieStore = cookies()
+    const cookieStore = await cookies()
     const token = cookieStore.get('sb:token')?.value || cookieStore.get('sb-access-token')?.value
     if (!token) return null
 
@@ -27,5 +27,4 @@ export function getUserIdFromCookies(): string | null {
     return null
   }
 }
-
 

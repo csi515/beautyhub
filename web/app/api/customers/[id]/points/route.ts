@@ -8,7 +8,7 @@ import { ValidationError } from '@/app/lib/api/errors'
 // Vercel 배포를 위한 동적 렌더링 설정
 export const dynamic = 'force-dynamic'
 
-export const GET = withAuth(async (req: NextRequest, { userId, params }) => {
+export const GET = withAuth(async (req: NextRequest, { userId, supabase, params }) => {
   const id = params?.['id']
   if (!id || typeof id !== "string") {
     throw new ValidationError("Missing or invalid customer ID")
@@ -17,7 +17,7 @@ export const GET = withAuth(async (req: NextRequest, { userId, params }) => {
   const { searchParams } = new URL(req.url)
   const withLedger = (searchParams.get('with_ledger') || 'true') === 'true'
   
-  const repository = new PointsRepository(userId)
+  const repository = new PointsRepository(userId, supabase)
   const options: Parameters<typeof repository.getBalance>[1] = {
     ...queryParams,
     withLedger,
@@ -33,13 +33,13 @@ export const GET = withAuth(async (req: NextRequest, { userId, params }) => {
   return createSuccessResponse(data)
 })
 
-export const POST = withAuth(async (req: NextRequest, { userId, params }) => {
+export const POST = withAuth(async (req: NextRequest, { userId, supabase, params }) => {
   const id = params?.['id']
   if (!id || typeof id !== "string") {
     throw new ValidationError("Missing or invalid customer ID")
   }
   const validatedBody = await parseAndValidateBody(req, pointsLedgerCreateSchema)
-  const repository = new PointsRepository(userId)
+  const repository = new PointsRepository(userId, supabase)
   // exactOptionalPropertyTypes를 위한 타입 변환
   const body: Parameters<typeof repository.addLedgerEntry>[1] = {
     delta: validatedBody.delta,

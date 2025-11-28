@@ -6,12 +6,12 @@ import { appointmentUpdateSchema } from '@/app/lib/api/schemas'
 import { NotFoundError } from '@/app/lib/api/errors'
 import type { AppointmentUpdateInput } from '@/types/entities'
 
-export const GET = withAuth(async (_req: NextRequest, { userId, params }) => {
+export const GET = withAuth(async (_req: NextRequest, { userId, supabase, params }) => {
   const id = params?.['id']
   if (!id || typeof id !== "string") {
     throw new NotFoundError("Missing or invalid appointment ID")
   }
-  const repository = new AppointmentsRepository(userId)
+  const repository = new AppointmentsRepository(userId, supabase)
   const data = await repository.findById(id)
   if (!data) {
     throw new NotFoundError("Appointment not found")
@@ -19,7 +19,7 @@ export const GET = withAuth(async (_req: NextRequest, { userId, params }) => {
   return createSuccessResponse(data)
 })
 
-export const PUT = withAuth(async (req: NextRequest, { userId, params }) => {
+export const PUT = withAuth(async (req: NextRequest, { userId, supabase, params }) => {
   const id = params?.['id']
   if (!id || typeof id !== "string") {
     throw new NotFoundError("Missing or invalid appointment ID")
@@ -29,17 +29,17 @@ export const PUT = withAuth(async (req: NextRequest, { userId, params }) => {
   const cleanBody = Object.fromEntries(
     Object.entries(body).filter(([_, value]) => value !== undefined)
   ) as AppointmentUpdateInput
-  const repository = new AppointmentsRepository(userId)
+  const repository = new AppointmentsRepository(userId, supabase)
   const data = await repository.updateAppointment(id, cleanBody)
   return createSuccessResponse(data)
 })
 
-export const DELETE = withAuth(async (_req: NextRequest, { userId, params }) => {
+export const DELETE = withAuth(async (_req: NextRequest, { userId, supabase, params }) => {
   const id = params?.['id']
   if (!id || typeof id !== "string") {
     throw new NotFoundError("Missing or invalid appointment ID")
   }
-  const repository = new AppointmentsRepository(userId)
+  const repository = new AppointmentsRepository(userId, supabase)
   await repository.delete(id)
   return createSuccessResponse({ ok: true })
 })

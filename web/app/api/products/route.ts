@@ -4,16 +4,16 @@ import { parseQueryParams, parseAndValidateBody, createSuccessResponse } from '@
 import { ProductsRepository } from '@/app/lib/repositories/products.repository'
 import { productCreateSchema } from '@/app/lib/api/schemas'
 
-export const GET = withAuth(async (req: NextRequest, { userId }) => {
+export const GET = withAuth(async (req: NextRequest, { userId, supabase }) => {
   const params = parseQueryParams(req)
-  const repository = new ProductsRepository(userId)
+  const repository = new ProductsRepository(userId, supabase)
   const data = await repository.findAll(params)
   return createSuccessResponse(data)
 })
 
-export const POST = withAuth(async (req: NextRequest, { userId }) => {
+export const POST = withAuth(async (req: NextRequest, { userId, supabase }) => {
   const validatedBody = await parseAndValidateBody(req, productCreateSchema)
-  const repository = new ProductsRepository(userId)
+  const repository = new ProductsRepository(userId, supabase)
   // exactOptionalPropertyTypes를 위한 타입 변환
   const body: Parameters<typeof repository.createProduct>[0] = {
     name: validatedBody.name,

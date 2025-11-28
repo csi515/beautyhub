@@ -5,7 +5,7 @@ export const dynamic = 'force-dynamic'
 
 export async function GET() {
 	try {
-		const supabase = createSupabaseServerClient()
+		const supabase = await createSupabaseServerClient()
 		const { data: { user }, error: authError } = await supabase.auth.getUser()
 
 		// 토큰 만료 또는 유효하지 않은 경우
