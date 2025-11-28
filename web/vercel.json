@@ -1,7 +1,9 @@
 {
   "framework": null,
   "buildCommand": "cd web && npm run build",
-  "installCommand": "npm install",
+  "installCommand": "cd web && npm install",
   "outputDirectory": "web/.next",
-  "regions": ["icn1"]
+  "regions": [
+    "icn1"
+  ]
 }
