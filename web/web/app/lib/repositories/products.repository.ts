@@ -6,8 +6,8 @@ import { BaseRepository } from './base.repository'
 import type { Product, ProductCreateInput, ProductUpdateInput } from '@/types/entities'
 
 export class ProductsRepository extends BaseRepository<Product> {
-  constructor(userId: string) {
-    super(userId, 'products')
+  constructor(userId: string, supabase: any) {
+    super(userId, 'products', supabase)
   }
 
   /**

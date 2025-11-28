@@ -7,8 +7,8 @@ import type { Transaction, TransactionCreateInput, TransactionUpdateInput } from
 import type { QueryOptions } from './base.repository'
 
 export class TransactionsRepository extends BaseRepository<Transaction> {
-  constructor(userId: string) {
-    super(userId, 'transactions')
+  constructor(userId: string, supabase: any) {
+    super(userId, 'transactions', supabase)
   }
 
   /**

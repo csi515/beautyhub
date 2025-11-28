@@ -4,8 +4,7 @@
  */
 
 import { SupabaseClient } from '@supabase/supabase-js'
-import { createSupabaseServerClient } from '@/lib/supabase/server'
-import { NotFoundError, ApiError, UnauthorizedError } from '../api/errors'
+import { ApiError, NotFoundError, UnauthorizedError } from '../api/errors'
 import type { PaginationParams, SearchParams } from '@/types/common'
 
 export interface QueryOptions extends PaginationParams, Partial<SearchParams> {
@@ -21,10 +20,10 @@ export abstract class BaseRepository<T> {
   protected userId: string
   protected tableName: string
 
-  constructor(userId: string, tableName: string) {
+  constructor(userId: string, tableName: string, supabase: SupabaseClient) {
     this.userId = userId
     this.tableName = tableName
-    this.supabase = createSupabaseServerClient()
+    this.supabase = supabase
   }
 
   /**

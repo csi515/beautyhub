@@ -4,7 +4,7 @@ import { parseBody, createSuccessResponse } from '@/app/lib/api/handlers'
 import { CustomerProductsRepository } from '@/app/lib/repositories/customer-products.repository'
 import type { CustomerProductCreateInput } from '@/app/lib/repositories/customer-products.repository'
 
-export const GET = withAuth(async (req: NextRequest, { userId }) => {
+export const GET = withAuth(async (req: NextRequest, { userId, supabase }) => {
   const { searchParams } = new URL(req.url)
   const customerId = searchParams.get('customer_id')
   
@@ -12,14 +12,14 @@ export const GET = withAuth(async (req: NextRequest, { userId }) => {
     return createSuccessResponse({ message: 'customer_id required' }, 400)
   }
 
-  const repository = new CustomerProductsRepository(userId)
+  const repository = new CustomerProductsRepository(userId, supabase)
   const data = await repository.findByCustomerId(customerId)
   return createSuccessResponse(data)
 })
 
-export const POST = withAuth(async (req: NextRequest, { userId }) => {
+export const POST = withAuth(async (req: NextRequest, { userId, supabase }) => {
   const body = await parseBody<CustomerProductCreateInput>(req)
-  const repository = new CustomerProductsRepository(userId)
+  const repository = new CustomerProductsRepository(userId, supabase)
   const data = await repository.createHolding(body)
   return createSuccessResponse(data, 201)
 })

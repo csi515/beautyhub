@@ -2,7 +2,7 @@
  * 포인트 Repository
  */
 
-import { createSupabaseServerClient } from '@/lib/supabase/server'
+import { SupabaseClient } from '@supabase/supabase-js'
 import { ApiError, NotFoundError, UnauthorizedError } from '../api/errors'
 import type { QueryOptions } from './base.repository'
 
@@ -37,12 +37,12 @@ export interface PointsLedgerCreateInput {
 }
 
 export class PointsRepository {
-  protected supabase: ReturnType<typeof createSupabaseServerClient>
+  protected supabase: SupabaseClient
   protected userId: string
 
-  constructor(userId: string) {
+  constructor(userId: string, supabase: SupabaseClient) {
     this.userId = userId
-    this.supabase = createSupabaseServerClient()
+    this.supabase = supabase
   }
 
   /**

@@ -5,12 +5,12 @@ import { TransactionsRepository } from '@/app/lib/repositories/transactions.repo
 import { transactionUpdateSchema } from '@/app/lib/api/schemas'
 import { NotFoundError } from '@/app/lib/api/errors'
 
-export const GET = withAuth(async (_req: NextRequest, { userId, params }) => {
+export const GET = withAuth(async (_req: NextRequest, { userId, supabase, params }) => {
   const id = params?.['id']
   if (!id || typeof id !== "string") {
     throw new NotFoundError("Missing or invalid transaction ID")
   }
-  const repository = new TransactionsRepository(userId)
+  const repository = new TransactionsRepository(userId, supabase)
   const data = await repository.findById(id)
   if (!data) {
     throw new NotFoundError("Transaction not found")
@@ -18,13 +18,13 @@ export const GET = withAuth(async (_req: NextRequest, { userId, params }) => {
   return createSuccessResponse(data)
 })
 
-export const PUT = withAuth(async (req: NextRequest, { userId, params }) => {
+export const PUT = withAuth(async (req: NextRequest, { userId, supabase, params }) => {
   const id = params?.['id']
   if (!id || typeof id !== "string") {
     throw new NotFoundError("Missing or invalid transaction ID")
   }
   const validatedBody = await parseAndValidateBody(req, transactionUpdateSchema)
-  const repository = new TransactionsRepository(userId)
+  const repository = new TransactionsRepository(userId, supabase)
   // exactOptionalPropertyTypes를 위한 타입 변환
   const body: Parameters<typeof repository.updateTransaction>[1] = {}
   if (validatedBody.customer_id !== undefined) {
@@ -43,12 +43,12 @@ export const PUT = withAuth(async (req: NextRequest, { userId, params }) => {
   return createSuccessResponse(data)
 })
 
-export const DELETE = withAuth(async (_req: NextRequest, { userId, params }) => {
+export const DELETE = withAuth(async (_req: NextRequest, { userId, supabase, params }) => {
   const id = params?.['id']
   if (!id || typeof id !== "string") {
     throw new NotFoundError("Missing or invalid transaction ID")
   }
-  const repository = new TransactionsRepository(userId)
+  const repository = new TransactionsRepository(userId, supabase)
   await repository.delete(id)
   return createSuccessResponse({ ok: true })
 })

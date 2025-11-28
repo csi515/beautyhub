@@ -5,12 +5,12 @@ import { CustomersRepository } from '@/app/lib/repositories/customers.repository
 import { customerUpdateSchema } from '@/app/lib/api/schemas'
 import { NotFoundError } from '@/app/lib/api/errors'
 
-export const GET = withAuth(async (_req: NextRequest, { userId, params }) => {
+export const GET = withAuth(async (_req: NextRequest, { userId, supabase, params }) => {
   const id = params?.['id']
   if (!id || typeof id !== "string") {
     throw new NotFoundError("Missing or invalid customer ID")
   }
-  const repository = new CustomersRepository(userId)
+  const repository = new CustomersRepository(userId, supabase)
   const data = await repository.findById(id)
   if (!data) {
     throw new NotFoundError("Customer not found")
@@ -18,13 +18,13 @@ export const GET = withAuth(async (_req: NextRequest, { userId, params }) => {
   return createSuccessResponse(data)
 })
 
-export const PUT = withAuth(async (req: NextRequest, { userId, params }) => {
+export const PUT = withAuth(async (req: NextRequest, { userId, supabase, params }) => {
   const id = params?.['id']
   if (!id || typeof id !== "string") {
     throw new NotFoundError("Missing or invalid customer ID")
   }
   const validatedBody = await parseAndValidateBody(req, customerUpdateSchema)
-  const repository = new CustomersRepository(userId)
+  const repository = new CustomersRepository(userId, supabase)
   // exactOptionalPropertyTypes를 위한 타입 변환
   const body: Parameters<typeof repository.updateCustomer>[1] = {}
   if (validatedBody.name !== undefined) {
@@ -43,12 +43,12 @@ export const PUT = withAuth(async (req: NextRequest, { userId, params }) => {
   return createSuccessResponse(data)
 })
 
-export const DELETE = withAuth(async (_req: NextRequest, { userId, params }) => {
+export const DELETE = withAuth(async (_req: NextRequest, { userId, supabase, params }) => {
   const id = params?.['id']
   if (!id || typeof id !== "string") {
     throw new NotFoundError("Missing or invalid customer ID")
   }
-  const repository = new CustomersRepository(userId)
+  const repository = new CustomersRepository(userId, supabase)
   await repository.delete(id)
   return createSuccessResponse({ ok: true })
 })

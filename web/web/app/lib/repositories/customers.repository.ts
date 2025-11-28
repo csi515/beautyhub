@@ -6,8 +6,8 @@ import { BaseRepository } from './base.repository'
 import type { Customer, CustomerCreateInput, CustomerUpdateInput } from '@/types/entities'
 
 export class CustomersRepository extends BaseRepository<Customer> {
-  constructor(userId: string) {
-    super(userId, 'customers')
+  constructor(userId: string, supabase: any) {
+    super(userId, 'customers', supabase)
   }
 
   protected override getSearchFields(): string[] {
@@ -29,7 +29,7 @@ export class CustomersRepository extends BaseRepository<Customer> {
       email: input.email || null,
       address: input.address || null,
     }
-    
+
     // features는 값이 있을 때만 포함 (스키마에 없을 수 있음)
     const featuresValue = input.features
     if (featuresValue !== undefined) {
@@ -40,7 +40,7 @@ export class CustomersRepository extends BaseRepository<Customer> {
         payload.features = trimmed ? trimmed : null
       }
     }
-    
+
     return this.create(payload)
   }
 
@@ -49,7 +49,7 @@ export class CustomersRepository extends BaseRepository<Customer> {
    */
   async updateCustomer(id: string, input: CustomerUpdateInput): Promise<Customer> {
     const payload: Partial<Customer> = {}
-    
+
     if (input.name !== undefined) {
       const name = String(input.name).trim()
       if (!name) {
@@ -57,7 +57,7 @@ export class CustomersRepository extends BaseRepository<Customer> {
       }
       payload.name = name
     }
-    
+
     if (input.phone !== undefined) payload.phone = input.phone || null
     if (input.email !== undefined) payload.email = input.email || null
     if (input.address !== undefined) payload.address = input.address || null

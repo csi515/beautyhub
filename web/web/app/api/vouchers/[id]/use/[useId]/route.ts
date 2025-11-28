@@ -1,10 +1,9 @@
 import { NextRequest } from 'next/server'
 import { withAuth } from '@/app/lib/api/middleware'
 import { createSuccessResponse } from '@/app/lib/api/handlers'
-import { createSupabaseServerClient } from '@/lib/supabase/server'
 import { NotFoundError, ApiError } from '@/app/lib/api/errors'
 
-export const DELETE = withAuth(async (_req: NextRequest, { userId, params }) => {
+export const DELETE = withAuth(async (_req: NextRequest, { userId, supabase, params }) => {
   const id = params?.['id']
   const useId = params?.['useId']
   if (!id || typeof id !== "string") {
@@ -13,7 +12,7 @@ export const DELETE = withAuth(async (_req: NextRequest, { userId, params }) => 
   if (!useId || typeof useId !== "string") {
     return createSuccessResponse({ ok: false, error: "Missing or invalid use ID" })
   }
-  const supabase = createSupabaseServerClient()
+
 
   // 사용 내역 조회
   const { data: useRow, error: uErr } = await supabase

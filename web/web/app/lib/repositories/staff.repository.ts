@@ -6,8 +6,8 @@ import { BaseRepository } from './base.repository'
 import type { Staff, StaffCreateInput, StaffUpdateInput } from '@/types/entities'
 
 export class StaffRepository extends BaseRepository<Staff> {
-  constructor(userId: string) {
-    super(userId, 'staff')
+  constructor(userId: string, supabase: any) {
+    super(userId, 'staff', supabase)
   }
 
   protected override getSearchFields(): string[] {

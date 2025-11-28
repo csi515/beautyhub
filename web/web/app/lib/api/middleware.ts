@@ -4,6 +4,7 @@
 
 import { NextRequest, NextResponse } from 'next/server'
 import { getUserIdFromCookies } from '@/lib/auth/user'
+import { createSupabaseServerClient } from '@/lib/supabase/server'
 import { UnauthorizedError } from './errors'
 import { createErrorResponse } from './handlers'
 
@@ -12,6 +13,7 @@ import { createErrorResponse } from './handlers'
  */
 export interface AuthContext {
   userId: string
+  supabase: Awaited<ReturnType<typeof createSupabaseServerClient>>
 }
 
 /**
@@ -26,8 +28,8 @@ export type AuthHandler = (
  * 인증 미들웨어 HOF (Higher Order Function)
  * 
  * @example
- * export const GET = withAuth(async (req, { userId }) => {
- *   // userId가 자동으로 주입됨
+ * export const GET = withAuth(async (req, { userId, supabase }) => {
+ *   // userId와 supabase가 자동으로 주입됨
  *   return NextResponse.json({ userId })
  * })
  */
@@ -37,13 +39,15 @@ export function withAuth(handler: AuthHandler) {
     context?: { params?: Record<string, string> }
   ): Promise<NextResponse> => {
     try {
-      const userId = getUserIdFromCookies()
-      
+      const userId = await getUserIdFromCookies()
+
       if (!userId) {
         throw new UnauthorizedError()
       }
 
-      return await handler(req, { userId, params: context?.params || {} })
+      const supabase = await createSupabaseServerClient()
+
+      return await handler(req, { userId, supabase, params: context?.params || {} })
     } catch (error) {
       return createErrorResponse(error)
     }

@@ -10,8 +10,8 @@ import { appointmentUpdateSchema } from '../api/schemas'
 import { z } from 'zod'
 
 export class AppointmentsRepository extends BaseRepository<Appointment> {
-  constructor(userId: string) {
-    super(userId, 'appointments')
+  constructor(userId: string, supabase: any) {
+    super(userId, 'appointments', supabase)
   }
 
   /**

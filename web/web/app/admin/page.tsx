@@ -15,9 +15,9 @@ type PendingUser = {
 }
 
 async function getSessionAndGuardAdmin() {
-  const supabase = createSupabaseServerClient()
+  const supabase = await createSupabaseServerClient()
   const { data: { user }, error: authError } = await supabase.auth.getUser()
-  
+
   // 토큰 만료 또는 유효하지 않은 경우
   if (authError) {
     const isExpired = authError.message.includes('expired') || authError.message.includes('invalid')
@@ -27,16 +27,16 @@ async function getSessionAndGuardAdmin() {
     }
     redirect('/login')
   }
-  
+
   if (!user) {
     redirect('/login')
   }
-  
+
   const { data: me } = await supabase.from('users').select('role').eq('id', user.id).single()
   if (me?.role !== 'admin') {
     redirect('/')
   }
-  
+
   return { supabase, user }
 }
 
@@ -44,7 +44,7 @@ async function getPendingUsers(): Promise<PendingUser[]> {
   // Service Role 키가 없으면 서버 크래시를 피하고 빈 목록 반환
   const serviceRoleKey = getServerEnv.supabaseServiceRoleKey()
   if (!serviceRoleKey) return []
-  
+
   try {
     const admin = createSupabaseServerAdmin()
     const { data } = await admin

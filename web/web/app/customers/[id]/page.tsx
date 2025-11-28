@@ -2,7 +2,7 @@ import type { Transaction } from '@/types/entities'
 
 export default async function CustomerDetailPage({ params }: { params: { id: string } }) {
   const { createSupabaseServerClient } = await import('@/lib/supabase/server')
-  const supabase = createSupabaseServerClient()
+  const supabase = await createSupabaseServerClient()
   const [{ data: customer }, { data: transactions }] = await Promise.all([
     supabase.from('customers').select('*').eq('id', params.id).single(),
     supabase.from('transactions').select('*').eq('customer_id', params.id).order('transaction_date', { ascending: false })

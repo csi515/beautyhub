@@ -7,8 +7,8 @@ import type { Expense, ExpenseCreateInput, ExpenseUpdateInput } from '@/types/en
 import type { QueryOptions } from './base.repository'
 
 export class ExpensesRepository extends BaseRepository<Expense> {
-  constructor(userId: string) {
-    super(userId, 'expenses')
+  constructor(userId: string, supabase: any) {
+    super(userId, 'expenses', supabase)
   }
 
   /**

@@ -10,7 +10,7 @@ export const dynamic = 'force-dynamic'
  */
 export async function GET(_req: NextRequest) {
   try {
-    const supabase = createSupabaseServerClient()
+    const supabase = await createSupabaseServerClient()
     const { data: { user }, error: authError } = await supabase.auth.getUser()
 
     if (authError || !user) {
@@ -37,8 +37,8 @@ export async function GET(_req: NextRequest) {
     // JSON 파싱 (settings는 JSONB 컬럼)
     let settings: AppSettings
     try {
-      settings = typeof data.settings === 'string' 
-        ? JSON.parse(data.settings) 
+      settings = typeof data.settings === 'string'
+        ? JSON.parse(data.settings)
         : data.settings
     } catch {
       settings = DEFAULT_SETTINGS
@@ -60,7 +60,7 @@ export async function GET(_req: NextRequest) {
  */
 export async function PUT(req: NextRequest) {
   try {
-    const supabase = createSupabaseServerClient()
+    const supabase = await createSupabaseServerClient()
     const { data: { user }, error: authError } = await supabase.auth.getUser()
 
     if (authError || !user) {

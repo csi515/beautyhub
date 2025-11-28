@@ -45,8 +45,8 @@ export interface VoucherUseResult {
 }
 
 export class VouchersRepository extends BaseRepository<Voucher> {
-  constructor(userId: string) {
-    super(userId, 'vouchers')
+  constructor(userId: string, supabase: any) {
+    super(userId, 'vouchers', supabase)
   }
 
   /**
