@@ -74,6 +74,9 @@ export default function FinancePage() {
         if (data?.financialSettings?.incomeCategories) {
           setIncomeCategories(data.financialSettings.incomeCategories)
         }
+        if (data?.financialSettings?.expenseCategories) {
+          setExpenseCategories(data.financialSettings.expenseCategories)
+        }
       } catch {
         // 실패 시 기본값 사용
       }
@@ -95,8 +98,10 @@ export default function FinancePage() {
   const [newDate, setNewDate] = useState<string>(new Date().toISOString().slice(0, 10))
   const [newAmount, setNewAmount] = useState<string>('')
   const [newMemo, setNewMemo] = useState<string>('')
-  const [incomeCategories, setIncomeCategories] = useState<string[]>(['시술', '제품 판매', '기타 수입'])
+  const [incomeCategories, setIncomeCategories] = useState<string[]>([])
   const [selectedIncomeCategory, setSelectedIncomeCategory] = useState<string>('')
+  const [expenseCategories, setExpenseCategories] = useState<string[]>([])
+  const [selectedExpenseCategory, setSelectedExpenseCategory] = useState<string>('')
   const [expenseDetail, setExpenseDetail] = useState<Expense | null>(null)
   const [expenseOpen, setExpenseOpen] = useState(false)
   const [txDetail, setTxDetail] = useState<Transaction | null>(null)
@@ -178,8 +183,8 @@ export default function FinancePage() {
         <button
           onClick={() => { setIncludeIncome(v => { const nv = !v; setPage(1); return nv }); }}
           className={`px-4 py-2 text-sm rounded-md min-w-[80px] transition-all duration-200 touch-manipulation ${includeIncome
-              ? 'bg-white text-blue-600 shadow-sm font-semibold'
-              : 'text-neutral-600 hover:text-neutral-900 font-medium'
+            ? 'bg-white text-blue-600 shadow-sm font-semibold'
+            : 'text-neutral-600 hover:text-neutral-900 font-medium'
             }`}
           aria-pressed={includeIncome}
         >
@@ -188,8 +193,8 @@ export default function FinancePage() {
         <button
           onClick={() => { setIncludeExpense(v => { const nv = !v; setPage(1); return nv }); }}
           className={`px-4 py-2 text-sm rounded-md min-w-[80px] transition-all duration-200 touch-manipulation ${includeExpense
-              ? 'bg-white text-blue-600 shadow-sm font-semibold'
-              : 'text-neutral-600 hover:text-neutral-900 font-medium'
+            ? 'bg-white text-blue-600 shadow-sm font-semibold'
+            : 'text-neutral-600 hover:text-neutral-900 font-medium'
             }`}
           aria-pressed={includeExpense}
         >
@@ -325,8 +330,8 @@ export default function FinancePage() {
           <div className="text-xl sm:text-3xl font-bold text-rose-700">₩{Number(sumExpense).toLocaleString()}</div>
         </div>
         <div className={`rounded-xl border-2 p-3 sm:p-6 shadow-md hover:shadow-xl transition-all duration-300 ${profit >= 0
-            ? 'bg-gradient-to-br from-emerald-50 to-teal-100 border-emerald-200'
-            : 'bg-gradient-to-br from-rose-50 to-pink-100 border-rose-200'
+          ? 'bg-gradient-to-br from-emerald-50 to-teal-100 border-emerald-200'
+          : 'bg-gradient-to-br from-rose-50 to-pink-100 border-rose-200'
           }`}>
           <div className={`text-xs sm:text-sm font-semibold mb-1 sm:mb-2 ${profit >= 0 ? 'text-emerald-700' : 'text-rose-700'}`}>월간 순이익</div>
           <div className={`text-xl sm:text-3xl font-bold ${profit >= 0 ? 'text-emerald-700' : 'text-rose-700'}`}>₩{Number(profit).toLocaleString()}</div>
@@ -405,8 +410,8 @@ export default function FinancePage() {
                   <td className="p-4 text-neutral-900">{row.date}</td>
                   <td className="p-4">
                     <span className={`inline-flex items-center px-2 py-1 rounded-lg text-xs font-medium ${row.type === 'income'
-                        ? 'bg-emerald-50 text-emerald-700 border border-emerald-200'
-                        : 'bg-rose-50 text-rose-700 border border-rose-200'
+                      ? 'bg-emerald-50 text-emerald-700 border border-emerald-200'
+                      : 'bg-rose-50 text-rose-700 border border-rose-200'
                       }`}>
                       {row.type === 'income' ? '수입' : '지출'}
                     </span>
@@ -473,8 +478,8 @@ export default function FinancePage() {
                 <button
                   onClick={() => setNewType('income')}
                   className={`px-4 py-2 text-sm rounded-lg min-w-[100px] transition-all duration-300 ${newType === 'income'
-                      ? 'bg-gradient-to-r from-[#F472B6] to-[#EC4899] text-white shadow-lg border-2 border-[#EC4899] font-semibold scale-[1.02]'
-                      : 'bg-white text-neutral-500 hover:bg-[#FDF2F8] hover:text-[#F472B6] border-2 border-transparent font-medium'
+                    ? 'bg-gradient-to-r from-[#F472B6] to-[#EC4899] text-white shadow-lg border-2 border-[#EC4899] font-semibold scale-[1.02]'
+                    : 'bg-white text-neutral-500 hover:bg-[#FDF2F8] hover:text-[#F472B6] border-2 border-transparent font-medium'
                     }`}
                   aria-pressed={newType === 'income'}
                 >
@@ -483,8 +488,8 @@ export default function FinancePage() {
                 <button
                   onClick={() => setNewType('expense')}
                   className={`px-4 py-2 text-sm rounded-lg min-w-[100px] transition-all duration-300 ${newType === 'expense'
-                      ? 'bg-gradient-to-r from-[#F472B6] to-[#EC4899] text-white shadow-lg border-2 border-[#EC4899] font-semibold scale-[1.02]'
-                      : 'bg-white text-neutral-500 hover:bg-[#FDF2F8] hover:text-[#F472B6] border-2 border-transparent font-medium'
+                    ? 'bg-gradient-to-r from-[#F472B6] to-[#EC4899] text-white shadow-lg border-2 border-[#EC4899] font-semibold scale-[1.02]'
+                    : 'bg-white text-neutral-500 hover:bg-[#FDF2F8] hover:text-[#F472B6] border-2 border-transparent font-medium'
                     }`}
                   aria-pressed={newType === 'expense'}
                 >
@@ -523,18 +528,49 @@ export default function FinancePage() {
                   <label className="block text-sm text-neutral-700 mb-1 font-medium">
                     수입 항목 <span className="text-rose-600">*</span>
                   </label>
-                  <select
-                    value={selectedIncomeCategory}
-                    onChange={(e) => setSelectedIncomeCategory(e.target.value)}
-                    className="h-10 w-full rounded-lg border border-neutral-300 px-3 outline-none focus:border-[#F472B6] focus:ring-2 focus:ring-[#F472B6]/20 bg-white text-neutral-900 transition-all duration-300"
-                  >
-                    <option value="">선택하세요</option>
-                    {incomeCategories.map((category) => (
-                      <option key={category} value={category}>
-                        {category}
-                      </option>
-                    ))}
-                  </select>
+                  {incomeCategories.length === 0 ? (
+                    <div className="h-10 w-full rounded-lg border-2 border-dashed border-amber-300 bg-amber-50 px-3 flex items-center text-sm text-amber-700">
+                      <span>설정 페이지에서 수입 항목을 먼저 등록해주세요.</span>
+                    </div>
+                  ) : (
+                    <select
+                      value={selectedIncomeCategory}
+                      onChange={(e) => setSelectedIncomeCategory(e.target.value)}
+                      className="h-10 w-full rounded-lg border border-neutral-300 px-3 outline-none focus:border-[#F472B6] focus:ring-2 focus:ring-[#F472B6]/20 bg-white text-neutral-900 transition-all duration-300"
+                    >
+                      <option value="">선택하세요</option>
+                      {incomeCategories.map((category) => (
+                        <option key={category} value={category}>
+                          {category}
+                        </option>
+                      ))}
+                    </select>
+                  )}
+                </div>
+              )}
+              {newType === 'expense' && (
+                <div>
+                  <label className="block text-sm text-neutral-700 mb-1 font-medium">
+                    지출 항목 <span className="text-rose-600">*</span>
+                  </label>
+                  {expenseCategories.length === 0 ? (
+                    <div className="h-10 w-full rounded-lg border-2 border-dashed border-amber-300 bg-amber-50 px-3 flex items-center text-sm text-amber-700">
+                      <span>설정 페이지에서 지출 항목을 먼저 등록해주세요.</span>
+                    </div>
+                  ) : (
+                    <select
+                      value={selectedExpenseCategory}
+                      onChange={(e) => setSelectedExpenseCategory(e.target.value)}
+                      className="h-10 w-full rounded-lg border border-neutral-300 px-3 outline-none focus:border-[#F472B6] focus:ring-2 focus:ring-[#F472B6]/20 bg-white text-neutral-900 transition-all duration-300"
+                    >
+                      <option value="">선택하세요</option>
+                      {expenseCategories.map((category) => (
+                        <option key={category} value={category}>
+                          {category}
+                        </option>
+                      ))}
+                    </select>
+                  )}
                 </div>
               )}
               <div>
@@ -574,8 +610,17 @@ export default function FinancePage() {
                       }
                       await transactionsApi.create(createPayload)
                     } else {
+                      // 지출 카테고리 필수
+                      if (!selectedExpenseCategory) {
+                        toast.error('지출 항목을 선택해주세요')
+                        return
+                      }
                       const { expensesApi } = await import('@/app/lib/api/expenses')
-                      const expensePayload: ExpenseCreateInput = { expense_date: newDate, amount: amountNumber, category: '기타' }
+                      const expensePayload: ExpenseCreateInput = {
+                        expense_date: newDate,
+                        amount: amountNumber,
+                        category: selectedExpenseCategory,
+                      }
                       // memo는 값이 있을 때만 포함
                       if (newMemo && newMemo.trim() !== '') {
                         expensePayload.memo = newMemo.trim()
@@ -586,6 +631,7 @@ export default function FinancePage() {
                     setNewAmount('')
                     setNewMemo('')
                     setSelectedIncomeCategory('')
+                    setSelectedExpenseCategory('')
                     await load()
                     toast.success('저장되었습니다.')
                   } catch (err) {

@@ -107,12 +107,12 @@ function FinancialSettingsSection({ data, onChange }: Props) {
         {/* 구분선 */}
         <div className="border-t border-neutral-200" />
 
-        {/* 비용 항목 관리 */}
+        {/* 지출 항목 관리 */}
         <div className="space-y-4">
           <div className="flex items-center gap-2">
             <CreditCard className="w-5 h-5 text-neutral-700" />
-            <h3 className="text-lg font-semibold text-neutral-800">비용 항목 관리</h3>
-            <InfoTooltip content="자주 사용하는 비용 항목을 등록하여 빠르게 선택할 수 있습니다." />
+            <h3 className="text-lg font-semibold text-neutral-800">지출 항목 관리</h3>
+            <InfoTooltip content="자주 사용하는 지출 항목을 등록하여 빠르게 선택할 수 있습니다." />
           </div>
 
           <div className="flex gap-2">
