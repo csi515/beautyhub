@@ -103,8 +103,8 @@ export const DEFAULT_SETTINGS: AppSettings = {
     reminderTimings: [24, 3, 1],
   },
   financialSettings: {
-    incomeCategories: ['시술', '제품 판매', '기타 수입'],
-    expenseCategories: ['임대료', '인건비', '재료비', '광고비', '유지보수', '전기세', '수도세', '인터넷비', '기타'],
+    incomeCategories: [],
+    expenseCategories: [],
     expenseCategoryColors: {},
     expenseCategoryIcons: {},
   },
