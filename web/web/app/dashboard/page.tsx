@@ -50,7 +50,7 @@ const getCachedKpis = unstable_cache(
     const fromDate = monthStart.slice(0, 10) // 이번 달 1일
     const toDate = monthEnd.slice(0, 10) // 다음 달 1일 (재무 페이지는 d <= to로 필터링)
 
-    const [apRes, trRes, cuRes, cuMonth, apRecent, trRecent, exRecent, exMonth, trMonth, productsRes] = await Promise.all([
+    const [apRes, , , cuMonth, apRecent, trRecent, exRecent, exMonth, trMonth, productsRes] = await Promise.all([
       supabase
         .from('appointments')
         .select('id, appointment_date')

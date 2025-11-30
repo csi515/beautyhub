@@ -1,6 +1,6 @@
 import { NextRequest } from 'next/server'
 import { withAuth } from '@/app/lib/api/middleware'
-import { parseQueryParams, parseAndValidateBody, createSuccessResponse } from '@/app/lib/api/handlers'
+import { parseQueryParams, createSuccessResponse } from '@/app/lib/api/handlers'
 import { StaffRepository } from '@/app/lib/repositories/staff.repository'
 import { staffCreateSchema } from '@/app/lib/api/schemas'
 
