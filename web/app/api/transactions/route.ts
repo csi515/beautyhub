@@ -29,7 +29,7 @@ export const POST = withAuth(async (req: NextRequest, { userId, supabase }) => {
   if (validatedBody.customer_id !== undefined) {
     body.customer_id = validatedBody.customer_id
   }
-  if (validatedBody.category !== undefined) {
+  if (validatedBody.category !== undefined && validatedBody.category !== null) {
     body.category = validatedBody.category
   }
   // notes 필드는 데이터베이스에 컬럼이 없으므로 제외
