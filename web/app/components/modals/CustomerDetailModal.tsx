@@ -549,17 +549,18 @@ export default function CustomerDetailModal({
                     product_id: h.product_id,
                     quantity: h.quantity || 0,
                     ...(h.notes && { notes: h.notes }),
-                    products: h.products!,
+                    products: h.products!
                   }))}
                   products={products.map(p => ({
                     id: String(p.id),
-                    name: p.name,
+                    name: p.name
                   }))}
                   holdingDelta={holdingDelta}
                   holdingReason={holdingReason}
                   newProductId={newProductId}
                   newQty={newQty}
                   newReason={newReason}
+                  addingProduct={addingProduct}
                   allLedger={allLedger}
                   allLedgerLoading={allLedgerLoading}
                   allLedgerPage={allLedgerPage}
@@ -571,8 +572,8 @@ export default function CustomerDetailModal({
                   onChangeNewProduct={setNewProductId}
                   onChangeNewQty={setNewQty}
                   onChangeNewReason={setNewReason}
-                  onChangeHoldingDelta={(holdingId, value) => setHoldingDelta(s => ({ ...s, [holdingId]: value }))}
-                  onChangeHoldingReason={(holdingId, value) => setHoldingReason(s => ({ ...s, [holdingId]: value }))}
+                  onChangeHoldingDelta={(id, v) => setHoldingDelta(s => ({ ...s, [id]: v }))}
+                  onChangeHoldingReason={(id, v) => setHoldingReason(s => ({ ...s, [id]: v }))}
                   onIncrease={async (holding) => {
                     const h = holdings.find(x => x.id === holding.id)
                     if (h) await handleIncreaseHolding(h)

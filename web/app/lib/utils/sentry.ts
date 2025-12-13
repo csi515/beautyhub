@@ -14,15 +14,17 @@ const ENVIRONMENT = process.env.NODE_ENV || 'development'
 
 let Sentry: any = null
 
-// Sentry 동적 import
+// Sentry 동적 import (패키지가 없어도 빌드 에러 없음)
 async function getSentry() {
     if (Sentry) return Sentry
 
     try {
-        Sentry = await import('@sentry/nextjs')
+        // 동적 import로 패키지 존재 여부 확인
+        const sentryModule = await import('@sentry/nextjs')
+        Sentry = sentryModule
         return Sentry
     } catch (error) {
-        console.warn('Sentry 패키지를 찾을 수 없습니다. npm install @sentry/nextjs를 실행해주세요.')
+        console.warn('Sentry 패키지를 찾을 수 없습니다. 에러 추적이 비활성화됩니다.')
         return null
     }
 }
@@ -30,68 +32,24 @@ async function getSentry() {
 // Sentry 초기화 (클라이언트 사이드)
 export async function initSentry() {
     if (!SENTRY_DSN) {
-        console.warn('Sentry DSN이 설정되지 않았습니다. 에러 추적이 비활성화됩니다.')
+        // Sentry DSN 미설정 시 조용히 스킵
         return
     }
 
     const SentrySDK = await getSentry()
     if (!SentrySDK) return
 
-    SentrySDK.init({
-        dsn: SENTRY_DSN,
-        environment: ENVIRONMENT,
-
-        // 성능 모니터링 샘플링 비율 (0.0 ~ 1.0)
-        // 프로덕션에서는 낮은 값으로 설정하여 비용 절감
-        tracesSampleRate: ENVIRONMENT === 'production' ? 0.1 : 1.0,
-
-        // 세션 리플레이 샘플링 비율
-        replaysSessionSampleRate: 0.1,
-        replaysOnErrorSampleRate: 1.0,
-
-        // 통합 설정
-        integrations: [
-            new SentrySDK.BrowserTracing({
-                // 자동으로 트레이스할 URL 패턴
-                tracePropagationTargets: ['localhost', /^https:\/\/.*\.vercel\.app/],
-            }),
-            new SentrySDK.Replay({
-                // 민감한 정보 마스킹
-                maskAllText: true,
-                blockAllMedia: true,
-            }),
-        ],
-
-        // 에러 필터링 (특정 에러 무시)
-        beforeSend(event: any, hint: any) {
-            // 개발 환경에서는 콘솔에만 출력
-            if (ENVIRONMENT === 'development') {
-                console.error('Sentry Error:', hint.originalException || hint.syntheticException)
-                return null
-            }
-
-            // 네트워크 오류 중 일부 무시
-            const error = hint.originalException as Error
-            if (error?.message?.includes('Failed to fetch')) {
-                return null
-            }
-
-            return event
-        },
-
-        // 개인정보 보호
-        beforeBreadcrumb(breadcrumb: any) {
-            // URL에서 민감한 정보 제거
-            if (breadcrumb.category === 'navigation') {
-                const url = breadcrumb.data?.to
-                if (url) {
-                    // 쿼리 파라미터 제거
-                    breadcrumb.data.to = url.split('?')[0]
-                }
-            }
-            return breadcrumb
-        },
-    })
+    try {
+        SentrySDK.init({
+            dsn: SENTRY_DSN,
+            environment: ENVIRONMENT,
+            tracesSampleRate: ENVIRONMENT === 'production' ? 0.1 : 1.0,
+            replaysSessionSampleRate: 0.1,
+            replaysOnErrorSampleRate: 1.0,
+        })
+    } catch (error) {
+        console.error('Sentry 초기화 실패:', error)
+    }
 }
 
 // 수동으로 에러 캡처
@@ -101,9 +59,13 @@ export async function captureError(error: Error, context?: Record<string, any>) 
     const SentrySDK = await getSentry()
     if (!SentrySDK) return
 
-    SentrySDK.captureException(error, {
-        extra: context,
-    })
+    try {
+        SentrySDK.captureException(error, {
+            extra: context,
+        })
+    } catch (err) {
+        console.error('Sentry 에러 캡처 실패:', err)
+    }
 }
 
 // 사용자 정보 설정
@@ -113,11 +75,15 @@ export async function setSentryUser(user: { id: string; email?: string; role?: s
     const SentrySDK = await getSentry()
     if (!SentrySDK) return
 
-    SentrySDK.setUser({
-        id: user.id,
-        email: user.email,
-        role: user.role,
-    })
+    try {
+        SentrySDK.setUser({
+            id: user.id,
+            email: user.email,
+            role: user.role,
+        })
+    } catch (error) {
+        console.error('Sentry 사용자 설정 실패:', error)
+    }
 }
 
 // 사용자 정보 제거
@@ -127,7 +93,11 @@ export async function clearSentryUser() {
     const SentrySDK = await getSentry()
     if (!SentrySDK) return
 
-    SentrySDK.setUser(null)
+    try {
+        SentrySDK.setUser(null)
+    } catch (error) {
+        console.error('Sentry 사용자 제거 실패:', error)
+    }
 }
 
 // 커스텀 이벤트 추적
@@ -137,8 +107,12 @@ export async function trackEvent(eventName: string, data?: Record<string, any>) 
     const SentrySDK = await getSentry()
     if (!SentrySDK) return
 
-    SentrySDK.captureMessage(eventName, {
-        level: 'info',
-        extra: data,
-    })
+    try {
+        SentrySDK.captureMessage(eventName, {
+            level: 'info',
+            extra: data,
+        })
+    } catch (error) {
+        console.error('Sentry 이벤트 추적 실패:', error)
+    }
 }
