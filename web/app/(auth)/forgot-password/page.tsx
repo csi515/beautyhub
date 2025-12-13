@@ -40,7 +40,7 @@ export default function ForgotPasswordPage() {
       const { getEnv } = await import('@/app/lib/env')
       const siteUrl = getEnv.siteUrl() || (typeof window !== 'undefined' ? window.location.origin : '')
       const { error } = await supabase.auth.resetPasswordForEmail(email, {
-        redirectTo: `${siteUrl}/(auth)/update-password`
+        redirectTo: `${siteUrl}/reset-password`
       })
       if (error) { setError(error.message); setBusy(false); return }
       setInfo('비밀번호 재설정 이메일을 확인해 주세요.')

@@ -4,6 +4,7 @@ import { parseAndValidateBody, createSuccessResponse } from '@/app/lib/api/handl
 import { ProductsRepository } from '@/app/lib/repositories/products.repository'
 import { productUpdateSchema } from '@/app/lib/api/schemas'
 import { NotFoundError } from '@/app/lib/api/errors'
+import { revalidateResourceCache } from '@/app/lib/api/cache'
 
 export const GET = withAuth(async (_req: NextRequest, { userId, supabase, params }) => {
   const id = params?.['id']
@@ -40,6 +41,10 @@ export const PUT = withAuth(async (req: NextRequest, { userId, supabase, params 
     body.active = validatedBody.active
   }
   const data = await repository.updateProduct(id, body)
+
+  // 캐시 무효화
+  await revalidateResourceCache('products', userId)
+
   return createSuccessResponse(data)
 })
 
@@ -50,5 +55,9 @@ export const DELETE = withAuth(async (_req: NextRequest, { userId, supabase, par
   }
   const repository = new ProductsRepository(userId, supabase)
   await repository.delete(id)
+
+  // 캐시 무효화
+  await revalidateResourceCache('products', userId)
+
   return createSuccessResponse({ ok: true })
 })

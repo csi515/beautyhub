@@ -34,7 +34,7 @@ export default function ProductsPage() {
   })
   const pagination = usePagination({
     initialPage: 1,
-    initialPageSize: 12,
+    initialPageSize: 10,
     totalItems: 0, // filteredProducts.length로 업데이트됨
   })
   const { page, pageSize, setPage, setPageSize, setTotalItems } = pagination
@@ -254,7 +254,7 @@ export default function ProductsPage() {
               setPageSize(size)
               setPage(1)
             }}
-            pageSizeOptions={[12, 24, 48, 96]}
+            pageSizeOptions={[10, 20, 30]}
             showInfo={true}
           />
         </div>

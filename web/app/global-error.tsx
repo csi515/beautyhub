@@ -17,11 +17,17 @@ export default function GlobalError({ error, reset }: GlobalErrorProps) {
   useEffect(() => {
     // 글로벌 에러 로깅
     console.error('Global error:', error)
-    
-    // 에러 추적 (Sentry 등)
-    if (process.env.NODE_ENV === 'production') {
-      // TODO: Sentry 또는 다른 에러 추적 도구 연동
-      // Sentry.captureException(error)
+
+    // Sentry 에러 추적 연동
+    const sentryDsn = process.env['NEXT_PUBLIC_SENTRY_DSN']
+    if (process.env.NODE_ENV === 'production' && sentryDsn) {
+      import('@/app/lib/utils/sentry').then(({ captureError }) => {
+        captureError(error, {
+          digest: error.digest,
+          location: typeof window !== 'undefined' ? window.location.href : 'unknown',
+          type: 'global',
+        })
+      })
     }
   }, [error])
 
@@ -35,7 +41,7 @@ export default function GlobalError({ error, reset }: GlobalErrorProps) {
                 <AlertTriangle className="h-8 w-8 text-error-600" />
               </div>
             </div>
-            
+
             <div>
               <h1 className="text-2xl font-bold text-neutral-900 mb-2">
                 심각한 오류가 발생했습니다

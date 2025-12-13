@@ -2,6 +2,8 @@
  * Service Worker 등록 유틸리티
  */
 
+import { logger } from './logger'
+
 export function registerServiceWorker() {
   if (typeof window === 'undefined') {
     return
@@ -14,8 +16,7 @@ export function registerServiceWorker() {
           scope: '/',
         })
         .then((registration) => {
-          // eslint-disable-next-line no-console
-          console.log('[Service Worker] 등록 성공:', registration.scope)
+          logger.info('[Service Worker] 등록 성공', { scope: registration.scope })
 
           // 업데이트 확인
           registration.addEventListener('updatefound', () => {
@@ -24,29 +25,27 @@ export function registerServiceWorker() {
               newWorker.addEventListener('statechange', () => {
                 if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
                   // 새 버전이 설치되었을 때 사용자에게 알림 (선택사항)
-                  // eslint-disable-next-line no-console
-                  console.log('[Service Worker] 새 버전이 설치되었습니다.')
+                  logger.info('[Service Worker] 새 버전이 설치되었습니다.', {
+                    state: newWorker.state,
+                  })
                 }
               })
             }
           })
         })
         .catch((error) => {
-          // eslint-disable-next-line no-console
-          console.error('[Service Worker] 등록 실패:', error)
+          logger.error('[Service Worker] 등록 실패', error, 'ServiceWorker')
         })
 
       // Service Worker 업데이트 확인
       navigator.serviceWorker.addEventListener('controllerchange', () => {
-        // eslint-disable-next-line no-console
-        console.log('[Service Worker] 컨트롤러가 변경되었습니다.')
+        logger.info('[Service Worker] 컨트롤러가 변경되었습니다.')
         // 필요시 페이지 새로고침
         // window.location.reload()
       })
     })
   } else {
-    // eslint-disable-next-line no-console
-    console.warn('[Service Worker] 이 브라우저는 Service Worker를 지원하지 않습니다.')
+    logger.warn('[Service Worker] 이 브라우저는 Service Worker를 지원하지 않습니다.')
   }
 }
 
@@ -59,12 +58,12 @@ export function unregisterServiceWorker() {
     navigator.serviceWorker.ready
       .then((registration) => {
         registration.unregister()
-        // eslint-disable-next-line no-console
-        console.log('[Service Worker] 등록 해제 완료')
+        logger.info('[Service Worker] 등록 해제 완료')
       })
       .catch((error) => {
-        console.error('[Service Worker] 등록 해제 실패:', error)
+        logger.error('[Service Worker] 등록 해제 실패', error, 'ServiceWorker')
       })
   }
 }
+
 

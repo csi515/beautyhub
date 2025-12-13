@@ -19,11 +19,17 @@ export default function Error({ error, reset }: ErrorProps) {
     // 에러 로깅
     if (typeof window !== 'undefined') {
       console.error('Application error:', error)
-      
-      // 에러 추적 (Sentry 등)
-      if (process.env.NODE_ENV === 'production') {
-        // TODO: Sentry 또는 다른 에러 추적 도구 연동
-        // Sentry.captureException(error)
+
+      // Sentry 에러 추적 연동
+      const sentryDsn = process.env['NEXT_PUBLIC_SENTRY_DSN']
+      if (process.env.NODE_ENV === 'production' && sentryDsn) {
+        import('@/app/lib/utils/sentry').then(({ captureError }) => {
+          captureError(error, {
+            digest: error.digest,
+            location: window.location.href,
+            userAgent: navigator.userAgent,
+          })
+        })
       }
     }
   }, [error])
@@ -37,7 +43,7 @@ export default function Error({ error, reset }: ErrorProps) {
           onRetry={reset}
           retryLabel="다시 시도"
         />
-        
+
         <div className="mt-6 flex flex-col sm:flex-row gap-3 justify-center">
           <Button
             variant="secondary"
