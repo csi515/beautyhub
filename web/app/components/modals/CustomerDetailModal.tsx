@@ -5,6 +5,7 @@ import Modal, { ModalBody, ModalFooter, ModalHeader } from '../ui/Modal'
 import Button from '../ui/Button'
 import Tabs, { TabsContent, TabsList, TabsTrigger } from '../ui/Tabs'
 import { useAppToast } from '@/app/lib/ui/toast'
+import { getLocalizedErrorMessage } from '@/app/lib/utils/messages'
 import CustomerSummaryBar from './customer-detail/CustomerSummaryBar'
 import CustomerOverviewTab from './customer-detail/CustomerOverviewTab'
 import CustomerPointsTab from './customer-detail/CustomerPointsTab'
@@ -42,6 +43,7 @@ export default function CustomerDetailModal({
   const [newProductId, setNewProductId] = useState<string>('')
   const [newQty, setNewQty] = useState<number>(1)
   const [newReason, setNewReason] = useState<string>('')
+  const [addingProduct, setAddingProduct] = useState(false)
   // points
   const [pointsBalance, setPointsBalance] = useState<number>(0)
   const [pointsDelta, setPointsDelta] = useState<number>(0)
@@ -62,7 +64,7 @@ export default function CustomerDetailModal({
   const [allLedgerPage, setAllLedgerPage] = useState(1)
   const [allLedgerPageSize, setAllLedgerPageSize] = useState(10)
   const [allLedgerTotal, setAllLedgerTotal] = useState(0)
-  const [fieldErrors, setFieldErrors] = useState<{ name?: string }>({})
+  const [fieldErrors, setFieldErrors] = useState<{ name?: string; phone?: string; email?: string }>({})
   // holdings pagination
   const [holdPage, setHoldPage] = useState(1)
   const [holdPageSize, setHoldPageSize] = useState(5)
@@ -99,10 +101,13 @@ export default function CustomerDetailModal({
         } catch { }
         setProducts(Array.isArray(productsData) ? productsData : [])
         setPointsBalance(Number(pointsData?.balance || 0))
-      } catch { /* noop */ }
+      } catch (error) {
+        const message = getLocalizedErrorMessage(error, '데이터 로드에 실패했습니다.')
+        toast.error(message)
+      }
     }
     load()
-  }, [open, item?.id])
+  }, [open, item?.id, toast])
 
   // 보유 상품 변동 내역: 페이지네이션으로 로드
   useEffect(() => {
@@ -207,20 +212,47 @@ export default function CustomerDetailModal({
     try {
       setLoading(true); setError(''); setFieldErrors({})
       if (!form) throw new Error('잘못된 입력입니다.')
+
       const body: { name: string; phone?: string | null; email?: string | null; address?: string | null; features?: string } = {
         name: (form.name || '').trim(),
         phone: form.phone || null,
         email: form.email || null,
         address: form.address || null
       }
+
       // features는 값이 있을 때만 포함
       if (features && features.trim() !== '') {
         body.features = features.trim()
       }
+
+      // 검증
+      const errors: { name?: string; phone?: string; email?: string } = {}
+
       if (!body.name) {
-        setFieldErrors(prev => ({ ...prev, name: '이름은 필수입니다.' }))
-        throw new Error('이름은 필수입니다.')
+        errors.name = '이름은 필수입니다.'
       }
+
+      // 전화번호 검증 (선택 항목이지만 값이 있으면 검증)
+      if (body.phone && body.phone.trim()) {
+        const phoneRegex = /^01[0-9]-?[0-9]{3,4}-?[0-9]{4}$/
+        if (!phoneRegex.test(body.phone.trim())) {
+          errors.phone = '올바른 전화번호 형식이 아닙니다 (예: 010-1234-5678)'
+        }
+      }
+
+      // 이메일 검증 (선택 항목이지만 값이 있으면 검증)
+      if (body.email && body.email.trim()) {
+        const emailRegex = /.+@.+\..+/
+        if (!emailRegex.test(body.email.trim())) {
+          errors.email = '올바른 이메일 형식이 아닙니다 (예: example@email.com)'
+        }
+      }
+
+      if (Object.keys(errors).length > 0) {
+        setFieldErrors(errors)
+        throw new Error(Object.values(errors)[0])
+      }
+
       let created: { id: string } | null = null
       if (form.id) {
         await customersApi.update(form.id, body)
@@ -295,6 +327,7 @@ export default function CustomerDetailModal({
   // 보유 상품 추가 핸들러
   const handleAddProduct = async () => {
     if (!newProductId || !form?.id) return
+    setAddingProduct(true)
     try {
       const added = await customerProductsApi.create({
         customer_id: form.id,
@@ -306,80 +339,110 @@ export default function CustomerDetailModal({
       setNewProductId('')
       setNewQty(1)
       setNewReason('')
-    } catch {
-      toast.error('추가 실패')
+      toast.success('제품이 추가되었습니다.')
+    } catch (error) {
+      const message = getLocalizedErrorMessage(error, '제품 추가에 실패했습니다.')
+      toast.error(message)
+    } finally {
+      setAddingProduct(false)
     }
   }
 
-  // 보유 상품 증가 핸들러
+  // 보유 상품 증가 핸들러 (Confirm 제거)
   const handleIncreaseHolding = async (holding: Holding) => {
     const cur = holdings.find(x => x.id === holding.id)
     if (!cur) return
     const amt = Math.abs(Number(holdingDelta[holding.id] ?? 1))
     if (!amt) return
-    const ok = confirm(`추가 확인\n제품: ${cur.products?.name || ''}\n변경 수량: +${amt}\n메모: ${holdingReason[holding.id] || ''}\n진행할까요?`)
-    if (!ok) return
+
     const nextQty = Number(cur.quantity || 0) + amt
+    const prevQty = cur.quantity
+
+    // 즉시 UI 업데이트 (낙관적)
+    setHoldings(list => list.map(x => x.id === holding.id ? { ...x, quantity: nextQty } : x))
+
     try {
       await customerProductsApi.update(holding.id, {
         quantity: nextQty,
         reason: `${(holdingReason[holding.id] || 'increase')} (사용자 직접 변경)`
       })
-      setHoldings(list => list.map(x => x.id === holding.id ? { ...x, quantity: nextQty } : x))
+
       setHoldingReason(s => ({ ...s, [holding.id]: '' }))
       setHoldingDelta(s => ({ ...s, [holding.id]: 1 }))
+
       if (form?.id) {
         try {
           window.dispatchEvent(new CustomEvent('holdings-updated', { detail: { customerId: form.id } }))
         } catch { }
       }
-      toast.success('추가되었습니다.')
-    } catch {
-      toast.error('추가 실패')
+
+      toast.success(`${cur.products?.name || '제품'}이 +${amt} 추가되었습니다.`)
+    } catch (error) {
+      // 실패 시 롤백
+      setHoldings(list => list.map(x => x.id === holding.id ? { ...x, quantity: prevQty } : x))
+      const message = getLocalizedErrorMessage(error, '수량 증가에 실패했습니다.')
+      toast.error(message)
     }
   }
 
-  // 보유 상품 감소 핸들러
+  // 보유 상품 감소 핸들러 (Confirm 제거)
   const handleDecreaseHolding = async (holding: Holding) => {
     const cur = holdings.find(x => x.id === holding.id)
     if (!cur) return
     const amt = Math.abs(Number(holdingDelta[holding.id] ?? 1))
     if (!amt) return
-    const ok = confirm(`차감 확인\n제품: ${cur.products?.name || ''}\n변경 수량: -${amt}\n메모: ${holdingReason[holding.id] || ''}\n진행할까요?`)
-    if (!ok) return
+
     const nextQty = Math.max(0, Number(cur.quantity || 0) - amt)
+    const prevQty = cur.quantity
+
+    // 즉시 UI 업데이트 (낙관적)
+    setHoldings(list => list.map(x => x.id === holding.id ? { ...x, quantity: nextQty } : x))
+
     try {
       await customerProductsApi.update(holding.id, {
         quantity: nextQty,
         reason: `${(holdingReason[holding.id] || 'decrease')} (사용자 직접 변경)`
       })
-      setHoldings(list => list.map(x => x.id === holding.id ? { ...x, quantity: nextQty } : x))
+
       setHoldingReason(s => ({ ...s, [holding.id]: '' }))
       setHoldingDelta(s => ({ ...s, [holding.id]: 1 }))
+
       if (form?.id) {
         try {
           window.dispatchEvent(new CustomEvent('holdings-updated', { detail: { customerId: form.id } }))
         } catch { }
       }
-      toast.success('차감되었습니다.')
-    } catch {
-      toast.error('차감 실패')
+
+      toast.success(`${cur.products?.name || '제품'}이 -${amt} 차감되었습니다.`)
+    } catch (error) {
+      // 실패 시 롤백
+      setHoldings(list => list.map(x => x.id === holding.id ? { ...x, quantity: prevQty } : x))
+      const message = getLocalizedErrorMessage(error, '수량 차감에 실패했습니다.')
+      toast.error(message)
     }
   }
 
-  // 보유 상품 삭제 핸들러
+  // 보유 상품 삭제 핸들러 (Confirm은 삭제는 유지)
   const handleDeleteHolding = async (holdingId: string) => {
-    if (!confirm('삭제하시겠습니까?')) return
+    if (!confirm('정말 삭제하시겠습니까? 이 작업은 되돌릴 수 없습니다.')) return
+
+    // 삭제 전 백업
+    const deleted = holdings.find(x => x.id === holdingId)
+
     try {
       await customerProductsApi.delete(holdingId)
       setHoldings(list => list.filter(x => x.id !== holdingId))
+
       if (form?.id) {
         try {
           window.dispatchEvent(new CustomEvent('holdings-updated', { detail: { customerId: form.id } }))
         } catch { }
       }
-    } catch {
-      toast.error('삭제 실패')
+
+      toast.success(`${deleted?.products?.name || '제품'}이 삭제되었습니다.`)
+    } catch (error) {
+      const message = getLocalizedErrorMessage(error, '삭제에 실패했습니다.')
+      toast.error(message)
     }
   }
 
@@ -530,9 +593,35 @@ export default function CustomerDetailModal({
         </div>
       </ModalBody>
       <ModalFooter>
-        <Button variant="secondary" onClick={onClose} disabled={loading} className="w-full md:w-auto">취소</Button>
-        <Button variant="danger" onClick={removeItem} disabled={loading} className="w-full md:w-auto">삭제</Button>
-        <Button variant="primary" onClick={save} disabled={loading} loading={loading} className="w-full md:w-auto">저장</Button>
+        <div className="flex flex-col-reverse sm:flex-row gap-2 sm:gap-3 w-full">
+          <Button
+            variant="secondary"
+            onClick={onClose}
+            disabled={loading}
+            className="w-full sm:w-auto min-h-[44px]"
+          >
+            취소
+          </Button>
+          <div className="flex gap-2 sm:gap-3 flex-1 sm:flex-initial">
+            <Button
+              variant="danger"
+              onClick={removeItem}
+              disabled={loading}
+              className="flex-1 sm:w-auto min-h-[44px]"
+            >
+              삭제
+            </Button>
+            <Button
+              variant="primary"
+              onClick={save}
+              loading={loading}
+              disabled={loading}
+              className="flex-1 sm:w-auto min-h-[44px]"
+            >
+              저장
+            </Button>
+          </div>
+        </div>
       </ModalFooter>
     </Modal>
   )
