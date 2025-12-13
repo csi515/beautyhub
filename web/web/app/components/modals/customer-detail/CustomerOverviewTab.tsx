@@ -2,7 +2,7 @@
 
 import Input from '../../ui/Input'
 import Textarea from '../../ui/Textarea'
-import CustomerRevenueCard from './CustomerRevenueCard'
+import Button from '../../ui/Button'
 import type { Customer } from '@/types/entities'
 
 type CustomerForm = Pick<Customer, 'id' | 'name' | 'phone' | 'email' | 'address'>
@@ -15,6 +15,8 @@ type CustomerOverviewTabProps = {
   onChangeForm: (updater: (prev: CustomerForm | null) => CustomerForm | null) => void
   onChangeFeatures: (value: string) => void
   onChangeInitialPoints: (value: number) => void
+  onDelete?: () => void
+  isNewCustomer: boolean
 }
 
 export default function CustomerOverviewTab({
@@ -24,16 +26,14 @@ export default function CustomerOverviewTab({
   fieldErrors,
   onChangeForm,
   onChangeFeatures,
-  onChangeInitialPoints
+  onChangeInitialPoints,
+  onDelete,
+  isNewCustomer
 }: CustomerOverviewTabProps) {
   if (!form) return null
 
   return (
     <div className="space-y-4">
-      {/* 고객별 매출 요약 카드 */}
-      {form?.id && (
-        <CustomerRevenueCard customerId={form.id} />
-      )}
 
       <div className="bg-white rounded-sm border-2 border-neutral-500 shadow-lg p-4 md:p-5 space-y-3 md:space-y-4">
         <div className="grid grid-cols-1 gap-3 md:gap-4 md:grid-cols-2">
@@ -49,7 +49,8 @@ export default function CustomerOverviewTab({
           </div>
           <div>
             <Input
-              label="전화번호(선택)"
+              label="전화번호"
+              required
               placeholder="예) 010-1234-5678"
               value={form.phone || ''}
               onChange={e => onChangeForm(f => f ? ({ ...f, phone: e.target.value }) : null)}
@@ -80,25 +81,21 @@ export default function CustomerOverviewTab({
               onChange={e => onChangeFeatures(e.target.value)}
             />
           </div>
-          {!form.id && (
-            <div>
-              <Input
-                label="초기 포인트(선택)"
-                type="number"
-                value={initialPoints === null || initialPoints === undefined || initialPoints === 0 ? '' : initialPoints}
-                onChange={e => {
-                  const val = e.target.value
-                  onChangeInitialPoints(val === '' ? 0 : (isNaN(Number(val)) ? 0 : Number(val)))
-                }}
-                placeholder="예: 1,000"
-              />
-              <p className="mt-1 text-xs text-neutral-500">
-                새 고객 저장 후 초기 포인트로 반영됩니다.
-              </p>
-            </div>
-          )}
         </div>
       </div>
+
+      {/* 삭제 버튼 (기존 고객만) */}
+      {!isNewCustomer && onDelete && (
+        <div className="mt-6 pt-6 border-t border-neutral-300">
+          <Button
+            variant="danger"
+            size="sm"
+            onClick={onDelete}
+          >
+            고객 데이터 삭제
+          </Button>
+        </div>
+      )}
     </div>
   )
 }

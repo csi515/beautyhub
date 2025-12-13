@@ -25,7 +25,6 @@ export interface CustomerProductLedger {
   owner_id: string
   customer_id: string
   product_id: string
-  customer_product_id: string
   delta: number
   reason?: string | null
   created_at?: string
@@ -107,7 +106,20 @@ export class CustomerProductsRepository extends BaseRepository<CustomerProduct> 
       this.handleSupabaseError(error)
     }
 
-    // 레저 항목은 자동으로 생성하지 않음 - 사용자가 직접 입력해야 함
+    // 변동내역 기록 (추가)
+    if (data && typeof input.quantity !== 'undefined' && input.quantity > 0) {
+      const { error: ledgerError } = await this.supabase.from('customer_product_ledger').insert({
+        owner_id: this.userId,
+        customer_id: input.customer_id,
+        product_id: input.product_id,
+        delta: input.quantity,
+        reason: input.reason || 'create',
+      })
+
+      if (ledgerError) {
+        console.error('[CustomerProducts] Failed to record ledger for new holding:', ledgerError)
+      }
+    }
 
     return data as CustomerProduct
   }
@@ -155,23 +167,24 @@ export class CustomerProductsRepository extends BaseRepository<CustomerProduct> 
 
     // ledger 기록 (변경 시)
     if (!input.no_ledger) {
-      try {
-        const beforeQty = Number(prev.quantity || 0)
-        const afterQty = typeof patch['quantity'] !== 'undefined' ? Number(patch['quantity']) : beforeQty
-        const delta = afterQty - beforeQty
+      const beforeQty = Number(prev.quantity || 0)
+      const afterQty = typeof patch['quantity'] !== 'undefined' ? Number(patch['quantity']) : beforeQty
+      const delta = afterQty - beforeQty
 
-        if (delta !== 0) {
-          await this.supabase.from('customer_product_ledger').insert({
-            owner_id: this.userId,
-            customer_id: prev.customer_id,
-            product_id: prev.product_id,
-            customer_product_id: id,
-            delta,
-            reason: input.reason || 'update',
-          })
+      if (delta !== 0) {
+        const { error: ledgerError } = await this.supabase.from('customer_product_ledger').insert({
+          owner_id: this.userId,
+          customer_id: prev.customer_id,
+          product_id: prev.product_id,
+          delta,
+          reason: input.reason || 'update',
+        })
+
+        if (ledgerError) {
+          console.error('[CustomerProducts] Failed to record ledger:', ledgerError)
+          // ledger 기록 실패는 전체 업데이트를 실패시키지 않음
+          // 하지만 로깅하여 추적 가능하도록 함
         }
-      } catch {
-        // ledger 기록 실패는 무시
       }
     }
 
@@ -219,7 +232,6 @@ export class CustomerProductsRepository extends BaseRepository<CustomerProduct> 
       owner_id: this.userId,
       customer_id: holding.customer_id,
       product_id: holding.product_id,
-      customer_product_id: customerProductId,
       delta,
       reason,
     })

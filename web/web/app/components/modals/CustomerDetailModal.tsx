@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useMemo, useState, useCallback } from 'react'
+import { useEffect, useState, useCallback, useRef } from 'react'
 import Modal, { ModalBody, ModalFooter, ModalHeader } from '../ui/Modal'
 import Button from '../ui/Button'
 import Tabs, { TabsContent, TabsList, TabsTrigger } from '../ui/Tabs'
@@ -8,8 +8,7 @@ import { useAppToast } from '@/app/lib/ui/toast'
 import { getLocalizedErrorMessage } from '@/app/lib/utils/messages'
 import CustomerSummaryBar from './customer-detail/CustomerSummaryBar'
 import CustomerOverviewTab from './customer-detail/CustomerOverviewTab'
-import CustomerPointsTab from './customer-detail/CustomerPointsTab'
-import CustomerHoldingsTab from './customer-detail/CustomerHoldingsTab'
+import CustomerTransactionsTab from './customer-detail/CustomerTransactionsTab'
 import { customersApi } from '@/app/lib/api/customers'
 import { productsApi } from '@/app/lib/api/products'
 import { customerProductsApi } from '@/app/lib/api/customer-products'
@@ -38,179 +37,154 @@ export default function CustomerDetailModal({
   const [error, setError] = useState('')
   const toast = useAppToast()
   const [features, setFeatures] = useState<string>('')
+  const [fieldErrors, setFieldErrors] = useState<{ phone?: string; email?: string }>({})
+
+  // 포인트 상태
+  const [pointsBalance, setPointsBalance] = useState<number>(0)
+  const [pointsDelta, setPointsDelta] = useState<number>(0)
+  const [pointsReason, setPointsReason] = useState<string>('')
+  const [pointsLedger, setPointsLedger] = useState<{ created_at: string; delta: number; reason?: string }[]>([])
+
+  // 보유상품 상태
   const [holdings, setHoldings] = useState<Holding[]>([])
   const [products, setProducts] = useState<{ id: string | number; name: string }[]>([])
   const [newProductId, setNewProductId] = useState<string>('')
   const [newQty, setNewQty] = useState<number>(1)
   const [newReason, setNewReason] = useState<string>('')
   const [addingProduct, setAddingProduct] = useState(false)
-  // points
-  const [pointsBalance, setPointsBalance] = useState<number>(0)
-  const [pointsDelta, setPointsDelta] = useState<number>(0)
-  const [pointsReason, setPointsReason] = useState<string>('')
-  const [initialPoints, setInitialPoints] = useState<number>(0)
-  const [activeTab, setActiveTab] = useState<'overview' | 'points' | 'holdings'>('overview')
-  // history/report filters
-  const [ledger, setLedger] = useState<{ created_at: string; delta: number; reason?: string }[]>([])
-  const [loadingHistory, setLoadingHistory] = useState(false)
-  const [histPage, setHistPage] = useState(1)
-  const pageSize = 5
-  const [hasNext, setHasNext] = useState(false)
-  // holdings reason/history state
-  const [holdingReason, setHoldingReason] = useState<Record<string, string>>({})
   const [holdingDelta, setHoldingDelta] = useState<Record<string, number>>({})
-  const [allLedgerLoading, setAllLedgerLoading] = useState(false)
-  const [allLedger, setAllLedger] = useState<{ created_at: string; product_id?: string; delta: number; reason?: string }[]>([])
-  const [allLedgerPage, setAllLedgerPage] = useState(1)
-  const [allLedgerPageSize, setAllLedgerPageSize] = useState(10)
-  const [allLedgerTotal, setAllLedgerTotal] = useState(0)
-  const [fieldErrors, setFieldErrors] = useState<{ name?: string; phone?: string; email?: string }>({})
-  // holdings pagination
-  const [holdPage, setHoldPage] = useState(1)
-  const [holdPageSize, setHoldPageSize] = useState(5)
+  const [holdingReason, setHoldingReason] = useState<Record<string, string>>({})
+  const [productLedger, setProductLedger] = useState<{ created_at: string; delta: number; reason?: string | null | undefined; product_id: string }[]>([])
+
+  const [activeTab, setActiveTab] = useState<'overview' | 'transactions'>('overview')
+
+  // 자동 저장
+  const autoSaveTimeoutRef = useRef<NodeJS.Timeout | null>(null)
 
   useEffect(() => {
-    setForm(item)
-    setFeatures(item?.features || '')
-    setInitialPoints(0); setPointsDelta(0); setPointsReason(''); setLedger([])
-    // preload memo from reservation create (localStorage)
-    try {
-      if (item?.id) {
-        const saved = localStorage.getItem(`memoDraft:${item.id}`) || ''
-        if (saved) setNewReason(saved)
-      }
-    } catch { }
+    if (item) {
+      setForm(item)
+      setFeatures(item.features || '')
+      setError('')
+      setFieldErrors({})
+    }
   }, [item])
 
+  // 데이터 로드
   useEffect(() => {
-    if (!open || !item?.id) return
-    const load = async () => {
+    if (!open || !form?.id) return
+
+    const loadData = async () => {
       try {
-        const [holdingsData, productsData, pointsData] = await Promise.all([
-          customerProductsApi.list(item.id),
+        const [holdingsData, productsData, pointsData, pointsLedgerData, productLedgerData] = await Promise.all([
+          customerProductsApi.list(form.id),
           productsApi.list({ limit: 1000 }),
-          pointsApi.getBalance(item.id, { withLedger: false }),
+          pointsApi.getBalance(form.id, { withLedger: false }),
+          pointsApi.getLedger(form.id, { limit: 100 }),
+          customerProductsApi.getCustomerLedger(form.id, { limit: 100, offset: 0 })
         ])
-        const normalized = Array.isArray(holdingsData) ? holdingsData : []
-        setHoldings(normalized as Holding[])
-        // initialize per-holding delta to 1
-        try {
-          const init: Record<string, number> = {}
-          normalized.forEach((h) => { if (h?.id) init[String(h.id)] = 1 })
-          setHoldingDelta(init)
-        } catch { }
+
+        setHoldings(Array.isArray(holdingsData) ? holdingsData as Holding[] : [])
         setProducts(Array.isArray(productsData) ? productsData : [])
         setPointsBalance(Number(pointsData?.balance || 0))
-      } catch (error) {
-        const message = getLocalizedErrorMessage(error, '데이터 로드에 실패했습니다.')
-        toast.error(message)
-      }
-    }
-    load()
-  }, [open, item?.id, toast])
-
-  // 보유 상품 변동 내역: 페이지네이션으로 로드
-  useEffect(() => {
-    const loadAllHoldingsLedger = async () => {
-      if (!open || !form?.id) return
-      try {
-        setAllLedgerLoading(true)
-        const offset = (allLedgerPage - 1) * allLedgerPageSize
-        const data = await customerProductsApi.getCustomerLedger(form.id, {
-          limit: allLedgerPageSize + 1, // 다음 페이지 존재 여부 확인을 위해 +1
-          offset
-        })
-        const arr = Array.isArray(data) ? data : []
-        setAllLedgerTotal(arr.length > allLedgerPageSize ? allLedgerPage * allLedgerPageSize + 1 : (allLedgerPage - 1) * allLedgerPageSize + arr.length)
-        setAllLedger(arr.slice(0, allLedgerPageSize).map(item => ({
+        setPointsLedger(Array.isArray(pointsLedgerData) ? pointsLedgerData : [])
+        setProductLedger(Array.isArray(productLedgerData) ? productLedgerData.map(item => ({
           created_at: item.created_at || '',
-          product_id: item.product_id,
-          delta: item.delta,
-          ...(item.reason && { reason: item.reason }),
-        })))
-      } catch {
-        setAllLedger([])
-        setAllLedgerTotal(0)
-      } finally {
-        setAllLedgerLoading(false)
+          delta: item.delta || 0,
+          reason: item.reason,
+          product_id: item.product_id || ''
+        })) : [])
+
+        const init: Record<string, number> = {}
+        if (Array.isArray(holdingsData)) {
+          holdingsData.forEach((h: any) => {
+            if (h?.id) init[String(h.id)] = 1
+          })
+        }
+        setHoldingDelta(init)
+      } catch (err) {
+        console.error('Failed to load data:', err)
       }
     }
-    loadAllHoldingsLedger()
-  }, [open, form?.id, allLedgerPage, allLedgerPageSize])
 
-  // compute date range
-  const computedRange = useMemo(() => {
-    return { from: '', to: '' }
-  }, [])
+    loadData()
+  }, [open, form?.id])
 
-  // load ledger/report when open or page changes (항상 로드)
-  useEffect(() => {
-    const run = async () => {
-      if (!open || !item?.id) return
-      setLoadingHistory(true)
-      try {
-        // 페이지네이션: pageSize+1 로 로드하여 다음 페이지 존재 여부 확인
-        const data = await pointsApi.getBalance(item.id, {
-          from: computedRange.from,
-          to: computedRange.to,
-          withLedger: true,
-          limit: pageSize + 1,
-          offset: (histPage - 1) * pageSize,
-        })
-        const arr = Array.isArray(data.ledger) ? data.ledger : []
-        setHasNext(arr.length > pageSize)
-        setLedger(arr.slice(0, pageSize).map(item => ({
-          created_at: item.created_at || '',
-          delta: item.delta,
-          ...(item.reason && { reason: item.reason }),
-        })))
-      } catch {
-        setLedger([])
-        setHasNext(false)
-      } finally {
-        setLoadingHistory(false)
-      }
-    }
-    run()
-  }, [computedRange.from, computedRange.to, open, item?.id, histPage])
-
-  // 포인트 추가 핸들러
-  const handleAddPoints = useCallback(async () => {
+  // 자동 저장 함수
+  const autoSave = useCallback(async () => {
     if (!form?.id) return
-    const amt = Number(pointsDelta || 100)
-    if (!amt) return
-    try {
-      const result = await pointsApi.addLedgerEntry(form.id, {
-        delta: Math.abs(amt),
-        reason: pointsReason || 'manual-add'
-      })
-      setPointsBalance(result.balance)
-      setPointsDelta(0)
-      setPointsReason('')
-      toast.success('추가되었습니다.')
-    } catch {
-      toast.error('포인트 추가 실패')
-    }
-  }, [form?.id, pointsDelta, pointsReason, toast])
 
-  // 키보드 단축키: Alt+1/2/3 탭 전환, Enter 시 기본 동작(추가)
+    try {
+      const body: { name: string; phone?: string | null; email?: string | null; address?: string | null; features?: string } = {
+        name: (form.name || '').trim(),
+        phone: form.phone || null,
+        email: form.email || null,
+        address: form.address || null
+      }
+
+      if (features && features.trim() !== '') {
+        body.features = features.trim()
+      }
+
+      // 검증
+      const errors: { phone?: string; email?: string } = {}
+
+      if (!body.name) return
+
+      if (!body.phone || !body.phone.trim()) return
+
+      const phoneRegex = /^01[0-9]-?[0-9]{3,4}-?[0-9]{4}$/
+      if (!phoneRegex.test(body.phone.trim())) {
+        errors.phone = '올바른 전화번호 형식이 아닙니다 (예: 010-1234-5678)'
+      }
+
+      if (body.email && body.email.trim()) {
+        const emailRegex = /.+@.+\..+/
+        if (!emailRegex.test(body.email.trim())) {
+          errors.email = '올바른 이메일 형식이 아닙니다 (예: example@email.com)'
+        }
+      }
+
+      if (Object.keys(errors).length > 0) {
+        setFieldErrors(errors)
+        return
+      }
+
+      await customersApi.update(form.id, body)
+    } catch (e) {
+      const errorMessage = e instanceof Error ? e.message : '저장에 실패했습니다.'
+      toast.error(errorMessage)
+    }
+  }, [form, features, toast])
+
+  // 자동 저장 트리거
   useEffect(() => {
-    if (!open) return
-    const onKey = (e: KeyboardEvent) => {
-      if (e.altKey && e.key === '1') { e.preventDefault(); setActiveTab('overview') }
-      if (e.altKey && e.key === '2') { e.preventDefault(); setActiveTab('points') }
-      if (e.altKey && e.key === '3') { e.preventDefault(); setActiveTab('holdings') }
-      if (e.key === 'Enter' && activeTab === 'points' && pointsDelta) {
-        handleAddPoints()
+    if (!form?.id) return
+
+    if (autoSaveTimeoutRef.current) {
+      clearTimeout(autoSaveTimeoutRef.current)
+    }
+
+    autoSaveTimeoutRef.current = setTimeout(() => {
+      autoSave()
+    }, 1000)
+
+    return () => {
+      if (autoSaveTimeoutRef.current) {
+        clearTimeout(autoSaveTimeoutRef.current)
       }
     }
-    window.addEventListener('keydown', onKey)
-    return () => window.removeEventListener('keydown', onKey)
-  }, [open, activeTab, pointsDelta, handleAddPoints])
+  }, [form, features, autoSave])
 
-  const save = async () => {
+  // 신규 고객 생성
+  const createAndClose = async () => {
+    if (form?.id) return
+
     try {
-      setLoading(true); setError(''); setFieldErrors({})
+      setLoading(true)
+      setError('')
+      setFieldErrors({})
+
       if (!form) throw new Error('잘못된 입력입니다.')
 
       const body: { name: string; phone?: string | null; email?: string | null; address?: string | null; features?: string } = {
@@ -220,27 +194,26 @@ export default function CustomerDetailModal({
         address: form.address || null
       }
 
-      // features는 값이 있을 때만 포함
       if (features && features.trim() !== '') {
         body.features = features.trim()
       }
 
       // 검증
-      const errors: { name?: string; phone?: string; email?: string } = {}
+      const errors: { phone?: string; email?: string } = {}
 
       if (!body.name) {
-        errors.name = '이름은 필수입니다.'
+        throw new Error('이름은 필수입니다.')
       }
 
-      // 전화번호 검증 (선택 항목이지만 값이 있으면 검증)
-      if (body.phone && body.phone.trim()) {
-        const phoneRegex = /^01[0-9]-?[0-9]{3,4}-?[0-9]{4}$/
-        if (!phoneRegex.test(body.phone.trim())) {
-          errors.phone = '올바른 전화번호 형식이 아닙니다 (예: 010-1234-5678)'
-        }
+      if (!body.phone || !body.phone.trim()) {
+        throw new Error('전화번호는 필수입니다.')
       }
 
-      // 이메일 검증 (선택 항목이지만 값이 있으면 검증)
+      const phoneRegex = /^01[0-9]-?[0-9]{3,4}-?[0-9]{4}$/
+      if (!phoneRegex.test(body.phone.trim())) {
+        throw new Error('올바른 전화번호 형식이 아닙니다 (예: 010-1234-5678)')
+      }
+
       if (body.email && body.email.trim()) {
         const emailRegex = /.+@.+\..+/
         if (!emailRegex.test(body.email.trim())) {
@@ -253,193 +226,190 @@ export default function CustomerDetailModal({
         throw new Error(Object.values(errors)[0])
       }
 
-      let created: { id: string } | null = null
-      if (form.id) {
-        await customersApi.update(form.id, body)
-      } else {
-        created = await customersApi.create(body)
-      }
-      // 신규 고객 초기 포인트 반영
-      if (!form.id && initialPoints && created?.id) {
-        try {
-          await pointsApi.addLedgerEntry(created.id, { delta: Number(initialPoints), reason: 'initial' })
-        } catch { }
-      }
-      onSaved(); onClose(); toast.success('고객이 저장되었습니다.')
+      await customersApi.create(body)
+
+      onSaved()
+      onClose()
+      toast.success('고객이 생성되었습니다.')
     } catch (e: unknown) {
       const errorMessage = e instanceof Error ? e.message : '에러가 발생했습니다.'
       setError(errorMessage)
-    } finally { setLoading(false) }
-  }
-
-  const removeItem = async () => {
-    if (!form?.id) return
-    if (!confirm('삭제하시겠습니까?')) return
-    try {
-      await customersApi.delete(form.id)
-      onDeleted(); onClose(); toast.success('삭제되었습니다.')
-    } catch {
-      toast.error('삭제 실패')
+    } finally {
+      setLoading(false)
     }
   }
 
-  // 포인트 차감 핸들러
-  const handleDeductPoints = async () => {
-    if (!form?.id) return
-    const amt = Number(pointsDelta || 100)
-    if (!amt) return
+  // 포인트 추가
+  const handleAddPoints = async () => {
+    if (!form?.id || !pointsDelta) return
     try {
-      const result = await pointsApi.addLedgerEntry(form.id, {
-        delta: -Math.abs(amt),
-        reason: pointsReason || 'manual-deduct'
-      })
-      setPointsBalance(result.balance)
+      await pointsApi.addLedgerEntry(form.id, { delta: Math.abs(pointsDelta), reason: pointsReason || '-' })
+      setPointsBalance(prev => prev + Math.abs(pointsDelta))
       setPointsDelta(0)
       setPointsReason('')
-      toast.success('차감되었습니다.')
-    } catch {
-      toast.error('포인트 차감 실패')
+
+      const ledgerData = await pointsApi.getLedger(form.id, { limit: 100 })
+      setPointsLedger(Array.isArray(ledgerData) ? ledgerData : [])
+
+      toast.success('포인트가 추가되었습니다.')
+    } catch (error) {
+      const message = getLocalizedErrorMessage(error, '포인트 추가에 실패했습니다.')
+      toast.error(message)
     }
   }
 
-  // 엑셀 내보내기 핸들러
-  const handleExportExcel = () => {
-    const header = '<tr><th>created_at</th><th>reason</th><th>delta</th></tr>'
-    const body = ledger
-      .map(r => {
-        const dt = String(r.created_at).replace('T', ' ').slice(0, 19)
-        const reason = (r.reason || '').replace(/</g, '&lt;').replace(/>/g, '&gt;')
-        return `<tr><td>${dt}</td><td>${reason}</td><td>${r.delta}</td></tr>`
-      })
-      .join('')
-    const html = `<!DOCTYPE html><html><head><meta charset="utf-8" /></head><body><table>${header}${body}</table></body></html>`
-    const blob = new Blob([html], {
-      type: 'application/vnd.ms-excel'
-    })
-    const url = URL.createObjectURL(blob)
-    const a = document.createElement('a')
-    a.href = url
-    a.download = 'points_history.xls'
-    a.click()
-    URL.revokeObjectURL(url)
+  // 포인트 차감
+  const handleDeductPoints = async () => {
+    if (!form?.id || !pointsDelta) return
+    try {
+      await pointsApi.addLedgerEntry(form.id, { delta: -Math.abs(pointsDelta), reason: pointsReason || '-' })
+      setPointsBalance(prev => prev - Math.abs(pointsDelta))
+      setPointsDelta(0)
+      setPointsReason('')
+
+      const ledgerData = await pointsApi.getLedger(form.id, { limit: 100 })
+      setPointsLedger(Array.isArray(ledgerData) ? ledgerData : [])
+
+      toast.success('포인트가 차감되었습니다.')
+    } catch (error) {
+      const message = getLocalizedErrorMessage(error, '포인트 차감에 실패했습니다.')
+      toast.error(message)
+    }
   }
 
-  // 보유 상품 추가 핸들러
+  // 보유 상품 추가
   const handleAddProduct = async () => {
     if (!newProductId || !form?.id) return
     setAddingProduct(true)
     try {
-      const added = await customerProductsApi.create({
+      await customerProductsApi.create({
         customer_id: form.id,
         product_id: newProductId,
         quantity: newQty,
-        reason: (newReason ? `${newReason} (사용자 직접 변경)` : 'add (사용자 직접 변경)')
+        reason: newReason || '-'
       })
-      setHoldings(h => [...h, added as Holding])
+
+      const holdingsData = await customerProductsApi.list(form.id)
+      setHoldings(Array.isArray(holdingsData) ? holdingsData as Holding[] : [])
+
+      const ledgerData = await customerProductsApi.getCustomerLedger(form.id, { limit: 100, offset: 0 })
+      setProductLedger(Array.isArray(ledgerData) ? ledgerData.map(item => ({
+        created_at: item.created_at || '',
+        delta: item.delta || 0,
+        reason: item.reason,
+        product_id: item.product_id || ''
+      })) : [])
+
       setNewProductId('')
       setNewQty(1)
       setNewReason('')
-      toast.success('제품이 추가되었습니다.')
+      toast.success('상품이 추가되었습니다.')
     } catch (error) {
-      const message = getLocalizedErrorMessage(error, '제품 추가에 실패했습니다.')
+      const message = getLocalizedErrorMessage(error, '상품 추가에 실패했습니다.')
       toast.error(message)
     } finally {
       setAddingProduct(false)
     }
   }
 
-  // 보유 상품 증가 핸들러 (Confirm 제거)
+  // 보유 상품 증가
   const handleIncreaseHolding = async (holding: Holding) => {
-    const cur = holdings.find(x => x.id === holding.id)
-    if (!cur) return
     const amt = Math.abs(Number(holdingDelta[holding.id] ?? 1))
     if (!amt) return
 
-    const nextQty = Number(cur.quantity || 0) + amt
-    const prevQty = cur.quantity
+    const nextQty = Number(holding.quantity || 0) + amt
+    const prevQty = holding.quantity
 
-    // 즉시 UI 업데이트 (낙관적)
     setHoldings(list => list.map(x => x.id === holding.id ? { ...x, quantity: nextQty } : x))
 
     try {
       await customerProductsApi.update(holding.id, {
         quantity: nextQty,
-        reason: `${(holdingReason[holding.id] || 'increase')} (사용자 직접 변경)`
+        reason: holdingReason[holding.id] || '-'
       })
 
       setHoldingReason(s => ({ ...s, [holding.id]: '' }))
       setHoldingDelta(s => ({ ...s, [holding.id]: 1 }))
 
       if (form?.id) {
-        try {
-          window.dispatchEvent(new CustomEvent('holdings-updated', { detail: { customerId: form.id } }))
-        } catch { }
+        const ledgerData = await customerProductsApi.getCustomerLedger(form.id, { limit: 100, offset: 0 })
+        setProductLedger(Array.isArray(ledgerData) ? ledgerData.map(item => ({
+          created_at: item.created_at || '',
+          delta: item.delta || 0,
+          reason: item.reason,
+          product_id: item.product_id || ''
+        })) : [])
       }
 
-      toast.success(`${cur.products?.name || '제품'}이 +${amt} 추가되었습니다.`)
+      toast.success(`+${amt} 추가되었습니다.`)
     } catch (error) {
-      // 실패 시 롤백
       setHoldings(list => list.map(x => x.id === holding.id ? { ...x, quantity: prevQty } : x))
       const message = getLocalizedErrorMessage(error, '수량 증가에 실패했습니다.')
       toast.error(message)
     }
   }
 
-  // 보유 상품 감소 핸들러 (Confirm 제거)
+  // 보유 상품 감소
   const handleDecreaseHolding = async (holding: Holding) => {
-    const cur = holdings.find(x => x.id === holding.id)
-    if (!cur) return
     const amt = Math.abs(Number(holdingDelta[holding.id] ?? 1))
     if (!amt) return
 
-    const nextQty = Math.max(0, Number(cur.quantity || 0) - amt)
-    const prevQty = cur.quantity
+    const nextQty = Math.max(0, Number(holding.quantity || 0) - amt)
+    const prevQty = holding.quantity
 
-    // 즉시 UI 업데이트 (낙관적)
     setHoldings(list => list.map(x => x.id === holding.id ? { ...x, quantity: nextQty } : x))
 
     try {
       await customerProductsApi.update(holding.id, {
         quantity: nextQty,
-        reason: `${(holdingReason[holding.id] || 'decrease')} (사용자 직접 변경)`
+        reason: holdingReason[holding.id] || '-'
       })
 
       setHoldingReason(s => ({ ...s, [holding.id]: '' }))
       setHoldingDelta(s => ({ ...s, [holding.id]: 1 }))
 
       if (form?.id) {
-        try {
-          window.dispatchEvent(new CustomEvent('holdings-updated', { detail: { customerId: form.id } }))
-        } catch { }
+        const ledgerData = await customerProductsApi.getCustomerLedger(form.id, { limit: 100, offset: 0 })
+        setProductLedger(Array.isArray(ledgerData) ? ledgerData.map(item => ({
+          created_at: item.created_at || '',
+          delta: item.delta || 0,
+          reason: item.reason,
+          product_id: item.product_id || ''
+        })) : [])
       }
 
-      toast.success(`${cur.products?.name || '제품'}이 -${amt} 차감되었습니다.`)
+      toast.success(`-${amt} 차감되었습니다.`)
     } catch (error) {
-      // 실패 시 롤백
       setHoldings(list => list.map(x => x.id === holding.id ? { ...x, quantity: prevQty } : x))
       const message = getLocalizedErrorMessage(error, '수량 차감에 실패했습니다.')
       toast.error(message)
     }
   }
 
-  // 보유 상품 삭제 핸들러 (Confirm은 삭제는 유지)
+  // 보유 상품 삭제
   const handleDeleteHolding = async (holdingId: string) => {
-    if (!confirm('정말 삭제하시겠습니까? 이 작업은 되돌릴 수 없습니다.')) return
-
-    // 삭제 전 백업
-    const deleted = holdings.find(x => x.id === holdingId)
+    if (!confirm('정말 삭제하시겠습니까?')) return
 
     try {
       await customerProductsApi.delete(holdingId)
       setHoldings(list => list.filter(x => x.id !== holdingId))
+      toast.success('삭제되었습니다.')
+    } catch (error) {
+      const message = getLocalizedErrorMessage(error, '삭제에 실패했습니다.')
+      toast.error(message)
+    }
+  }
 
-      if (form?.id) {
-        try {
-          window.dispatchEvent(new CustomEvent('holdings-updated', { detail: { customerId: form.id } }))
-        } catch { }
-      }
+  // 고객 삭제
+  const removeItem = async () => {
+    if (!form?.id) return
+    if (!confirm('삭제하시겠습니까?')) return
 
-      toast.success(`${deleted?.products?.name || '제품'}이 삭제되었습니다.`)
+    try {
+      await customersApi.delete(form.id)
+      onDeleted()
+      onClose()
+      toast.success('고객이 삭제되었습니다.')
     } catch (error) {
       const message = getLocalizedErrorMessage(error, '삭제에 실패했습니다.')
       toast.error(message)
@@ -447,41 +417,28 @@ export default function CustomerDetailModal({
   }
 
   if (!open || !form) return null
+
   return (
     <Modal open={open} onClose={onClose} size="lg">
-      <ModalHeader
-        title="고객 상세"
-        description="고객의 기본 정보, 포인트, 보유 상품을 한눈에 관리합니다."
-      />
+      <ModalHeader title="고객 상세" />
       <ModalBody>
         <div className="space-y-6">
           {error && <p className="text-sm text-rose-600">{error}</p>}
 
-          {/* 상단 요약 바 */}
-          <CustomerSummaryBar
-            name={form.name}
-            phone={form.phone ?? null}
-            email={form.email ?? null}
-            pointsBalance={pointsBalance}
-            holdingsCount={holdings.length}
-          />
+          {/* 상단 요약 바 - 기존 고객만 */}
+          {form?.id && (
+            <CustomerSummaryBar
+              name={form.name}
+              phone={form.phone ?? null}
+              email={form.email ?? null}
+              pointsBalance={pointsBalance}
+              holdingsCount={holdings.length}
+            />
+          )}
 
-          {/* 탭 */}
-          <Tabs value={activeTab} onValueChange={v => setActiveTab(v as 'overview' | 'points' | 'holdings')} className="mt-6">
-            <TabsList className="mb-6 border-b-2 border-neutral-400">
-              <TabsTrigger value="overview">
-                기본 정보
-              </TabsTrigger>
-              <TabsTrigger value="points">
-                포인트
-              </TabsTrigger>
-              <TabsTrigger value="holdings">
-                보유 상품
-              </TabsTrigger>
-            </TabsList>
-
-            {/* 기본 정보 탭 */}
-            <TabsContent value="overview">
+          {!form?.id ? (
+            // 신규 고객: 탭 없이 기본정보만 표시
+            <div className="mt-6">
               <CustomerOverviewTab
                 form={form ? {
                   id: form.id,
@@ -491,7 +448,7 @@ export default function CustomerDetailModal({
                   address: form.address ?? null,
                 } : null}
                 features={features}
-                initialPoints={initialPoints}
+                initialPoints={0}
                 fieldErrors={fieldErrors}
                 onChangeForm={(updater) => {
                   setForm(f => {
@@ -513,119 +470,113 @@ export default function CustomerDetailModal({
                   })
                 }}
                 onChangeFeatures={setFeatures}
-                onChangeInitialPoints={setInitialPoints}
+                onChangeInitialPoints={() => { }}
+                onDelete={removeItem}
+                isNewCustomer={!form?.id}
               />
-            </TabsContent>
+            </div>
+          ) : (
+            // 기존 고객: 탭 표시
+            <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as 'overview' | 'transactions')} className="mt-6">
+              <TabsList className="mb-6 border-b-2 border-neutral-400">
+                <TabsTrigger value="overview">
+                  기본 정보
+                </TabsTrigger>
+                <TabsTrigger value="transactions">
+                  포인트 & 보유상품
+                </TabsTrigger>
+              </TabsList>
 
-            {/* 포인트 탭 */}
-            <TabsContent value="points">
-              {form.id && (
-                <CustomerPointsTab
-                  customerId={form.id}
+              {/* 기본 정보 탭 */}
+              <TabsContent value="overview">
+                <CustomerOverviewTab
+                  form={form ? {
+                    id: form.id,
+                    name: form.name,
+                    phone: form.phone ?? null,
+                    email: form.email ?? null,
+                    address: form.address ?? null,
+                  } : null}
+                  features={features}
+                  initialPoints={0}
+                  fieldErrors={fieldErrors}
+                  onChangeForm={(updater) => {
+                    setForm(f => {
+                      const result = updater(f ? {
+                        id: f.id,
+                        name: f.name,
+                        phone: f.phone ?? null,
+                        email: f.email ?? null,
+                        address: f.address ?? null,
+                      } : null)
+                      if (!result) return null
+                      return {
+                        ...f!,
+                        name: result.name || '',
+                        phone: result.phone ?? null,
+                        email: result.email ?? null,
+                        address: result.address ?? null,
+                      } as Customer
+                    })
+                  }}
+                  onChangeFeatures={setFeatures}
+                  onChangeInitialPoints={() => { }}
+                  onDelete={removeItem}
+                  isNewCustomer={!form?.id}
+                />
+              </TabsContent>
+
+              {/* 통합 거래 탭 (포인트 + 보유상품) */}
+              <TabsContent value="transactions">
+                <CustomerTransactionsTab
+                  customerId={form?.id || ''}
                   pointsBalance={pointsBalance}
                   pointsDelta={pointsDelta}
                   pointsReason={pointsReason}
-                  ledger={ledger}
-                  loadingHistory={loadingHistory}
-                  histPage={histPage}
-                  hasNext={hasNext}
-                  onChangeDelta={setPointsDelta}
-                  onChangeReason={setPointsReason}
+                  pointsLedger={pointsLedger}
+                  onChangePointsDelta={setPointsDelta}
+                  onChangePointsReason={setPointsReason}
                   onAddPoints={handleAddPoints}
                   onDeductPoints={handleDeductPoints}
-                  onChangePage={setHistPage}
-                  onExportExcel={handleExportExcel}
-                />
-              )}
-            </TabsContent>
-
-            {/* 보유 상품 탭 */}
-            <TabsContent value="holdings">
-              {form.id && (
-                <CustomerHoldingsTab
-                  customerId={form.id}
-                  holdings={holdings.filter(h => h.products).map(h => ({
-                    id: h.id,
-                    product_id: h.product_id,
-                    quantity: h.quantity || 0,
-                    ...(h.notes && { notes: h.notes }),
-                    products: h.products!
-                  }))}
-                  products={products.map(p => ({
-                    id: String(p.id),
-                    name: p.name
-                  }))}
-                  holdingDelta={holdingDelta}
-                  holdingReason={holdingReason}
+                  holdings={holdings}
+                  products={products}
                   newProductId={newProductId}
                   newQty={newQty}
                   newReason={newReason}
+                  holdingDelta={holdingDelta}
+                  holdingReason={holdingReason}
                   addingProduct={addingProduct}
-                  allLedger={allLedger}
-                  allLedgerLoading={allLedgerLoading}
-                  allLedgerPage={allLedgerPage}
-                  allLedgerPageSize={allLedgerPageSize}
-                  allLedgerTotal={allLedgerTotal}
-                  holdPage={holdPage}
-                  holdPageSize={holdPageSize}
-                  onAddProduct={handleAddProduct}
+                  productLedger={productLedger}
                   onChangeNewProduct={setNewProductId}
                   onChangeNewQty={setNewQty}
                   onChangeNewReason={setNewReason}
-                  onChangeHoldingDelta={(id, v) => setHoldingDelta(s => ({ ...s, [id]: v }))}
-                  onChangeHoldingReason={(id, v) => setHoldingReason(s => ({ ...s, [id]: v }))}
-                  onIncrease={async (holding) => {
-                    const h = holdings.find(x => x.id === holding.id)
-                    if (h) await handleIncreaseHolding(h)
-                  }}
-                  onDecrease={async (holding) => {
-                    const h = holdings.find(x => x.id === holding.id)
-                    if (h) await handleDecreaseHolding(h)
-                  }}
-                  onDelete={handleDeleteHolding}
-                  onChangeHoldPage={setHoldPage}
-                  onChangeHoldPageSize={setHoldPageSize}
-                  onChangeAllLedgerPage={setAllLedgerPage}
-                  onChangeAllLedgerPageSize={setAllLedgerPageSize}
+                  onChangeHoldingDelta={(id: string, v: number) => setHoldingDelta(s => ({ ...s, [id]: v }))}
+                  onChangeHoldingReason={(id: string, v: string) => setHoldingReason(s => ({ ...s, [id]: v }))}
+                  onAddProduct={handleAddProduct}
+                  onIncrease={(holding: Holding) => handleIncreaseHolding(holding)}
+                  onDecrease={(holding: Holding) => handleDecreaseHolding(holding)}
+                  onDelete={(id: string) => handleDeleteHolding(id)}
                 />
-              )}
-            </TabsContent>
-          </Tabs>
+              </TabsContent>
+            </Tabs>
+          )}
         </div>
       </ModalBody>
-      <ModalFooter>
-        <div className="flex flex-col-reverse sm:flex-row gap-2 sm:gap-3 w-full">
-          <Button
-            variant="secondary"
-            onClick={onClose}
-            disabled={loading}
-            className="w-full sm:w-auto min-h-[44px]"
-          >
-            취소
-          </Button>
-          <div className="flex gap-2 sm:gap-3 flex-1 sm:flex-initial">
-            <Button
-              variant="danger"
-              onClick={removeItem}
-              disabled={loading}
-              className="flex-1 sm:w-auto min-h-[44px]"
-            >
-              삭제
-            </Button>
+      {!form?.id && (
+        <ModalFooter>
+          <div className="flex justify-end w-full">
             <Button
               variant="primary"
-              onClick={save}
+              onClick={createAndClose}
               loading={loading}
               disabled={loading}
-              className="flex-1 sm:w-auto min-h-[44px]"
+              className="min-h-[44px]"
             >
-              저장
+              고객 생성
             </Button>
           </div>
-        </div>
-      </ModalFooter>
+        </ModalFooter>
+      )}
     </Modal>
   )
 }
-
-

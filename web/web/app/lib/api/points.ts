@@ -36,6 +36,24 @@ export const pointsApi = {
   },
 
   /**
+   * 포인트 ledger 조회
+   */
+  getLedger: (
+    customerId: string,
+    options?: PaginationParams & DateRangeParams
+  ): Promise<Array<{ created_at: string; delta: number; reason?: string }>> => {
+    const params = new URLSearchParams()
+    if (options?.limit) params.set('limit', String(options.limit))
+    if (options?.offset) params.set('offset', String(options.offset))
+    if (options?.from) params.set('from', options.from)
+    if (options?.to) params.set('to', options.to)
+    const queryString = params.toString()
+    return apiClient.get<Array<{ created_at: string; delta: number; reason?: string }>>(
+      `/api/customers/${customerId}/points/ledger${queryString ? `?${queryString}` : ''}`
+    )
+  },
+
+  /**
    * 포인트 리포트 생성
    */
   getReport: (customerId: string, from?: string, to?: string): Promise<PointsReport> => {

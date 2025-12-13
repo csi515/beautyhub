@@ -44,7 +44,7 @@ export default function CustomerPointsTab({
   onExportExcel
 }: CustomerPointsTabProps) {
   const [isHistoryExpanded, setIsHistoryExpanded] = useState(false)
-  
+
   if (!customerId) return null
 
   return (
@@ -98,52 +98,57 @@ export default function CustomerPointsTab({
         </button>
         {isHistoryExpanded && (
           <div className="overflow-auto">
-          {loadingHistory && (
-            <div className="space-y-2">
-              {Array.from({ length: 6 }).map((_, i) => (
-                <div key={i} className="h-10 rounded-sm border-2 border-neutral-300 bg-neutral-100 animate-pulse" />
-              ))}
-            </div>
-          )}
-          {!loadingHistory && (
-            <table className="min-w-full text-sm">
-              <thead className="sticky top-0 z-[1010] bg-neutral-300 border-b-2 border-neutral-400">
-                <tr>
-                  <th className="p-3 text-left font-semibold text-neutral-900">일시</th>
-                  <th className="p-3 text-left font-semibold text-neutral-900">사유</th>
-                  <th className="p-3 text-right font-semibold text-neutral-900">증감</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-neutral-300">
-                {ledger.map((r, i) => (
-                  <tr key={i} className="hover:bg-neutral-50 transition-colors">
-                    <td className="p-3 text-neutral-700">
-                      {String(r.created_at).replace('T', ' ').slice(0, 16)}
-                    </td>
-                    <td className="p-3">
-                      <span className="inline-flex items-center rounded-sm border border-neutral-300 bg-neutral-100 px-2.5 py-1 text-xs font-medium text-neutral-700">
-                        {r.reason || '-'}
-                      </span>
-                    </td>
-                    <td
-                      className={`p-3 text-right font-semibold ${
-                        Number(r.delta) >= 0 ? 'text-emerald-600' : 'text-rose-600'
-                      }`}
-                    >
-                      {Number(r.delta) >= 0 ? `+${r.delta.toLocaleString()}` : r.delta.toLocaleString()}
-                    </td>
-                  </tr>
+            {loadingHistory && (
+              <div className="space-y-2">
+                {Array.from({ length: 6 }).map((_, i) => (
+                  <div key={i} className="h-10 rounded-sm border-2 border-neutral-300 bg-neutral-100 animate-pulse" />
                 ))}
-                {ledger.length === 0 && (
+              </div>
+            )}
+            {!loadingHistory && (
+              <table className="min-w-full text-sm">
+                <thead className="sticky top-0 z-[1010] bg-neutral-300 border-b-2 border-neutral-400">
                   <tr>
-                    <td className="p-6 text-sm text-neutral-500 text-center" colSpan={3}>
-                      내역이 없습니다.
-                    </td>
+                    <th className="p-3 text-left font-semibold text-neutral-900">일시</th>
+                    <th className="p-3 text-right font-semibold text-neutral-900">증감</th>
+                    <th className="p-3 text-left font-semibold text-neutral-900">사유</th>
                   </tr>
-                )}
-              </tbody>
-            </table>
-          )}
+                </thead>
+                <tbody className="divide-y divide-neutral-300">
+                  {ledger.map((r, i) => (
+                    <tr key={i} className="hover:bg-neutral-50 transition-colors">
+                      <td className="p-3 text-neutral-700">
+                        {r.created_at ? new Date(r.created_at).toLocaleString('ko-KR', {
+                          year: 'numeric',
+                          month: '2-digit',
+                          day: '2-digit',
+                          hour: '2-digit',
+                          minute: '2-digit'
+                        }) : '-'}
+                      </td>
+                      <td
+                        className={`p-3 text-right font-semibold ${Number(r.delta) >= 0 ? 'text-emerald-600' : 'text-rose-600'
+                          }`}
+                      >
+                        {Number(r.delta) >= 0 ? `+${r.delta.toLocaleString()}` : r.delta.toLocaleString()}
+                      </td>
+                      <td className="p-3">
+                        <span className="inline-flex items-center rounded-sm border border-neutral-300 bg-neutral-100 px-2.5 py-1 text-xs font-medium text-neutral-700">
+                          {r.reason || '-'}
+                        </span>
+                      </td>
+                    </tr>
+                  ))}
+                  {ledger.length === 0 && (
+                    <tr>
+                      <td className="p-6 text-sm text-neutral-500 text-center" colSpan={3}>
+                        내역이 없습니다.
+                      </td>
+                    </tr>
+                  )}
+                </tbody>
+              </table>
+            )}
             <div className="flex flex-col md:flex-row items-stretch md:items-center justify-between gap-3 pt-4">
               <div className="text-sm text-neutral-600 font-medium">페이지 {histPage}</div>
               <div className="flex flex-row items-center gap-2 md:gap-3">
