@@ -124,8 +124,11 @@ export function getLocalizedErrorMessage(
         }
 
         // 2. HTTP 상태 코드 확인
-        if (err.status && HTTP_STATUS_MESSAGES[err.status]) {
-            return HTTP_STATUS_MESSAGES[err.status]
+        if (err.status && typeof err.status === 'number') {
+            const statusMessage = HTTP_STATUS_MESSAGES[err.status]
+            if (statusMessage) {
+                return statusMessage
+            }
         }
 
         // 3. 에러 메시지 패턴 매칭

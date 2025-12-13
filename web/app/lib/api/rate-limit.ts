@@ -1,8 +1,8 @@
-/**
- * Rate Limiting 유틸리티
- * 간단한 메모리 기반 Rate Limiting 구현
+﻿/**
+ * Rate Limiting ?좏떥由ы떚
+ * 媛꾨떒??硫붾え由?湲곕컲 Rate Limiting 援ы쁽
  * 
- * 프로덕션 환경에서는 Redis 기반 솔루션 권장:
+ * ?꾨줈?뺤뀡 ?섍꼍?먯꽌??Redis 湲곕컲 ?붾（??沅뚯옣:
  * - Upstash Rate Limit: https://upstash.com/docs/redis/features/ratelimiting
  * - Vercel KV: https://vercel.com/docs/storage/vercel-kv
  */
@@ -23,7 +23,7 @@ class RateLimiter {
         this.windowMs = windowMs
         this.maxRequests = maxRequests
 
-        // 주기적으로 만료된 항목 정리 (메모리 누수 방지)
+        // 二쇨린?곸쑝濡?留뚮즺????ぉ ?뺣━ (硫붾え由??꾩닔 諛⑹?)
         setInterval(() => this.cleanup(), this.windowMs)
     }
 
@@ -41,7 +41,7 @@ class RateLimiter {
         const entry = this.store.get(identifier)
 
         if (!entry || entry.resetTime < now) {
-            // 새로운 윈도우 시작
+            // ?덈줈???덈룄???쒖옉
             const resetTime = now + this.windowMs
             this.store.set(identifier, { count: 1, resetTime })
             return {
@@ -52,7 +52,7 @@ class RateLimiter {
         }
 
         if (entry.count >= this.maxRequests) {
-            // 제한 초과
+            // ?쒗븳 珥덇낵
             return {
                 allowed: false,
                 remaining: 0,
@@ -60,7 +60,7 @@ class RateLimiter {
             }
         }
 
-        // 요청 카운트 증가
+        // ?붿껌 移댁슫??利앷?
         entry.count++
         return {
             allowed: true,
@@ -70,25 +70,29 @@ class RateLimiter {
     }
 }
 
-// 글로벌 Rate Limiter 인스턴스
-const globalLimiter = new RateLimiter(60000, 100) // 1분에 100 요청
-const strictLimiter = new RateLimiter(60000, 20) // 1분에 20 요청 (민감한 작업용)
-const apiLimiter = new RateLimiter(60000, 300) // 1분에 300 요청 (API용)
+// 湲濡쒕쾶 Rate Limiter ?몄뒪?댁뒪
+const globalLimiter = new RateLimiter(60000, 100) // 1遺꾩뿉 100 ?붿껌
+const strictLimiter = new RateLimiter(60000, 20) // 1遺꾩뿉 20 ?붿껌 (誘쇨컧???묒뾽??
+const apiLimiter = new RateLimiter(60000, 300) // 1遺꾩뿉 300 ?붿껌 (API??
 
 export { globalLimiter, strictLimiter, apiLimiter }
 
 /**
- * IP 주소 추출
+ * IP 二쇱냼 異붿텧
  */
 export function getClientIP(request: Request): string {
+    // x-forwarded-for ?ㅻ뜑 ?뺤씤
     const forwarded = request.headers.get('x-forwarded-for')
-    const realIP = request.headers.get('x-real-ip')
-
-    if (forwarded) {
-        return forwarded.split(',')[0].trim()
+    if (forwarded && typeof forwarded === 'string') {
+        const firstIP = forwarded.split(',')[0]
+        if (firstIP) {
+            return firstIP.trim()
+        }
     }
 
-    if (realIP) {
+    // x-real-ip ?ㅻ뜑 ?뺤씤
+    const realIP = request.headers.get('x-real-ip')
+    if (realIP && typeof realIP === 'string') {
         return realIP.trim()
     }
 
@@ -96,7 +100,7 @@ export function getClientIP(request: Request): string {
 }
 
 /**
- * Rate Limit 체크
+ * Rate Limit 泥댄겕
  */
 export function checkRateLimit(
     request: Request,
@@ -107,7 +111,7 @@ export function checkRateLimit(
 }
 
 /**
- * Rate Limit 응답 헤더 추가
+ * Rate Limit ?묐떟 ?ㅻ뜑 異붽?
  */
 export function addRateLimitHeaders(
     headers: Headers,
@@ -118,7 +122,7 @@ export function addRateLimitHeaders(
 }
 
 /**
- * Rate Limit 에러 응답
+ * Rate Limit ?먮윭 ?묐떟
  */
 export function createRateLimitResponse(resetTime: number): NextResponse {
     const retryAfter = Math.ceil((resetTime - Date.now()) / 1000)
@@ -126,7 +130,7 @@ export function createRateLimitResponse(resetTime: number): NextResponse {
     return NextResponse.json(
         {
             success: false,
-            error: '요청 횟수 제한을 초과했습니다. 잠시 후 다시 시도해주세요.',
+            error: '?붿껌 ?잛닔 ?쒗븳??珥덇낵?덉뒿?덈떎. ?좎떆 ???ㅼ떆 ?쒕룄?댁＜?몄슂.',
             retryAfter,
         },
         {
@@ -138,3 +142,4 @@ export function createRateLimitResponse(resetTime: number): NextResponse {
         }
     )
 }
+

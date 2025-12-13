@@ -1,14 +1,14 @@
 'use client'
 
-import { useEffect } from 'react'
+import { Suspense, useEffect } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import Landing from './components/Landing'
 
 /**
- * 홈페이지 클라이언트 컴포넌트
- * 비밀번호 재설정 code 파라미터를 감지하고 리디렉션
+ * 비밀번호 재설정 리디렉션 로직
+ * useSearchParams를 사용하므로 Suspense로 감싸야 함
  */
-function HomePage() {
+function PasswordResetHandler() {
   const router = useRouter()
   const searchParams = useSearchParams()
 
@@ -27,7 +27,22 @@ function HomePage() {
     }
   }, [searchParams, router])
 
-  return <Landing />
+  return null
+}
+
+/**
+ * 홈페이지 클라이언트 컴포넌트
+ * 비밀번호 재설정 code 파라미터를 감지하고 리디렉션
+ */
+function HomePage() {
+  return (
+    <>
+      <Suspense fallback={null}>
+        <PasswordResetHandler />
+      </Suspense>
+      <Landing />
+    </>
+  )
 }
 
 export default HomePage

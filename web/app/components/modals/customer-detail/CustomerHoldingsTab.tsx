@@ -95,109 +95,94 @@ export default function CustomerHoldingsTab({
   const totalPages = Math.max(1, Math.ceil(holdings.length / holdPageSize))
 
   return (
-    <div className="bg-white rounded-lg border border-neutral-200 shadow-md p-4 md:p-6 space-y-4 md:space-y-6">
-      <div className="text-base font-medium text-neutral-900">보유 상품</div>
-
+    <div className="space-y-4">
       {/* 상품 추가 섹션 */}
-      <div className="bg-neutral-50 rounded-lg border border-neutral-200 p-3 md:p-4 space-y-3 md:space-y-4">
-        <div>
-          <h3 className="text-sm font-medium text-neutral-900 mb-1">상품 추가</h3>
-          <p className="text-xs text-neutral-600">고객에게 추가할 상품을 선택하고 수량을 입력하세요.</p>
-        </div>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <div>
-            <label className="block text-sm font-medium text-neutral-700 mb-1">상품 선택</label>
-            <select
-              className="h-10 w-full rounded-lg border border-neutral-300 px-3 outline-none focus:border-[#F472B6] focus:ring-[2px] focus:ring-[#F472B6]/20 bg-white text-neutral-900 transition-all duration-300"
-              value={newProductId}
-              onChange={e => onChangeNewProduct(e.target.value)}
-            >
-              <option value="">상품을 선택하세요</option>
-              {products.map(p => (
-                <option key={p.id} value={p.id}>{p.name}</option>
-              ))}
-            </select>
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-neutral-700 mb-1">개수</label>
-            <input
-              className="h-10 w-full rounded-lg border border-neutral-300 px-3 outline-none focus:border-[#F472B6] focus:ring-[2px] focus:ring-[#F472B6]/20 bg-white text-neutral-900 text-right placeholder:text-neutral-500 transition-all duration-300"
-              type="number"
-              min={1}
-              value={newQty === null || newQty === undefined || newQty === 0 ? '' : newQty}
-              onChange={e => {
-                const val = e.target.value
-                onChangeNewQty(val === '' ? 1 : (isNaN(Number(val)) ? 1 : Math.max(1, Number(val))))
-              }}
-              placeholder="예: 1"
-            />
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-neutral-700 mb-1">사유(선택)</label>
-            <input
-              className="h-10 w-full rounded-lg border border-neutral-300 px-3 outline-none focus:border-[#F472B6] focus:ring-[2px] focus:ring-[#F472B6]/20 bg-white text-neutral-900 placeholder:text-neutral-500 transition-all duration-300"
-              placeholder="변경 사유를 입력하세요"
-              value={newReason}
-              onChange={e => onChangeNewReason(e.target.value)}
-            />
-          </div>
-        </div>
-        <div className="flex justify-end">
-          <Button variant="primary" size="sm" onClick={onAddProduct} loading={addingProduct} disabled={addingProduct}>
+      <div className="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-lg border border-blue-200 p-4">
+        <h3 className="text-sm font-semibold text-blue-900 mb-3">상품 추가</h3>
+        <div className="flex flex-col sm:flex-row gap-2">
+          <select
+            className="flex-1 h-10 rounded-md border border-blue-300 px-3 text-sm outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-200 bg-white"
+            value={newProductId}
+            onChange={e => onChangeNewProduct(e.target.value)}
+          >
+            <option value="">상품 선택</option>
+            {products.map(p => (
+              <option key={p.id} value={p.id}>{p.name}</option>
+            ))}
+          </select>
+          <input
+            className="w-24 h-10 rounded-md border border-blue-300 px-3 text-sm text-center outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-200"
+            type="number"
+            min={1}
+            value={newQty === null || newQty === undefined || newQty === 0 ? '' : newQty}
+            onChange={e => {
+              const val = e.target.value
+              onChangeNewQty(val === '' ? 1 : (isNaN(Number(val)) ? 1 : Math.max(1, Number(val))))
+            }}
+            placeholder="수량"
+          />
+          <Button variant="primary" size="sm" onClick={onAddProduct} loading={addingProduct} disabled={addingProduct} className="h-10 px-6">
             추가
           </Button>
         </div>
+        {newProductId && (
+          <input
+            className="mt-2 w-full h-9 rounded-md border border-blue-300 px-3 text-sm outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-200"
+            placeholder="사유 (선택사항)"
+            value={newReason}
+            onChange={e => onChangeNewReason(e.target.value)}
+          />
+        )}
       </div>
+
       {/* 보유 상품 리스트 */}
-      <div className="space-y-3 pt-2 border-t border-neutral-200">
+      <div className="space-y-3">
         {pagedHoldings.map(h => {
           return (
-            <div key={h.id} className="bg-white rounded-lg border border-neutral-200 p-4 hover:bg-neutral-50 hover:border-neutral-300 transition-all duration-300 space-y-3">
-              {/* 상품 정보 */}
-              <div className="flex items-center justify-between">
+            <div key={h.id} className="bg-white rounded-lg border-2 border-neutral-200 hover:border-blue-300 transition-all p-4">
+              {/* 상품 헤더 */}
+              <div className="flex items-center justify-between mb-3">
                 <div>
-                  <span className="text-sm font-medium text-neutral-900">{h.products?.name || '(삭제됨)'}</span>
-                  <span className="text-sm text-neutral-600 ml-2">현재: {h.quantity.toLocaleString()}개</span>
+                  <h4 className="text-base font-semibold text-neutral-900">{h.products?.name || '(삭제됨)'}</h4>
+                  <p className="text-sm text-neutral-500">보유 수량: <span className="font-medium text-neutral-700">{h.quantity.toLocaleString()}개</span></p>
                 </div>
+                <Button variant="danger" size="sm" onClick={() => onDelete(h.id)} className="h-9 px-3">
+                  삭제
+                </Button>
               </div>
 
-              {/* 입력 필드 그룹 */}
-              <div className="flex flex-col md:flex-row items-stretch md:items-end gap-3">
-                <div className="w-full md:w-24">
-                  <label className="block text-xs font-medium text-neutral-700 mb-1">변경할 수량</label>
-                  <input
-                    className="h-9 w-full rounded-lg border border-neutral-300 px-3 outline-none focus:border-[#F472B6] focus:ring-[2px] focus:ring-[#F472B6]/20 bg-white text-neutral-900 text-sm placeholder:text-neutral-500 transition-all duration-300"
-                    type="number"
-                    min={1}
-                    value={holdingDelta[h.id] === null || holdingDelta[h.id] === undefined || holdingDelta[h.id] === 0 ? '' : holdingDelta[h.id]}
-                    onChange={e => {
-                      const val = e.target.value
-                      const v = val === '' ? 1 : (isNaN(Number(val)) ? 1 : Math.max(1, Number(val)))
-                      onChangeHoldingDelta(h.id, v)
-                    }}
-                    placeholder="예: 1"
-                    aria-label="변경할 수량"
-                  />
+              {/* 수량 변경 */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                <div>
+                  <label className="block text-xs font-medium text-neutral-700 mb-1.5">수량 변경</label>
+                  <div className="flex gap-1.5">
+                    <input
+                      className="w-20 h-9 rounded-md border border-neutral-300 px-2 text-sm text-center outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-200"
+                      type="number"
+                      min={1}
+                      value={holdingDelta[h.id] === null || holdingDelta[h.id] === undefined || holdingDelta[h.id] === 0 ? '' : holdingDelta[h.id]}
+                      onChange={e => {
+                        const val = e.target.value
+                        onChangeHoldingDelta(h.id, val === '' ? 1 : (isNaN(Number(val)) ? 1 : Math.max(1, Number(val))))
+                      }}
+                      placeholder="1"
+                    />
+                    <Button variant="secondary" size="sm" onClick={() => onIncrease(h)} className="flex-1 h-9">
+                      추가
+                    </Button>
+                    <Button variant="secondary" size="sm" onClick={() => onDecrease(h)} className="flex-1 h-9">
+                      차감
+                    </Button>
+                  </div>
                 </div>
-                <div className="w-full md:flex-1 md:min-w-[150px]">
-                  <label className="block text-xs font-medium text-neutral-700 mb-1">변경 사유(선택)</label>
+                <div>
+                  <label className="block text-xs font-medium text-neutral-700 mb-1.5">사유 (선택)</label>
                   <input
-                    className="h-9 w-full rounded-lg border border-neutral-300 px-3 outline-none focus:border-[#F472B6] focus:ring-[2px] focus:ring-[#F472B6]/20 bg-white text-neutral-900 placeholder:text-neutral-500 text-sm transition-all duration-300"
-                    placeholder="사유를 입력하세요"
+                    className="w-full h-9 rounded-md border border-neutral-300 px-3 text-sm outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-200"
+                    placeholder="변경 사유"
                     value={holdingReason[h.id] || ''}
                     onChange={e => onChangeHoldingReason(h.id, e.target.value)}
                   />
-                </div>
-                <div className="flex flex-row items-center gap-1.5 md:gap-1.5 shrink-0">
-                  <Button size="sm" variant="outline" onClick={() => onDecrease(h)} className="flex-1 md:flex-none md:w-auto min-w-0">
-                    차감
-                  </Button>
-                  <Button size="sm" variant="primary" onClick={() => onIncrease(h)} className="flex-1 md:flex-none md:w-auto min-w-0">
-                    추가
-                  </Button>
-                  <Button size="sm" variant="danger" onClick={() => onDelete(h.id)} className="flex-1 md:flex-none md:w-auto min-w-0">
-                    삭제
-                  </Button>
                 </div>
               </div>
             </div>
@@ -229,20 +214,18 @@ export default function CustomerHoldingsTab({
             </select>
             <div className="flex gap-2">
               <Button
-                size="sm"
                 variant="secondary"
+                size="sm"
                 onClick={() => onChangeHoldPage(Math.max(1, holdPage - 1))}
-                disabled={holdPage === 1}
-                className="flex-1 md:flex-none"
+                disabled={holdPage <= 1}
               >
                 이전
               </Button>
               <Button
-                size="sm"
                 variant="secondary"
+                size="sm"
                 onClick={() => onChangeHoldPage(Math.min(totalPages, holdPage + 1))}
                 disabled={holdPage >= totalPages}
-                className="flex-1 md:flex-none"
               >
                 다음
               </Button>
@@ -276,30 +259,35 @@ export default function CustomerHoldingsTab({
               {!allLedgerLoading && (
                 <table className="min-w-full text-sm">
                   <thead className="bg-neutral-100 border-b border-neutral-200">
-                    <tr>
-                      <th className="text-left p-2 font-medium text-neutral-900">일시</th>
-                      <th className="text-left p-2 font-medium text-neutral-900">상품</th>
-                      <th className="text-left p-2 font-medium text-neutral-900">사유</th>
-                      <th className="text-right p-2 font-medium text-neutral-900">증감</th>
+                    <tr className="border-b border-neutral-200">
+                      <th className="text-left p-2 text-xs font-semibold text-neutral-700 bg-neutral-50">일시</th>
+                      <th className="text-left p-2 text-xs font-semibold text-neutral-700 bg-neutral-50">상품</th>
+                      <th className="text-right p-2 text-xs font-semibold text-neutral-700 bg-neutral-50">변경</th>
+                      <th className="text-left p-2 text-xs font-semibold text-neutral-700 bg-neutral-50">사유</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-neutral-200">
                     {allLedger.map((r, i) => {
-                      const name = (products.find(p => String(p.id) === String(r.product_id))?.name) || '-'
                       return (
-                        <tr key={i} className="hover:bg-neutral-50 transition-colors duration-300">
-                          <td className="p-2 text-neutral-700">{String(r.created_at).replace('T', ' ').slice(0, 16)}</td>
-                          <td className="p-2 text-neutral-700">{name}</td>
-                          <td className="p-2">
-                            <span className="inline-flex items-center rounded-lg border border-neutral-200 bg-neutral-50 px-2 py-0.5 text-xs text-neutral-700">
-                              {r.reason || '-'}
-                            </span>
+                        <tr key={i} className="border-b border-neutral-100 hover:bg-neutral-50 transition">
+                          <td className="p-2 text-xs text-neutral-600">
+                            {r.created_at ? new Date(r.created_at).toLocaleString('ko-KR', {
+                              year: 'numeric',
+                              month: '2-digit',
+                              day: '2-digit',
+                              hour: '2-digit',
+                              minute: '2-digit'
+                            }) : '-'}
                           </td>
-                          <td className={`p-2 text-right font-medium ${Number(r.delta) >= 0 ? 'text-emerald-600' : 'text-rose-600'}`}>
-                            {Number(r.delta) >= 0 ? `+${r.delta.toLocaleString()}` : r.delta.toLocaleString()}
+                          <td className="p-2 text-xs text-neutral-900 font-medium">
+                            {products.find(p => p.id === r.product_id)?.name || '(알 수 없음)'}
                           </td>
-                        </tr>
-                      )
+                          <td className={`p-2 text-xs font-semibold text-right ${(r.delta || 0) > 0 ? 'text-blue-600' : 'text-rose-600'
+                            }`}>
+                            {(r.delta || 0) > 0 ? '+' : ''}{(r.delta || 0).toLocaleString()}
+                          </td>
+                          <td className="p-2 text-xs text-neutral-600">{r.reason || '-'}</td>
+                        </tr>)
                     })}
                     {allLedger.length === 0 && (
                       <tr>
@@ -355,7 +343,7 @@ export default function CustomerHoldingsTab({
           </>
         )}
       </div>
-    </div>
+    </div >
   )
 }
 

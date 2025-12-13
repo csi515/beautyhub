@@ -171,6 +171,38 @@ export class PointsRepository {
   }
 
   /**
+   * 포인트 ledger만 조회
+   */
+  async getLedger(
+    customerId: string,
+    options: QueryOptions & { from?: string; to?: string } = {}
+  ): Promise<Array<{ created_at: string; delta: number; reason?: string }>> {
+    const { limit = 50, offset = 0, from, to } = options
+
+    let query = this.supabase
+      .from('points_ledger')
+      .select('created_at, delta, reason')
+      .eq('customer_id', customerId)
+      .eq('owner_id', this.userId)
+      .order('created_at', { ascending: false })
+
+    if (from) {
+      query = query.gte('created_at', from)
+    }
+    if (to) {
+      query = query.lt('created_at', to)
+    }
+
+    const { data, error } = await query.range(offset, offset + limit - 1)
+
+    if (error) {
+      this.handleSupabaseError(error)
+    }
+
+    return (data || []) as Array<{ created_at: string; delta: number; reason?: string }>
+  }
+
+  /**
    * 포인트 리포트 생성
    */
   async getReport(customerId: string, from?: string, to?: string): Promise<PointsReport> {
