@@ -2,8 +2,6 @@
 
 import { useEffect } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
-import { cookies } from 'next/headers'
-import { redirect } from 'next/navigation'
 import Landing from './components/Landing'
 
 /**
