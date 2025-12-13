@@ -16,19 +16,16 @@ type ErrorProps = {
  */
 export default function Error({ error, reset }: ErrorProps) {
   useEffect(() => {
-    // 에러 로깅
+    // 에러 로깅 (콘솔)
     if (typeof window !== 'undefined') {
       console.error('Application error:', error)
 
-      // Sentry 에러 추적 연동
-      const sentryDsn = process.env['NEXT_PUBLIC_SENTRY_DSN']
-      if (process.env.NODE_ENV === 'production' && sentryDsn) {
-        import('@/app/lib/utils/sentry').then(({ captureError }) => {
-          captureError(error, {
-            digest: error.digest,
-            location: window.location.href,
-            userAgent: navigator.userAgent,
-          })
+      // 개발 환경에서는 상세 정보 출력
+      if (process.env.NODE_ENV === 'development') {
+        console.error('Error details:', {
+          message: error.message,
+          stack: error.stack,
+          digest: error.digest,
         })
       }
     }

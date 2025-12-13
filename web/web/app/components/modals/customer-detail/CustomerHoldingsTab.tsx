@@ -33,6 +33,7 @@ type CustomerHoldingsTabProps = {
   newProductId: string
   newQty: number
   newReason: string
+  addingProduct: boolean
   allLedger: LedgerEntry[]
   allLedgerLoading: boolean
   allLedgerPage: number
@@ -64,6 +65,7 @@ export default function CustomerHoldingsTab({
   newProductId,
   newQty,
   newReason,
+  addingProduct,
   allLedger,
   allLedgerLoading,
   allLedgerPage,
@@ -86,7 +88,7 @@ export default function CustomerHoldingsTab({
   onChangeAllLedgerPageSize
 }: CustomerHoldingsTabProps) {
   const [isLedgerExpanded, setIsLedgerExpanded] = useState(false)
-  
+
   if (!customerId) return null
 
   const pagedHoldings = holdings.slice((holdPage - 1) * holdPageSize, holdPage * holdPageSize)
@@ -95,7 +97,7 @@ export default function CustomerHoldingsTab({
   return (
     <div className="bg-white rounded-lg border border-neutral-200 shadow-md p-4 md:p-6 space-y-4 md:space-y-6">
       <div className="text-base font-medium text-neutral-900">보유 상품</div>
-      
+
       {/* 상품 추가 섹션 */}
       <div className="bg-neutral-50 rounded-lg border border-neutral-200 p-3 md:p-4 space-y-3 md:space-y-4">
         <div>
@@ -141,7 +143,7 @@ export default function CustomerHoldingsTab({
           </div>
         </div>
         <div className="flex justify-end">
-          <Button variant="primary" size="sm" onClick={onAddProduct}>
+          <Button variant="primary" size="sm" onClick={onAddProduct} loading={addingProduct} disabled={addingProduct}>
             추가
           </Button>
         </div>
@@ -158,7 +160,7 @@ export default function CustomerHoldingsTab({
                   <span className="text-sm text-neutral-600 ml-2">현재: {h.quantity.toLocaleString()}개</span>
                 </div>
               </div>
-              
+
               {/* 입력 필드 그룹 */}
               <div className="flex flex-col md:flex-row items-stretch md:items-end gap-3">
                 <div className="w-full md:w-24">
