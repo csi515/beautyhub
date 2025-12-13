@@ -10,21 +10,8 @@ const config: Config = {
     container: { center: true, padding: '1rem' },
     extend: {
       colors: {
-        // Primary (Brand) - 로즈/핑크 계열
+        // Primary (Brand) - 전문적인 블루 계열
         primary: {
-          50: '#FFF1F4',
-          100: '#FFE4EA',
-          200: '#FFC7D3',
-          300: '#FFAFBF',
-          400: '#FF8DA6',
-          500: '#FF8DA6',
-          600: '#F46E8A',
-          700: '#E25779',
-          800: '#C94563',
-          900: '#A7364D',
-        },
-        // Secondary (Blue) - 주요 액션
-        secondary: {
           50: '#EFF6FF',
           100: '#DBEAFE',
           200: '#BFDBFE',
@@ -36,18 +23,31 @@ const config: Config = {
           800: '#1E40AF',
           900: '#1E3A8A',
         },
-        // Neutral - 텍스트, 배경, 테두리
-        neutral: {
-          50: '#FDF7F8',
-          100: '#F5EFF1',
-          200: '#E8DDE1',
-          300: '#D1C4CA',
-          400: '#7A808A',
+        // Secondary (Slate) - 중성적인 슬레이트
+        secondary: {
+          50: '#F8FAFC',
+          100: '#F1F5F9',
+          200: '#E2E8F0',
+          300: '#CBD5E1',
+          400: '#94A3B8',
           500: '#64748B',
           600: '#475569',
           700: '#334155',
           800: '#1E293B',
-          900: '#1C1A1B',
+          900: '#0F172A',
+        },
+        // Neutral - 텍스트, 배경, 테두리
+        neutral: {
+          50: '#FAFAF9',
+          100: '#F5F5F4',
+          200: '#E7E5E4',
+          300: '#D6D3D1',
+          400: '#A8A29E',
+          500: '#78716C',
+          600: '#57534E',
+          700: '#44403C',
+          800: '#292524',
+          900: '#1C1917',
         },
         // Cancel Gray (취소 버튼용)
         'cancel-gray': {
@@ -56,8 +56,8 @@ const config: Config = {
         },
         // Action Blue (저장 버튼용)
         'action-blue': {
-          600: '#4263eb',
-          700: '#364fc7',
+          600: '#2563EB',
+          700: '#1D4ED8',
         },
         // Status colors
         success: {
@@ -97,20 +97,20 @@ const config: Config = {
           900: '#7F1D1D',
         },
         // Legacy support
-        background: '#f9fafb',
+        background: '#F8FAFC',
         brand: {
-          50: '#FFF1F4',
-          100: '#FFE4EA',
-          200: '#FFC7D3',
-          300: '#FFAFBF',
-          400: '#FF8DA6',
-          500: '#FF8DA6',
-          600: '#F46E8A',
-          700: '#E25779',
+          50: '#EFF6FF',
+          100: '#DBEAFE',
+          200: '#BFDBFE',
+          300: '#93C5FD',
+          400: '#60A5FA',
+          500: '#3B82F6',
+          600: '#2563EB',
+          700: '#1D4ED8',
         },
         muted: {
-          50: '#FDF7F8',
-          100: '#F5EFF1',
+          50: '#FAFAF9',
+          100: '#F5F5F4',
         },
         overlay: {
           60: 'rgba(15,23,42,0.60)'
