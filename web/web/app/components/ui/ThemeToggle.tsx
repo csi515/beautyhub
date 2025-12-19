@@ -49,7 +49,7 @@ export default function ThemeToggle({ variant = 'button', className }: Props) {
       variant="ghost"
       size="sm"
       onClick={toggleTheme}
-      className={className}
+      {...(className ? { className } : {})}
       leftIcon={
         resolvedTheme === 'dark' ? (
           <Moon className="h-5 w-5" />

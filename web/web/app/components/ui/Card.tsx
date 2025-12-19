@@ -1,7 +1,8 @@
 'use client'
 
-import clsx from 'clsx'
 import type { ReactNode, MouseEvent } from 'react'
+import Paper from '@mui/material/Paper'
+import { useTheme, Theme, SxProps } from '@mui/material/styles'
 
 type Props = {
   children: ReactNode
@@ -11,30 +12,27 @@ type Props = {
   hover?: boolean
   divider?: boolean
   compact?: boolean
+  sx?: SxProps<Theme>
 }
 
-export default function Card({ 
-  children, 
+export default function Card({
+  children,
   className = '',
   onClick,
   clickable = false,
   hover = true,
   divider = false,
   compact = false,
+  sx = {},
 }: Props) {
   const isClickable = clickable || !!onClick
+  const theme = useTheme()
 
   return (
-    <div
+    <Paper
+      elevation={0}
       onClick={onClick}
-      className={clsx(
-        'bg-white rounded-xl border border-neutral-200 shadow-md transition-all duration-200',
-        compact ? 'p-5' : 'p-6',
-        hover && 'hover:shadow-lg hover:border-neutral-300',
-        isClickable && 'cursor-pointer active:scale-[0.99] focus-visible:ring-2 focus-visible:ring-secondary-300 focus-visible:ring-offset-2',
-        divider && 'divide-y divide-neutral-200',
-        className,
-      )}
+      className={className}
       role={isClickable ? 'button' : undefined}
       tabIndex={isClickable ? 0 : undefined}
       onKeyDown={(e) => {
@@ -43,10 +41,34 @@ export default function Card({
           onClick?.(e as unknown as MouseEvent<HTMLDivElement>)
         }
       }}
+      sx={{
+        p: compact ? 2.5 : 3, // p-5 : p-6 (20px : 24px)
+        borderRadius: 3, // rounded-xl (12px)
+        border: `1px solid ${theme.palette.divider}`, // border-neutral-200
+        transition: 'all 200ms ease-out',
+        cursor: isClickable ? 'pointer' : 'default',
+        '&:hover': hover ? {
+          boxShadow: theme.shadows[3],
+          borderColor: theme.palette.divider,
+        } : {},
+        '&:active': isClickable ? {
+          transform: 'scale(0.99)',
+        } : {},
+        '&:focus-visible': isClickable ? {
+          outline: `2px solid ${theme.palette.secondary.main}`,
+          outlineOffset: 2,
+        } : {},
+        position: 'relative',
+        overflow: 'hidden',
+        ...(divider && {
+          '& > :not(style) ~ :not(style)': {
+            borderTop: `1px solid ${theme.palette.divider}`,
+          }
+        }),
+        ...(sx as any)
+      }}
     >
       {children}
-    </div>
+    </Paper>
   )
 }
-
-

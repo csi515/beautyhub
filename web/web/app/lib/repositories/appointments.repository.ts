@@ -1,5 +1,6 @@
+﻿import { SupabaseClient } from '@supabase/supabase-js'
 /**
- * 예약 Repository
+ * ?덉빟 Repository
  */
 
 import { BaseRepository } from './base.repository'
@@ -10,12 +11,12 @@ import { appointmentUpdateSchema } from '../api/schemas'
 import { z } from 'zod'
 
 export class AppointmentsRepository extends BaseRepository<Appointment> {
-  constructor(userId: string, supabase: any) {
+  constructor(userId: string, supabase: SupabaseClient) {
     super(userId, 'appointments', supabase)
   }
 
   /**
-   * 날짜 범위로 예약 조회
+   * ?좎쭨 踰붿쐞濡??덉빟 議고쉶
    */
   override async findAll(options: QueryOptions & { from?: string; to?: string } = {}): Promise<Appointment[]> {
     if (this.userId === 'demo-user') {
@@ -55,7 +56,7 @@ export class AppointmentsRepository extends BaseRepository<Appointment> {
   }
 
   /**
-   * 예약 생성
+   * ?덉빟 ?앹꽦
    */
   async createAppointment(input: AppointmentCreateInputExtended): Promise<Appointment> {
     const payload: Record<string, unknown> = {
@@ -64,17 +65,17 @@ export class AppointmentsRepository extends BaseRepository<Appointment> {
       status: input.status || null,
     }
 
-    // staff_id가 명시적으로 제공된 경우에만 포함 (스키마에 없을 수 있음)
+    // staff_id媛 紐낆떆?곸쑝濡??쒓났??寃쎌슦?먮쭔 ?ы븿 (?ㅽ궎留덉뿉 ?놁쓣 ???덉쓬)
     if (input.staff_id !== undefined) {
       payload['staff_id'] = input.staff_id || null
     }
 
-    // service_id가 명시적으로 제공된 경우에만 포함 (스키마에 없을 수 있음)
+    // service_id媛 紐낆떆?곸쑝濡??쒓났??寃쎌슦?먮쭔 ?ы븿 (?ㅽ궎留덉뿉 ?놁쓣 ???덉쓬)
     if (input.service_id !== undefined) {
       payload['service_id'] = input.service_id || null
     }
 
-    // notes는 값이 있을 때만 포함 (스키마에 없을 수 있음)
+    // notes??媛믪씠 ?덉쓣 ?뚮쭔 ?ы븿 (?ㅽ궎留덉뿉 ?놁쓣 ???덉쓬)
     const notesValue = input.notes
     if (notesValue !== undefined && notesValue !== null && notesValue !== '' && String(notesValue).trim() !== '') {
       payload['notes'] = String(notesValue).trim()
@@ -83,7 +84,7 @@ export class AppointmentsRepository extends BaseRepository<Appointment> {
       delete payload['notes']
     }
 
-    // total_price는 값이 있을 때만 포함 (스키마에 없을 수 있음)
+    // total_price??媛믪씠 ?덉쓣 ?뚮쭔 ?ы븿 (?ㅽ궎留덉뿉 ?놁쓣 ???덉쓬)
     if (input.total_price !== undefined && input.total_price !== null && !Number.isNaN(Number(input.total_price))) {
       payload['total_price'] = Number(input.total_price)
     }
@@ -95,7 +96,7 @@ export class AppointmentsRepository extends BaseRepository<Appointment> {
   }
 
   /**
-   * 예약 업데이트
+   * ?덉빟 ?낅뜲?댄듃
    */
   async updateAppointment(id: string, input: AppointmentUpdateInput | z.infer<typeof appointmentUpdateSchema>): Promise<Appointment> {
     const payload: Record<string, unknown> = {}
@@ -113,12 +114,12 @@ export class AppointmentsRepository extends BaseRepository<Appointment> {
       payload['status'] = input.status
     }
 
-    // service_id가 명시적으로 제공된 경우에만 업데이트 (스키마에 없을 수 있음)
+    // service_id媛 紐낆떆?곸쑝濡??쒓났??寃쎌슦?먮쭔 ?낅뜲?댄듃 (?ㅽ궎留덉뿉 ?놁쓣 ???덉쓬)
     if ('service_id' in input && input.service_id !== undefined) {
       payload['service_id'] = input.service_id || null
     }
 
-    // notes는 값이 있을 때만 업데이트 (스키마에 없을 수 있음)
+    // notes??媛믪씠 ?덉쓣 ?뚮쭔 ?낅뜲?댄듃 (?ㅽ궎留덉뿉 ?놁쓣 ???덉쓬)
     if ('notes' in input) {
       const notesValue = input.notes
       if (notesValue !== undefined && notesValue !== null && notesValue !== '' && String(notesValue).trim() !== '') {
@@ -126,7 +127,7 @@ export class AppointmentsRepository extends BaseRepository<Appointment> {
       }
     }
 
-    // total_price는 값이 있을 때만 업데이트 (스키마에 없을 수 있음)
+    // total_price??媛믪씠 ?덉쓣 ?뚮쭔 ?낅뜲?댄듃 (?ㅽ궎留덉뿉 ?놁쓣 ???덉쓬)
     if ('total_price' in input && input.total_price !== undefined && input.total_price !== null && !Number.isNaN(Number(input.total_price))) {
       payload['total_price'] = Number(input.total_price)
     }
@@ -134,3 +135,4 @@ export class AppointmentsRepository extends BaseRepository<Appointment> {
     return this.update(id, payload)
   }
 }
+

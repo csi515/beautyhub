@@ -1,26 +1,51 @@
 'use client'
 
-import { useEffect, useMemo, useState, useCallback } from 'react'
-import ExpenseDetailModal from '../components/modals/ExpenseDetailModal'
-import TransactionDetailModal from '../components/modals/TransactionDetailModal'
-import { Pencil, Plus, Download } from 'lucide-react'
+import { useEffect, useMemo, useState, useCallback, lazy, Suspense } from 'react'
+import { Pencil, Plus, Download, FileText } from 'lucide-react'
 import EmptyState from '../components/EmptyState'
 import { Skeleton } from '../components/ui/Skeleton'
 import { useAppToast } from '../lib/ui/toast'
 import Button from '../components/ui/Button'
 import { usePagination } from '../lib/hooks/usePagination'
-import { useForm } from '../lib/hooks/useForm'
 import { exportFinanceToExcel, type FinanceExportData } from '../lib/utils/excelExport'
 import { generateTaxReport } from '../lib/utils/taxReport'
-import { FileText } from 'lucide-react'
+
+// MUI Imports
+import Box from '@mui/material/Box'
+import Stack from '@mui/material/Stack'
+import Paper from '@mui/material/Paper'
+import Typography from '@mui/material/Typography'
+import TextField from '@mui/material/TextField'
+import InputAdornment from '@mui/material/InputAdornment'
+import Grid from '@mui/material/Grid'
+import Card from '@mui/material/Card'
+import CardContent from '@mui/material/CardContent'
+import TableContainer from '@mui/material/TableContainer'
+import Table from '@mui/material/Table'
+import TableHead from '@mui/material/TableHead'
+import TableBody from '@mui/material/TableBody'
+import TableRow from '@mui/material/TableRow'
+import TableCell from '@mui/material/TableCell'
+import TableSortLabel from '@mui/material/TableSortLabel'
+import Select from '@mui/material/Select'
+import MenuItem from '@mui/material/MenuItem'
+import Pagination from '@mui/material/Pagination'
+import Dialog from '@mui/material/Dialog'
+import DialogTitle from '@mui/material/DialogTitle'
+import DialogContent from '@mui/material/DialogContent'
+import DialogActions from '@mui/material/DialogActions'
+import ToggleButton from '@mui/material/ToggleButton'
+import ToggleButtonGroup from '@mui/material/ToggleButtonGroup'
+import IconButton from '@mui/material/IconButton'
+import Chip from '@mui/material/Chip'
+import Fab from '@mui/material/Fab'
+import FormControl from '@mui/material/FormControl'
+import InputLabel from '@mui/material/InputLabel'
+
 import type { Expense, Transaction, TransactionCreateInput, ExpenseCreateInput } from '@/types/entities'
 
-type ExpenseForm = {
-  expense_date: string
-  amount: number
-  category: string
-  memo: string
-}
+const ExpenseDetailModal = lazy(() => import('../components/modals/ExpenseDetailModal'))
+const TransactionDetailModal = lazy(() => import('../components/modals/TransactionDetailModal'))
 
 function isoMonthRange(d = new Date()) {
   const start = new Date(d.getFullYear(), d.getMonth(), 1)
@@ -34,17 +59,15 @@ export default function FinancePage() {
   const [transactions, setTransactions] = useState<Transaction[]>([])
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
-  // combined는 특별한 형태이므로 useSort를 직접 사용하지 않고 상태만 관리
   const [sortKey, setSortKey] = useState<'date' | 'amount'>('date')
   const [sortDir, setSortDir] = useState<'asc' | 'desc'>('desc')
   const pagination = usePagination({
     initialPage: 1,
     initialPageSize: 10,
-    totalItems: 0, // mergedItems.length로 업데이트됨
+    totalItems: 0,
   })
-  const { page, pageSize, setPage, setPageSize } = pagination
-  const [includeIncome, setIncludeIncome] = useState(true)
-  const [includeExpense, setIncludeExpense] = useState(true)
+  const { page, pageSize, setPage } = pagination
+  const [filterType, setFilterType] = useState<('income' | 'expense')[]>(['income', 'expense'])
 
   const load = useCallback(async () => {
     try {
@@ -65,7 +88,10 @@ export default function FinancePage() {
 
   useEffect(() => { load() }, [load])
 
-  // 설정에서 수입 카테고리 로드
+  const [incomeCategories, setIncomeCategories] = useState<string[]>([])
+  const [expenseCategories, setExpenseCategories] = useState<string[]>([])
+
+  // 설정 로드
   useEffect(() => {
     const loadSettings = async () => {
       try {
@@ -77,9 +103,7 @@ export default function FinancePage() {
         if (data?.financialSettings?.expenseCategories) {
           setExpenseCategories(data.financialSettings.expenseCategories)
         }
-      } catch {
-        // 실패 시 기본값 사용
-      }
+      } catch { }
     }
     loadSettings()
   }, [])
@@ -90,6 +114,7 @@ export default function FinancePage() {
       return (!from || d >= from) && (!to || d <= to)
     })
     .reduce((s, t) => s + Number(t.amount || 0), 0), [transactions, from, to])
+
   const sumExpense = useMemo(() => expenses.reduce((s, e) => s + Number(e.amount || 0), 0), [expenses])
   const profit = sumIncome - sumExpense
 
@@ -98,48 +123,21 @@ export default function FinancePage() {
   const [newDate, setNewDate] = useState<string>(new Date().toISOString().slice(0, 10))
   const [newAmount, setNewAmount] = useState<string>('')
   const [newMemo, setNewMemo] = useState<string>('')
-  const [incomeCategories, setIncomeCategories] = useState<string[]>([])
-  const [selectedIncomeCategory, setSelectedIncomeCategory] = useState<string>('')
-  const [expenseCategories, setExpenseCategories] = useState<string[]>([])
-  const [selectedExpenseCategory, setSelectedExpenseCategory] = useState<string>('')
+  const [selectedCategory, setSelectedCategory] = useState<string>('')
+  const [showFilters, setShowFilters] = useState(false)
+
   const [expenseDetail, setExpenseDetail] = useState<Expense | null>(null)
   const [expenseOpen, setExpenseOpen] = useState(false)
   const [txDetail, setTxDetail] = useState<Transaction | null>(null)
   const [txOpen, setTxOpen] = useState(false)
   const toast = useAppToast()
 
-  const expenseForm = useForm<ExpenseForm>({
-    initialValues: {
-      expense_date: new Date().toISOString().slice(0, 10),
-      amount: 0,
-      category: '',
-      memo: '',
-    },
-    validationRules: {
-      expense_date: { required: true },
-      amount: { required: true, min: 0 },
-      category: { required: true, minLength: 1 },
-    },
-    onSubmit: async (values) => {
-      try {
-        const { expensesApi } = await import('@/app/lib/api/expenses')
-        await expensesApi.create(values)
-        expenseForm.reset()
-        await load()
-        toast.success('지출이 추가되었습니다.')
-      } catch (e: unknown) {
-        const errorMessage = e instanceof Error ? e.message : '지출 저장 실패'
-        toast.error('지출 저장 실패', errorMessage)
-      }
-    },
-  })
-
   const combined = useMemo(() => {
     const inRange = (iso: string) => {
       const d = (iso || '').slice(0, 10)
       return (!from || d >= from) && (!to || d <= to)
     }
-    const incomeRows = includeIncome ? transactions
+    const incomeRows = filterType.includes('income') ? transactions
       .filter(t => inRange(t.transaction_date || t.created_at || ''))
       .map(t => ({
         id: t.id,
@@ -149,7 +147,7 @@ export default function FinancePage() {
         note: t.category || '',
         raw: t,
       })) : []
-    const expenseRows = includeExpense ? expenses
+    const expenseRows = filterType.includes('expense') ? expenses
       .filter(e => inRange(e.expense_date || ''))
       .map(e => ({
         id: e.id,
@@ -162,60 +160,31 @@ export default function FinancePage() {
     const rows = [...incomeRows, ...expenseRows]
     rows.sort((a, b) => {
       if (sortKey === 'date') {
-        return sortDir === 'asc' ? a.date.localeCompare(b.date) : b.date.localeCompare(a.date)
+        const dateA = a.date || ''
+        const dateB = b.date || ''
+        return sortDir === 'asc' ? dateA.localeCompare(dateB) : dateB.localeCompare(dateA)
       }
       if (a.amount < b.amount) return sortDir === 'asc' ? -1 : 1
       if (a.amount > b.amount) return sortDir === 'asc' ? 1 : -1
       return 0
     })
     return rows
-  }, [transactions, expenses, includeIncome, includeExpense, from, to, sortKey, sortDir])
+  }, [transactions, expenses, filterType, from, to, sortKey, sortDir])
 
   const pagedCombined = useMemo(() => {
     const start = (page - 1) * pageSize
     return combined.slice(start, start + pageSize)
   }, [combined, page, pageSize])
 
-  const TypeFilter = () => (
-    <div className="w-full sm:w-auto">
-      <label className="block text-xs sm:text-sm font-semibold text-neutral-700 mb-1.5">유형</label>
-      <div className="inline-flex rounded-lg border border-neutral-300 bg-neutral-50 p-1 whitespace-nowrap gap-1 shadow-sm">
-        <button
-          onClick={() => { setIncludeIncome(v => { const nv = !v; setPage(1); return nv }); }}
-          className={`px-4 py-2 text-sm rounded-md min-w-[80px] transition-all duration-200 touch-manipulation ${includeIncome
-            ? 'bg-white text-blue-600 shadow-sm font-semibold'
-            : 'text-neutral-600 hover:text-neutral-900 font-medium'
-            }`}
-          aria-pressed={includeIncome}
-        >
-          수입
-        </button>
-        <button
-          onClick={() => { setIncludeExpense(v => { const nv = !v; setPage(1); return nv }); }}
-          className={`px-4 py-2 text-sm rounded-md min-w-[80px] transition-all duration-200 touch-manipulation ${includeExpense
-            ? 'bg-white text-blue-600 shadow-sm font-semibold'
-            : 'text-neutral-600 hover:text-neutral-900 font-medium'
-            }`}
-          aria-pressed={includeExpense}
-        >
-          지출
-        </button>
-      </div>
-    </div>
-  )
-
   const handleExportExcel = async () => {
     try {
       toast.info('엑셀 파일을 생성하는 중입니다...')
-
-      // 내보낼 데이터 준비
       const exportData: FinanceExportData[] = combined.map((row) => {
         const baseData = {
           date: row.date,
           type: row.type === 'income' ? '수입' as const : '지출' as const,
           amount: row.amount,
         }
-
         if (row.type === 'expense') {
           return {
             ...baseData,
@@ -229,28 +198,23 @@ export default function FinancePage() {
           }
         }
       })
-
       const summary = {
         totalIncome: sumIncome,
         totalExpense: sumExpense,
         profit,
         period: { from, to },
       }
-
-      // 엑셀 내보내기 실행
       exportFinanceToExcel(exportData, summary)
-
       toast.success('엑셀 파일이 다운로드되었습니다.')
     } catch (error) {
-      console.error('엑셀 내보내기 오류:', error)
-      toast.error('엑셀 내보내기 실패', error instanceof Error ? error.message : '알 수 없는 오류가 발생했습니다.')
+      console.error(error)
+      toast.error('엑셀 내보내기 실패')
     }
   }
 
   const handleGenerateTaxReport = async () => {
     try {
       toast.info('세무 자료를 생성하는 중입니다...')
-
       const incomeData = transactions
         .filter(t => {
           const d = (t.transaction_date || t.created_at || '').slice(0, 10)
@@ -262,39 +226,90 @@ export default function FinancePage() {
           ...(t.customer_id && { customer: '고객' }),
           ...(t.category && { category: t.category }),
         }))
-
       const expenseData = expenses.map(e => ({
         date: e.expense_date,
         amount: Number(e.amount || 0),
         category: e.category,
         ...(e.memo && { memo: e.memo }),
       }))
-
       generateTaxReport({
         period: { from, to },
         income: incomeData,
         expense: expenseData,
       })
-
       toast.success('세무 자료 파일이 다운로드되었습니다.')
     } catch (error) {
-      console.error('세무 자료 생성 오류:', error)
-      toast.error('세무 자료 생성 실패', error instanceof Error ? error.message : '알 수 없는 오류가 발생했습니다.')
+      console.error(error)
+      toast.error('세무 자료 생성 실패')
+    }
+  }
+
+  const resetNewForm = () => {
+    setNewType('income')
+    setNewDate(new Date().toISOString().slice(0, 10))
+    setNewAmount('')
+    setNewMemo('')
+    setSelectedCategory('')
+  }
+
+  const handleCreateSubmit = async () => {
+    try {
+      const amountValue = newAmount.replace(/[^0-9]/g, '')
+      if (!amountValue || Number(amountValue) === 0) {
+        toast.error('금액을 입력해주세요')
+        return
+      }
+      const amountNumber = Number(amountValue)
+
+      if (newType === 'income') {
+        if (!selectedCategory) {
+          toast.error('수입 항목을 선택해주세요')
+          return
+        }
+        const { transactionsApi } = await import('@/app/lib/api/transactions')
+        const createPayload: TransactionCreateInput = {
+          transaction_date: newDate,
+          amount: amountNumber,
+          category: selectedCategory,
+        }
+        await transactionsApi.create(createPayload)
+      } else {
+        if (!selectedCategory) {
+          toast.error('지출 항목을 선택해주세요')
+          return
+        }
+        const { expensesApi } = await import('@/app/lib/api/expenses')
+        const expensePayload: ExpenseCreateInput = {
+          expense_date: newDate,
+          amount: amountNumber,
+          category: selectedCategory,
+        }
+        if (newMemo && newMemo.trim() !== '') {
+          expensePayload.memo = newMemo.trim()
+        }
+        await expensesApi.create(expensePayload)
+      }
+      setNewOpen(false)
+      resetNewForm()
+      await load()
+      toast.success('저장되었습니다.')
+    } catch (err) {
+      toast.error('저장 실패', err instanceof Error ? err.message : '')
     }
   }
 
   return (
-    <main className="space-y-2 md:space-y-3">
-      {/* 헤더 영역 - 엑셀 내보내기 버튼 */}
-      <div className="flex items-center justify-between flex-wrap gap-2">
-        <h1 className="text-xl sm:text-2xl font-bold text-neutral-900">재무 관리</h1>
-        <div className="flex items-center gap-2">
+    <Stack spacing={3}>
+      {/* 헤더 영역 */}
+      <Stack direction={{ xs: 'column', sm: 'row' }} justifyContent="space-between" alignItems="center" spacing={2}>
+        <Typography variant="h5" fontWeight="bold">재무 관리</Typography>
+        <Stack direction="row" spacing={1}>
           <Button
             variant="outline"
             size="sm"
             leftIcon={<FileText className="h-4 w-4" />}
             onClick={handleGenerateTaxReport}
-            className="hidden sm:flex"
+            sx={{ display: { xs: 'none', sm: 'flex' } }}
           >
             세무 자료 생성
           </Button>
@@ -303,378 +318,431 @@ export default function FinancePage() {
             size="sm"
             leftIcon={<Download className="h-4 w-4" />}
             onClick={handleExportExcel}
-            className="hidden sm:flex"
+            sx={{ display: { xs: 'none', sm: 'flex' } }}
           >
             엑셀로 내보내기
           </Button>
-          <Button
-            variant="outline"
-            size="sm"
-            leftIcon={<Download className="h-4 w-4" />}
-            onClick={handleExportExcel}
-            className="sm:hidden"
-            aria-label="엑셀로 내보내기"
-          >
-            내보내기
-          </Button>
-        </div>
-      </div>
+          {/* 모바일용 */}
+          <IconButton onClick={handleExportExcel} sx={{ display: { xs: 'flex', sm: 'none' } }}>
+            <Download className="h-5 w-5" />
+          </IconButton>
+        </Stack>
+      </Stack>
 
-      <section className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-6">
-        <div className="bg-gradient-to-br from-emerald-50 to-teal-100 rounded-xl border-2 border-emerald-200 p-3 sm:p-6 shadow-md hover:shadow-xl transition-all duration-300">
-          <div className="text-xs sm:text-sm font-semibold text-emerald-700 mb-1 sm:mb-2">월간 수입</div>
-          <div className="text-xl sm:text-3xl font-bold text-emerald-700">₩{Number(sumIncome).toLocaleString()}</div>
-        </div>
-        <div className="bg-gradient-to-br from-rose-50 to-pink-100 rounded-xl border-2 border-rose-200 p-3 sm:p-6 shadow-md hover:shadow-xl transition-all duration-300">
-          <div className="text-xs sm:text-sm font-semibold text-rose-700 mb-1 sm:mb-2">월간 지출</div>
-          <div className="text-xl sm:text-3xl font-bold text-rose-700">₩{Number(sumExpense).toLocaleString()}</div>
-        </div>
-        <div className={`rounded-xl border-2 p-3 sm:p-6 shadow-md hover:shadow-xl transition-all duration-300 ${profit >= 0
-          ? 'bg-gradient-to-br from-emerald-50 to-teal-100 border-emerald-200'
-          : 'bg-gradient-to-br from-rose-50 to-pink-100 border-rose-200'
-          }`}>
-          <div className={`text-xs sm:text-sm font-semibold mb-1 sm:mb-2 ${profit >= 0 ? 'text-emerald-700' : 'text-rose-700'}`}>월간 순이익</div>
-          <div className={`text-xl sm:text-3xl font-bold ${profit >= 0 ? 'text-emerald-700' : 'text-rose-700'}`}>₩{Number(profit).toLocaleString()}</div>
-        </div>
-      </section>
+      {/* 요약 카드 */}
+      <Grid container spacing={1}>
+        <Grid item xs={4} sm={4}>
+          <Card variant="outlined" sx={{ bgcolor: '#ecfdf5', borderColor: '#a7f3d0' }}>
+            <CardContent sx={{ p: { xs: 1.5, sm: 2 }, '&:last-child': { pb: { xs: 1.5, sm: 2 } } }}>
+              <Typography variant="body2" color="#047857" fontWeight="bold" gutterBottom sx={{ fontSize: { xs: '0.7rem', sm: '0.875rem' } }}>월간 수입</Typography>
+              <Typography variant="h5" color="#047857" fontWeight="bold" sx={{ fontSize: { xs: '1rem', sm: '1.5rem' } }}>
+                ₩{Number(sumIncome).toLocaleString()}
+              </Typography>
+            </CardContent>
+          </Card>
+        </Grid>
+        <Grid item xs={4} sm={4}>
+          <Card variant="outlined" sx={{ bgcolor: '#fff1f2', borderColor: '#fecdd3' }}>
+            <CardContent sx={{ p: { xs: 1.5, sm: 2 }, '&:last-child': { pb: { xs: 1.5, sm: 2 } } }}>
+              <Typography variant="body2" color="#be123c" fontWeight="bold" gutterBottom sx={{ fontSize: { xs: '0.7rem', sm: '0.875rem' } }}>월간 지출</Typography>
+              <Typography variant="h5" color="#be123c" fontWeight="bold" sx={{ fontSize: { xs: '1rem', sm: '1.5rem' } }}>
+                ₩{Number(sumExpense).toLocaleString()}
+              </Typography>
+            </CardContent>
+          </Card>
+        </Grid>
+        <Grid item xs={4} sm={4}>
+          <Card variant="outlined" sx={{
+            bgcolor: profit >= 0 ? '#ecfdf5' : '#fff1f2',
+            borderColor: profit >= 0 ? '#a7f3d0' : '#fecdd3'
+          }}>
+            <CardContent sx={{ p: { xs: 1.5, sm: 2 }, '&:last-child': { pb: { xs: 1.5, sm: 2 } } }}>
+              <Typography variant="body2" color={profit >= 0 ? '#047857' : '#be123c'} fontWeight="bold" gutterBottom sx={{ fontSize: { xs: '0.7rem', sm: '0.875rem' } }}>월간 순이익</Typography>
+              <Typography variant="h5" color={profit >= 0 ? '#047857' : '#be123c'} fontWeight="bold" sx={{ fontSize: { xs: '1rem', sm: '1.5rem' } }}>
+                ₩{Number(profit).toLocaleString()}
+              </Typography>
+            </CardContent>
+          </Card>
+        </Grid>
+      </Grid>
 
-      <div className="bg-white rounded-xl border border-neutral-200 shadow-sm p-3 sm:p-4">
-        <div className="flex flex-col sm:flex-row items-stretch sm:items-end gap-3">
-          <div className="flex-1 min-w-0 overflow-hidden">
-            <label className="block text-xs sm:text-sm font-semibold text-neutral-700 mb-1.5">기간</label>
-            <div className="flex items-center gap-1.5 sm:gap-2 min-w-0">
-              <input
-                type="date"
-                value={from}
-                onChange={e => setRange(r => ({ ...r, from: e.target.value }))}
-                className="h-11 flex-1 min-w-0 rounded-lg border border-neutral-300 px-2 sm:px-4 focus:border-secondary-500 focus:ring-2 focus:ring-secondary-200 outline-none bg-white text-xs sm:text-sm text-neutral-900 transition-all duration-200 touch-manipulation"
-              />
-              <span className="text-neutral-600 font-medium text-xs sm:text-sm flex-shrink-0">~</span>
-              <input
-                type="date"
-                value={to}
-                onChange={e => setRange(r => ({ ...r, to: e.target.value }))}
-                className="h-11 flex-1 min-w-0 rounded-lg border border-neutral-300 px-2 sm:px-4 focus:border-secondary-500 focus:ring-2 focus:ring-secondary-200 outline-none bg-white text-xs sm:text-sm text-neutral-900 transition-all duration-200 touch-manipulation"
-              />
-            </div>
-          </div>
-          <TypeFilter />
-        </div>
-      </div>
+      {/* 필터 및 기간 - 모바일에서는 접을 수 있음 */}
+      <Paper sx={{ p: 2, borderRadius: 3 }} elevation={0} variant="outlined">
+        <Stack spacing={2}>
+          <Box sx={{ display: { xs: 'flex', md: 'none' }, justifyContent: 'space-between', alignItems: 'center', gap: 1 }}>
+            <Button
+              variant="primary"
+              size="sm"
+              leftIcon={<Plus className="h-4 w-4" />}
+              onClick={() => { resetNewForm(); setNewOpen(true) }}
+              className="flex-1"
+            >
+              새 수입/지출
+            </Button>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => setShowFilters(!showFilters)}
+            >
+              {showFilters ? '필터 접기' : '필터 펼치기'}
+            </Button>
+          </Box>
+          <Box sx={{ display: { xs: showFilters ? 'block' : 'none', md: 'block' } }}>
+            <Stack spacing={2}>
+              {/* 첫 번째 줄: 날짜 범위 */}
+              <Stack direction="row" spacing={2} alignItems="center">
+                <TextField
+                  type="date"
+                  label="시작일"
+                  value={from}
+                  onChange={e => setRange(r => ({ ...r, from: e.target.value }))}
+                  size="small"
+                  InputLabelProps={{ shrink: true }}
+                  sx={{ flex: 1 }}
+                />
+                <Typography variant="body2" color="text.secondary">~</Typography>
+                <TextField
+                  type="date"
+                  label="종료일"
+                  value={to}
+                  onChange={e => setRange(r => ({ ...r, to: e.target.value }))}
+                  size="small"
+                  InputLabelProps={{ shrink: true }}
+                  sx={{ flex: 1 }}
+                />
+              </Stack>
 
-      {/* 가운데 영역: 수입/지출 통합 테이블 + 상세보기 버튼 */}
-      <section className="bg-white rounded-xl border border-neutral-200 shadow-md overflow-hidden">
-        <div className="p-3 md:p-4 border-b border-neutral-200 text-sm font-medium text-neutral-900 flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-2 sm:gap-3">
-          <span>수입/지출 내역</span>
-          <Button
-            variant="primary"
-            size="sm"
-            leftIcon={<Plus className="h-4 w-4" />}
-            onClick={() => { setNewType('income'); setNewDate(new Date().toISOString().slice(0, 10)); setNewAmount(''); setNewMemo(''); setNewOpen(true) }}
-            className="w-full sm:w-auto"
-          >
-            새 수입/지출
-          </Button>
-        </div>
-        <div className="overflow-hidden">
-          <table className="w-full text-sm table-fixed">
-            <thead className="bg-gradient-to-r from-pink-100 via-purple-100 to-blue-100 border-b-2 border-purple-200 sticky top-0 z-[40]">
-              <tr>
-                <th className="text-left p-4 font-semibold text-pink-700 whitespace-nowrap w-[100px]">
-                  <button className="inline-flex items-center gap-1 hover:text-pink-900 transition-colors duration-300 font-semibold" onClick={() => { setSortKey('date'); setSortDir(d => (sortKey === 'date' && d === 'asc') ? 'desc' : 'asc'); setPage(1) }}>
-                    일자 {sortKey === 'date' ? (sortDir === 'asc' ? '▲' : '▼') : ''}
-                  </button>
-                </th>
-                <th className="text-left p-4 font-semibold text-purple-700 whitespace-nowrap w-[80px]">유형</th>
-                <th className="text-right p-4 font-semibold text-blue-700 whitespace-nowrap w-[120px]">
-                  <button className="inline-flex items-center gap-1 hover:text-blue-900 transition-colors duration-300 font-semibold" onClick={() => { setSortKey('amount'); setSortDir(d => (sortKey === 'amount' && d === 'asc') ? 'desc' : 'asc'); setPage(1) }}>
-                    금액 {sortKey === 'amount' ? (sortDir === 'asc' ? '▲' : '▼') : ''}
-                  </button>
-                </th>
-                <th className="text-left p-4 font-semibold text-emerald-700 whitespace-nowrap">메모/카테고리</th>
-                <th className="text-right p-4 font-semibold text-amber-700 w-[60px]"></th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-neutral-200">
-              {loading && Array.from({ length: 6 }).map((_, i) => (
-                <tr key={`ex-s-${i}`}>
-                  <td className="p-4"><Skeleton className="h-4 w-28" /></td>
-                  <td className="p-4"><Skeleton className="h-4 w-16" /></td>
-                  <td className="p-4 text-right"><Skeleton className="h-4 w-20 ml-auto" /></td>
-                  <td className="p-4"><Skeleton className="h-4 w-24" /></td>
-                  <td className="p-4"><Skeleton className="h-8 w-24 ml-auto" /></td>
-                </tr>
-              ))}
-              {!loading && pagedCombined.map(row => (
-                <tr key={`${row.type}-${row.id}`} className="hover:bg-neutral-50 transition-colors duration-300 min-h-[48px] border-b border-neutral-200">
-                  <td className="p-4 text-neutral-900">{row.date}</td>
-                  <td className="p-4">
-                    <span className={`inline-flex items-center px-2 py-1 rounded-lg text-xs font-medium ${row.type === 'income'
-                      ? 'bg-emerald-50 text-emerald-700 border border-emerald-200'
-                      : 'bg-rose-50 text-rose-700 border border-rose-200'
-                      }`}>
-                      {row.type === 'income' ? '수입' : '지출'}
-                    </span>
-                  </td>
-                  <td className={`p-4 text-right font-medium ${row.type === 'income' ? 'text-emerald-600' : 'text-rose-600'
-                    }`}>₩{Number(row.amount || 0).toLocaleString()}</td>
-                  <td className="p-4 text-neutral-600 min-w-0">
-                    <div className="truncate max-w-[200px] sm:max-w-none" title={row.note || '-'}>{row.note || '-'}</div>
-                  </td>
-                  <td className="p-4">
-                    <button
-                      onClick={() => {
-                        if (row.type === 'income') { setTxDetail(row.raw); setTxOpen(true) }
-                        else { setExpenseDetail(row.raw); setExpenseOpen(true) }
-                      }}
-                      className="h-8 w-8 inline-flex items-center justify-center rounded-lg border border-neutral-300 hover:bg-[#F472B6] hover:text-white hover:border-[#F472B6] transition-all duration-300"
-                      aria-label="상세보기"
-                      title="상세보기"
-                    >
-                      <Pencil className="h-4 w-4" />
-                    </button>
-                  </td>
-                </tr>
-              ))}
-              {!loading && combined.length === 0 && (
-                <tr><td colSpan={5}><EmptyState title="표시할 데이터가 없습니다." /></td></tr>
-              )}
-            </tbody>
-          </table>
-        </div>
-        <div className="flex flex-col md:flex-row items-stretch md:items-center justify-between gap-3 p-3 md:p-4 border-t border-neutral-200 bg-neutral-50">
-          <div className="text-xs sm:text-sm font-medium text-neutral-700">총 {combined.length}개 · {page}/{Math.max(1, Math.ceil(combined.length / pageSize))} 페이지</div>
-          <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 sm:gap-3">
-            <select value={pageSize} onChange={e => { setPageSize(Number(e.target.value)); setPage(1) }} className="h-10 w-full sm:w-auto rounded-lg border border-neutral-300 px-3 text-sm font-medium bg-white text-neutral-900 focus:border-[#F472B6] focus:ring-[2px] focus:ring-[#F472B6]/20 outline-none transition-all duration-300">
-              {[10, 20, 50].map(s => <option key={s} value={s}>{s}/페이지</option>)}
-            </select>
-            <div className="flex gap-2">
-              <button onClick={() => setPage(Math.max(1, page - 1))} className="h-10 flex-1 sm:flex-none px-4 rounded-lg border border-neutral-300 bg-white text-neutral-900 font-medium hover:bg-[#F472B6] hover:text-white hover:border-[#F472B6] disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:bg-white disabled:hover:text-neutral-900 transition-all duration-300" disabled={page === 1}>이전</button>
-              <button onClick={() => setPage(Math.min(Math.ceil(combined.length / pageSize) || 1, page + 1))} className="h-10 flex-1 sm:flex-none px-4 rounded-lg border border-neutral-300 bg-white text-neutral-900 font-medium hover:bg-[#F472B6] hover:text-white hover:border-[#F472B6] disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:bg-white disabled:hover:text-neutral-900 transition-all duration-300" disabled={page >= Math.ceil(combined.length / pageSize)}>다음</button>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {newOpen && (
-        <div className="fixed inset-0 z-[1050] flex items-center justify-center p-4">
-          <div
-            className="absolute inset-0 bg-overlay-60 backdrop-blur-sm animate-overlay-in"
-            onClick={() => setNewOpen(false)}
-            style={{
-              backdropFilter: 'blur(4px)',
-              WebkitBackdropFilter: 'blur(4px)'
-            }}
-          />
-          <div className="relative w-full max-w-md bg-white rounded-xl border border-neutral-200 shadow-2xl p-6 space-y-4">
-            <div className="flex items-center justify-between">
-              <h2 className="text-lg font-medium">새 수입/지출</h2>
-            </div>
-
-            {/* 수입/지출 선택 구분 칸 */}
-            <div className="bg-neutral-50 rounded-lg border border-neutral-200 p-3">
-              <label className="block text-sm font-medium text-neutral-900 mb-2">유형</label>
-              <div className="inline-flex rounded-lg border border-neutral-300 bg-white p-1 whitespace-nowrap gap-1 shadow-sm">
-                <button
-                  onClick={() => setNewType('income')}
-                  className={`px-4 py-2 text-sm rounded-lg min-w-[100px] transition-all duration-300 ${newType === 'income'
-                    ? 'bg-gradient-to-r from-[#F472B6] to-[#EC4899] text-white shadow-lg border-2 border-[#EC4899] font-semibold scale-[1.02]'
-                    : 'bg-white text-neutral-500 hover:bg-[#FDF2F8] hover:text-[#F472B6] border-2 border-transparent font-medium'
-                    }`}
-                  aria-pressed={newType === 'income'}
+              {/* 두 번째 줄: 필터 & 액션 */}
+              <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2} alignItems="center" justifyContent="space-between">
+                <ToggleButtonGroup
+                  value={filterType}
+                  onChange={(_, newFilters) => setFilterType(newFilters as ('income' | 'expense')[])}
+                  size="small"
+                  color="primary"
+                  fullWidth={false}
+                  sx={{ width: { xs: '100%', sm: 'auto' } }}
                 >
-                  수입
-                </button>
-                <button
-                  onClick={() => setNewType('expense')}
-                  className={`px-4 py-2 text-sm rounded-lg min-w-[100px] transition-all duration-300 ${newType === 'expense'
-                    ? 'bg-gradient-to-r from-[#F472B6] to-[#EC4899] text-white shadow-lg border-2 border-[#EC4899] font-semibold scale-[1.02]'
-                    : 'bg-white text-neutral-500 hover:bg-[#FDF2F8] hover:text-[#F472B6] border-2 border-transparent font-medium'
-                    }`}
-                  aria-pressed={newType === 'expense'}
-                >
-                  지출
-                </button>
-              </div>
-            </div>
+                  <ToggleButton value="income" sx={{ flex: 1 }}>수입</ToggleButton>
+                  <ToggleButton value="expense" sx={{ flex: 1 }}>지출</ToggleButton>
+                </ToggleButtonGroup>
 
-            <div className="space-y-3">
-              <div>
-                <label className="block text-sm text-neutral-700 mb-1">일자</label>
-                <input type="date" className="h-10 w-full rounded-lg border border-neutral-300 px-3 outline-none focus:border-[#F472B6] focus:ring-[2px] focus:ring-[#F472B6]/20 bg-white text-neutral-900 transition-all duration-300" value={newDate} onChange={e => setNewDate(e.target.value)} />
-              </div>
-              <div>
-                <label className="block text-sm text-neutral-700 mb-1">금액</label>
-                <input
-                  type="text"
-                  className="h-10 w-full rounded-lg border border-neutral-300 px-3 outline-none focus:border-[#F472B6] focus:ring-[2px] focus:ring-[#F472B6]/20 bg-white text-neutral-900 transition-all duration-300"
-                  value={newAmount}
-                  onChange={e => {
-                    // 숫자만 추출
-                    const numericValue = e.target.value.replace(/[^0-9]/g, '')
-                    // 콤마 포맷팅
-                    if (numericValue === '') {
-                      setNewAmount('')
+                <Box sx={{ flexGrow: 1 }} />
+
+                <Stack direction="row" spacing={1} sx={{ width: { xs: '100%', sm: 'auto' }, display: { xs: 'none', md: 'flex' } }}>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    leftIcon={<Download className="h-4 w-4" />}
+                    onClick={handleExportExcel}
+                  >
+                    엑셀
+                  </Button>
+                  <Button
+                    variant="primary"
+                    size="sm"
+                    leftIcon={<Plus className="h-4 w-4" />}
+                    onClick={() => { resetNewForm(); setNewOpen(true) }}
+                  >
+                    새 수입/지출
+                  </Button>
+                </Stack>
+                {/* 모바일 엑셀 다운로드 버튼 (필터 내부에 유지) */}
+                <Button
+                  variant="outline"
+                  size="sm"
+                  leftIcon={<Download className="h-4 w-4" />}
+                  onClick={handleExportExcel}
+                  sx={{ display: { xs: 'flex', md: 'none' }, width: '100%' }}
+                >
+                  엑셀 다운로드
+                </Button>
+              </Stack>
+            </Stack>
+          </Box>
+        </Stack>
+      </Paper>
+
+      {/* 모바일/태블릿 카드 뷰 */}
+      <Box sx={{ display: { xs: 'block', md: 'none' } }}>
+        <Typography fontWeight="bold" mb={2}>수입/지출 내역</Typography>
+        {loading && (
+          <Grid container spacing={2}>
+            {Array.from({ length: 4 }).map((_, i) => (
+              <Grid item xs={12} sm={6} key={i}>
+                <Skeleton className="h-24 rounded-lg" />
+              </Grid>
+            ))}
+          </Grid>
+        )}
+        {!loading && pagedCombined.length === 0 && (
+          <EmptyState title="데이터가 없습니다." />
+        )}
+        {!loading && (
+          <Grid container spacing={2}>
+            {pagedCombined.map(row => (
+              <Grid item xs={12} sm={6} key={`${row.type}-${row.id}`}>
+                <Card
+                  variant="outlined"
+                  sx={{
+                    borderRadius: 2,
+                    cursor: 'pointer',
+                    '&:hover': { bgcolor: 'action.hover' },
+                    height: '100%'
+                  }}
+                  onClick={() => {
+                    if (row.type === 'income') {
+                      setTxDetail(row.raw as Transaction)
+                      setTxOpen(true)
                     } else {
-                      const formatted = Number(numericValue).toLocaleString('ko-KR')
-                      setNewAmount(formatted)
+                      setExpenseDetail(row.raw as Expense)
+                      setExpenseOpen(true)
                     }
                   }}
-                  placeholder="금액을 입력하세요 (원)"
-                />
-              </div>
-              {newType === 'income' && (
-                <div>
-                  <label className="block text-sm text-neutral-700 mb-1 font-medium">
-                    수입 항목 <span className="text-rose-600">*</span>
-                  </label>
-                  {incomeCategories.length === 0 ? (
-                    <div className="h-10 w-full rounded-lg border-2 border-dashed border-amber-300 bg-amber-50 px-3 flex items-center text-sm text-amber-700">
-                      <span>설정 페이지에서 수입 항목을 먼저 등록해주세요.</span>
-                    </div>
-                  ) : (
-                    <select
-                      value={selectedIncomeCategory}
-                      onChange={(e) => setSelectedIncomeCategory(e.target.value)}
-                      className="h-10 w-full rounded-lg border border-neutral-300 px-3 outline-none focus:border-[#F472B6] focus:ring-2 focus:ring-[#F472B6]/20 bg-white text-neutral-900 transition-all duration-300"
+                >
+                  <CardContent sx={{ pb: 2 }}>
+                    <Stack direction="row" justifyContent="space-between" alignItems="flex-start" mb={1.5}>
+                      <Chip
+                        label={row.type === 'income' ? '수입' : '지출'}
+                        size="small"
+                        color={row.type === 'income' ? 'success' : 'error'}
+                        variant="filled"
+                      />
+                      <Typography variant="caption" color="text.secondary">
+                        {row.date}
+                      </Typography>
+                    </Stack>
+                    <Typography
+                      variant="h6"
+                      fontWeight="bold"
+                      color={row.type === 'income' ? 'success.main' : 'error.main'}
+                      mb={0.5}
                     >
-                      <option value="">선택하세요</option>
-                      {incomeCategories.map((category) => (
-                        <option key={category} value={category}>
-                          {category}
-                        </option>
-                      ))}
-                    </select>
-                  )}
-                </div>
-              )}
-              {newType === 'expense' && (
-                <div>
-                  <label className="block text-sm text-neutral-700 mb-1 font-medium">
-                    지출 항목 <span className="text-rose-600">*</span>
-                  </label>
-                  {expenseCategories.length === 0 ? (
-                    <div className="h-10 w-full rounded-lg border-2 border-dashed border-amber-300 bg-amber-50 px-3 flex items-center text-sm text-amber-700">
-                      <span>설정 페이지에서 지출 항목을 먼저 등록해주세요.</span>
-                    </div>
-                  ) : (
-                    <select
-                      value={selectedExpenseCategory}
-                      onChange={(e) => setSelectedExpenseCategory(e.target.value)}
-                      className="h-10 w-full rounded-lg border border-neutral-300 px-3 outline-none focus:border-[#F472B6] focus:ring-2 focus:ring-[#F472B6]/20 bg-white text-neutral-900 transition-all duration-300"
-                    >
-                      <option value="">선택하세요</option>
-                      {expenseCategories.map((category) => (
-                        <option key={category} value={category}>
-                          {category}
-                        </option>
-                      ))}
-                    </select>
-                  )}
-                </div>
-              )}
-              <div>
-                <label className="block text-sm text-neutral-700 mb-1">메모(선택)</label>
-                <input className="h-10 w-full rounded-lg border border-neutral-300 px-3 outline-none focus:border-[#F472B6] focus:ring-[2px] focus:ring-[#F472B6]/20 bg-white text-neutral-900 placeholder:text-neutral-500 transition-all duration-300" value={newMemo} onChange={e => setNewMemo(e.target.value)} placeholder="설명 입력" />
-              </div>
-            </div>
-            <div className="flex items-center justify-end gap-2 border-t border-neutral-200 pt-4">
-              <Button variant="secondary" onClick={() => { setNewOpen(false); setNewAmount(''); setNewMemo('') }} className="flex-1 sm:flex-none">취소</Button>
-              <Button
-                variant="primary"
-                className="flex-1 sm:flex-none"
-                onClick={async () => {
-                  try {
-                    // 콤마 제거 후 숫자로 변환
-                    const amountValue = newAmount.replace(/[^0-9]/g, '')
-                    if (!amountValue || Number(amountValue) === 0) {
-                      toast.error('금액을 입력해주세요')
-                      return
-                    }
-                    const amountNumber = Number(amountValue)
-                    if (newType === 'income') {
-                      // 수입 카테고리 필수
-                      if (!selectedIncomeCategory) {
-                        toast.error('수입 항목을 선택해주세요')
-                        return
-                      }
-                      const { transactionsApi } = await import('@/app/lib/api/transactions')
-                      const createPayload: TransactionCreateInput = {
-                        transaction_date: newDate,
-                        amount: amountNumber,
-                        category: selectedIncomeCategory,
-                      }
-                      // notes 필드는 데이터베이스에 컬럼이 없으므로 제외
-                      // 메모는 category에 포함되거나 별도로 저장할 수 없음
-                      // if (newMemo && newMemo.trim() !== '') {
-                      //   createPayload.notes = newMemo.trim()
-                      // }
-                      await transactionsApi.create(createPayload)
-                    } else {
-                      // 지출 카테고리 필수
-                      if (!selectedExpenseCategory) {
-                        toast.error('지출 항목을 선택해주세요')
-                        return
-                      }
-                      const { expensesApi } = await import('@/app/lib/api/expenses')
-                      const expensePayload: ExpenseCreateInput = {
-                        expense_date: newDate,
-                        amount: amountNumber,
-                        category: selectedExpenseCategory,
-                      }
-                      // memo는 값이 있을 때만 포함
-                      if (newMemo && newMemo.trim() !== '') {
-                        expensePayload.memo = newMemo.trim()
-                      }
-                      await expensesApi.create(expensePayload)
-                    }
-                    setNewOpen(false)
-                    setNewAmount('')
-                    setNewMemo('')
-                    setSelectedIncomeCategory('')
-                    setSelectedExpenseCategory('')
-                    await load()
-                    toast.success('저장되었습니다.')
-                  } catch (err) {
-                    const message = err instanceof Error ? err.message : '알 수 없는 오류가 발생했습니다.'
-                    toast.error('저장 실패', message)
-                  }
-                }}
-              >추가</Button>
-            </div>
-          </div>
-        </div>
-      )}
+                      ₩{Number(row.amount || 0).toLocaleString()}
+                    </Typography>
+                    {row.note && (
+                      <Typography variant="body2" color="text.secondary" noWrap>
+                        {row.note}
+                      </Typography>
+                    )}
+                  </CardContent>
+                </Card>
+              </Grid>
+            ))}
+          </Grid>
+        )}
+        {/* 페이지네이션 */}
+        {!loading && combined.length > 0 && (
+          <Stack direction="row" justifyContent="center" mt={3}>
+            <Pagination
+              count={Math.ceil(combined.length / pageSize)}
+              page={page}
+              onChange={(_, p) => setPage(p)}
+              color="primary"
+              size="small"
+              siblingCount={0}
+            />
+          </Stack>
+        )}
+      </Box>
 
-      {/* 모바일 FAB */}
-      <button
-        aria-label="내역 추가"
-        title="내역 추가"
-        onClick={() => { setNewType('income'); setNewDate(new Date().toISOString().slice(0, 10)); setNewAmount(''); setNewMemo(''); setNewOpen(true) }}
-        className="md:hidden fixed right-4 bottom-4 h-14 w-14 rounded-full bg-gradient-to-r from-blue-600 to-blue-700 text-white shadow-xl hover:shadow-2xl active:scale-[0.95] inline-flex items-center justify-center z-[1000] touch-manipulation transition-all duration-200 safe-area-inset-bottom"
-        style={{
-          bottom: 'calc(1rem + env(safe-area-inset-bottom))',
+      {/* 데스크톱 테이블 뷰 */}
+      <TableContainer component={Paper} elevation={0} variant="outlined" sx={{ borderRadius: 3, display: { xs: 'none', md: 'block' } }}>
+        <Box p={2} borderBottom={1} borderColor="divider">
+          <Typography fontWeight="bold">수입/지출 내역</Typography>
+        </Box>
+        <Table>
+          <TableHead sx={{ bgcolor: 'neutral.50' }}>
+            <TableRow>
+              <TableCell sortDirection={sortKey === 'date' ? sortDir : false}>
+                <TableSortLabel
+                  active={sortKey === 'date'}
+                  direction={sortKey === 'date' ? sortDir : 'asc'}
+                  onClick={() => {
+                    const isAsc = sortKey === 'date' && sortDir === 'asc'
+                    setSortDir(isAsc ? 'desc' : 'asc')
+                    setSortKey('date')
+                  }}
+                >
+                  일자
+                </TableSortLabel>
+              </TableCell>
+              <TableCell>유형</TableCell>
+              <TableCell align="right" sortDirection={sortKey === 'amount' ? sortDir : false}>
+                <TableSortLabel
+                  active={sortKey === 'amount'}
+                  direction={sortKey === 'amount' ? sortDir : 'asc'}
+                  onClick={() => {
+                    const isAsc = sortKey === 'amount' && sortDir === 'asc'
+                    setSortDir(isAsc ? 'desc' : 'asc')
+                    setSortKey('amount')
+                  }}
+                >
+                  금액
+                </TableSortLabel>
+              </TableCell>
+              <TableCell>메모/카테고리</TableCell>
+              <TableCell align="center">관리</TableCell>
+            </TableRow>
+          </TableHead>
+          <TableBody>
+            {loading && Array.from({ length: 5 }).map((_, i) => (
+              <TableRow key={i}>
+                <TableCell colSpan={5}><Skeleton className="h-10" /></TableCell>
+              </TableRow>
+            ))}
+            {!loading && pagedCombined.map(row => (
+              <TableRow key={`${row.type}-${row.id}`} hover>
+                <TableCell>{row.date}</TableCell>
+                <TableCell>
+                  <Chip
+                    label={row.type === 'income' ? '수입' : '지출'}
+                    size="small"
+                    color={row.type === 'income' ? 'success' : 'error'}
+                    variant="outlined"
+                  />
+                </TableCell>
+                <TableCell align="right" sx={{ fontWeight: 'bold', color: row.type === 'income' ? 'success.main' : 'error.main' }}>
+                  ₩{Number(row.amount || 0).toLocaleString()}
+                </TableCell>
+                <TableCell>{row.note || '-'}</TableCell>
+                <TableCell align="center">
+                  <IconButton
+                    size="small"
+                    onClick={() => {
+                      if (row.type === 'income') { setTxDetail(row.raw as Transaction); setTxOpen(true) }
+                      else { setExpenseDetail(row.raw as Expense); setExpenseOpen(true) }
+                    }}
+                    aria-label="편집"
+                  >
+                    <Pencil className="h-4 w-4" />
+                  </IconButton>
+                </TableCell>
+              </TableRow>
+            ))}
+            {!loading && combined.length === 0 && (
+              <TableRow>
+                <TableCell colSpan={5} align="center" sx={{ py: 4 }}>
+                  <EmptyState title="데이터가 없습니다." />
+                </TableCell>
+              </TableRow>
+            )}
+          </TableBody>
+        </Table>
+        {/* 데스크톱 페이지네이션 */}
+        {!loading && combined.length > 0 && (
+          <Stack direction="row" justifyContent="flex-end" p={2}>
+            <Pagination
+              count={Math.ceil(combined.length / pageSize)}
+              page={page}
+              onChange={(_, p) => setPage(p)}
+              color="primary"
+            />
+          </Stack>
+        )}
+      </TableContainer>
+
+      {/* 신규 등록 모달 - MUI Dialog */}
+      <Dialog open={newOpen} onClose={() => setNewOpen(false)} maxWidth="xs" fullWidth>
+        <DialogTitle>새 수입/지출</DialogTitle>
+        <DialogContent>
+          <Stack spacing={3} sx={{ mt: 1 }}>
+            <ToggleButtonGroup
+              value={newType}
+              exclusive
+              onChange={(_, v) => v && setNewType(v as 'income' | 'expense')}
+              fullWidth
+              color="primary"
+            >
+              <ToggleButton value="income">수입</ToggleButton>
+              <ToggleButton value="expense">지출</ToggleButton>
+            </ToggleButtonGroup>
+
+            <TextField
+              label="일자"
+              type="date"
+              value={newDate}
+              onChange={e => setNewDate(e.target.value)}
+              InputLabelProps={{ shrink: true }}
+              fullWidth
+            />
+
+            <TextField
+              label="금액"
+              value={newAmount}
+              onChange={e => {
+                const numeric = e.target.value.replace(/[^0-9]/g, '')
+                setNewAmount(numeric ? Number(numeric).toLocaleString('ko-KR') : '')
+              }}
+              InputProps={{
+                endAdornment: <InputAdornment position="end">원</InputAdornment>
+              }}
+              fullWidth
+            />
+
+            <FormControl fullWidth>
+              <InputLabel>{newType === 'income' ? '수입 항목' : '지출 항목'}</InputLabel>
+              <Select
+                value={selectedCategory}
+                label={newType === 'income' ? '수입 항목' : '지출 항목'}
+                onChange={(e) => setSelectedCategory(e.target.value)}
+              >
+                {(newType === 'income' ? incomeCategories : expenseCategories).map(c => (
+                  <MenuItem key={c} value={c}>{c}</MenuItem>
+                ))}
+                {(newType === 'income' ? incomeCategories : expenseCategories).length === 0 && (
+                  <MenuItem disabled value="">항목 설정이 필요합니다</MenuItem>
+                )}
+              </Select>
+            </FormControl>
+
+            <TextField
+              label="메모 (선택)"
+              value={newMemo}
+              onChange={e => setNewMemo(e.target.value)}
+              fullWidth
+            />
+          </Stack>
+        </DialogContent>
+        <DialogActions>
+          <Button variant="secondary" onClick={() => setNewOpen(false)}>취소</Button>
+          <Button variant="primary" onClick={handleCreateSubmit}>저장</Button>
+        </DialogActions>
+      </Dialog>
+
+
+      {/* 상세 모달 (Lazy) */}
+      <Suspense fallback={null}>
+        {expenseOpen && <ExpenseDetailModal
+          open={expenseOpen}
+          item={expenseDetail}
+          onClose={() => setExpenseOpen(false)}
+          onSaved={load}
+          onDeleted={load}
+        />}
+        {txOpen && <TransactionDetailModal
+          open={txOpen}
+          item={txDetail}
+          onClose={() => setTxOpen(false)}
+          onSaved={load}
+          onDeleted={load}
+        />}
+      </Suspense>
+      {error && <Typography color="error" variant="body2">{error}</Typography>}
+
+      {/* Mobile FAB */}
+      <Fab
+        color="primary"
+        aria-label="새 수입/지출 추가"
+        sx={{
+          position: 'fixed',
+          bottom: { xs: 72, md: 16 },
+          right: 16,
+          display: { xs: 'flex', md: 'none' },
         }}
+        onClick={() => { resetNewForm(); setNewOpen(true) }}
       >
-        <Plus className="h-6 w-6" />
-      </button>
-      <ExpenseDetailModal
-        open={expenseOpen}
-        item={expenseDetail}
-        onClose={() => setExpenseOpen(false)}
-        onSaved={load}
-        onDeleted={load}
-      />
-      <TransactionDetailModal
-        open={txOpen}
-        item={txDetail}
-        onClose={() => setTxOpen(false)}
-        onSaved={load}
-        onDeleted={load}
-      />
-      {error && <p className="text-sm text-rose-600">{error}</p>}
-    </main>
+        <Plus />
+      </Fab>
+    </Stack>
   )
 }
-
-

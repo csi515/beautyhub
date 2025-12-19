@@ -1,29 +1,59 @@
-
-
-// app/dashboard/page.tsx - Rewritten
-// app/dashboard/page.tsx - Rewritten
 import Card from '../components/ui/Card'
 import MetricCard from '../components/MetricCard'
 import DashboardInstallPrompt from '../components/dashboard/DashboardInstallPrompt'
 import Link from 'next/link'
-
-// Remove caching references and server-side logic that might be causing issues
-// We will move to client-side fetching for the dashboard to ensure 100% freshness as per user request ("not reflected")
-// Actually, server components are fine if we opt out of cache. 
-// But checking the file, it was a Server Component.
-// Let's keep it Server Component but remove caching to ensure freshness on every request.
-
-// Wait, the user said "Dashboard ... is not reflected". 
-// A server component without cache is fresh on refresh. 
-// If they want it to update *without* refresh (e.g. navigating back), we rely on Next.js router cache invalidation.
-// Removing `unstable_cache` is the big fix.
-
+import RecentTransactionsTable, { Transaction } from '../components/dashboard/RecentTransactionsTable'
 import { getUserIdFromCookies } from '@/lib/auth/user'
 import { cookies } from 'next/headers'
+import { Box, Grid, Typography, Stack, Alert, List, ListItem, ListItemText } from '@mui/material'
 
-// Define types locally if needed, or import
-// reuse existing logic but stripped of cache
+type ProductSummary = {
+  id: string | number
+  name: string
+  price: number
+  active?: boolean
+}
 
+type TransactionDB = {
+  id: string
+  transaction_date?: string
+  created_at?: string
+  amount: number | string
+}
+
+type ExpenseDB = {
+  id: string
+  expense_date?: string
+  created_at?: string
+  amount: number | string
+  memo?: string
+  category?: string
+}
+
+
+type RecentAppointment = {
+  id: string
+  appointment_date: string
+  customer_name: string
+  product_name: string
+}
+
+type AppointmentDB = {
+  id: string
+  appointment_date: string
+  customer_id?: string
+  service_id?: string
+}
+
+type CustomerDB = {
+  id: string
+  name: string
+}
+
+type ProductDB = {
+  id: string
+  name: string
+}
 function getTodayRange() {
   const now = new Date()
   const start = new Date(now.getFullYear(), now.getMonth(), now.getDate()).toISOString()
@@ -39,9 +69,6 @@ function monthBounds() {
 }
 
 async function getDashboardData({ start, end, userId, accessToken }: { start: string; end: string; userId: string; accessToken?: string | undefined }) {
-  // Use server-side supabase client (or just use the one we construct manually to avoid middleware issues if any)
-  // The original code constructed it manually. We can stick to that or use createServerClient if available.
-  // Sticking to original manual construction to minimize risk.
   const { getEnv } = await import('@/app/lib/env')
   const { createClient } = await import('@supabase/supabase-js')
   const url = getEnv.supabaseUrl()
@@ -67,25 +94,14 @@ async function getDashboardData({ start, end, userId, accessToken }: { start: st
   const toDate = monthEnd.slice(0, 10)
 
   // Combined fetch
-  const [apRes, , , cuMonth, apRecent, trRecent, exRecent, exMonth, trMonth, productsRes] = await Promise.all([
+  const [apRes, , , cuMonth, apRecent, trRecent, exRecent, exMonth, trMonth, productsRes, apMonthRes] = await Promise.all([
     supabase
       .from('appointments')
       .select('id, appointment_date')
       .eq('owner_id', userId)
       .gte('appointment_date', start)
       .lt('appointment_date', end),
-    // Removed transactions range query as it was only for stats we might not need or simple counts
-    // Actually we need 'transactions' for something? 
-    // The original code had:
-    // 1. apRes (Today appointments)
-    // 2. trRes (Today transactions - for what? wasn't used in visible stats? wait, MetricCard 'Today Sale'?)
-    //    Original code: 
-    //      supabase.from('transactions').select(...).gte(start).lt(end)
-    //    It *was* fetching today transactions but I don't see it used in the UI for "Today's Income".
-    //    The UI has: Today Appointments, Monthly Profit, Monthly New Customers. 
-    //    So Today's Transactions query (index 1) might be unused. Let's keep it null/placeholder to match destructuring or just fetch it.
-    //    Optimizing: The original index 1 was 'transactions' today.
-    supabase.from('transactions').select('id').eq('owner_id', userId).gte('transaction_date', start).lt('transaction_date', end), // Minimal fetch
+    supabase.from('transactions').select('id').eq('owner_id', userId).gte('transaction_date', start).lt('transaction_date', end),
 
     supabase
       .from('customers')
@@ -106,62 +122,70 @@ async function getDashboardData({ start, end, userId, accessToken }: { start: st
       .select('id, appointment_date, status, notes, customer_id, service_id')
       .eq('owner_id', userId)
       .order('appointment_date', { ascending: false })
-      .limit(5),
+      .limit(10),
     // Recent Transactions
     supabase
       .from('transactions')
       .select('id, amount, transaction_date, created_at, memo')
       .eq('owner_id', userId)
       .order('transaction_date', { ascending: false })
-      .limit(5),
+      .limit(10),
     // Recent Expenses
     supabase
       .from('expenses')
       .select('id, amount, expense_date, created_at, memo, category')
       .eq('owner_id', userId)
       .order('expense_date', { ascending: false })
-      .limit(5),
+      .limit(10),
     // Monthly Expenses (for Profit)
-    supabase.from('expenses').select('amount, expense_date').eq('owner_id', userId).gte('expense_date', fromDate).lte('expense_date', toDate),
+    supabase.from('expenses').select('id, amount, expense_date').eq('owner_id', userId).gte('expense_date', fromDate).lte('expense_date', toDate),
     // Monthly Transactions (for Profit)
-    supabase.from('transactions').select('amount, transaction_date, created_at').eq('owner_id', userId).limit(500),
+    supabase.from('transactions').select('id, amount, transaction_date, created_at').eq('owner_id', userId).limit(500),
     // Products
     supabase
       .from('products')
       .select('id, name, price, active')
       .eq('owner_id', userId)
       .order('created_at', { ascending: false })
-      .limit(10)
+      .limit(20),
+    // Monthly Appointments Count
+    supabase
+      .from('appointments')
+      .select('id', { count: 'exact', head: true })
+      .eq('owner_id', userId)
+      .gte('appointment_date', monthStart)
+      .lte('appointment_date', monthEnd)
   ])
 
   const todayAppointments = Array.isArray(apRes.data) ? apRes.data.length : 0
+  const monthlyAppointments = apMonthRes.count || 0
 
   // Monthly Profit
   const monthlyIncome = Array.isArray(trMonth.data)
-    ? trMonth.data
-      .filter((t: any) => {
+    ? (trMonth.data as any[])
+      .filter((t) => {
         const d = (t.transaction_date || t.created_at || '').slice(0, 10)
         return (!fromDate || d >= fromDate) && (!toDate || d <= toDate)
       })
-      .reduce((s: number, t: any) => s + Number(t.amount || 0), 0)
+      .reduce((s: number, t) => s + Number(t.amount || 0), 0)
     : 0
 
   const monthlyExpense = Array.isArray(exMonth.data)
-    ? exMonth.data.reduce((s: number, e: any) => s + Number(e.amount || 0), 0)
+    ? (exMonth.data as any[]).reduce((s: number, e) => s + Number(e.amount || 0), 0)
     : 0
 
-  const monthlyProfit = monthlyIncome - monthlyExpense
+  const monthlyProfit = Number(monthlyIncome || 0) - Number(monthlyExpense || 0)
 
   const monthlyNewCustomers = Array.isArray(cuMonth.data) ? cuMonth.data.length : 0
 
   // Active products
   const activeProducts = Array.isArray(productsRes.data)
-    ? productsRes.data.filter((p: any) => p.active !== false)
+    ? productsRes.data.filter((p: ProductSummary) => p.active !== false)
     : []
 
   // Recent Appointments helper
   const apRecentData = Array.isArray(apRecent.data) ? apRecent.data : []
-  const apIds = apRecentData.map((a: any) => ({
+  const apIds = apRecentData.map((a: AppointmentDB) => ({
     customer_id: a.customer_id,
     service_id: a.service_id,
   }))
@@ -173,38 +197,39 @@ async function getDashboardData({ start, end, userId, accessToken }: { start: st
 
   if (cIds.length > 0) {
     const { data } = await supabase.from('customers').select('id,name').in('id', cIds)
-    if (data) data.forEach((c: any) => customersById[c.id] = c.name)
+    if (data) data.forEach((c: CustomerDB) => customersById[c.id] = c.name)
   }
   if (sIds.length > 0) {
     const { data } = await supabase.from('products').select('id,name').in('id', sIds)
-    if (data) data.forEach((p: any) => productsById[p.id] = p.name)
+    if (data) data.forEach((p: ProductDB) => productsById[p.id] = p.name)
   }
 
   // Combined Transactions
   const trData = Array.isArray(trRecent.data) ? trRecent.data : []
   const exData = Array.isArray(exRecent.data) ? exRecent.data : []
-  const combinedTransactions = [
-    ...trData.map((t: any) => ({
+  const combinedTransactions: Transaction[] = [
+    ...trData.map((t: TransactionDB) => ({
       id: t.id,
       type: 'income' as const,
-      date: t.transaction_date || t.created_at,
+      date: t.transaction_date || t.created_at || '',
       amount: Number(t.amount),
-      memo: t.memo
+      memo: undefined
     })),
-    ...exData.map((e: any) => ({
+    ...exData.map((e: ExpenseDB) => ({
       id: e.id,
       type: 'expense' as const,
-      date: e.expense_date || e.created_at,
+      date: e.expense_date || e.created_at || '',
       amount: Number(e.amount),
       memo: e.memo || e.category
     }))
-  ].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()).slice(0, 5)
+  ].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()).slice(0, 10) as unknown as Transaction[]
 
   return {
     todayAppointments,
     monthlyProfit,
     monthlyNewCustomers,
-    recentAppointments: apRecentData.map((a: any) => ({
+    monthlyAppointments,
+    recentAppointments: apRecentData.map((a: AppointmentDB) => ({
       id: a.id,
       appointment_date: a.appointment_date,
       customer_name: a.customer_id ? customersById[a.customer_id] || '-' : '-',
@@ -220,14 +245,12 @@ export default async function DashboardPage() {
   const userId = await getUserIdFromCookies()
   const accessToken = cookieStore.get('sb:token')?.value || cookieStore.get('sb-access-token')?.value
 
-  // If no user, return empty skeleton or redirect (middleware handles redirect usually)
   if (!userId) {
-    return <main className="p-4">Loading...</main> // Should not happen if protected
+    return <Box p={3}>Loading...</Box>
   }
 
   const { start, end } = getTodayRange()
 
-  // Directly fetch data without caching
   let dashboardData
   if (userId === 'demo-user') {
     dashboardData = (await import('@/app/lib/mock-data')).MOCK_DASHBOARD_DATA
@@ -239,157 +262,164 @@ export default async function DashboardPage() {
     todayAppointments,
     monthlyProfit,
     monthlyNewCustomers,
+    monthlyAppointments,
     recentAppointments,
     recentTransactions,
     activeProducts
   } = dashboardData
 
   return (
-    <main className="space-y-4 sm:space-y-5 md:space-y-6">
+    <Stack spacing={3}>
       <DashboardInstallPrompt />
 
       {userId === 'demo-user' && (
-        <div className="bg-amber-50 border border-amber-200 text-amber-800 px-4 py-3 rounded-xl text-sm mb-4 shadow-sm flex items-center gap-2">
-          <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
-          <span>현재 <strong>체험하기(데모) 모드</strong>입니다. 표시되는 데이터는 예시이며, 실제 데이터베이스와 연동되지 않습니다.</span>
-        </div>
+        <Alert severity="warning" variant="filled" sx={{ borderRadius: 3 }}>
+          현재 <strong>체험하기(데모) 모드</strong>입니다. 표시되는 데이터는 예시이며, 실제 데이터베이스와 연동되지 않습니다.
+        </Alert>
       )}
 
       {/* Metrics */}
-      <section className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-5 md:gap-6">
-        <MetricCard
-          label="오늘 예약"
-          value={todayAppointments}
-          hint="오늘 기준"
-          className="h-full"
-          colorIndex={0}
-        />
-        <MetricCard
-          label="월간 순이익"
-          value={`₩${Number(monthlyProfit).toLocaleString()}`}
-          hint="이번 달 기준"
-          className="h-full"
-          colorIndex={1}
-        />
-        <MetricCard
-          label="이번달 신규 고객"
-          value={monthlyNewCustomers}
-          hint="이번 달 기준"
-          className="h-full sm:col-span-2 lg:col-span-1"
-          colorIndex={2}
-        />
-      </section>
+      <Grid container spacing={{ xs: 1, sm: 2.5, md: 3 }}>
+        <Grid item xs={6} sm={6} md={3}>
+          <MetricCard
+            label="오늘 예약"
+            value={todayAppointments}
+            hint="오늘 기준"
+            colorIndex={0}
+          />
+        </Grid>
+        <Grid item xs={6} sm={6} md={3}>
+          <MetricCard
+            label="월간 순이익"
+            value={`₩${Number(monthlyProfit).toLocaleString()}`}
+            hint="이번 달 기준"
+            colorIndex={1}
+          />
+        </Grid>
+        <Grid item xs={6} sm={6} md={3}>
+          <MetricCard
+            label="이번 달 신규 고객"
+            value={monthlyNewCustomers}
+            hint="이번 달 기준"
+            colorIndex={2}
+          />
+        </Grid>
+        <Grid item xs={6} sm={6} md={3}>
+          <MetricCard
+            label="이번 달 총 예약"
+            value={monthlyAppointments}
+            hint="이번 달 기준"
+            colorIndex={3}
+          />
+        </Grid>
+      </Grid>
 
-      {/* Products Only (Graph Removed) */}
-      <section className="grid grid-cols-1">
-        <Card className="p-4 sm:p-5">
-          <div className="text-xs sm:text-sm font-bold bg-gradient-to-r from-emerald-600 to-teal-600 bg-clip-text text-transparent mb-3">
-            판매중인 상품
-          </div>
-          <div className="space-y-2 max-h-[240px] sm:max-h-[200px] overflow-y-auto overscroll-contain">
+      {/* Main Content Areas */}
+      <Grid container spacing={{ xs: 1.5, sm: 2.5, md: 3 }}>
+        {/* Expanded Products Section */}
+        <Grid item xs={12} lg={8}>
+          <Card sx={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
+            <Box sx={{ mb: 2, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+              <Typography variant="subtitle1" fontWeight={700} sx={{ background: 'linear-gradient(to right, #059669, #0d9488)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>
+                판매 중인 상품
+              </Typography>
+              <Link href="/products" style={{ fontSize: '0.75rem', color: '#64748B', textDecoration: 'none' }}>
+                전체보기 →
+              </Link>
+            </Box>
             {activeProducts.length > 0 ? (
-              activeProducts.slice(0, 5).map((p: any, index: number) => (
-                <div
-                  key={p.id}
-                  className={`text-xs sm:text-sm py-2 px-3 rounded-md flex items-center justify-between gap-2 touch-manipulation ${index % 2 === 0 ? 'bg-emerald-50/50' : 'bg-teal-50/50'
-                    }`}
-                >
-                  <span className="font-medium text-neutral-800 truncate flex-1 min-w-0">{p.name}</span>
-                  <span className="text-emerald-700 font-semibold whitespace-nowrap flex-shrink-0">
-                    ₩{Number(p.price || 0).toLocaleString()}
-                  </span>
-                </div>
-              ))
+              <Grid container spacing={{ xs: 1, sm: 2 }}>
+                {activeProducts.slice(0, 12).map((p: ProductSummary) => (
+                  <Grid item xs={6} sm={6} md={4} key={p.id}>
+                    <Box
+                      sx={{
+                        display: 'flex',
+                        flexDirection: 'column',
+                        p: 1.5,
+                        borderRadius: 3,
+                        bgcolor: 'background.paper',
+                        border: '1px solid',
+                        borderColor: 'divider',
+                        transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
+                        '&:hover': {
+                          bgcolor: 'rgba(16, 185, 129, 0.04)',
+                          borderColor: 'success.light',
+                          transform: 'translateY(-4px)',
+                          boxShadow: '0 12px 24px -10px rgba(16, 185, 129, 0.2)'
+                        }
+                      }}
+                    >
+                      <Typography variant="body2" fontWeight={600} noWrap sx={{ mb: 1, color: 'text.primary' }}>
+                        {p.name}
+                      </Typography>
+                      <Typography variant="h6" fontWeight={700} color="success.main">
+                        ₩{Number(p.price || 0).toLocaleString()}
+                      </Typography>
+                    </Box>
+                  </Grid>
+                ))}
+              </Grid>
             ) : (
-              <div className="text-xs sm:text-sm text-neutral-500 py-3">
-                <Link className="underline hover:text-emerald-600 touch-manipulation" href="/products">
-                  상품 추가
-                </Link>
-              </div>
+              <Box sx={{ py: 8, textAlign: 'center', bgcolor: 'rgba(0,0,0,0.02)', borderRadius: 3, border: '1px dashed', borderColor: 'divider' }}>
+                <Typography variant="body2" color="text.secondary">
+                  등록된 상품이 없습니다. <Link href="/products" style={{ color: '#3B82F6' }}>상품 추가하기</Link>
+                </Typography>
+              </Box>
             )}
-          </div>
-        </Card>
-      </section>
+          </Card>
+        </Grid>
 
-      {/* Recent Lists */}
-      <section className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-5 md:gap-6">
-        <Card>
-          <div className="p-3 sm:p-4 border-b border-purple-100">
-            <h2 className="text-sm sm:text-base font-bold bg-gradient-to-r from-pink-600 to-rose-600 bg-clip-text text-transparent">최근 예약</h2>
-          </div>
-          <ul className="divide-y divide-neutral-100">
-            {recentAppointments.length > 0 ? recentAppointments.map((a: any) => (
-              <li
-                key={a.id}
-                className="p-3 sm:p-4 text-sm flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 touch-manipulation"
-              >
-                <span className="text-neutral-900 font-medium">
-                  {a.customer_name} · {a.product_name}
-                </span>
-                <span className="text-xs sm:text-sm text-neutral-500">
-                  {String(a.appointment_date).slice(0, 16).replace('T', ' ')}
-                </span>
-              </li>
-            )) : (
-              <li className="p-6">
-                <div className="text-sm text-neutral-500">
-                  <Link className="underline hover:text-pink-600 touch-manipulation" href="/appointments">
-                    데이터가 없습니다 · 첫 예약 추가
-                  </Link>
-                </div>
-              </li>
-            )}
-          </ul>
-        </Card>
-        <Card>
-          <div className="p-3 sm:p-4 border-b border-purple-100">
-            <h2 className="text-sm sm:text-base font-bold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">최근 거래</h2>
-          </div>
-          <ul className="divide-y divide-neutral-100">
-            {recentTransactions.map((t: any) => {
-              const header = t.type === 'expense' ? '지출' : '수입'
-              const colorClass = t.type === 'expense'
-                ? 'bg-rose-50 text-rose-700 border-rose-200'
-                : 'bg-emerald-50 text-emerald-700 border-emerald-200'
-              const amtColor = t.type === 'expense' ? 'text-rose-600' : 'text-emerald-600'
-              const sign = t.type === 'expense' ? '-' : '+'
+        {/* Recent Appointments */}
+        <Grid item xs={12} lg={4}>
+          <Card sx={{ height: '100%' }}>
+            <Box sx={{ borderBottom: 1, borderColor: 'divider', pb: 2.5, mb: 2, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+              <Typography variant="subtitle1" fontWeight={700} sx={{ background: 'linear-gradient(to right, #db2777, #e11d48)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>
+                최근 예약
+              </Typography>
+              <Link href="/appointments" style={{ fontSize: '0.75rem', color: '#64748B', textDecoration: 'none' }}>
+                전체보기 →
+              </Link>
+            </Box>
+            <List disablePadding>
+              {recentAppointments.length > 0 ? recentAppointments.slice(0, 8).map((a: RecentAppointment) => (
+                <ListItem key={a.id} disableGutters sx={{ py: 1.75, px: 1, borderBottom: '1px solid', borderColor: 'divider', '&:last-child': { borderBottom: 'none' } }}>
+                  <ListItemText
+                    primary={
+                      <Box component="span" sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                        <Typography variant="body2" fontWeight={600}>{a.customer_name}</Typography>
+                        <Typography variant="caption" color="primary.main">{a.product_name}</Typography>
+                      </Box>
+                    }
+                    secondary={String(a.appointment_date).slice(0, 16).replace('T', ' ')}
+                    secondaryTypographyProps={{ variant: 'caption', sx: { mt: 0.5, display: 'block' } }}
+                  />
+                </ListItem>
+              )) : (
+                <Box sx={{ py: 10, textAlign: 'center' }}>
+                  <Typography variant="body2" color="text.secondary">
+                    예약 내역이 없습니다.
+                  </Typography>
+                </Box>
+              )}
+            </List>
+          </Card>
+        </Grid>
 
-              return (
-                <li
-                  key={`${t.type}-${t.id}`}
-                  className="p-3 sm:p-4 text-sm flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 touch-manipulation"
-                >
-                  <div className="min-w-0 flex-1">
-                    <div className="flex flex-wrap items-center gap-2 mb-1">
-                      <span className={`inline-flex items-center px-2 py-0.5 rounded-md border text-xs font-medium flex-shrink-0 ${colorClass}`}>
-                        {header}
-                      </span>
-                      <span className="font-medium text-neutral-900 truncate">
-                        {t.memo || '-'}
-                      </span>
-                    </div>
-                    <div className="text-xs text-neutral-500">
-                      {String(t.date || '').slice(0, 16).replace('T', ' ')}
-                    </div>
-                  </div>
-                  <div className={`font-semibold whitespace-nowrap text-base sm:text-sm flex-shrink-0 ${amtColor}`}>
-                    {sign}₩{Number(t.amount || 0).toLocaleString()}
-                  </div>
-                </li>
-              )
-            })}
-            {recentTransactions.length === 0 && (
-              <li className="p-6">
-                <div className="text-sm text-neutral-500">
-                  <Link className="underline hover:text-blue-600 touch-manipulation" href="/finance">
-                    데이터가 없습니다 · 첫 거래 추가
-                  </Link>
-                </div>
-              </li>
-            )}
-          </ul>
-        </Card>
-      </section>
-    </main>
+        {/* Full-width Recent Transactions Table */}
+        <Grid item xs={12}>
+          <Card>
+            <Box sx={{ borderBottom: 1, borderColor: 'divider', pb: 2.5, mb: 2, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+              <Typography variant="subtitle1" fontWeight={700} sx={{ background: 'linear-gradient(to right, #2563eb, #4f46e5)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>
+                최근 거래 내역
+              </Typography>
+              <Link href="/finance" style={{ fontSize: '0.75rem', color: '#64748B', textDecoration: 'none' }}>
+                전체보기 →
+              </Link>
+            </Box>
+            <RecentTransactionsTable transactions={recentTransactions.slice(0, 10) as Transaction[]} />
+          </Card>
+        </Grid>
+      </Grid>
+    </Stack>
   )
 }

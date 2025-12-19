@@ -38,21 +38,18 @@ export default function SearchInput({
     }
   }, [debouncedValue, onSearch])
 
-  // 즉시 onChange 호출 (debounce 없음)
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const newValue = e.target.value
-    setLocalValue(newValue)
-    onChange?.(newValue)
-  }
-
   return (
     <Input
       {...rest}
       type="search"
       value={localValue}
-      onChange={(e) => handleChange(e)}
+      onChange={(e) => {
+        const newValue = e.target.value
+        setLocalValue(newValue)
+        onChange?.(newValue)
+      }}
       placeholder={placeholder}
-      className={className}
+      {...(className ? { className } : {})}
       leftIcon={<Search className="h-4 w-4 text-neutral-400" />}
     />
   )

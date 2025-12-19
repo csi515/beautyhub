@@ -39,10 +39,11 @@ export function useCustomerDetail(
   const [addingProduct, setAddingProduct] = useState(false)
   const [holdingDelta, setHoldingDelta] = useState<Record<string, number>>({})
   const [holdingReason, setHoldingReason] = useState<Record<string, string>>({})
-  const [productLedger, setProductLedger] = useState<{ created_at: string; delta: number; reason?: string | null | undefined; product_id: string }[]>([])
+  const [productLedger, setProductLedger] = useState<{ created_at: string; delta: number; reason?: string | null | undefined; product_id: string; notes?: string | null; id: string }[]>([])
 
   // 자동 저장
   const autoSaveTimeoutRef = useRef<NodeJS.Timeout | null>(null)
+  const [saving, setSaving] = useState(false)
 
   useEffect(() => {
     if (item) {
@@ -75,12 +76,14 @@ export function useCustomerDetail(
           created_at: item.created_at || '',
           delta: item.delta || 0,
           reason: item.reason ?? null,
-          product_id: item.product_id || ''
+          product_id: item.product_id || '',
+          notes: item.notes || null,
+          id: item.id
         })) : [])
 
         const init: Record<string, number> = {}
         if (Array.isArray(holdingsData)) {
-          holdingsData.forEach((h: any) => {
+          (holdingsData as Holding[]).forEach((h) => {
             if (h?.id) init[String(h.id)] = 1
           })
         }
@@ -98,6 +101,7 @@ export function useCustomerDetail(
     if (!form?.id) return
 
     try {
+      setSaving(true)
       const body: { name: string; phone?: string | null; email?: string | null; address?: string | null; features?: string } = {
         name: (form.name || '').trim(),
         phone: form.phone || null,
@@ -137,6 +141,8 @@ export function useCustomerDetail(
     } catch (e) {
       const errorMessage = e instanceof Error ? e.message : '저장에 실패했습니다.'
       toast.error(errorMessage)
+    } finally {
+      setTimeout(() => setSaving(false), 500) // 최소 표시 시각
     }
   }, [form, features, toast])
 
@@ -280,7 +286,9 @@ export function useCustomerDetail(
         created_at: item.created_at || '',
         delta: item.delta || 0,
         reason: item.reason ?? null,
-        product_id: item.product_id || ''
+        product_id: item.product_id || '',
+        notes: item.notes || null,
+        id: item.id
       })) : [])
 
       setNewProductId('')
@@ -320,7 +328,9 @@ export function useCustomerDetail(
           created_at: item.created_at || '',
           delta: item.delta || 0,
           reason: item.reason ?? null,
-          product_id: item.product_id || ''
+          product_id: item.product_id || '',
+          notes: item.notes || null,
+          id: item.id
         })) : [])
       }
 
@@ -357,7 +367,9 @@ export function useCustomerDetail(
           created_at: item.created_at || '',
           delta: item.delta || 0,
           reason: item.reason ?? null,
-          product_id: item.product_id || ''
+          product_id: item.product_id || '',
+          notes: item.notes || null,
+          id: item.id
         })) : [])
       }
 
@@ -386,7 +398,6 @@ export function useCustomerDetail(
   // 고객 삭제
   const removeItem = async () => {
     if (!form?.id) return
-    if (!confirm('삭제하시겠습니까?')) return
 
     try {
       await customersApi.delete(form.id)
@@ -399,9 +410,26 @@ export function useCustomerDetail(
     }
   }
 
+  // Ledger Note Update
+  const handleUpdateLedgerNote = async (ledgerId: string, notes: string) => {
+    if (!form?.id) return
+    try {
+      await customerProductsApi.updateLedgerNote(ledgerId, notes)
+
+      // 즉시 반영
+      setProductLedger(list => list.map(item => item.id === ledgerId ? { ...item, notes } : item))
+
+      toast.success('메모가 저장되었습니다.')
+    } catch (error) {
+      const message = getLocalizedErrorMessage(error, '메모 저장에 실패했습니다.')
+      toast.error(message)
+    }
+  }
+
   return {
     form, setForm,
     loading,
+    saving,
     error,
     features, setFeatures,
     fieldErrors,
@@ -425,6 +453,7 @@ export function useCustomerDetail(
     handleIncreaseHolding,
     handleDecreaseHolding,
     handleDeleteHolding,
+    handleUpdateLedgerNote,
     removeItem
   }
 }

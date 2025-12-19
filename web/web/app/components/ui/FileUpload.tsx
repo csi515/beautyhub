@@ -4,6 +4,7 @@ import { useState, useRef, useCallback } from 'react'
 import Image from 'next/image'
 import clsx from 'clsx'
 import { Upload, X, File } from 'lucide-react'
+import IconButton from '@mui/material/IconButton'
 import Button from './Button'
 
 type FileWithPreview = File & {
@@ -121,7 +122,7 @@ export default function FileUpload({
     if (fileToRemove && fileToRemove.preview) {
       URL.revokeObjectURL(fileToRemove.preview)
     }
-    
+
     const newFiles = files.filter((_, i) => i !== index)
     setFiles(newFiles)
     onChange?.(newFiles)
@@ -138,7 +139,7 @@ export default function FileUpload({
   return (
     <div className={clsx('w-full', className)}>
       {label && <div className="mb-1 text-sm text-neutral-700">{label}</div>}
-      
+
       <div
         onDragOver={handleDragOver}
         onDragLeave={handleDragLeave}
@@ -219,14 +220,20 @@ export default function FileUpload({
                   {formatFileSize(file.size)}
                 </div>
               </div>
-              <button
-                type="button"
+              <IconButton
                 onClick={() => handleRemove(index)}
-                className="p-1 text-neutral-400 hover:text-rose-600 transition-colors"
                 disabled={disabled}
+                size="small"
+                sx={{
+                  color: 'text.secondary',
+                  '&:hover': {
+                    color: 'error.main',
+                    bgcolor: 'error.lighter'
+                  }
+                }}
               >
                 <X className="h-4 w-4" />
-              </button>
+              </IconButton>
             </div>
           ))}
         </div>

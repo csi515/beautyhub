@@ -1,5 +1,6 @@
+﻿import { SupabaseClient } from '@supabase/supabase-js'
 /**
- * 지출 Repository
+ * 吏異?Repository
  */
 
 import { BaseRepository } from './base.repository'
@@ -7,12 +8,12 @@ import type { Expense, ExpenseCreateInput, ExpenseUpdateInput } from '@/types/en
 import type { QueryOptions } from './base.repository'
 
 export class ExpensesRepository extends BaseRepository<Expense> {
-  constructor(userId: string, supabase: any) {
+  constructor(userId: string, supabase: SupabaseClient) {
     super(userId, 'expenses', supabase)
   }
 
   /**
-   * 날짜 범위로 지출 조회
+   * ?좎쭨 踰붿쐞濡?吏異?議고쉶
    */
   override async findAll(options: QueryOptions & { from?: string; to?: string } = {}): Promise<Expense[]> {
     if (this.userId === 'demo-user') {
@@ -52,7 +53,7 @@ export class ExpensesRepository extends BaseRepository<Expense> {
   }
 
   /**
-   * 지출 생성
+   * 吏異??앹꽦
    */
   async createExpense(input: ExpenseCreateInput): Promise<Expense> {
     const expense_date = input.expense_date
@@ -75,7 +76,7 @@ export class ExpensesRepository extends BaseRepository<Expense> {
       category,
     }
 
-    // memo는 값이 있을 때만 포함 (스키마에 없을 수 있음)
+    // memo??媛믪씠 ?덉쓣 ?뚮쭔 ?ы븿 (?ㅽ궎留덉뿉 ?놁쓣 ???덉쓬)
     const memoValue = input.memo
     if (memoValue !== undefined && memoValue !== null && memoValue !== '' && String(memoValue).trim() !== '') {
       payload['memo'] = String(memoValue).trim()
@@ -88,7 +89,7 @@ export class ExpensesRepository extends BaseRepository<Expense> {
   }
 
   /**
-   * 지출 업데이트
+   * 吏異??낅뜲?댄듃
    */
   async updateExpense(id: string, input: ExpenseUpdateInput): Promise<Expense> {
     const payload: Partial<Expense> = {}
@@ -108,7 +109,7 @@ export class ExpensesRepository extends BaseRepository<Expense> {
       }
       payload.category = category
     }
-    // memo는 값이 있을 때만 업데이트 (스키마에 없을 수 있음)
+    // memo??媛믪씠 ?덉쓣 ?뚮쭔 ?낅뜲?댄듃 (?ㅽ궎留덉뿉 ?놁쓣 ???덉쓬)
     const memoValue = input.memo
     if (memoValue !== undefined && memoValue !== null && memoValue !== '' && String(memoValue).trim() !== '') {
       payload.memo = String(memoValue).trim()
@@ -120,4 +121,5 @@ export class ExpensesRepository extends BaseRepository<Expense> {
     return this.update(id, payload)
   }
 }
+
 

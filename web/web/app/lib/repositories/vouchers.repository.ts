@@ -1,3 +1,4 @@
+﻿import { SupabaseClient } from '@supabase/supabase-js'
 /**
  * 바우처 Repository
  */
@@ -45,7 +46,7 @@ export interface VoucherUseResult {
 }
 
 export class VouchersRepository extends BaseRepository<Voucher> {
-  constructor(userId: string, supabase: any) {
+  constructor(userId: string, supabase: SupabaseClient) {
     super(userId, 'vouchers', supabase)
   }
 
@@ -159,4 +160,3 @@ export class VouchersRepository extends BaseRepository<Voucher> {
     }
   }
 }
-

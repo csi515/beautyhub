@@ -1,5 +1,8 @@
 'use client'
 
+import { Card, Box, Typography, Stack, Avatar } from '@mui/material'
+import { User, Phone, Mail, Coins, Package } from 'lucide-react'
+
 type CustomerSummaryBarProps = {
   name: string
   phone?: string | null
@@ -16,26 +19,89 @@ export default function CustomerSummaryBar({
   holdingsCount
 }: CustomerSummaryBarProps) {
   return (
-    <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 sm:gap-4 rounded-sm border-2 border-neutral-500 bg-white px-4 sm:px-5 py-3 sm:py-4 shadow-lg">
-      <div className="min-w-0 flex-1">
-        <div className="truncate text-base font-semibold text-neutral-900">{name}</div>
-        <div className="mt-1 text-sm text-neutral-600">
-          {phone || '-'}{email ? ` · ${email}` : ''}
-        </div>
-      </div>
-      <div className="flex items-center gap-4 sm:gap-6 text-sm w-full sm:w-auto justify-between sm:justify-end">
-        <div className="text-center">
-          <div className="text-xs text-neutral-600 mb-1">포인트</div>
-          <div className="text-lg font-bold text-[#1D4ED8]">
-            {pointsBalance.toLocaleString()}
-          </div>
-        </div>
-        <div className="text-center">
-          <div className="text-xs text-neutral-600 mb-1">보유 상품</div>
-          <div className="text-lg font-bold text-neutral-900">{holdingsCount}개</div>
-        </div>
-      </div>
-    </div>
+    <Card
+      variant="outlined"
+      sx={{
+        p: 2.5,
+        borderRadius: 3,
+        bgcolor: 'background.paper',
+        display: 'flex',
+        flexDirection: { xs: 'column', sm: 'row' },
+        alignItems: { xs: 'flex-start', sm: 'center' },
+        justifyContent: 'space-between',
+        gap: 3,
+      }}
+    >
+      <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, minWidth: 0, flex: 1 }}>
+        <Avatar
+          sx={{
+            bgcolor: 'primary.50',
+            color: 'primary.main',
+            width: 52,
+            height: 52,
+            fontSize: '1.25rem',
+            fontWeight: 700
+          }}
+        >
+          {name.slice(0, 1) || <User size={24} />}
+        </Avatar>
+        <Box sx={{ minWidth: 0 }}>
+          <Typography variant="h6" fontWeight={700} noWrap>
+            {name}
+          </Typography>
+          <Stack direction="row" spacing={1.5} sx={{ mt: 0.5 }}>
+            {phone && (
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, color: 'text.secondary' }}>
+                <Phone size={14} />
+                <Typography variant="caption">{phone}</Typography>
+              </Box>
+            )}
+            {email && (
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, color: 'text.secondary' }}>
+                <Mail size={14} />
+                <Typography variant="caption" noWrap>{email}</Typography>
+              </Box>
+            )}
+          </Stack>
+        </Box>
+      </Box>
+
+      <Box
+        sx={{
+          display: 'flex',
+          alignItems: 'center',
+          gap: { xs: 2, sm: 4 },
+          width: { xs: '100%', sm: 'auto' },
+          justifyContent: { xs: 'space-around', sm: 'flex-end' },
+          pl: { sm: 3 },
+          borderLeft: { sm: '1px solid' },
+          borderColor: { sm: 'divider' }
+        }}
+      >
+        <Box sx={{ textAlign: 'center' }}>
+          <Typography variant="caption" fontWeight={600} color="text.secondary" display="block" gutterBottom>
+            포인트
+          </Typography>
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, color: 'primary.main' }}>
+            <Coins size={18} />
+            <Typography variant="h6" fontWeight={800}>
+              {pointsBalance.toLocaleString()}
+            </Typography>
+          </Box>
+        </Box>
+        <Box sx={{ textAlign: 'center' }}>
+          <Typography variant="caption" fontWeight={600} color="text.secondary" display="block" gutterBottom>
+            보유 상품
+          </Typography>
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, color: 'text.primary' }}>
+            <Package size={18} />
+            <Typography variant="h6" fontWeight={800}>
+              {holdingsCount}
+            </Typography>
+          </Box>
+        </Box>
+      </Box>
+    </Card>
   )
 }
 

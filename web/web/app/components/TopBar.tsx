@@ -1,15 +1,22 @@
 'use client'
 
-import { Bars3Icon } from '@heroicons/react/24/outline'
+import { Menu, Settings } from 'lucide-react'
+import Link from 'next/link'
 import { useEffect, useState } from 'react'
+import AppBar from '@mui/material/AppBar'
+import Toolbar from '@mui/material/Toolbar'
+import IconButton from '@mui/material/IconButton'
+import Box from '@mui/material/Box'
+import Typography from '@mui/material/Typography'
+import { alpha, useTheme } from '@mui/material/styles'
 
 export default function TopBar({ onMenu }: { onMenu?: () => void }) {
   const [userName, setUserName] = useState<string | null>(null)
+  const theme = useTheme()
 
   useEffect(() => {
     const loadUserProfile = async () => {
       try {
-        // API 엔드포인트를 통해 사용자 프로필 가져오기
         const response = await fetch('/api/user/me')
         if (response.ok) {
           const data = await response.json()
@@ -17,12 +24,10 @@ export default function TopBar({ onMenu }: { onMenu?: () => void }) {
           if (profile?.name) {
             setUserName(profile.name)
           } else if (profile?.email) {
-            // 이름이 없으면 이메일의 @ 앞부분 사용
             setUserName(profile.email.split('@')[0])
           }
         }
       } catch (error) {
-        // 에러는 무시 (로그인하지 않은 경우 등)
         console.error('Failed to load user profile:', error)
       }
     }
@@ -30,32 +35,46 @@ export default function TopBar({ onMenu }: { onMenu?: () => void }) {
   }, [])
 
   return (
-    <header className="sticky top-0 z-[1021] bg-white border-b border-neutral-200 shadow-sm safe-area-inset-top">
-      <div className="h-14 sm:h-16 flex items-center justify-between px-4 sm:px-6 md:px-8 gap-3 sm:gap-4">
-        {/* 모바일 메뉴 버튼 */}
-        <button
+    <AppBar
+      position="sticky"
+      color="inherit"
+      elevation={0}
+      sx={{
+        borderBottom: `1px solid ${theme.palette.divider}`,
+        bgcolor: 'background.paper',
+        zIndex: theme.zIndex.appBar
+      }}
+    >
+      <Toolbar sx={{ minHeight: { xs: 56, sm: 64 }, px: { xs: 2, sm: 3, md: 4 } }}>
+        <IconButton
+          edge="start"
+          color="inherit"
           aria-label="메뉴 열기"
           onClick={onMenu}
-          className="md:hidden p-2.5 rounded-lg border border-transparent hover:bg-neutral-50 hover:border-neutral-200 active:bg-neutral-100 focus-visible:ring-2 focus-visible:ring-pink-300 focus-visible:ring-offset-1 transition-all duration-200 touch-manipulation min-h-[44px] min-w-[44px] flex items-center justify-center"
+          sx={{ mr: 2, display: 'none' }}
         >
-          <Bars3Icon className="h-6 w-6 text-neutral-700" />
-        </button>
+          <Menu className="h-6 w-6" />
+        </IconButton>
 
-        {/* 데스크톱 빈 공간 */}
-        <div className="hidden md:block flex-1" />
+        <Box sx={{ flexGrow: 1 }} />
 
-        {/* 사용자 정보 */}
-        <div className="flex items-center gap-2 sm:gap-3 md:gap-4">
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: { xs: 1, sm: 2 } }}>
           {userName && (
-            <span className="text-xs sm:text-sm md:text-base font-medium text-neutral-700 whitespace-nowrap">
+            <Typography variant="body2" color="text.secondary" fontWeight={500}>
               {userName}님
-            </span>
+            </Typography>
           )}
-
-        </div>
-      </div>
-    </header>
+          <IconButton
+            component={Link}
+            href="/settings"
+            size="small"
+            sx={{ display: { xs: 'flex', md: 'none' }, color: 'text.secondary' }}
+            aria-label="설정"
+          >
+            <Settings size={20} />
+          </IconButton>
+        </Box>
+      </Toolbar>
+    </AppBar>
   )
 }
-
-

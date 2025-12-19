@@ -2,6 +2,7 @@
 
 import { createContext, useContext, useState, useCallback, useMemo, ReactNode } from 'react'
 import { CheckCircle2, AlertCircle, Info, AlertTriangle, X } from 'lucide-react'
+import IconButton from '@mui/material/IconButton'
 import clsx from 'clsx'
 
 type ToastVariant = 'success' | 'error' | 'info' | 'warning'
@@ -132,7 +133,7 @@ function ToastItem({
   return (
     <div
       className={clsx(
-        'relative rounded-2xl border p-4 shadow-2xl transition-all duration-300 ease-out',
+        'relative rounded-xl border p-4 shadow-2xl transition-all duration-300 ease-out',
         'transform-gpu will-change-transform',
         config.bg,
         config.border,
@@ -149,7 +150,7 @@ function ToastItem({
       <div className="flex items-start gap-3">
         {/* 아이콘 */}
         <div className={clsx(
-          'flex-shrink-0 w-10 h-10 rounded-xl flex items-center justify-center',
+          'flex-shrink-0 w-10 h-10 rounded-lg flex items-center justify-center',
           config.iconBg,
           config.icon
         )}>
@@ -169,18 +170,18 @@ function ToastItem({
         </div>
 
         {/* 닫기 버튼 */}
-        <button
-          type="button"
+        <IconButton
           onClick={handleRemove}
+          size="small"
           className={clsx(
-            'flex-shrink-0 p-1.5 rounded-lg transition-all duration-200',
+            'flex-shrink-0 transition-all duration-200',
             'hover:scale-110 active:scale-95 touch-manipulation',
             config.close
           )}
           aria-label="닫기"
         >
           <X className="h-4 w-4" />
-        </button>
+        </IconButton>
       </div>
     </div>
   )

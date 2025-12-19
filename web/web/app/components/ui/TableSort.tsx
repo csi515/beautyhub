@@ -1,7 +1,10 @@
 'use client'
 
-import clsx from 'clsx'
-import { ArrowUp, ArrowDown, ArrowUpDown } from 'lucide-react'
+import React from 'react'
+import TableSortLabel from '@mui/material/TableSortLabel'
+import TableCell from '@mui/material/TableCell'
+import Box from '@mui/material/Box'
+import { visuallyHidden } from '@mui/utils'
 
 export type SortDirection = 'asc' | 'desc' | null
 
@@ -18,51 +21,43 @@ export default function TableSort({
   sortable = false,
   direction = null,
   onSort,
-  className,
+  className = '',
 }: Props) {
-  if (!sortable) {
-    return <th className={clsx('text-left p-3 text-neutral-600', className)}>{children}</th>
-  }
-
-  const handleClick = () => {
+  const createSortHandler = (property: string) => (event: React.MouseEvent<unknown>) => {
     if (!onSort) return
-    
-    if (direction === null) {
-      onSort('asc')
-    } else if (direction === 'asc') {
-      onSort('desc')
-    } else {
-      onSort(null)
-    }
+    // Cycle: null -> asc -> desc -> null
+    if (direction === null) onSort('asc')
+    else if (direction === 'asc') onSort('desc')
+    else onSort(null)
   }
 
-  const getIcon = () => {
-    if (direction === 'asc') {
-      return <ArrowUp className="h-4 w-4 ml-1" />
-    } else if (direction === 'desc') {
-      return <ArrowDown className="h-4 w-4 ml-1" />
-    } else {
-      return <ArrowUpDown className="h-4 w-4 ml-1 text-neutral-400" />
-    }
+  if (!sortable) {
+    return (
+      <TableCell variant="head" sx={{ fontWeight: 600, color: 'text.secondary' }} className={className}>
+        {children}
+      </TableCell>
+    )
   }
 
   return (
-    <th
-      className={clsx(
-        'text-left p-3 text-neutral-600 cursor-pointer select-none hover:bg-neutral-100 transition-colors',
-        direction && 'bg-neutral-50',
-        className
-      )}
-      onClick={handleClick}
-      role="columnheader"
-      aria-sort={
-        direction === 'asc' ? 'ascending' : direction === 'desc' ? 'descending' : 'none'
-      }
+    <TableCell
+      variant="head"
+      sortDirection={direction === null ? false : direction}
+      sx={{ fontWeight: 600, color: 'text.secondary' }}
+      className={className}
     >
-      <div className="flex items-center">
+      <TableSortLabel
+        active={direction !== null}
+        direction={direction === null ? 'asc' : direction}
+        onClick={createSortHandler(children)}
+      >
         {children}
-        {getIcon()}
-      </div>
-    </th>
+        {direction ? (
+          <Box component="span" sx={visuallyHidden}>
+            {direction === 'desc' ? 'sorted descending' : 'sorted ascending'}
+          </Box>
+        ) : null}
+      </TableSortLabel>
+    </TableCell>
   )
 }

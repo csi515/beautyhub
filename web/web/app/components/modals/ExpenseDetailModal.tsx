@@ -69,7 +69,7 @@ export default function ExpenseDetailModal({ open, onClose, item, onSaved, onDel
   if (!open || !form) return null
   return (
     <Modal open={open} onClose={onClose} size="lg">
-      <ModalHeader title="지출 상세" description="지출 일자와 금액을 확인·수정합니다. 일자와 금액은 필수입니다." />
+      <ModalHeader title="지출 상세" description="지출 일자와 금액을 확인·수정합니다. 일자와 금액은 필수입니다." onClose={onClose} />
       <ModalBody>
         <div className="grid gap-3 md:grid-cols-[200px,1fr]">
           <div className="space-y-2">

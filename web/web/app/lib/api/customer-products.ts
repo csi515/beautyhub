@@ -88,5 +88,12 @@ export const customerProductsApi = {
       `/api/customers/${customerId}/holdings/ledger${queryString ? `?${queryString}` : ''}`
     )
   },
+
+  /**
+   * Ledger 항목 메모 수정
+   */
+  updateLedgerNote: (id: string, notes: string): Promise<{ ok: boolean }> => {
+    return apiClient.patch<{ ok: boolean }>(`/api/customer-products/ledger/${id}`, { notes })
+  },
 }
 

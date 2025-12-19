@@ -1,8 +1,8 @@
 'use client'
 
-import { useState, useEffect } from 'react'
-import clsx from 'clsx'
-import { Calendar } from 'lucide-react'
+import { useState, useEffect, ReactNode } from 'react'
+import { Calendar as CalendarIcon, ChevronLeft, ChevronRight } from 'lucide-react'
+import { Box, Typography, IconButton, Paper, Grid, InputAdornment } from '@mui/material'
 import { useClickOutside } from '@/app/lib/hooks/useClickOutside'
 import Input from './Input'
 
@@ -21,7 +21,7 @@ function formatDate(date: Date, format: string = defaultDateFormat): string {
   const year = date.getFullYear()
   const month = String(date.getMonth() + 1).padStart(2, '0')
   const day = String(date.getDate()).padStart(2, '0')
-  
+
   return format
     .replace('YYYY', String(year))
     .replace('MM', month)
@@ -29,13 +29,14 @@ function formatDate(date: Date, format: string = defaultDateFormat): string {
 }
 
 function parseDate(value: string): Date | null {
+  if (!value) return null
   const match = value.match(/^(\d{4})-(\d{2})-(\d{2})$/)
-  if (!match || !match[1] || !match[2] || !match[3]) return null
+  if (!match) return null
 
   const year = parseInt(match[1], 10)
   const month = parseInt(match[2], 10) - 1
   const day = parseInt(match[3], 10)
-  
+
   const date = new Date(year, month, day)
   if (
     date.getFullYear() === year &&
@@ -44,7 +45,7 @@ function parseDate(value: string): Date | null {
   ) {
     return date
   }
-  
+
   return null
 }
 
@@ -68,7 +69,7 @@ export default function DatePicker({
     }
     return new Date()
   })
-  
+
   const containerRef = useClickOutside<HTMLDivElement>(() => setIsOpen(false), isOpen)
 
   useEffect(() => {
@@ -91,7 +92,7 @@ export default function DatePicker({
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const inputValue = e.target.value
     setDisplayValue(inputValue)
-    
+
     if (inputValue) {
       const parsed = parseDate(inputValue)
       if (parsed) {
@@ -113,7 +114,7 @@ export default function DatePicker({
     const firstDay = new Date(year, month, 1).getDay()
     const daysInMonth = new Date(year, month + 1, 0).getDate()
     const selectedDate = value instanceof Date ? value : (typeof value === 'string' ? parseDate(value) : null)
-    
+
     const days: (Date | null)[] = []
     for (let i = 0; i < firstDay; i++) {
       days.push(null)
@@ -123,88 +124,123 @@ export default function DatePicker({
     }
 
     return (
-      <div className="absolute top-full left-0 mt-1 bg-white border border-neutral-200 rounded-lg shadow-lg p-4 z-50 w-72">
-        <div className="flex items-center justify-between mb-4">
-          <button
-            type="button"
+      <Paper
+        elevation={8}
+        sx={{
+          position: 'absolute',
+          top: '100%',
+          left: 0,
+          mt: 1,
+          p: 2,
+          zIndex: 50,
+          width: 280,
+          borderRadius: 3,
+          border: '1px solid',
+          borderColor: 'divider',
+        }}
+      >
+        <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 2 }}>
+          <IconButton
             onClick={() => setCalendarDate(new Date(year, month - 1, 1))}
-            className="p-1 hover:bg-neutral-100 rounded"
+            size="small"
+            sx={{ border: '1px solid', borderColor: 'divider' }}
           >
-            ←
-          </button>
-          <span className="font-medium">
+            <ChevronLeft size={18} />
+          </IconButton>
+          <Typography variant="subtitle2" fontWeight={700}>
             {year}년 {month + 1}월
-          </span>
-          <button
-            type="button"
+          </Typography>
+          <IconButton
             onClick={() => setCalendarDate(new Date(year, month + 1, 1))}
-            className="p-1 hover:bg-neutral-100 rounded"
+            size="small"
+            sx={{ border: '1px solid', borderColor: 'divider' }}
           >
-            →
-          </button>
-        </div>
-        <div className="grid grid-cols-7 gap-1 mb-2">
-          {['일', '월', '화', '수', '목', '금', '토'].map((day) => (
-            <div key={day} className="text-center text-xs text-neutral-500 font-medium py-1">
-              {day}
-            </div>
+            <ChevronRight size={18} />
+          </IconButton>
+        </Box>
+        <Grid container sx={{ mb: 1 }}>
+          {['일', '월', '화', '수', '목', '금', '토'].map((day, i) => (
+            <Grid item xs={12 / 7} key={day} sx={{ textAlign: 'center' }}>
+              <Typography variant="caption" fontWeight={700} color={i === 0 ? 'error.main' : i === 6 ? 'info.main' : 'text.secondary'}>
+                {day}
+              </Typography>
+            </Grid>
           ))}
-        </div>
-        <div className="grid grid-cols-7 gap-1">
+        </Grid>
+        <Grid container spacing={0.5}>
           {days.map((date, idx) => {
             if (!date) {
-              return <div key={idx} className="aspect-square" />
+              return <Grid item xs={12 / 7} key={`empty-${idx}`} sx={{ aspectRatio: '1/1' }} />
             }
-            
-            const isSelected = selectedDate && 
-              date.getTime() === new Date(selectedDate.getFullYear(), selectedDate.getMonth(), selectedDate.getDate()).getTime()
+
+            const isSelected = selectedDate &&
+              date.getFullYear() === selectedDate.getFullYear() &&
+              date.getMonth() === selectedDate.getMonth() &&
+              date.getDate() === selectedDate.getDate()
             const isToday = date.toDateString() === new Date().toDateString()
-            
+
             return (
-              <button
-                key={idx}
-                type="button"
-                onClick={() => handleDateSelect(date)}
-                className={clsx(
-                  'aspect-square text-sm rounded hover:bg-neutral-100 transition-colors',
-                  isSelected && 'bg-blue-500 text-white hover:bg-blue-600',
-                  !isSelected && isToday && 'bg-blue-50 text-blue-600 font-medium',
-                  !isSelected && !isToday && 'text-neutral-700'
-                )}
-              >
-                {date.getDate()}
-              </button>
+              <Grid item xs={12 / 7} key={idx}>
+                <IconButton
+                  onClick={() => handleDateSelect(date)}
+                  size="small"
+                  sx={{
+                    width: '100%',
+                    aspectRatio: '1/1',
+                    borderRadius: 2,
+                    fontSize: '0.875rem',
+                    fontWeight: isToday || isSelected ? 700 : 500,
+                    bgcolor: isSelected ? 'primary.main' : isToday ? 'primary.50' : 'transparent',
+                    color: isSelected ? 'primary.contrastText' : isToday ? 'primary.main' : 'text.primary',
+                    '&:hover': {
+                      bgcolor: isSelected ? 'primary.dark' : 'action.hover',
+                    },
+                  }}
+                >
+                  {date.getDate()}
+                </IconButton>
+              </Grid>
             )
           })}
-        </div>
-      </div>
+        </Grid>
+      </Paper>
     )
   }
 
+  const { color, ...restProps } = rest
+
   return (
-    <div ref={containerRef} className={clsx('relative', className)}>
-      <div className="relative">
+    <Box ref={containerRef} sx={{ position: 'relative', width: '100%' }} className={className}>
+      <Box sx={{ position: 'relative' }}>
         <Input
-          {...Object.fromEntries(
-            Object.entries(rest).filter(([key]) => !['label', 'helpText', 'error'].includes(key))
-          )}
-          {...(label ? { label } : {})}
-          {...(helpText ? { helpText } : {})}
-          {...(error ? { error } : {})}
+          {...restProps}
+          label={label}
+          helpText={helpText}
+          error={error}
           value={displayValue}
           onChange={handleInputChange}
           placeholder={dateFormat.toLowerCase()}
-          className="pr-10"
+          onClick={() => setIsOpen(true)}
+          autoComplete="off"
+          InputProps={{
+            endAdornment: (
+              <InputAdornment position="end">
+                <IconButton
+                  size="small"
+                  onClick={(e) => {
+                    e.stopPropagation()
+                    setIsOpen(!isOpen)
+                  }}
+                  sx={{ color: 'text.secondary' }}
+                >
+                  <CalendarIcon size={18} />
+                </IconButton>
+              </InputAdornment>
+            )
+          }}
         />
-        <button
-          type="button"
-          onClick={() => setIsOpen(!isOpen)}
-          className="absolute right-3 top-[2.25rem] p-1 text-neutral-400 hover:text-neutral-600"
-        >
-          <Calendar className="h-4 w-4" />
-        </button>
-      </div>
+      </Box>
       {isOpen && renderCalendar()}
-    </div>
+    </Box>
   )
 }

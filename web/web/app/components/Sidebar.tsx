@@ -1,9 +1,8 @@
 'use client'
 
+import React from 'react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import clsx from 'clsx'
-import type { ReactNode } from 'react'
 import {
   LayoutDashboard,
   Calendar,
@@ -12,25 +11,43 @@ import {
   UserCheck,
   DollarSign,
   Settings,
-  Shield
+  Shield,
+  ChevronLeft,
+  ChevronRight
 } from 'lucide-react'
+import {
+  Box,
+  List,
+  ListItem,
+  ListItemButton,
+  ListItemIcon,
+  ListItemText,
+  IconButton,
+  Typography,
+  Divider,
+  Tooltip,
+  Paper,
+  useTheme,
+  alpha
+} from '@mui/material'
 import LogoutButton from './ui/LogoutButton'
 import { useIsAdmin } from '@/app/lib/hooks/useUserRole'
+import { useIsDemo } from '@/app/lib/hooks/useIsDemo'
 
 type Item = {
   href: string
   label: string
-  icon?: ReactNode
+  icon: React.ElementType
 }
 
 const items: Item[] = [
-  { href: '/dashboard', label: '대시보드', icon: <LayoutDashboard className="h-5 w-5" /> },
-  { href: '/appointments', label: '예약', icon: <Calendar className="h-5 w-5" /> },
-  { href: '/products', label: '제품', icon: <Package className="h-5 w-5" /> },
-  { href: '/customers', label: '고객', icon: <Users className="h-5 w-5" /> },
-  { href: '/staff', label: '직원', icon: <UserCheck className="h-5 w-5" /> },
-  { href: '/finance', label: '재무', icon: <DollarSign className="h-5 w-5" /> },
-  { href: '/settings', label: '설정', icon: <Settings className="h-5 w-5" /> },
+  { href: '/dashboard', label: '대시보드', icon: LayoutDashboard },
+  { href: '/appointments', label: '예약', icon: Calendar },
+  { href: '/products', label: '제품', icon: Package },
+  { href: '/customers', label: '고객', icon: Users },
+  { href: '/staff', label: '직원', icon: UserCheck },
+  { href: '/finance', label: '재무', icon: DollarSign },
+  { href: '/settings', label: '설정', icon: Settings },
 ]
 
 type Props = {
@@ -48,145 +65,213 @@ export default function Sidebar({
 }: Props = {}) {
   const pathname = usePathname()
   const isAdmin = useIsAdmin()
-  const wrapCls = mobile
-    ? 'flex w-72 shrink-0 bg-white border-r border-neutral-200 min-h-screen flex-col shadow-md transition-all duration-300'
-    : clsx(
-      'hidden md:flex shrink-0 bg-white border-r border-neutral-200 min-h-screen flex-col shadow-md transition-all duration-300',
-      collapsed ? 'w-20' : 'w-64'
-    )
+  const isDemo = useIsDemo()
+  const theme = useTheme()
+
+  const sidebarWidth = collapsed ? 80 : 256
 
   return (
-    <aside className={wrapCls}>
+    <Paper
+      component="aside"
+      elevation={0}
+      sx={{
+        width: mobile ? 288 : sidebarWidth,
+        flexShrink: 0,
+        display: mobile ? 'flex' : { xs: 'none', md: 'flex' },
+        flexDirection: 'column',
+        height: '100vh',
+        borderRight: `1px solid ${theme.palette.divider}`,
+        bgcolor: 'background.paper',
+        transition: theme.transitions.create('width', {
+          easing: theme.transitions.easing.sharp,
+          duration: theme.transitions.duration.enteringScreen,
+        }),
+        overflowX: 'hidden',
+      }}
+    >
       {/* 헤더 */}
-      <div className="px-4 py-4 sm:py-5 border-b border-neutral-200 flex items-center justify-between">
-        <div
-          className="flex items-center gap-3 min-w-0"
-        >
-
+      <Box
+        sx={{
+          p: 2,
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          minHeight: 64,
+          borderBottom: `1px solid ${theme.palette.divider}`,
+        }}
+      >
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, overflow: 'hidden' }}>
           {!collapsed && (
-            <div className="flex flex-col truncate min-w-0">
-              <span className="text-base sm:text-lg font-semibold text-neutral-900 tracking-tight truncate">
+            <Box sx={{ display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
+              <Typography variant="subtitle1" fontWeight="bold" noWrap color="text.primary">
                 여우스킨 CRM
-              </span>
-              <span className="text-xs sm:text-sm text-neutral-600 truncate">
+              </Typography>
+              <Typography variant="caption" color="text.secondary" noWrap>
                 운영 대시보드
-              </span>
-            </div>
+              </Typography>
+            </Box>
           )}
-        </div>
+        </Box>
         {!mobile && onToggleCollapse && (
-          <button
+          <IconButton
             onClick={onToggleCollapse}
-            className="p-2 rounded-lg border border-transparent text-neutral-500 hover:bg-neutral-100 hover:text-neutral-700 hover:border-neutral-300 transition-all duration-300 focus-visible:ring-2 focus-visible:ring-pink-300 focus-visible:ring-offset-1 touch-manipulation min-h-[44px] min-w-[44px] flex items-center justify-center"
+            size="small"
             aria-label={collapsed ? '사이드바 펼치기' : '사이드바 접기'}
+            sx={{
+              ml: collapsed ? 'auto' : 0,
+              mr: collapsed ? 'auto' : 0
+            }}
           >
-            <svg
-              className={clsx(
-                'h-5 w-5 transition-transform duration-300',
-                collapsed && 'rotate-180'
-              )}
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-              strokeWidth={2}
-            >
-              <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
-            </svg>
-          </button>
+            {collapsed ? <ChevronRight size={20} /> : <ChevronLeft size={20} />}
+          </IconButton>
         )}
-      </div>
+      </Box>
 
       {/* 네비게이션 */}
-      <nav className="flex-1 overflow-y-auto px-2 py-4 space-y-1 overscroll-contain scroll-smooth">
-        {items.map(it => {
-          const active = pathname?.startsWith(it.href)
+      <List
+        component="nav"
+        sx={{
+          flex: 1,
+          px: 1,
+          py: 2,
+          overflowY: 'auto',
+          '&::-webkit-scrollbar': { display: 'none' }, // 스크롤바 숨김 (선택사항)
+        }}
+      >
+        {items.map((item) => {
+          const active = pathname?.startsWith(item.href)
+          const Icon = item.icon
+
           return (
-            <Link
-              key={it.href}
-              href={it.href}
-              {...(onNavigate && { onClick: onNavigate })}
-              className={clsx(
-                'group relative flex items-center gap-3 px-3 py-3 sm:py-2.5 rounded-lg text-sm sm:text-base transition-all duration-300 cursor-pointer border border-transparent touch-manipulation min-h-[48px] sm:min-h-[44px]',
-                collapsed && 'justify-center px-2',
-                active
-                  ? 'bg-[#FDF2F8] text-[#F472B6] shadow-sm font-semibold border-neutral-200'
-                  : 'text-neutral-600 hover:bg-neutral-50 hover:text-neutral-900 hover:border-neutral-200 active:bg-neutral-100'
-              )}
-              title={collapsed ? it.label : undefined}
-              aria-label={it.label}
-              aria-current={active ? 'page' : undefined}
-            >
-              {it.icon && (
-                <span
-                  className={clsx(
-                    'flex-shrink-0 transition-colors duration-300',
-                    active
-                      ? 'text-[#F472B6]'
-                      : 'text-neutral-500 group-hover:text-neutral-700'
-                  )}
+            <ListItem key={item.href} disablePadding sx={{ mb: 0.5 }}>
+              <Tooltip title={collapsed ? item.label : ''} placement="right" arrow>
+                {/* @ts-expect-error - Next.js Link component type mismatch with MUI */}
+                <ListItemButton
+                  component={Link}
+                  href={item.href}
+                  onClick={onNavigate}
+                  selected={active}
+                  sx={{
+                    minHeight: 44,
+                    justifyContent: collapsed ? 'center' : 'initial',
+                    borderRadius: 2, // 8px (theme.shape.borderRadius)
+                    px: 1.5,
+                    color: active ? 'primary.main' : 'text.primary',
+                    bgcolor: active ? alpha(theme.palette.primary.main, 0.08) : 'transparent',
+                    '&:hover': {
+                      bgcolor: active
+                        ? alpha(theme.palette.primary.main, 0.12)
+                        : alpha(theme.palette.text.primary, 0.04),
+                    },
+                  }}
                 >
-                  {it.icon}
-                </span>
-              )}
-              {!collapsed && (
-                <span className="transition-opacity duration-300 truncate flex-1">
-                  {it.label}
-                </span>
-              )}
-              {active && !collapsed && (
-                <span className="pointer-events-none absolute left-0 top-1/2 -translate-y-1/2 h-8 w-1 rounded-r-full bg-[#F472B6]" />
-              )}
-            </Link>
+                  <ListItemIcon
+                    sx={{
+                      minWidth: 0,
+                      mr: collapsed ? 0 : 2,
+                      justifyContent: 'center',
+                      color: active ? 'primary.main' : 'text.secondary',
+                    }}
+                  >
+                    <Icon size={20} />
+                  </ListItemIcon>
+                  {!collapsed && (
+                    <ListItemText
+                      primary={item.label}
+                      primaryTypographyProps={{
+                        variant: 'body2',
+                        fontWeight: active ? 600 : 400
+                      }}
+                    />
+                  )}
+                  {active && !collapsed && (
+                    <Box
+                      sx={{
+                        width: 4,
+                        height: 32,
+                        bgcolor: 'primary.main',
+                        position: 'absolute',
+                        right: 0,
+                        borderTopLeftRadius: 4,
+                        borderBottomLeftRadius: 4
+                      }}
+                    />
+                  )}
+                </ListItemButton>
+              </Tooltip>
+            </ListItem>
           )
         })}
 
         {/* 관리자 메뉴 */}
-        {isAdmin && (
+        {isAdmin && !isDemo && (
           <>
-            <div className="border-t border-neutral-200 my-2" />
-            <Link
-              href="/admin"
-              {...(onNavigate && { onClick: onNavigate })}
-              className={clsx(
-                'group relative flex items-center gap-3 px-3 py-3 sm:py-2.5 rounded-lg text-sm sm:text-base transition-all duration-300 cursor-pointer border border-transparent touch-manipulation min-h-[48px] sm:min-h-[44px]',
-                collapsed && 'justify-center px-2',
-                pathname?.startsWith('/admin')
-                  ? 'bg-[#FDF2F8] text-[#F472B6] shadow-sm font-semibold border-neutral-200'
-                  : 'text-neutral-600 hover:bg-neutral-50 hover:text-neutral-900 hover:border-neutral-200 active:bg-neutral-100'
-              )}
-              title={collapsed ? '사용자 관리' : undefined}
-              aria-label="사용자 관리"
-              aria-current={pathname?.startsWith('/admin') ? 'page' : undefined}
-            >
-              <span
-                className={clsx(
-                  'flex-shrink-0 transition-colors duration-300',
-                  pathname?.startsWith('/admin')
-                    ? 'text-[#F472B6]'
-                    : 'text-neutral-500 group-hover:text-neutral-700'
-                )}
-              >
-                <Shield className="h-5 w-5" />
-              </span>
-              {!collapsed && (
-                <span className="transition-opacity duration-300 truncate flex-1">
-                  사용자 관리
-                </span>
-              )}
-              {pathname?.startsWith('/admin') && !collapsed && (
-                <span className="pointer-events-none absolute left-0 top-1/2 -translate-y-1/2 h-8 w-1 rounded-r-full bg-[#F472B6]" />
-              )}
-            </Link>
+            <Divider sx={{ my: 1, mx: 1 }} />
+            <ListItem disablePadding>
+              <Tooltip title={collapsed ? '사용자 관리' : ''} placement="right" arrow>
+                {/* @ts-expect-error - Next.js Link component type mismatch with component prop */}
+                <ListItemButton
+                  component={Link}
+                  href="/admin"
+                  onClick={onNavigate}
+                  selected={pathname?.startsWith('/admin')}
+                  sx={{
+                    minHeight: 44,
+                    justifyContent: collapsed ? 'center' : 'initial',
+                    borderRadius: 2,
+                    px: 1.5,
+                    color: pathname?.startsWith('/admin') ? 'primary.main' : 'text.primary',
+                    bgcolor: pathname?.startsWith('/admin') ? alpha(theme.palette.primary.main, 0.08) : 'transparent',
+                    '&:hover': {
+                      bgcolor: pathname?.startsWith('/admin')
+                        ? alpha(theme.palette.primary.main, 0.12)
+                        : alpha(theme.palette.text.primary, 0.04),
+                    },
+                  }}
+                >
+                  <ListItemIcon
+                    sx={{
+                      minWidth: 0,
+                      mr: collapsed ? 0 : 2,
+                      justifyContent: 'center',
+                      color: pathname?.startsWith('/admin') ? 'primary.main' : 'text.secondary',
+                    }}
+                  >
+                    <Shield size={20} />
+                  </ListItemIcon>
+                  {!collapsed && (
+                    <ListItemText
+                      primary="사용자 관리"
+                      primaryTypographyProps={{
+                        variant: 'body2',
+                        fontWeight: pathname?.startsWith('/admin') ? 600 : 400
+                      }}
+                    />
+                  )}
+                  {pathname?.startsWith('/admin') && !collapsed && (
+                    <Box
+                      sx={{
+                        width: 4,
+                        height: 32,
+                        bgcolor: 'primary.main',
+                        position: 'absolute',
+                        right: 0,
+                        borderTopLeftRadius: 4,
+                        borderBottomLeftRadius: 4
+                      }}
+                    />
+                  )}
+                </ListItemButton>
+              </Tooltip>
+            </ListItem>
           </>
         )}
-      </nav>
+      </List>
 
       {/* 푸터 */}
-      <div className="p-3 sm:p-4 border-t border-neutral-200">
+      <Box sx={{ p: 2, borderTop: `1px solid ${theme.palette.divider}` }}>
         <LogoutButton collapsed={collapsed} />
-      </div>
-    </aside>
+      </Box>
+    </Paper>
   )
 }
-
-

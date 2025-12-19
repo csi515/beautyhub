@@ -4,16 +4,28 @@ import { useState, useEffect } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import Image from 'next/image'
 import { Mail, Lock, Eye, EyeOff } from 'lucide-react'
-import Button from '@/app/components/ui/Button'
+import Box from '@mui/material/Box'
+import Stack from '@mui/material/Stack'
+import Typography from '@mui/material/Typography'
+import Paper from '@mui/material/Paper'
+import Checkbox from '@mui/material/Checkbox'
+import FormControlLabel from '@mui/material/FormControlLabel'
+import IconButton from '@mui/material/IconButton'
+import Link from '@mui/material/Link' // MUI Link for styling, or next/link for routing
+import NextLink from 'next/link'
+
+import Button from '@/app/components/ui/Button' // Still using our wrapper for consistency if desired, or switch to MUI Button
 import Input from '@/app/components/ui/Input'
 import Modal, { ModalBody, ModalFooter, ModalHeader } from '@/app/components/ui/Modal'
 import Alert from '@/app/components/ui/Alert'
 import { useAppToast } from '@/app/lib/ui/toast'
+import { useTheme } from '@mui/material/styles'
 
 export default function LoginForm() {
     const router = useRouter()
     const params = useSearchParams()
     const redirect = params.get('redirect') || '/dashboard'
+    const theme = useTheme()
 
     const [authApi, setAuthApi] = useState<Awaited<ReturnType<typeof import('@/app/lib/api/auth').getAuthApi>> | null>(null)
     const [email, setEmail] = useState('')
@@ -54,14 +66,12 @@ export default function LoginForm() {
         try {
             const { user, session } = await authApi.login({ email: trimmedEmail, password })
 
-            // 프로필 생성/확인
             try {
                 await authApi.ensureProfile()
             } catch {
-                // 프로필 생성 실패는 무시 (이미 존재할 수 있음)
+                // Ignore
             }
 
-            // 승인 여부 확인
             const profile = await authApi.checkApproval(user.id)
             if (!profile?.approved) {
                 await authApi.logout()
@@ -70,7 +80,6 @@ export default function LoginForm() {
                 return
             }
 
-            // 세션 토큰을 쿠키에 저장하여 미들웨어 통과 보장
             await authApi.setSession(
                 {
                     access_token: session.access_token,
@@ -80,7 +89,11 @@ export default function LoginForm() {
                 remember
             )
 
-            // 마지막 로그인 이메일 저장
+            // 실제 계정 로그인 시 데모 모드 쿠키 삭제
+            if (typeof document !== 'undefined') {
+                document.cookie = 'demo_mode=; path=/; max-age=0; SameSite=Lax'
+            }
+
             localStorage.setItem('lastLoginEmail', trimmedEmail)
 
             toast.success('로그인 성공')
@@ -95,24 +108,61 @@ export default function LoginForm() {
 
     const isEmailInvalid = !!email && !/.+@.+\..+/.test(email)
     const isPasswordInvalid = !!password && password.length < 6
-    const canSubmit = !busy && /.+@.+\..+/.test(email.trim()) && password.length >= 6
 
     return (
-        <div className="relative min-h-screen flex items-center justify-center bg-neutral-50 px-4">
-            <Image
-                src="/illustrations/welcome.svg"
-                alt=""
-                width={160}
-                height={160}
-                className="pointer-events-none select-none absolute -top-6 right-4 opacity-70 hidden md:block"
-                priority
-            />
-            <div className="w-full max-w-md bg-white border border-neutral-200 rounded-2xl shadow-lg p-7">
-                <div className="space-y-6">
-                    <div className="text-center">
-                        <h1 className="text-2xl font-semibold mb-1">여우스킨 · 로그인</h1>
-                        <p className="text-sm text-neutral-500">CRM에 접속하려면 계정 정보를 입력하세요.</p>
-                    </div>
+        <Box
+            sx={{
+                minHeight: '100vh',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                bgcolor: 'background.default',
+                p: 2,
+                position: 'relative'
+            }}
+        >
+            <Box
+                sx={{
+                    position: 'absolute',
+                    top: -24,
+                    right: 16,
+                    opacity: 0.7,
+                    display: { xs: 'none', md: 'block' },
+                    pointerEvents: 'none',
+                    userSelect: 'none'
+                }}
+            >
+                {/* Image handling - using next/image in Box requires distinct layout or wrapper */}
+                {/* For simplicity we keep it or replace with styled Box */}
+                <Image
+                    src="/illustrations/welcome.svg"
+                    alt=""
+                    width={160}
+                    height={160}
+                    priority
+                />
+            </Box>
+
+            <Paper
+                elevation={3}
+                sx={{
+                    width: '100%',
+                    maxWidth: 440,
+                    p: 4,
+                    borderRadius: 4,
+                    bgcolor: 'background.paper',
+                    border: `1px solid ${theme.palette.divider}`
+                }}
+            >
+                <Stack spacing={3}>
+                    <Box textAlign="center">
+                        <Typography variant="h5" fontWeight="bold" gutterBottom>
+                            여우스킨 · 로그인
+                        </Typography>
+                        <Typography variant="body2" color="text.secondary">
+                            CRM에 접속하려면 계정 정보를 입력하세요.
+                        </Typography>
+                    </Box>
 
                     {error && (
                         <Alert variant="error" title={error} />
@@ -121,121 +171,126 @@ export default function LoginForm() {
                         <Alert variant="success" title={info} />
                     )}
 
-                    <div className="space-y-4">
-                        <div>
-                            <Input
-                                label="이메일"
-                                type="email"
-                                value={email}
-                                onChange={(e) => setEmail(e.target.value)}
-                                placeholder="you@example.com"
-                                autoFocus
-                                {...(isEmailInvalid ? { error: '유효한 이메일을 입력하세요.' } : {})}
-                                leftIcon={<Mail className="h-5 w-5 text-neutral-400" />}
-                            />
-                        </div>
+                    <Stack spacing={2}>
+                        <Input
+                            label="이메일"
+                            type="email"
+                            value={email}
+                            onChange={(e) => setEmail(e.target.value)}
+                            placeholder="you@example.com"
+                            autoFocus
+                            {...(isEmailInvalid ? { error: '유효한 이메일을 입력하세요.' } : {})}
+                            leftIcon={<Mail size={20} className="text-neutral-400" />}
+                        />
 
-                        <div>
-                            <Input
-                                label="비밀번호"
-                                type={showPw ? 'text' : 'password'}
-                                value={password}
-                                onChange={(e) => setPassword(e.target.value)}
-                                placeholder="비밀번호"
-                                onKeyDown={(e) => { if (e.key === 'Enter') signIn() }}
-                                {...(isPasswordInvalid ? { error: '비밀번호는 6자 이상이어야 합니다.' } : {})}
-                                leftIcon={<Lock className="h-5 w-5 text-neutral-400" />}
-                                rightIcon={
-                                    <button
-                                        type="button"
-                                        onClick={() => setShowPw(v => !v)}
-                                        aria-label={showPw ? '비밀번호 숨기기' : '비밀번호 보기'}
-                                        className="p-1 hover:bg-neutral-100 rounded-md transition-colors"
-                                    >
-                                        {showPw ? <EyeOff className="h-5 w-5 text-neutral-400" /> : <Eye className="h-5 w-5 text-neutral-400" />}
-                                    </button>
-                                }
-                            />
-                        </div>
-                    </div>
+                        <Input
+                            label="비밀번호"
+                            type={showPw ? 'text' : 'password'}
+                            value={password}
+                            onChange={(e) => setPassword(e.target.value)}
+                            placeholder="비밀번호"
+                            onKeyDown={(e) => { if (e.key === 'Enter') signIn() }}
+                            {...(isPasswordInvalid ? { error: '비밀번호는 6자 이상이어야 합니다.' } : {})}
+                            leftIcon={<Lock size={20} className="text-neutral-400" />}
+                            rightIcon={
+                                <IconButton
+                                    onClick={() => setShowPw(v => !v)}
+                                    aria-label={showPw ? '비밀번호 숨기기' : '비밀번호 보기'}
+                                    edge="end"
+                                    size="small"
+                                >
+                                    {showPw ? <EyeOff size={20} /> : <Eye size={20} />}
+                                </IconButton>
+                            }
+                        />
+                    </Stack>
 
-                    <div className="flex items-center justify-between">
-                        <label className="flex items-center gap-2 cursor-pointer">
-                            <input
-                                type="checkbox"
-                                checked={remember}
-                                onChange={(e) => setRemember(e.target.checked)}
-                                className="w-4 h-4 rounded border-neutral-300 text-action-blue-600 focus:ring-action-blue-500"
-                            />
-                            <span className="text-sm text-neutral-700">로그인 유지</span>
-                        </label>
-                        <button
-                            type="button"
-                            onClick={() => router.push('/forgot-password')}
-                            disabled={busy}
-                            className="text-sm text-action-blue-600 hover:text-action-blue-700 hover:underline disabled:opacity-50 disabled:cursor-not-allowed"
+                    <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                        <FormControlLabel
+                            control={
+                                <Checkbox
+                                    checked={remember}
+                                    onChange={(e) => setRemember(e.target.checked)}
+                                    size="small"
+                                />
+                            }
+                            label={<Typography variant="body2">로그인 유지</Typography>}
+                        />
+                        <Link
+                            component={NextLink}
+                            href="/forgot-password"
+                            variant="body2"
+                            underline="hover"
+                            color="primary"
+                            sx={{ cursor: 'pointer' }}
                         >
                             비밀번호를 잊으셨나요?
-                        </button>
-                    </div>
+                        </Link>
+                    </Box>
 
-                    <div className="space-y-2">
+                    <Stack spacing={1.5}>
                         <Button
                             variant="primary"
                             onClick={signIn}
                             loading={busy}
-                            disabled={!canSubmit}
-                            className="w-full"
+                            disabled={busy}
+                            fullWidth
+                            size="lg"
                         >
                             로그인
                         </Button>
                         <Button
                             type="button"
-                            variant="secondary"
+                            variant="contrast"
                             onClick={() => {
                                 document.cookie = 'demo_mode=true; path=/; max-age=3600; SameSite=Lax'
                                 router.push('/dashboard')
                             }}
-                            className="w-full border-dashed border-2 text-neutral-600 hover:text-neutral-800 hover:bg-neutral-50"
+                            fullWidth
+                            sx={{ borderStyle: 'dashed', borderWidth: 2 }}
                         >
                             로그인 없이 체험하기 (데모)
                         </Button>
-                    </div>
+                    </Stack>
 
-                    <div className="space-y-2 pt-2">
+                    <Stack spacing={1} sx={{ pt: 1 }}>
                         <Button
                             variant="ghost"
                             onClick={() => router.push('/signup')}
                             disabled={busy}
-                            className="w-full"
+                            fullWidth
                         >
                             회원가입
                         </Button>
-                        <button
-                            type="button"
-                            onClick={() => setInfoModalOpen(true)}
-                            className="w-full text-sm text-action-blue-600 hover:text-action-blue-700 hover:underline"
-                        >
-                            회원가입 절차는 어떻게 되나요?
-                        </button>
-                    </div>
-                </div>
-            </div>
+                        <Typography variant="body2" align="center">
+                            <Link
+                                component="button"
+                                variant="body2"
+                                onClick={() => setInfoModalOpen(true)}
+                                underline="hover"
+                                color="primary"
+                            >
+                                회원가입 절차는 어떻게 되나요?
+                            </Link>
+                        </Typography>
+                    </Stack>
+                </Stack>
+            </Paper>
 
             <Modal open={infoModalOpen} onClose={() => setInfoModalOpen(false)} size="md">
-                <ModalHeader title="회원가입 절차 안내" />
+                <ModalHeader title="회원가입 절차 안내" onClose={() => setInfoModalOpen(false)} />
                 <ModalBody>
-                    <div className="space-y-3">
-                        <p className="text-base">1) 이름/전화번호/이메일/비밀번호/생년월일을 입력하여 회원가입</p>
-                        <p className="text-base">2) 이메일로 발송된 인증 메일을 확인하여 인증 완료</p>
-                        <p className="text-base">3) 관리자가 승인하면 로그인 가능 상태로 전환</p>
-                        <p className="text-base">4) 승인 완료 후 로그인하여 서비스를 이용하세요</p>
-                        <div className="pt-2">
-                            <p className="text-sm text-neutral-500">
-                                * 신규 회원가입 문의는 <a href="mailto:csi515@naver.com" className="text-neutral-700 underline">csi515@naver.com</a>으로 메일을 보내주세요.
-                            </p>
-                        </div>
-                    </div>
+                    <Stack spacing={1.5}>
+                        <Typography>1) 이름/전화번호/이메일/비밀번호/생년월일을 입력하여 회원가입</Typography>
+                        <Typography>2) 이메일로 발송된 인증 메일을 확인하여 인증 완료</Typography>
+                        <Typography>3) 관리자가 승인하면 로그인 가능 상태로 전환</Typography>
+                        <Typography>4) 승인 완료 후 로그인하여 서비스를 이용하세요</Typography>
+                        <Box pt={1}>
+                            <Typography variant="caption" color="text.secondary">
+                                * 신규 회원가입 문의는 <Link href="mailto:csi515@naver.com" color="inherit" underline="always">csi515@naver.com</Link>으로 메일을 보내주세요.
+                            </Typography>
+                        </Box>
+                    </Stack>
                 </ModalBody>
                 <ModalFooter>
                     <Button variant="secondary" onClick={() => setInfoModalOpen(false)}>닫기</Button>
@@ -243,6 +298,6 @@ export default function LoginForm() {
                 </ModalFooter>
             </Modal>
 
-        </div>
+        </Box >
     )
 }

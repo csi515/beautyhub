@@ -2,6 +2,8 @@
 
 import { useState, useEffect } from 'react'
 import { Download, X, Share2 } from 'lucide-react'
+import Button from '@mui/material/Button'
+import IconButton from '@mui/material/IconButton'
 import { useInstallPrompt } from '@/app/lib/hooks/useInstallPrompt'
 
 const STORAGE_KEY_DISMISSED = 'install-prompt-dismissed'
@@ -79,7 +81,7 @@ export default function InstallPrompt() {
 
   // iOS Safari 대응 UI
   const isIOS = platformType === 'ios'
-  
+
   if (isIOS) {
     return (
       <div className="fixed bottom-0 left-0 right-0 z-[1100] safe-area-inset-bottom md:hidden">
@@ -113,20 +115,22 @@ export default function InstallPrompt() {
                   </div>
                 </div>
               </div>
-              <button
+              <IconButton
                 onClick={handleDismiss}
-                className="flex-shrink-0 p-1.5 rounded-lg hover:bg-neutral-100 active:bg-neutral-200 transition-colors touch-manipulation"
                 aria-label="닫기"
+                sx={{ color: 'text.secondary' }}
               >
-                <X className="h-5 w-5 text-neutral-500" />
-              </button>
+                <X className="h-5 w-5" />
+              </IconButton>
             </div>
-            <button
+            <Button
               onClick={handleDismiss}
-              className="w-full bg-neutral-100 hover:bg-neutral-200 active:bg-neutral-300 text-neutral-700 font-semibold py-3 px-4 rounded-xl transition-colors touch-manipulation"
+              fullWidth
+              variant="contained"
+              sx={{ bgcolor: 'neutral.100', color: 'text.primary', borderRadius: 3, py: 1.5, textTransform: 'none', fontWeight: 600, '&:hover': { bgcolor: 'neutral.200' } }}
             >
               나중에
-            </button>
+            </Button>
           </div>
         </div>
       </div>
@@ -152,28 +156,31 @@ export default function InstallPrompt() {
                 홈 화면에 추가하여 더 빠르게 접근하세요
               </p>
             </div>
-            <button
+            <IconButton
               onClick={handleDismiss}
-              className="flex-shrink-0 p-1.5 rounded-lg hover:bg-neutral-100 active:bg-neutral-200 transition-colors touch-manipulation"
               aria-label="닫기"
+              sx={{ color: 'text.secondary' }}
             >
-              <X className="h-5 w-5 text-neutral-500" />
-            </button>
+              <X className="h-5 w-5" />
+            </IconButton>
           </div>
           <div className="flex gap-2">
-            <button
+            <Button
               onClick={handleInstall}
-              className="flex-1 bg-gradient-to-r from-[#F472B6] to-[#EC4899] text-white font-semibold py-3 px-4 rounded-xl hover:from-[#EC4899] hover:to-[#DB2777] active:scale-[0.98] transition-all shadow-lg hover:shadow-xl flex items-center justify-center gap-2 touch-manipulation"
+              variant="contained"
+              startIcon={<Download className="h-5 w-5" />}
+              className="flex-1 bg-gradient-to-r from-[#F472B6] to-[#EC4899] hover:from-[#EC4899] hover:to-[#DB2777]"
+              sx={{ borderRadius: 3, py: 1.5, textTransform: 'none', fontSize: '1rem', fontWeight: 600 }}
             >
-              <Download className="h-5 w-5" />
               설치하기
-            </button>
-            <button
+            </Button>
+            <Button
               onClick={handleDismiss}
-              className="px-4 py-3 bg-neutral-100 hover:bg-neutral-200 active:bg-neutral-300 text-neutral-700 font-semibold rounded-xl transition-colors touch-manipulation"
+              variant="text"
+              sx={{ color: 'text.primary', bgcolor: 'action.hover', borderRadius: 3, px: 3, textTransform: 'none', fontWeight: 600 }}
             >
               나중에
-            </button>
+            </Button>
           </div>
         </div>
       </div>
