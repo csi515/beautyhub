@@ -1,5 +1,6 @@
+﻿import { SupabaseClient } from '@supabase/supabase-js'
 /**
- * 거래 Repository
+ * 嫄곕옒 Repository
  */
 
 import { BaseRepository } from './base.repository'
@@ -7,12 +8,12 @@ import type { Transaction, TransactionCreateInput, TransactionUpdateInput } from
 import type { QueryOptions } from './base.repository'
 
 export class TransactionsRepository extends BaseRepository<Transaction> {
-  constructor(userId: string, supabase: any) {
+  constructor(userId: string, supabase: SupabaseClient) {
     super(userId, 'transactions', supabase)
   }
 
   /**
-   * 고객별 거래 조회
+   * 怨좉컼蹂?嫄곕옒 議고쉶
    */
   override async findAll(options: QueryOptions & { customer_id?: string } = {}): Promise<Transaction[]> {
     if (this.userId === 'demo-user') {
@@ -48,7 +49,7 @@ export class TransactionsRepository extends BaseRepository<Transaction> {
   }
 
   /**
-   * 거래 생성
+   * 嫄곕옒 ?앹꽦
    */
   async createTransaction(input: TransactionCreateInput): Promise<Transaction> {
     const payload: Partial<Transaction> = {
@@ -64,17 +65,17 @@ export class TransactionsRepository extends BaseRepository<Transaction> {
       }
     }
 
-    // category 필드 처리
+    // category ?꾨뱶 泥섎━
     if (input.category !== undefined && input.category !== null && input.category !== '') {
       payload['category'] = String(input.category).trim()
     }
 
-    // appointment_id가 명시적으로 제공된 경우에만 포함
+    // appointment_id媛 紐낆떆?곸쑝濡??쒓났??寃쎌슦?먮쭔 ?ы븿
     if (input.appointment_id !== undefined) {
       payload.appointment_id = input.appointment_id || null
     }
 
-    // payment_method는 값이 있을 때만 포함 (스키마에 없을 수 있음)
+    // payment_method??媛믪씠 ?덉쓣 ?뚮쭔 ?ы븿 (?ㅽ궎留덉뿉 ?놁쓣 ???덉쓬)
     const paymentMethodValue = input.payment_method
     if (paymentMethodValue !== undefined) {
       if (paymentMethodValue === null) {
@@ -85,7 +86,7 @@ export class TransactionsRepository extends BaseRepository<Transaction> {
       }
     }
 
-    // notes 필드는 데이터베이스에 컬럼이 없으므로 제외
+    // notes ?꾨뱶???곗씠?곕쿋?댁뒪??而щ읆???놁쑝誘濡??쒖쇅
     // const notesValue = input.notes
     // if (notesValue !== undefined) {
     //   if (notesValue === null) {
@@ -100,12 +101,12 @@ export class TransactionsRepository extends BaseRepository<Transaction> {
   }
 
   /**
-   * 거래 업데이트
+   * 嫄곕옒 ?낅뜲?댄듃
    */
   async updateTransaction(id: string, input: TransactionUpdateInput): Promise<Transaction> {
     const payload: Partial<Transaction> = {}
 
-    // appointment_id는 명시적으로 제공된 경우에만 업데이트
+    // appointment_id??紐낆떆?곸쑝濡??쒓났??寃쎌슦?먮쭔 ?낅뜲?댄듃
     if (input.appointment_id !== undefined) {
       payload.appointment_id = input.appointment_id || null
     }
@@ -122,7 +123,7 @@ export class TransactionsRepository extends BaseRepository<Transaction> {
       }
     }
     if (input.amount !== undefined) payload.amount = input.amount
-    // payment_method는 값이 있을 때만 업데이트 (스키마에 없을 수 있음)
+    // payment_method??媛믪씠 ?덉쓣 ?뚮쭔 ?낅뜲?댄듃 (?ㅽ궎留덉뿉 ?놁쓣 ???덉쓬)
     const paymentMethodValue = input.payment_method
     if (paymentMethodValue !== undefined) {
       if (paymentMethodValue === null) {
@@ -135,7 +136,7 @@ export class TransactionsRepository extends BaseRepository<Transaction> {
     if (input.transaction_date !== undefined) {
       payload.transaction_date = input.transaction_date
     }
-    // notes 필드는 데이터베이스에 컬럼이 없으므로 제외
+    // notes ?꾨뱶???곗씠?곕쿋?댁뒪??而щ읆???놁쑝誘濡??쒖쇅
     // const notesValue = input.notes
     // if (notesValue !== undefined) {
     //   if (notesValue === null) {
@@ -149,4 +150,5 @@ export class TransactionsRepository extends BaseRepository<Transaction> {
     return this.update(id, payload)
   }
 }
+
 

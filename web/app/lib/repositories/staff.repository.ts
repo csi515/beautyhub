@@ -1,12 +1,13 @@
+﻿import { SupabaseClient } from '@supabase/supabase-js'
 /**
- * 직원 Repository
+ * 吏곸썝 Repository
  */
 
 import { BaseRepository } from './base.repository'
 import type { Staff, StaffCreateInput, StaffUpdateInput } from '@/types/entities'
 
 export class StaffRepository extends BaseRepository<Staff> {
-  constructor(userId: string, supabase: any) {
+  constructor(userId: string, supabase: SupabaseClient) {
     super(userId, 'staff', supabase)
   }
 
@@ -15,7 +16,7 @@ export class StaffRepository extends BaseRepository<Staff> {
   }
 
   /**
-   * 직원 생성
+   * 吏곸썝 ?앹꽦
    */
   async createStaff(input: StaffCreateInput): Promise<Staff> {
     const name = String(input.name || '').trim()
@@ -31,7 +32,7 @@ export class StaffRepository extends BaseRepository<Staff> {
       active: input.active !== false,
     }
 
-    // notes 필드는 데이터베이스에 컬럼이 없으므로 제외
+    // notes ?꾨뱶???곗씠?곕쿋?댁뒪??而щ읆???놁쑝誘濡??쒖쇅
     // const notesValue = input.notes
     // if (notesValue !== undefined && notesValue !== null && notesValue !== '' && String(notesValue).trim() !== '') {
     //   payload['notes'] = String(notesValue).trim()
@@ -41,7 +42,7 @@ export class StaffRepository extends BaseRepository<Staff> {
   }
 
   /**
-   * 직원 업데이트
+   * 吏곸썝 ?낅뜲?댄듃
    */
   async updateStaff(id: string, input: StaffUpdateInput): Promise<Staff> {
     const payload: Partial<Staff> = {}
@@ -57,7 +58,7 @@ export class StaffRepository extends BaseRepository<Staff> {
     if (input.phone !== undefined) payload.phone = input.phone || null
     if (input.email !== undefined) payload.email = input.email || null
     if (input.role !== undefined) payload.role = input.role || null
-    // notes 필드는 데이터베이스에 컬럼이 없으므로 제외
+    // notes ?꾨뱶???곗씠?곕쿋?댁뒪??而щ읆???놁쑝誘濡??쒖쇅
     // const notesValue = input.notes
     // if (notesValue !== undefined && notesValue !== null && notesValue !== '' && String(notesValue).trim() !== '') {
     //   payload['notes'] = String(notesValue).trim()
@@ -67,4 +68,5 @@ export class StaffRepository extends BaseRepository<Staff> {
     return this.update(id, payload)
   }
 }
+
 

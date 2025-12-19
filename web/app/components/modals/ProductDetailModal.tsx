@@ -55,7 +55,7 @@ export default function ProductDetailModal({ open, onClose, item, onSaved, onDel
   if (!open || !form) return null
   return (
     <Modal open={open} onClose={onClose} size="lg">
-      <ModalHeader title="제품 상세" description="제품의 기본 정보를 수정합니다. 이름과 가격은 필수입니다." />
+      <ModalHeader title="제품 상세" description="제품의 기본 정보를 수정합니다. 이름과 가격은 필수입니다." onClose={onClose} />
       <ModalBody>
         <div className="grid gap-3 md:grid-cols-[200px,1fr]">
           <div className="space-y-2">

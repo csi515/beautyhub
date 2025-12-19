@@ -1,10 +1,14 @@
 'use client'
 
-import { useState, ReactNode } from 'react'
-import clsx from 'clsx'
-import { useClickOutside } from '@/app/lib/hooks/useClickOutside'
+import React, { useState, ReactNode } from 'react'
+import Menu from '@mui/material/Menu'
+import MenuItem from '@mui/material/MenuItem'
+import ListItemIcon from '@mui/material/ListItemIcon'
+import ListItemText from '@mui/material/ListItemText'
+import Divider from '@mui/material/Divider'
+import Box from '@mui/material/Box'
 import { ChevronDown } from 'lucide-react'
-import Button from './Button'
+import Button from './Button' // Our custom MUI wrapper
 
 type DropdownItem = {
   label: string
@@ -19,7 +23,7 @@ type Props = {
   trigger: ReactNode | string
   items: DropdownItem[]
   onSelect?: (item: DropdownItem) => void
-  placement?: 'bottom-left' | 'bottom-right' | 'top-left' | 'top-right'
+  placement?: 'bottom-left' | 'bottom-right' | 'top-left' | 'top-right' // MUI Menu uses anchorOrigin/transformOrigin
   className?: string
   disabled?: boolean
 }
@@ -28,84 +32,91 @@ export default function Dropdown({
   trigger,
   items,
   onSelect,
-  placement = 'bottom-left',
+  placement = 'bottom-left', // layout context might be different now
   className,
   disabled = false,
 }: Props) {
-  const [isOpen, setIsOpen] = useState(false)
-  const containerRef = useClickOutside<HTMLDivElement>(() => setIsOpen(false), isOpen)
+  const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null)
+  const open = Boolean(anchorEl)
 
-  const handleSelect = (item: DropdownItem) => {
+  const handleClick = (event: React.MouseEvent<HTMLElement>) => {
+    if (disabled) return
+    setAnchorEl(event.currentTarget)
+  }
+
+  const handleClose = () => {
+    setAnchorEl(null)
+  }
+
+  const handleItemClick = (item: DropdownItem) => {
     if (item.disabled) return
-    
     item.onClick?.()
     onSelect?.(item)
-    setIsOpen(false)
+    handleClose()
   }
 
-  const getPlacementClasses = () => {
-    switch (placement) {
-      case 'bottom-right':
-        return 'right-0 left-auto'
-      case 'top-left':
-        return 'bottom-full top-auto mb-1'
-      case 'top-right':
-        return 'bottom-full top-auto right-0 left-auto mb-1'
-      default:
-        return 'left-0 right-auto'
-    }
-  }
+  // Helper to map placement string to MUI anchor/transform structure if needed.
+  // Standard drop-down is usually bottom-start.
 
   const triggerContent =
     typeof trigger === 'string' ? (
-      <Button variant="secondary" rightIcon={<ChevronDown className="h-4 w-4" />}>
+      <Button
+        variant="secondary"
+        rightIcon={<ChevronDown size={16} />}
+        onClick={handleClick}
+        disabled={disabled}
+        className={className}
+      >
         {trigger}
       </Button>
     ) : (
-      trigger
+      // If trigger is a node, we wrap it or clone it to add onClick. 
+      // But wrapping in Box or div is safer.
+      <Box
+        onClick={handleClick}
+        sx={{ display: 'inline-block', cursor: disabled ? 'default' : 'pointer' }}
+        className={className}
+      >
+        {trigger}
+      </Box>
     )
 
   return (
-    <div ref={containerRef} className={clsx('relative inline-block', className)}>
-      <div onClick={() => !disabled && setIsOpen(!isOpen)}>
-        {triggerContent}
-      </div>
-      
-      {isOpen && (
-        <div
-          className={clsx(
-            'absolute mt-1 z-50 min-w-[8rem] bg-white border border-neutral-200 rounded-lg shadow-lg overflow-hidden',
-            getPlacementClasses()
-          )}
-          role="menu"
-          aria-orientation="vertical"
-        >
-          {items.map((item, index) => {
-            if (item.divider) {
-              return <div key={index} className="h-px bg-neutral-200 my-1" role="separator" />
-            }
-
-            return (
-              <button
-                key={index}
-                type="button"
-                onClick={() => handleSelect(item)}
-                disabled={item.disabled}
-                className={clsx(
-                  'w-full flex items-center gap-2 text-left px-4 py-2 text-sm transition-colors',
-                  item.disabled
-                    ? 'text-neutral-300 cursor-not-allowed'
-                    : 'text-neutral-700 hover:bg-neutral-50 active:bg-neutral-100',
-                )}
-                role="menuitem"
-              >
-                {item.icon && <span className="flex-shrink-0">{item.icon}</span>}
-                <span>{item.label}</span>
-              </button>
-            )
-          })}
-        </div>
-      )}
-    </div>
+    <>
+      {triggerContent}
+      <Menu
+        anchorEl={anchorEl}
+        open={open}
+        onClose={handleClose}
+        transformOrigin={{ horizontal: 'left', vertical: 'top' }}
+        anchorOrigin={{ horizontal: 'left', vertical: 'bottom' }}
+        slotProps={{
+          paper: {
+            elevation: 2,
+            sx: { mt: 1, minWidth: 160, borderRadius: 2 }
+          }
+        }}
+      >
+        {items.map((item, index) => {
+          if (item.divider) {
+            return <Divider key={index} />
+          }
+          return (
+            <MenuItem
+              key={index}
+              onClick={() => handleItemClick(item)}
+              disabled={item.disabled}
+            >
+              {item.icon && (
+                <ListItemIcon>
+                  {item.icon}
+                </ListItemIcon>
+              )}
+              <ListItemText>{item.label}</ListItemText>
+            </MenuItem>
+          )
+        })}
+      </Menu>
+    </>
   )
 }

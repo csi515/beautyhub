@@ -65,7 +65,7 @@ export default function ReservationDetailModal({ open, onClose, item, onSaved, o
   if (!open || !form) return null
   return (
     <Modal open={open} onClose={onClose} size="lg">
-      <ModalHeader title="예약 상세" description="예약 정보를 확인하고 수정합니다. 날짜와 시작 시간, 상태를 변경할 수 있습니다." />
+      <ModalHeader title="예약 상세" description="예약 정보를 확인하고 수정합니다. 날짜와 시작 시간, 상태를 변경할 수 있습니다." onClose={onClose} />
       <ModalBody>
         <div className="grid gap-4 md:grid-cols-[280px,1fr]">
           <div className="space-y-3">

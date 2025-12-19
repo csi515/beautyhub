@@ -1,3 +1,4 @@
+﻿import { SupabaseClient } from '@supabase/supabase-js'
 /**
  * 고객 상품 보유 내역 Repository
  */
@@ -27,7 +28,9 @@ export interface CustomerProductLedger {
   product_id: string
   delta: number
   reason?: string | null
+  notes?: string | null
   created_at?: string
+
 }
 
 export interface CustomerProductCreateInput {
@@ -46,7 +49,7 @@ export interface CustomerProductUpdateInput {
 }
 
 export class CustomerProductsRepository extends BaseRepository<CustomerProduct> {
-  constructor(userId: string, supabase: any) {
+  constructor(userId: string, supabase: SupabaseClient) {
     super(userId, 'customer_products', supabase)
   }
 
@@ -93,7 +96,7 @@ export class CustomerProductsRepository extends BaseRepository<CustomerProduct> 
       quantity,
     }
 
-    // notes는 값이 있을 때만 포함 (스키마에 없을 수 있음)
+    // notes 값을 업데이트
     if (notes !== undefined && notes !== null && notes !== '' && String(notes).trim() !== '') {
       payload['notes'] = String(notes).trim()
     }
@@ -111,7 +114,7 @@ export class CustomerProductsRepository extends BaseRepository<CustomerProduct> 
       this.handleSupabaseError(error)
     }
 
-    // 변동내역 기록 (추가)
+    // 변경 내역 기록
     if (data && typeof input.quantity !== 'undefined' && input.quantity > 0) {
       const { error: ledgerError } = await this.supabase.from('customer_product_ledger').insert({
         owner_id: this.userId,
@@ -130,10 +133,40 @@ export class CustomerProductsRepository extends BaseRepository<CustomerProduct> 
   }
 
   /**
+   * 상품 보유 내역의 ledger 항목 추가
+   */
+  async addLedgerEntry(customerProductId: string, delta: number, reason: string, notes?: string): Promise<void> {
+    // customer_product 정보 조회
+    const { data: holding, error: findError } = await this.supabase
+      .from(this.tableName)
+      .select('id, customer_id, product_id')
+      .eq('owner_id', this.userId)
+      .eq('id', customerProductId)
+      .single()
+
+    if (findError || !holding) {
+      throw new NotFoundError('holding not found')
+    }
+
+    const { error } = await this.supabase.from('customer_product_ledger').insert({
+      owner_id: this.userId,
+      customer_id: holding.customer_id,
+      product_id: holding.product_id,
+      delta,
+      reason,
+      notes,
+    })
+
+    if (error) {
+      this.handleSupabaseError(error)
+    }
+  }
+
+  /**
    * 상품 보유 내역 업데이트 (ledger 기록 포함)
    */
   async updateHolding(id: string, input: CustomerProductUpdateInput): Promise<CustomerProduct> {
-    // 기존 수량 조회
+    // 기존 내역 조회
     const { data: prev, error: findError } = await this.supabase
       .from(this.tableName)
       .select('id, customer_id, product_id, quantity')
@@ -149,7 +182,7 @@ export class CustomerProductsRepository extends BaseRepository<CustomerProduct> 
     if (typeof input.quantity !== 'undefined') {
       patch['quantity'] = Number(input.quantity)
     }
-    // notes는 값이 있을 때만 업데이트 (스키마에 없을 수 있음)
+    // notes 값을 업데이트
     const notesValue = input.notes
     if (notesValue !== undefined && notesValue !== null && notesValue !== '' && String(notesValue).trim() !== '') {
       patch['notes'] = String(notesValue).trim()
@@ -187,63 +220,11 @@ export class CustomerProductsRepository extends BaseRepository<CustomerProduct> 
 
         if (ledgerError) {
           console.error('[CustomerProducts] Failed to record ledger:', ledgerError)
-          // ledger 기록 실패는 전체 업데이트를 실패시키지 않음
-          // 하지만 로깅하여 추적 가능하도록 함
         }
       }
     }
 
     return data as CustomerProduct
-  }
-
-  /**
-   * 상품 보유 내역의 ledger 조회
-   */
-  async getLedger(customerProductId: string, options: QueryOptions = {}): Promise<CustomerProductLedger[]> {
-    const { limit = 20, offset = 0 } = options
-
-    const { data, error } = await this.supabase
-      .from('customer_product_ledger')
-      .select('*')
-      .eq('owner_id', this.userId)
-      .eq('customer_product_id', customerProductId)
-      .order('created_at', { ascending: false })
-      .range(offset, offset + limit - 1)
-
-    if (error) {
-      this.handleSupabaseError(error)
-    }
-
-    return (data || []) as CustomerProductLedger[]
-  }
-
-  /**
-   * 상품 보유 내역의 ledger 항목 추가
-   */
-  async addLedgerEntry(customerProductId: string, delta: number, reason: string): Promise<void> {
-    // customer_product 정보 조회
-    const { data: holding, error: findError } = await this.supabase
-      .from(this.tableName)
-      .select('id, customer_id, product_id')
-      .eq('owner_id', this.userId)
-      .eq('id', customerProductId)
-      .single()
-
-    if (findError || !holding) {
-      throw new NotFoundError('holding not found')
-    }
-
-    const { error } = await this.supabase.from('customer_product_ledger').insert({
-      owner_id: this.userId,
-      customer_id: holding.customer_id,
-      product_id: holding.product_id,
-      delta,
-      reason,
-    })
-
-    if (error) {
-      this.handleSupabaseError(error)
-    }
   }
 
   /**
@@ -268,7 +249,7 @@ export class CustomerProductsRepository extends BaseRepository<CustomerProduct> 
         .maybeSingle()
 
       if (findError || !matching) {
-        // 매칭되는 항목이 없으면 조용히 실패 (에러를 던지지 않음)
+        // 매칭되는 항목이 없으면 조용히 실패 (에러를 내지 않음)
         return
       }
 
@@ -339,5 +320,19 @@ export class CustomerProductsRepository extends BaseRepository<CustomerProduct> 
 
     return (data || []) as CustomerProductLedger[]
   }
-}
 
+  /**
+   * Ledger 항목 업데이트 (메모 수정 등)
+   */
+  async updateLedgerNote(ledgerId: string, notes: string): Promise<void> {
+    const { error } = await this.supabase
+      .from('customer_product_ledger')
+      .update({ notes: notes || null })
+      .eq('id', ledgerId)
+      .eq('owner_id', this.userId)
+
+    if (error) {
+      this.handleSupabaseError(error)
+    }
+  }
+}

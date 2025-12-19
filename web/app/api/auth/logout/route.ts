@@ -8,6 +8,7 @@ export async function POST(req: Request) {
   res.cookies.set('sb:token', '', { path: '/', httpOnly: true, maxAge: 0, sameSite: 'lax', secure })
   res.cookies.set('sb:refresh', '', { path: '/', httpOnly: true, maxAge: 0, sameSite: 'lax', secure })
   res.cookies.set('sb-access-token', '', { path: '/', httpOnly: true, maxAge: 0, sameSite: 'lax', secure })
+  res.cookies.set('demo_mode', '', { path: '/', httpOnly: true, maxAge: 0, sameSite: 'lax', secure })
   return res
 }
 

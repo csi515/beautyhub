@@ -74,7 +74,7 @@ export default function TransactionDetailModal({ open, onClose, item, onSaved, o
   if (!open || !form) return null
   return (
     <Modal open={open} onClose={onClose} size="lg">
-      <ModalHeader title="거래 상세" description="거래 일자와 금액을 확인·수정합니다. 일자와 금액을 정확히 입력해주세요." />
+      <ModalHeader title="거래 상세" description="거래 일자와 금액을 확인·수정합니다. 일자와 금액을 정확히 입력해주세요." onClose={onClose} />
       <ModalBody>
         <div className="grid gap-3 md:grid-cols-[200px,1fr]">
           <div className="space-y-2">

@@ -7,6 +7,12 @@ import { DEFAULT_SETTINGS, type AppSettings, type FinancialSettings, type StaffS
 import Card from '@/app/components/ui/Card'
 import { Skeleton } from '@/app/components/ui/Skeleton'
 
+// MUI Imports
+import Container from '@mui/material/Container'
+import Stack from '@mui/material/Stack'
+import Typography from '@mui/material/Typography'
+import Box from '@mui/material/Box'
+
 // Summary Cards
 import BusinessProfileSummaryCard from '@/app/components/settings/cards/BusinessProfileSummaryCard'
 import BookingSettingsSummaryCard from '@/app/components/settings/cards/BookingSettingsSummaryCard'
@@ -98,57 +104,61 @@ export default function SettingsPage() {
     }
   }
 
-
-
   if (loading) {
     return (
-      <main className="max-w-5xl mx-auto px-4 sm:px-6 py-8 space-y-6 pb-24">
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-3xl font-bold text-neutral-900">설정</h1>
-            <p className="text-sm text-neutral-600 mt-1">앱의 모든 설정을 관리합니다.</p>
-          </div>
-        </div>
-        {[1, 2, 3, 4].map((i) => (
-          <Card key={i}>
-            <Skeleton className="h-8 w-48 mb-4" />
-            <Skeleton className="h-64 w-full" />
-          </Card>
-        ))}
-      </main>
+      <Container maxWidth="lg" sx={{ py: 4, pb: 12 }}>
+        <Stack spacing={4}>
+          <Box>
+            <Skeleton className="h-10 w-32 mb-2" />
+            <Skeleton className="h-5 w-64" />
+          </Box>
+          {[1, 2, 3, 4].map((i) => (
+            <Card key={i}>
+              <Skeleton className="h-8 w-48 mb-4" />
+              <Skeleton className="h-32 w-full" />
+            </Card>
+          ))}
+        </Stack>
+      </Container>
     )
   }
 
   return (
-    <main className="max-w-5xl mx-auto px-4 sm:px-6 py-8 space-y-6 pb-24">
-      {/* 헤더 */}
-      <div>
-        <h1 className="text-3xl font-bold text-neutral-900">설정</h1>
-        <p className="text-sm text-neutral-600 mt-2">
-          각 설정 카드의 편집 버튼을 클릭하여 수정하세요.
-        </p>
-      </div>
+    <Container maxWidth="lg" sx={{ py: 4, pb: 12 }}>
+      <Stack spacing={4}>
+        {/* 헤더 */}
+        <Box>
+          <Typography variant="h4" fontWeight="bold" gutterBottom>
+            설정
+          </Typography>
+          <Typography variant="body2" color="text.secondary">
+            각 설정 카드의 편집 버튼을 클릭하여 수정하세요.
+          </Typography>
+        </Box>
 
-      {/* 요약 카드들 */}
-      <BusinessProfileSummaryCard
-        data={settings.businessProfile}
-        onEdit={() => setBusinessModalOpen(true)}
-      />
+        {/* 요약 카드들 */}
+        <Stack spacing={3}>
+          <BusinessProfileSummaryCard
+            data={settings.businessProfile}
+            onEdit={() => setBusinessModalOpen(true)}
+          />
 
-      <BookingSettingsSummaryCard
-        data={settings.bookingSettings}
-        onEdit={() => setBookingModalOpen(true)}
-      />
+          <BookingSettingsSummaryCard
+            data={settings.bookingSettings}
+            onEdit={() => setBookingModalOpen(true)}
+          />
 
-      <FinancialSettingsSummaryCard
-        data={settings.financialSettings}
-        onEdit={() => setFinancialModalOpen(true)}
-      />
+          <FinancialSettingsSummaryCard
+            data={settings.financialSettings}
+            onEdit={() => setFinancialModalOpen(true)}
+          />
 
-      <StaffSettingsSummaryCard
-        data={settings.staffSettings}
-        onEdit={() => setStaffModalOpen(true)}
-      />
+          <StaffSettingsSummaryCard
+            data={settings.staffSettings}
+            onEdit={() => setStaffModalOpen(true)}
+          />
+        </Stack>
+      </Stack>
 
       {/* 모달들 */}
       <BusinessProfileModal
@@ -178,6 +188,6 @@ export default function SettingsPage() {
         onClose={() => setStaffModalOpen(false)}
         onSave={handleSaveStaffSettings}
       />
-    </main>
+    </Container>
   )
 }

@@ -1,6 +1,8 @@
 'use client'
 
 import { useState } from 'react'
+import { Box, Typography, CircularProgress, Stack } from '@mui/material'
+import { CheckCircle2, UserPlus } from 'lucide-react'
 import Modal, { ModalBody, ModalFooter, ModalHeader } from '../ui/Modal'
 import Button from '../ui/Button'
 import Tabs, { TabsContent, TabsList, TabsTrigger } from '../ui/Tabs'
@@ -28,6 +30,7 @@ export default function CustomerDetailModal({
   const {
     form, setForm,
     loading,
+    saving,
     error,
     features, setFeatures,
     fieldErrors,
@@ -51,20 +54,47 @@ export default function CustomerDetailModal({
     handleIncreaseHolding,
     handleDecreaseHolding,
     handleDeleteHolding,
+    handleUpdateLedgerNote,
     removeItem
   } = useCustomerDetail(item, open, onSaved, onDeleted, onClose)
 
   if (!open || !form) return null
 
+  const isNew = !form?.id
+
   return (
     <Modal open={open} onClose={onClose} size="lg">
-      <ModalHeader title="고객 상세" />
+      <ModalHeader
+        title={isNew ? "신규 고객 추가" : `고객 정보: ${form.name}`}
+        onClose={onClose}
+      >
+        {!isNew && (
+          <Box sx={{ ml: 2, display: 'flex', alignItems: 'center' }}>
+            {saving ? (
+              <Stack direction="row" spacing={1} alignItems="center">
+                <CircularProgress size={14} thickness={6} />
+                <Typography variant="caption" color="text.secondary">저장 중...</Typography>
+              </Stack>
+            ) : (
+              <Stack direction="row" spacing={0.5} alignItems="center">
+                <CheckCircle2 size={14} className="text-emerald-500" />
+                <Typography variant="caption" color="text.secondary">자동 저장됨</Typography>
+              </Stack>
+            )}
+          </Box>
+        )}
+      </ModalHeader>
+
       <ModalBody>
-        <div className="space-y-6">
-          {error && <p className="text-sm text-rose-600">{error}</p>}
+        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
+          {error && (
+            <Box sx={{ p: 1.5, bgcolor: 'error.50', borderRadius: 1.5, border: '1px solid', borderColor: 'error.100' }}>
+              <Typography variant="body2" color="error.main">{error}</Typography>
+            </Box>
+          )}
 
           {/* 상단 요약 바 - 기존 고객만 */}
-          {form?.id && (
+          {!isNew && (
             <CustomerSummaryBar
               name={form.name}
               phone={form.phone ?? null}
@@ -74,9 +104,9 @@ export default function CustomerDetailModal({
             />
           )}
 
-          {!form?.id ? (
+          {isNew ? (
             // 신규 고객: 탭 없이 기본정보만 표시
-            <div className="mt-6">
+            <Box sx={{ mt: 1 }}>
               <CustomerOverviewTab
                 form={form ? {
                   id: form.id,
@@ -107,15 +137,13 @@ export default function CustomerDetailModal({
                   })
                 }}
                 onChangeFeatures={setFeatures}
-
-                onDelete={removeItem}
-                isNewCustomer={!form?.id}
+                isNewCustomer={true}
               />
-            </div>
+            </Box>
           ) : (
             // 기존 고객: 탭 표시
-            <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as 'overview' | 'transactions')} className="mt-6">
-              <TabsList className="mb-6 border-b-2 border-neutral-400">
+            <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as 'overview' | 'transactions')}>
+              <TabsList>
                 <TabsTrigger value="overview">
                   기본 정보
                 </TabsTrigger>
@@ -124,7 +152,6 @@ export default function CustomerDetailModal({
                 </TabsTrigger>
               </TabsList>
 
-              {/* 기본 정보 탭 */}
               <TabsContent value="overview">
                 <CustomerOverviewTab
                   form={form ? {
@@ -135,7 +162,6 @@ export default function CustomerDetailModal({
                     address: form.address ?? null,
                   } : null}
                   features={features}
-
                   fieldErrors={fieldErrors}
                   onChangeForm={(updater) => {
                     setForm(f => {
@@ -157,13 +183,11 @@ export default function CustomerDetailModal({
                     })
                   }}
                   onChangeFeatures={setFeatures}
-
                   onDelete={removeItem}
-                  isNewCustomer={!form?.id}
+                  isNewCustomer={false}
                 />
               </TabsContent>
 
-              {/* 통합 거래 탭 (포인트 + 보유상품) */}
               <TabsContent value="transactions">
                 <CustomerTransactionsTab
                   customerId={form?.id || ''}
@@ -193,25 +217,28 @@ export default function CustomerDetailModal({
                   onIncrease={(holding) => handleIncreaseHolding(holding)}
                   onDecrease={(holding) => handleDecreaseHolding(holding)}
                   onDelete={(id: string) => handleDeleteHolding(id)}
+                  onUpdateLedgerNote={handleUpdateLedgerNote}
                 />
               </TabsContent>
             </Tabs>
           )}
-        </div>
+        </Box>
       </ModalBody>
-      {!form?.id && (
+
+      {isNew && (
         <ModalFooter>
-          <div className="flex justify-end w-full">
+          <Box sx={{ display: 'flex', gap: 1.5, width: '100%', justifyContent: 'flex-end' }}>
+            <Button variant="ghost" onClick={onClose} disabled={loading}>취소</Button>
             <Button
               variant="primary"
               onClick={createAndClose}
               loading={loading}
               disabled={loading}
-              className="min-h-[44px]"
+              leftIcon={<UserPlus size={18} />}
             >
-              고객 생성
+              고객 등록
             </Button>
-          </div>
+          </Box>
         </ModalFooter>
       )}
     </Modal>

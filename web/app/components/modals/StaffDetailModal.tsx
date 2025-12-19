@@ -79,7 +79,7 @@ export default function StaffDetailModal({ open, onClose, item, onSaved, onDelet
   if (!open) return null
   return (
     <Modal open={open} onClose={onClose} size="lg">
-      <ModalHeader title="직원 상세" description="직원 정보를 관리합니다. 이름은 필수입니다." />
+      <ModalHeader title="직원 상세" description="직원 정보를 관리합니다. 이름은 필수입니다." onClose={onClose} />
       <ModalBody>
         <div className="space-y-3">
           {error && (

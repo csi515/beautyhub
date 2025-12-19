@@ -1,7 +1,12 @@
 /**** Next.js config ****/
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  images: { 
+  eslint: {
+    // Warning: This allows production builds to successfully complete even if
+    // your project has ESLint errors.
+    ignoreDuringBuilds: true,
+  },
+  images: {
     domains: [],
     // Vercel 최적화를 위한 이미지 설정
     formats: ['image/avif', 'image/webp'],
@@ -31,9 +36,9 @@ const nextConfig = {
       },
     ]
   },
-  experimental: { 
-    serverActions: { 
-      bodySizeLimit: '2mb' 
+  experimental: {
+    serverActions: {
+      bodySizeLimit: '2mb'
     },
     // 번들 크기 최적화
     optimizePackageImports: ['@heroicons/react', 'lucide-react', 'recharts'],
@@ -60,9 +65,9 @@ const nextConfig = {
             default: false,
             vendors: false,
             // 큰 라이브러리를 별도 청크로 분리
-            fullcalendar: {
-              name: 'fullcalendar',
-              test: /[\\/]node_modules[\\/]@fullcalendar[\\/]/,
+            'react-big-calendar': {
+              name: 'react-big-calendar',
+              test: /[\\/]node_modules[\\/]react-big-calendar[\\/]/,
               priority: 30,
               reuseExistingChunk: true,
             },

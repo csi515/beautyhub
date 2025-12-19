@@ -10,7 +10,7 @@ export const GET = withAuth(async (req: NextRequest, { userId, supabase, params 
     return createSuccessResponse({ ok: false, error: "Missing or invalid product ID" })
   }
   const repository = new CustomerProductsRepository(userId, supabase)
-  const data = await repository.getLedger(id, queryParams)
+  const data = await repository.getCustomerLedger(id, queryParams)
   return createSuccessResponse(data)
 })
 

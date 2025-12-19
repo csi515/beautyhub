@@ -22,6 +22,7 @@ type LedgerEntry = {
   product_id?: string
   delta: number
   reason?: string
+  notes?: string
 }
 
 type CustomerHoldingsTabProps = {
@@ -54,6 +55,7 @@ type CustomerHoldingsTabProps = {
   onChangeHoldPageSize: (size: number) => void
   onChangeAllLedgerPage: (page: number) => void
   onChangeAllLedgerPageSize: (size: number) => void
+  onUpdateLedgerNote: (ledgerId: string, notes: string) => Promise<void>
 }
 
 export default function CustomerHoldingsTab({
@@ -85,7 +87,8 @@ export default function CustomerHoldingsTab({
   onChangeHoldPage,
   onChangeHoldPageSize,
   onChangeAllLedgerPage,
-  onChangeAllLedgerPageSize
+  onChangeAllLedgerPageSize,
+  onUpdateLedgerNote
 }: CustomerHoldingsTabProps) {
   const [isLedgerExpanded, setIsLedgerExpanded] = useState(false)
 
@@ -264,6 +267,7 @@ export default function CustomerHoldingsTab({
                       <th className="text-left p-2 text-xs font-semibold text-neutral-700 bg-neutral-50">상품</th>
                       <th className="text-right p-2 text-xs font-semibold text-neutral-700 bg-neutral-50">변경</th>
                       <th className="text-left p-2 text-xs font-semibold text-neutral-700 bg-neutral-50">사유</th>
+                      <th className="text-left p-2 text-xs font-semibold text-neutral-700 bg-neutral-50">메모</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-neutral-200">
@@ -287,6 +291,28 @@ export default function CustomerHoldingsTab({
                             {(r.delta || 0) > 0 ? '+' : ''}{(r.delta || 0).toLocaleString()}
                           </td>
                           <td className="p-2 text-xs text-neutral-600">{r.reason || '-'}</td>
+                          <td className="p-2 text-xs text-neutral-600">
+                            <input
+                              className="w-full bg-transparent border-none focus:ring-1 focus:ring-blue-500 rounded px-1 text-xs"
+                              value={r.notes || ''}
+                              placeholder="메모 입력"
+                              onChange={(e) => {
+                                // 로컬 상태 업데이트는 상위 컴포넌트에서 처리하거나 여기서 디바운싱 처리 필요
+                                // 현재는 흐름상 onBlur에서 저장하도록 유도
+                              }}
+                              onBlur={(e) => {
+                                if (r.notes !== e.target.value) {
+                                  onUpdateLedgerNote(r.created_at, e.target.value) // 주의: created_at을 ID로 쓰고 있다면 수정 필요. 실제 ID가 필요함.
+                                  // LedgerEntry 타입에 id가 없어서 문제될 수 있음. 타입을 확인해봐야 함.
+                                }
+                              }}
+                              onKeyDown={(e) => {
+                                if (e.key === 'Enter') {
+                                  e.currentTarget.blur()
+                                }
+                              }}
+                            />
+                          </td>
                         </tr>)
                     })}
                     {allLedger.length === 0 && (

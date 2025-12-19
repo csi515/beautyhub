@@ -96,6 +96,7 @@ export const MOCK_DASHBOARD_DATA = {
     }).length,
     monthlyProfit: 3500000, // Hardcoded for simplicity or calculate
     monthlyNewCustomers: MOCK_CUSTOMERS.filter(c => new Date(c.created_at) > new Date(Date.now() - 30 * 24 * 3600 * 1000)).length,
+    monthlyAppointments: MOCK_APPOINTMENTS.filter(a => new Date(a.appointment_date) > new Date(Date.now() - 30 * 24 * 3600 * 1000)).length,
     activeProducts: MOCK_PRODUCTS,
     recentAppointments: MOCK_APPOINTMENTS.slice(0, 5).map(a => ({
         id: a.id,

@@ -1,12 +1,13 @@
+﻿import { SupabaseClient } from '@supabase/supabase-js'
 /**
- * 고객 Repository
+ * 怨좉컼 Repository
  */
 
 import { BaseRepository } from './base.repository'
 import type { Customer, CustomerCreateInput, CustomerUpdateInput } from '@/types/entities'
 
 export class CustomersRepository extends BaseRepository<Customer> {
-  constructor(userId: string, supabase: any) {
+  constructor(userId: string, supabase: SupabaseClient) {
     super(userId, 'customers', supabase)
   }
 
@@ -15,7 +16,7 @@ export class CustomersRepository extends BaseRepository<Customer> {
   }
 
   /**
-   * 고객 생성
+   * 怨좉컼 ?앹꽦
    */
   async createCustomer(input: CustomerCreateInput): Promise<Customer> {
     const name = String(input.name || '').trim()
@@ -30,7 +31,7 @@ export class CustomersRepository extends BaseRepository<Customer> {
       address: input.address || null,
     }
 
-    // features는 값이 있을 때만 포함 (스키마에 없을 수 있음)
+    // features??媛믪씠 ?덉쓣 ?뚮쭔 ?ы븿 (?ㅽ궎留덉뿉 ?놁쓣 ???덉쓬)
     const featuresValue = input.features
     if (featuresValue !== undefined) {
       if (featuresValue === null) {
@@ -45,7 +46,7 @@ export class CustomersRepository extends BaseRepository<Customer> {
   }
 
   /**
-   * 고객 업데이트
+   * 怨좉컼 ?낅뜲?댄듃
    */
   async updateCustomer(id: string, input: CustomerUpdateInput): Promise<Customer> {
     const payload: Partial<Customer> = {}
@@ -61,7 +62,7 @@ export class CustomersRepository extends BaseRepository<Customer> {
     if (input.phone !== undefined) payload.phone = input.phone || null
     if (input.email !== undefined) payload.email = input.email || null
     if (input.address !== undefined) payload.address = input.address || null
-    // features는 값이 있을 때만 업데이트 (스키마에 없을 수 있음)
+    // features??媛믪씠 ?덉쓣 ?뚮쭔 ?낅뜲?댄듃 (?ㅽ궎留덉뿉 ?놁쓣 ???덉쓬)
     const featuresValue = input.features
     if (featuresValue !== undefined) {
       if (featuresValue === null) {
@@ -75,4 +76,5 @@ export class CustomersRepository extends BaseRepository<Customer> {
     return this.update(id, payload)
   }
 }
+
 

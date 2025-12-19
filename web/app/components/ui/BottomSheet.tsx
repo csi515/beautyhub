@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from 'react'
 import { X } from 'lucide-react'
+import IconButton from '@mui/material/IconButton'
 import { lockScroll, unlockScroll } from '@/app/lib/utils/scrollLock'
 
 type BottomSheetProps = {
@@ -100,7 +101,7 @@ export function BottomSheet({
   const handleTouchEnd = () => {
     if (!swipeToClose || !isDragging) return
     setIsDragging(false)
-    
+
     const threshold = 100 // 100px 이상 드래그 시 닫기
     if (dragY > threshold) {
       onClose()
@@ -161,13 +162,14 @@ export function BottomSheet({
           {title && (
             <div className="flex items-center justify-between gap-4">
               <h2 className="text-xl font-bold text-neutral-900">{title}</h2>
-              <button
+              <IconButton
                 onClick={onClose}
-                className="h-10 w-10 flex items-center justify-center rounded-lg text-neutral-500 hover:bg-neutral-100 active:bg-neutral-200 transition-colors touch-manipulation"
                 aria-label="닫기"
+                edge="end"
+                size="small"
               >
                 <X className="h-5 w-5" />
-              </button>
+              </IconButton>
             </div>
           )}
           {description && (

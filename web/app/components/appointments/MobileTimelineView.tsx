@@ -18,27 +18,31 @@ export type MobileTimelineViewRef = {
 // 시간대별로 이벤트 그룹화
 const groupEventsByDate = (events: AppointmentEvent[]) => {
   const grouped: Record<string, AppointmentEvent[]> = {}
-  
+
   events.forEach(event => {
-    const dateStr = event.start.slice(0, 10) // YYYY-MM-DD
+    // event.start가 Date인 경우와 string인 경우 모두 처리
+    const startStr = typeof event.start === 'string' ? event.start : event.start.toISOString()
+    const dateStr = startStr.slice(0, 10) // YYYY-MM-DD
     if (!grouped[dateStr]) {
       grouped[dateStr] = []
     }
     grouped[dateStr].push(event)
   })
-  
+
   // 각 날짜의 이벤트를 시간순으로 정렬
   Object.keys(grouped).forEach(dateStr => {
     const events = grouped[dateStr]
     if (events) {
       events.sort((a, b) => {
-        const timeA = a.start.slice(11, 16) // HH:mm
-        const timeB = b.start.slice(11, 16)
+        const startStrA = typeof a.start === 'string' ? a.start : a.start.toISOString()
+        const startStrB = typeof b.start === 'string' ? b.start : b.start.toISOString()
+        const timeA = startStrA.slice(11, 16) // HH:mm
+        const timeB = startStrB.slice(11, 16)
         return timeA.localeCompare(timeB)
       })
     }
   })
-  
+
   return grouped
 }
 
@@ -113,19 +117,19 @@ const MobileTimelineView = forwardRef<MobileTimelineViewRef, MobileTimelineViewP
         let scrollContainer: HTMLElement | null = todayRef.current.parentElement
         while (scrollContainer && scrollContainer !== document.body) {
           const style = window.getComputedStyle(scrollContainer)
-          if (style.overflowY === 'auto' || style.overflowY === 'scroll' || 
-              scrollContainer.scrollHeight > scrollContainer.clientHeight) {
+          if (style.overflowY === 'auto' || style.overflowY === 'scroll' ||
+            scrollContainer.scrollHeight > scrollContainer.clientHeight) {
             break
           }
           scrollContainer = scrollContainer.parentElement
         }
-        
+
         // 스크롤 컨테이너를 찾지 못하면 window를 사용
         if (scrollContainer && scrollContainer !== document.body) {
           const containerRect = scrollContainer.getBoundingClientRect()
           const todayRect = todayRef.current.getBoundingClientRect()
           const scrollOffset = todayRect.top - containerRect.top - 20 // 20px 여백
-          
+
           scrollContainer.scrollTo({
             top: scrollContainer.scrollTop + scrollOffset,
             behavior: 'smooth'
@@ -134,7 +138,7 @@ const MobileTimelineView = forwardRef<MobileTimelineViewRef, MobileTimelineViewP
           // window 스크롤 사용
           const todayRect = todayRef.current.getBoundingClientRect()
           const scrollOffset = todayRect.top + window.scrollY - 20 // 20px 여백
-          
+
           window.scrollTo({
             top: scrollOffset,
             behavior: 'smooth'
@@ -192,17 +196,17 @@ const MobileTimelineView = forwardRef<MobileTimelineViewRef, MobileTimelineViewP
             {/* 이벤트 리스트 */}
             <div className="space-y-2 pl-4 border-l-2 border-neutral-200">
               {dayEvents.map((event, idx) => {
-                const timeStr = event.start.slice(11, 16)
+                const startStr = typeof event.start === 'string' ? event.start : event.start.toISOString()
+                const timeStr = startStr.slice(11, 16)
                 const statusColor = getStatusColor(event.extendedProps?.status)
                 const isLast = idx === dayEvents.length - 1
-                
+
                 return (
                   <div
                     key={event.id}
                     onClick={() => onEventClick(event)}
-                    className={`relative -ml-4 cursor-pointer touch-manipulation transition-all duration-200 active:scale-[0.98] ${
-                      isLast ? 'pb-0' : 'pb-2'
-                    }`}
+                    className={`relative -ml-4 cursor-pointer touch-manipulation transition-all duration-200 active:scale-[0.98] ${isLast ? 'pb-0' : 'pb-2'
+                      }`}
                   >
                     {/* 타임라인 점 */}
                     <div className="absolute left-0 top-3 -translate-x-1/2">
@@ -256,8 +260,8 @@ const MobileTimelineView = forwardRef<MobileTimelineViewRef, MobileTimelineViewP
                         <div className="flex-shrink-0">
                           <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${statusColor.text} ${statusColor.bg} border ${statusColor.border}`}>
                             {event.extendedProps?.status === 'complete' ? '완료' :
-                             event.extendedProps?.status === 'cancelled' ? '취소' :
-                             event.extendedProps?.status === 'pending' ? '대기' : '예약확정'}
+                              event.extendedProps?.status === 'cancelled' ? '취소' :
+                                event.extendedProps?.status === 'pending' ? '대기' : '예약확정'}
                           </span>
                         </div>
                       </div>

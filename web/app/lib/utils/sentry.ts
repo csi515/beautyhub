@@ -12,7 +12,7 @@
 const SENTRY_DSN = process.env['NEXT_PUBLIC_SENTRY_DSN']
 const ENVIRONMENT = process.env.NODE_ENV || 'development'
 
-let Sentry: any = null
+let Sentry: typeof import('@sentry/nextjs') | null = null
 
 // Sentry 동적 import (패키지가 없어도 빌드 에러 없음)
 async function getSentry() {
@@ -61,7 +61,7 @@ export async function captureError(error: Error, context?: Record<string, any>) 
 
     try {
         SentrySDK.captureException(error, {
-            extra: context,
+            extra: context as any,
         })
     } catch (err) {
         console.error('Sentry 에러 캡처 실패:', err)
@@ -78,8 +78,8 @@ export async function setSentryUser(user: { id: string; email?: string; role?: s
     try {
         SentrySDK.setUser({
             id: user.id,
-            email: user.email,
-            role: user.role,
+            ...(user.email && { email: user.email }),
+            ...(user.role && { role: user.role }),
         })
     } catch (error) {
         console.error('Sentry 사용자 설정 실패:', error)
@@ -110,7 +110,7 @@ export async function trackEvent(eventName: string, data?: Record<string, any>) 
     try {
         SentrySDK.captureMessage(eventName, {
             level: 'info',
-            extra: data,
+            extra: data as any,
         })
     } catch (error) {
         console.error('Sentry 이벤트 추적 실패:', error)

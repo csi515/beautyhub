@@ -43,7 +43,7 @@ export default function NumberInput({
     }
 
     const numValue = typeof value === 'string' ? parseFloat(value) : value
-    
+
     if (isNaN(numValue)) {
       setDisplayValue('')
       return
@@ -62,23 +62,23 @@ export default function NumberInput({
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const inputValue = e.target.value
-    
+
     // 숫자만 허용 (소수점, 음수 부호 포함)
     const cleanedValue = inputValue.replace(/[^\d.-]/g, '')
     setDisplayValue(cleanedValue)
-    
+
     const numValue = cleanedValue === '' || cleanedValue === '-' ? null : parseFloat(cleanedValue)
-    
+
     if (numValue !== null && !isNaN(numValue)) {
       let finalValue = numValue
-      
+
       if (min !== undefined && finalValue < min) {
         finalValue = min
       }
       if (max !== undefined && finalValue > max) {
         finalValue = max
       }
-      
+
       onChange?.(finalValue)
     } else {
       onChange?.(null)
@@ -105,12 +105,16 @@ export default function NumberInput({
       {...(error ? { error } : {})}
       type="text"
       inputMode="numeric"
-      step={step}
+      InputProps={{
+        inputProps: {
+          step,
+        }
+      }}
       value={displayValue}
       onChange={handleChange}
       onBlur={handleBlur}
       onFocus={handleFocus}
-      className={className}
+      {...(className ? { className } : {})}
     />
   )
 }

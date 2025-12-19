@@ -70,17 +70,19 @@ const ERROR_PATTERN_MESSAGES: Array<{ pattern: RegExp; message: string }> = [
 /**
  * 에러 객체에서 코드 추출
  */
-function extractErrorCode(error: any): string | null {
-    if (!error) return null
+function extractErrorCode(error: unknown): string | null {
+    if (!error || typeof error !== 'object') return null
+
+    const err = error as { code?: string; details?: { code?: string }; status?: number | string }
 
     // Supabase 에러 코드
-    if (error.code) return error.code
+    if (err.code) return err.code
 
     // PostgreSQL 에러 코드
-    if (error.details?.code) return error.details.code
+    if (err.details?.code) return err.details.code
 
     // HTTP 상태 코드를 문자열로
-    if (error.status) return error.status.toString()
+    if (err.status) return err.status.toString()
 
     return null
 }

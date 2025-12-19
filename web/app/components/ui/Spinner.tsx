@@ -1,30 +1,28 @@
 'use client'
 
-import clsx from 'clsx'
+import CircularProgress from '@mui/material/CircularProgress'
+import Box from '@mui/material/Box'
 
 type Props = {
   size?: 'sm' | 'md' | 'lg'
   className?: string
+  color?: 'primary' | 'secondary' | 'inherit' | 'success' | 'error' | 'info' | 'warning'
 }
 
-export default function Spinner({ size = 'md', className }: Props) {
-  const sizes: Record<string, string> = {
-    sm: 'h-4 w-4 border-2',
-    md: 'h-6 w-6 border-2',
-    lg: 'h-8 w-8 border-3',
+export default function Spinner({ size = 'md', className, color = 'primary' }: Props) {
+  const sizeMap = {
+    sm: 20,
+    md: 32,
+    lg: 48,
   }
 
   return (
-    <div
-      className={clsx(
-        'inline-block animate-spin rounded-full border-solid border-current border-r-transparent',
-        sizes[size],
-        className,
-      )}
-      role="status"
-      aria-label="로딩 중"
-    >
-      <span className="sr-only">로딩 중...</span>
-    </div>
+    <Box className={className} sx={{ display: 'inline-flex', verticalAlign: 'middle' }}>
+      <CircularProgress
+        size={sizeMap[size]}
+        color={color}
+        thickness={4}
+      />
+    </Box>
   )
 }

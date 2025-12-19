@@ -50,10 +50,10 @@ export default function ReservationCreateModal({ open, onClose, draft, onSaved }
         if (!open || !form.customer_id) { setHoldingsByProduct({}); return }
         const list = await customerProductsApi.list(form.customer_id)
         const qtyMap: Record<string, number> = {}
-        ;(Array.isArray(list) ? list : []).forEach((h) => {
-          const pid = String(h.product_id)
-          qtyMap[pid] = Number(h.quantity || 0)
-        })
+          ; (Array.isArray(list) ? list : []).forEach((h) => {
+            const pid = String(h.product_id)
+            qtyMap[pid] = Number(h.quantity || 0)
+          })
         setHoldingsByProduct(qtyMap)
       } catch {
         setHoldingsByProduct({})
@@ -83,7 +83,7 @@ export default function ReservationCreateModal({ open, onClose, draft, onSaved }
         payload.notes = form.notes.trim()
       }
       const appointment = await appointmentsApi.create(payload)
-      
+
       // 예약 완료 시 자동 매출 생성 옵션
       if (autoCreateTransaction && form.customer_id && transactionAmount) {
         try {
@@ -104,9 +104,9 @@ export default function ReservationCreateModal({ open, onClose, draft, onSaved }
           toast.error('예약은 저장되었지만 매출 생성에 실패했습니다.')
         }
       }
-      
+
       // persist memo for customer detail modal
-      try { if (form.customer_id && (form.notes || '').trim()) localStorage.setItem(`memoDraft:${form.customer_id}`, form.notes || '') } catch {}
+      try { if (form.customer_id && (form.notes || '').trim()) localStorage.setItem(`memoDraft:${form.customer_id}`, form.notes || '') } catch { }
       onSaved(); onClose(); toast.success('예약이 저장되었습니다.')
     } catch (e: unknown) {
       const errorMessage = e instanceof Error ? e.message : '에러가 발생했습니다.'
@@ -132,6 +132,7 @@ export default function ReservationCreateModal({ open, onClose, draft, onSaved }
       <ModalHeader
         title="새 예약"
         description="날짜와 시간, 고객, 서비스를 선택해 새로운 예약을 등록합니다."
+        onClose={onClose}
       />
       <ModalBody>
         <div className="grid gap-4 md:grid-cols-[280px,1fr]">
@@ -306,7 +307,7 @@ export default function ReservationCreateModal({ open, onClose, draft, onSaved }
                     }
                   />
                 </div>
-                
+
                 {/* 예약 완료 시 자동 매출 생성 옵션 */}
                 {form.customer_id && form.status === 'complete' && (
                   <>

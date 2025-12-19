@@ -1,7 +1,7 @@
 "use client"
 
 import { useEffect, useState, useMemo, lazy, Suspense, useCallback } from 'react'
-import { Pencil, Plus } from 'lucide-react'
+import { Plus, Search } from 'lucide-react'
 import EmptyState from '../components/EmptyState'
 import { Skeleton } from '../components/ui/Skeleton'
 import { useAppToast } from '../lib/ui/toast'
@@ -11,7 +11,26 @@ import { useSearch } from '../lib/hooks/useSearch'
 import { useSort } from '../lib/hooks/useSort'
 import { usePagination } from '../lib/hooks/usePagination'
 import { useForm } from '../lib/hooks/useForm'
-import Pagination from '../components/common/Pagination'
+
+import Stack from '@mui/material/Stack'
+import Paper from '@mui/material/Paper'
+import Typography from '@mui/material/Typography'
+import TextField from '@mui/material/TextField'
+import InputAdornment from '@mui/material/InputAdornment'
+import Grid from '@mui/material/Grid'
+import Card from '@mui/material/Card'
+import CardContent from '@mui/material/CardContent'
+import CardActions from '@mui/material/CardActions'
+import FormControlLabel from '@mui/material/FormControlLabel'
+import Checkbox from '@mui/material/Checkbox'
+import Chip from '@mui/material/Chip'
+import Select from '@mui/material/Select'
+import MenuItem from '@mui/material/MenuItem'
+import Pagination from '@mui/material/Pagination'
+import FormControl from '@mui/material/FormControl'
+import Alert from '@mui/material/Alert'
+import AlertTitle from '@mui/material/AlertTitle'
+import Fab from '@mui/material/Fab'
 
 const ProductDetailModal = lazy(() => import('../components/modals/ProductDetailModal'))
 
@@ -35,9 +54,9 @@ export default function ProductsPage() {
   const pagination = usePagination({
     initialPage: 1,
     initialPageSize: 10,
-    totalItems: 0, // filteredProducts.length로 업데이트됨
+    totalItems: 0,
   })
-  const { page, pageSize, setPage, setPageSize, setTotalItems } = pagination
+  const { page, pageSize, setPage } = pagination
   const [showModal, setShowModal] = useState(false)
   const [editing, setEditing] = useState<Product | null>(null)
   const [detailOpen, setDetailOpen] = useState(false)
@@ -119,10 +138,6 @@ export default function ProductsPage() {
   // totalPages 계산 (필터링된 데이터 기준)
   const totalPages = Math.max(1, Math.ceil(filteredProducts.length / pageSize))
 
-  // 필터링된 데이터의 길이로 totalItems 업데이트
-  useEffect(() => {
-    setTotalItems(filteredProducts.length)
-  }, [filteredProducts.length, setTotalItems])
 
   // 페이지 변경 시 필터/검색 변경으로 인해 현재 페이지가 유효 범위를 벗어나면 첫 페이지로 이동
   useEffect(() => {
@@ -138,126 +153,138 @@ export default function ProductsPage() {
   }
 
   return (
-    <main className="space-y-3 sm:space-y-4">
-      {error && <p className="text-sm text-error-600 bg-error-50 border border-error-200 rounded-lg p-3">{error}</p>}
-
-      <div className="bg-white rounded-xl border border-neutral-200 shadow-sm p-3 sm:p-4">
-        <div className="flex flex-col sm:flex-row items-stretch sm:items-end gap-3 w-full">
-          <div className="flex-1 min-w-0">
-            <label className="block text-xs sm:text-sm font-semibold text-neutral-700 mb-1.5">검색</label>
-            <input
-              className="h-11 w-full rounded-lg border border-neutral-300 bg-white px-4 text-sm text-neutral-800 outline-none shadow-sm placeholder:text-neutral-400 focus:border-secondary-500 focus:ring-2 focus:ring-secondary-200 transition-all duration-200 touch-manipulation"
-              placeholder="상품명 또는 설명으로 검색"
-              value={query}
-              onChange={e => setQuery(e.target.value)}
-            />
-          </div>
-          <div className="w-full sm:w-auto sm:min-w-[160px]">
-            <label className="block text-xs sm:text-sm font-semibold text-neutral-700 mb-1.5">상태</label>
-            <select
+    <Stack spacing={3}>
+      <Paper sx={{ p: 2, borderRadius: 3 }} elevation={0} variant="outlined">
+        <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2} alignItems="center">
+          <TextField
+            placeholder="상품명 또는 설명으로 검색"
+            value={query}
+            onChange={e => setQuery(e.target.value)}
+            size="small"
+            fullWidth
+            sx={{
+              flexGrow: 1,
+              '& .MuiOutlinedInput-root': {
+                fontSize: { xs: '16px', md: '14px' },
+              },
+            }}
+            InputProps={{
+              startAdornment: (
+                <InputAdornment position="start">
+                  <Search className="h-4 w-4 text-neutral-400" />
+                </InputAdornment>
+              ),
+            }}
+            inputProps={{
+              autoComplete: 'off',
+              autoCorrect: 'off',
+              autoCapitalize: 'off',
+            }}
+          />
+          <FormControl size="small" sx={{ minWidth: 120, width: { xs: '100%', sm: 'auto' } }}>
+            <Select
               value={statusFilter}
               onChange={e => setStatusFilter(e.target.value as 'all' | 'active' | 'inactive')}
-              className="h-11 w-full rounded-lg border border-neutral-300 bg-white px-4 text-sm text-neutral-800 outline-none shadow-sm hover:border-neutral-400 focus:border-secondary-500 focus:ring-2 focus:ring-secondary-200 transition-all duration-200 touch-manipulation"
+              displayEmpty
             >
-              <option value="all">전체</option>
-              <option value="active">활성</option>
-              <option value="inactive">비활성</option>
-            </select>
-          </div>
-          <div className="flex items-end">
-            <Button
-              variant="primary"
-              size="md"
-              leftIcon={<Plus className="h-4 w-4" />}
-              onClick={openCreate}
-              className="w-full sm:w-auto"
-            >
-              제품 추가
-            </Button>
-          </div>
-        </div>
-      </div>
+              <MenuItem value="all">전체 상태</MenuItem>
+              <MenuItem value="active">활성</MenuItem>
+              <MenuItem value="inactive">비활성</MenuItem>
+            </Select>
+          </FormControl>
+          <Button
+            variant="primary"
+            leftIcon={<Plus className="h-4 w-4" />}
+            onClick={openCreate}
+            fullWidth={false}
+            sx={{ width: { xs: '100%', sm: 'auto' } }}
+          >
+            제품 추가
+          </Button>
+        </Stack>
+      </Paper>
 
-      <section className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-2 sm:gap-3">
-        {loading && Array.from({ length: 12 }).map((_, i) => (
-          <div key={`s-${i}`} className="bg-gradient-to-br from-white to-purple-50/30 rounded-lg border border-purple-100 shadow-sm p-2.5 sm:p-3">
-            <Skeleton className="h-4 w-3/4 mb-1.5" />
-            <div className="mt-1.5 h-3 w-1/2 bg-purple-100 rounded" />
-            <div className="mt-2 h-7 w-20 bg-purple-100 rounded" />
-          </div>
+      {error && (
+        <Alert severity="error" variant="filled" sx={{ borderRadius: 2 }}>
+          <AlertTitle>오류 발생</AlertTitle>
+          {error}
+        </Alert>
+      )}
+
+      <Grid container spacing={2}>
+        {loading && Array.from({ length: 8 }).map((_, i) => (
+          <Grid item xs={6} sm={4} md={3} lg={2} key={i}>
+            <Skeleton className="h-32 rounded-lg" />
+          </Grid>
         ))}
-        {!loading && paginatedProducts.map((p, index) => {
-          const colorSchemes = [
-            { bg: 'from-pink-50 to-rose-100', border: 'border-pink-200', text: 'text-pink-700', label: 'text-pink-600' },
-            { bg: 'from-blue-50 to-cyan-100', border: 'border-blue-200', text: 'text-blue-700', label: 'text-blue-600' },
-            { bg: 'from-emerald-50 to-teal-100', border: 'border-emerald-200', text: 'text-emerald-700', label: 'text-emerald-600' },
-            { bg: 'from-amber-50 to-yellow-100', border: 'border-amber-200', text: 'text-amber-700', label: 'text-amber-600' },
-            { bg: 'from-purple-50 to-violet-100', border: 'border-purple-200', text: 'text-purple-700', label: 'text-purple-600' },
-            { bg: 'from-indigo-50 to-blue-100', border: 'border-indigo-200', text: 'text-indigo-700', label: 'text-indigo-600' },
-          ]
-          const scheme = colorSchemes[index % colorSchemes.length]!
-          return (
-            <div key={String(p['id'])} className={`bg-gradient-to-br ${scheme.bg} rounded-lg border ${scheme.border} shadow-sm p-2.5 sm:p-3 flex flex-col gap-1.5 hover:shadow-md transition-all duration-200`}>
-              <div className="flex items-start justify-between gap-1.5">
-                <div className="min-w-0 flex-1">
-                  <div className={`text-xs font-medium ${scheme.label} mb-0.5`}>제품명</div>
-                  <button className={`text-sm font-semibold ${scheme.text} underline-offset-2 hover:underline truncate block w-full text-left`} onClick={() => { setSelected(p); setDetailOpen(true) }}>
-                    {p['name']}
-                  </button>
-                </div>
-                <span className={`text-[10px] px-1.5 py-0.5 rounded-full border font-medium whitespace-nowrap flex-shrink-0 ${p['active'] === false
-                  ? 'bg-gray-100 text-gray-600 border-gray-200'
-                  : 'bg-emerald-100 text-emerald-700 border-emerald-300'
-                  }`}>
-                  {p['active'] === false ? '비활성' : '활성'}
-                </span>
-              </div>
-              <div className={`text-xs font-medium ${scheme.label}`}>가격</div>
-              <div className={`text-base font-bold ${scheme.text}`}>₩{Number(p['price'] || 0).toLocaleString()}</div>
-              <div className="mt-1">
+        {!loading && paginatedProducts.map((p) => (
+          <Grid item xs={6} sm={4} md={3} lg={2} key={String(p.id)}>
+            <Card variant="outlined" sx={{ height: '100%', display: 'flex', flexDirection: 'column', borderRadius: 2, '&:hover': { boxShadow: 2 } }}>
+              <CardContent sx={{ flexGrow: 1, p: 1.5, pb: 0 }}>
+                <Stack direction="row" justifyContent="space-between" alignItems="flex-start" mb={1}>
+                  <Chip
+                    label={p.active ? '활성' : '비활성'}
+                    size="small"
+                    color={p.active ? 'success' : 'default'}
+                    variant="outlined"
+                    sx={{ height: 20, fontSize: '0.625rem' }}
+                  />
+                </Stack>
+                <Typography variant="subtitle2" component="h3" fontWeight="bold" noWrap title={p.name} mb={0.5}>
+                  {p.name}
+                </Typography>
+                <Typography variant="body2" color="primary.main" fontWeight="bold">
+                  ₩{Number(p.price || 0).toLocaleString()}
+                </Typography>
+              </CardContent>
+              <CardActions sx={{ p: 1 }}>
                 <Button
                   size="sm"
                   variant="secondary"
                   onClick={() => { setSelected(p); setDetailOpen(true) }}
-                  aria-label="상세보기"
-                  title="상세보기"
-                  className="w-full h-8 px-2 text-xs touch-manipulation"
-                  leftIcon={<Pencil className="h-3 w-3" />}
+                  fullWidth
+                  sx={{ fontSize: '0.75rem', py: 0.5 }}
                 >
-                  수정
+                  상세보기
                 </Button>
-              </div>
-            </div>
-          )
-        })}
+              </CardActions>
+            </Card>
+          </Grid>
+        ))}
         {!loading && filteredProducts.length === 0 && (
-          <div className="col-span-full">
+          <Grid item xs={12}>
             <EmptyState
               title={products.length === 0 ? "제품이 없습니다." : "검색 결과가 없습니다."}
               actionLabel="제품 추가"
               actionOnClick={openCreate}
             />
-          </div>
+          </Grid>
         )}
-      </section>
+      </Grid>
 
       {/* 페이지네이션 */}
       {!loading && filteredProducts.length > 0 && (
-        <div className="bg-white rounded-xl border border-neutral-200 shadow-sm overflow-hidden">
-          <Pagination
-            page={page}
-            pageSize={pageSize}
-            totalItems={filteredProducts.length}
-            totalPages={totalPages}
-            onPageChange={setPage}
-            onPageSizeChange={(size) => {
-              setPageSize(size)
-              setPage(1)
-            }}
-            pageSizeOptions={[10, 20, 30]}
-            showInfo={true}
-          />
-        </div>
+        <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2} justifyContent="space-between" alignItems="center" mt={2}>
+          <Typography variant="body2" color="text.secondary">
+            총 {filteredProducts.length}개
+          </Typography>
+          <Stack direction="row" spacing={2} alignItems="center">
+            <Pagination
+              count={totalPages}
+              page={page}
+              onChange={(_, p) => setPage(p)}
+              color="primary"
+              size="medium"
+              siblingCount={1}
+              shape="rounded"
+              sx={{
+                '& .MuiPagination-ul': {
+                  flexWrap: 'nowrap',
+                },
+              }}
+            />
+          </Stack>
+        </Stack>
       )}
 
       {showModal && (
@@ -271,74 +298,54 @@ export default function ProductsPage() {
             description="제품의 기본 정보를 입력하세요. 이름과 가격은 필수입니다."
           />
           <ModalBody>
-            <div className="grid gap-4 md:grid-cols-[280px,1fr]">
-              <div>
-                {/* 왼쪽 안내 영역(추후 요약/가이드 추가 가능) */}
-              </div>
-              <div className="space-y-3 md:border-l md:border-neutral-200 md:pl-6">
-                <div className="space-y-3">
-                  <div>
-                    <label className="mb-1 block text-sm font-medium text-neutral-700">이름</label>
-                    <input
-                      className={`h-10 w-full rounded-lg border bg-white px-3 text-sm text-neutral-800 outline-none shadow-sm placeholder:text-neutral-400 focus:ring-2 transition-all duration-fast ${form.errors.name && form.touched.name
-                        ? 'border-error-500 focus:border-error-500 focus:ring-error-200'
-                        : 'border-neutral-300 focus:border-secondary-500 focus:ring-secondary-200'
-                        }`}
-                      placeholder="예) 로션 기획세트"
-                      value={form.values.name}
-                      onChange={e => {
-                        form.setValue('name', e.target.value)
-                        form.setTouched('name', true)
-                      }}
-                      onBlur={() => form.validateField('name')}
-                    />
-                    {form.errors.name && form.touched.name && (
-                      <p className="mt-1 text-xs text-error-600">{form.errors.name}</p>
-                    )}
-                  </div>
-                  <div>
-                    <label className="mb-1 block text-sm font-medium text-neutral-700">가격</label>
-                    <input
-                      className={`h-10 w-full rounded-lg border bg-white px-3 text-sm text-neutral-800 outline-none shadow-sm placeholder:text-neutral-400 focus:ring-2 transition-all duration-fast ${form.errors.price && form.touched.price
-                        ? 'border-error-500 focus:border-error-500 focus:ring-error-200'
-                        : 'border-neutral-300 focus:border-secondary-500 focus:ring-secondary-200'
-                        }`}
-                      placeholder="숫자만 입력 (원)"
-                      type="number"
-                      value={form.values.price}
-                      onChange={e => {
-                        form.setValue('price', Number(e.target.value) || 0)
-                        form.setTouched('price', true)
-                      }}
-                      onBlur={() => form.validateField('price')}
-                    />
-                    {form.errors.price && form.touched.price && (
-                      <p className="mt-1 text-xs text-error-600">{form.errors.price}</p>
-                    )}
-                    <p className="mt-1 text-xs text-neutral-500">
-                      부가세 포함 여부는 별도 표시 기준을 따릅니다.
-                    </p>
-                  </div>
-                  <div>
-                    <label className="mb-1 block text-sm font-medium text-neutral-700">설명(선택)</label>
-                    <textarea
-                      className="min-h-24 w-full rounded-lg border border-neutral-300 bg-white px-3 py-2 text-sm text-neutral-800 outline-none shadow-sm placeholder:text-neutral-400 focus:border-secondary-500 focus:ring-2 focus:ring-secondary-200 transition-all duration-fast"
-                      placeholder="간단한 특징, 용량, 구성 등을 입력하세요"
-                      value={form.values.description || ''}
-                      onChange={e => form.setValue('description', e.target.value)}
-                    />
-                  </div>
-                  <label className="inline-flex items-center space-x-2 text-sm text-neutral-700">
-                    <input
-                      type="checkbox"
-                      checked={form.values.active}
-                      onChange={e => form.setValue('active', e.target.checked)}
-                    />
-                    <span>활성</span>
-                  </label>
-                </div>
-              </div>
-            </div>
+            <Stack spacing={3} sx={{ mt: 1 }}>
+              <TextField
+                label="이름"
+                fullWidth
+                value={form.values.name}
+                onChange={e => {
+                  form.setValue('name', e.target.value)
+                  form.setTouched('name', true)
+                }}
+                onBlur={() => form.validateField('name')}
+                error={Boolean(form.errors.name && form.touched.name)}
+                helperText={form.errors.name && form.touched.name ? form.errors.name : undefined}
+              />
+              <TextField
+                label="가격"
+                fullWidth
+                type="number"
+                value={form.values.price}
+                onChange={e => {
+                  form.setValue('price', Number(e.target.value) || 0)
+                  form.setTouched('price', true)
+                }}
+                onBlur={() => form.validateField('price')}
+                error={Boolean(form.errors.price && form.touched.price)}
+                helperText={form.errors.price && form.touched.price ? form.errors.price : "부가세 포함 여부는 별도 표시 기준을 따릅니다."}
+                InputProps={{
+                  endAdornment: <InputAdornment position="end">원</InputAdornment>,
+                }}
+              />
+              <TextField
+                label="설명 (선택)"
+                fullWidth
+                multiline
+                rows={3}
+                placeholder="간단한 특징, 용량, 구성 등을 입력하세요"
+                value={form.values.description || ''}
+                onChange={e => form.setValue('description', e.target.value)}
+              />
+              <FormControlLabel
+                control={
+                  <Checkbox
+                    checked={form.values.active}
+                    onChange={e => form.setValue('active', e.target.checked)}
+                  />
+                }
+                label="활성 상태"
+              />
+            </Stack>
           </ModalBody>
           <ModalFooter>
             <Button
@@ -364,7 +371,7 @@ export default function ProductsPage() {
       )}
 
       {detailOpen && (
-        <Suspense fallback={<div>로딩 중...</div>}>
+        <Suspense fallback={null}>
           <ProductDetailModal
             open={detailOpen}
             item={selected}
@@ -374,6 +381,21 @@ export default function ProductsPage() {
           />
         </Suspense>
       )}
-    </main>
+
+      {/* Mobile FAB */}
+      <Fab
+        color="primary"
+        aria-label="제품 추가"
+        sx={{
+          position: 'fixed',
+          bottom: { xs: 72, md: 16 },
+          right: 16,
+          display: { xs: 'flex', md: 'none' },
+        }}
+        onClick={openCreate}
+      >
+        <Plus className="h-5 w-5" />
+      </Fab>
+    </Stack>
   )
 }

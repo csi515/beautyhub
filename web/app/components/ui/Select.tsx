@@ -1,37 +1,44 @@
 'use client'
 
-type Props = React.SelectHTMLAttributes<HTMLSelectElement> & { label?: string }
+import TextField from '@mui/material/TextField'
+import type { TextFieldProps } from '@mui/material/TextField'
 
-export default function Select({ label, className, children, ...rest }: Props) {
-  return (
-    <label className="block">
-      {label && (
-        <div className="mb-2 text-base font-semibold text-neutral-700">
-          {label}
-        </div>
-      )}
-               <select
-                 {...rest}
-                 onFocus={(e) => {
-                   // 모바일에서 입력 필드 포커스 시 자동 스크롤
-                   if (typeof window !== 'undefined' && window.innerWidth < 768) {
-                     setTimeout(() => {
-                       e.target.scrollIntoView({
-                         behavior: 'smooth',
-                         block: 'center',
-                       })
-                     }, 300)
-                   }
-                   rest.onFocus?.(e)
-                 }}
-                 className={`w-full h-11 rounded-lg border border-neutral-400 bg-white px-3 text-base sm:text-sm text-neutral-900 outline-none shadow-sm transition-all duration-200 hover:border-neutral-500 focus:border-secondary-500 focus:ring-2 focus:ring-secondary-500/20 cursor-pointer touch-manipulation ${className || ''}`}
-                 autoComplete="off"
-               >
-        {children}
-      </select>
-    </label>
-  )
+type Props = TextFieldProps & {
+  label?: string
+  options?: { value: string | number; label: string }[]
 }
 
+export default function Select({
+  label,
+  className,
+  children,
+  ...rest
+}: Props) {
+  // Use TextField with select prop. 
+  // We use SelectProps={{ native: true }} to support existing <option> children passed from parent.
+  // This ensures we don't break existing usages while replacing styling with MUI.
 
-
+  return (
+    <TextField
+      select
+      label={label}
+      variant="outlined"
+      fullWidth
+      SelectProps={{
+        native: true,
+      }}
+      InputLabelProps={{
+        shrink: true, // Always shrink label for select to avoid overlap with value
+      }}
+      {...rest}
+      sx={{
+        '& .MuiInputBase-root': {
+          borderRadius: 2, // rounded-lg
+        },
+        ...rest.sx
+      }}
+    >
+      {children}
+    </TextField>
+  )
+}

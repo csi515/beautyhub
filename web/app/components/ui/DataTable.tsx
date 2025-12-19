@@ -4,15 +4,29 @@
 
 'use client'
 
-import { useMemo } from 'react'
+import { useMemo, ReactNode } from 'react'
+import {
+  Table as MuiTable,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableHead,
+  TableRow,
+  TableSortLabel,
+  Paper,
+  Box,
+  Typography,
+  Card,
+  Divider,
+} from '@mui/material'
 import { Skeleton } from './Skeleton'
 
 export interface Column<T> {
   key: keyof T | string
   header: string
-  render?: (item: T, index: number) => React.ReactNode
+  render?: (item: T, index: number) => ReactNode
   sortable?: boolean
-  width?: string
+  width?: string | number
   align?: 'left' | 'center' | 'right'
 }
 
@@ -28,20 +42,6 @@ export interface DataTableProps<T> {
   className?: string
 }
 
-/**
- * 재사용 가능한 데이터 테이블 컴포넌트
- *
- * @example
- * <DataTable
- *   columns={[
- *     { key: 'name', header: '이름', sortable: true },
- *     { key: 'email', header: '이메일' },
- *   ]}
- *   data={customers}
- *   loading={loading}
- *   onRowClick={(item) => console.log(item)}
- * />
- */
 export function DataTable<T extends Record<string, unknown>>({
   columns,
   data,
@@ -77,160 +77,166 @@ export function DataTable<T extends Record<string, unknown>>({
 
   if (loading) {
     return (
-      <div className={`overflow-x-auto rounded-lg border border-neutral-200 bg-white shadow-md ${className}`}>
-        <table className="w-full border-collapse">
-          <thead>
-            <tr>
+      <TableContainer component={Paper} elevation={0} sx={{ border: '1px solid', borderColor: 'divider', borderRadius: 3 }}>
+        <MuiTable sx={{ minWidth: 650 }}>
+          <TableHead sx={{ bgcolor: 'action.hover' }}>
+            <TableRow>
               {columns.map((col, idx) => (
-                <th
-                  key={idx}
-                  className="px-4 py-3 text-left text-sm font-medium text-neutral-900 bg-neutral-100 border-b border-neutral-200"
-                  style={{ width: col.width }}
-                >
-                  <Skeleton className="h-4 w-20" />
-                </th>
+                <TableCell key={idx} sx={{ fontWeight: 700, py: 2 }}>
+                  <Skeleton width={80} height={20} />
+                </TableCell>
               ))}
-            </tr>
-          </thead>
-          <tbody>
+            </TableRow>
+          </TableHead>
+          <TableBody>
             {Array.from({ length: 5 }).map((_, idx) => (
-              <tr key={idx} className="hover:bg-neutral-50 transition-colors duration-300">
+              <TableRow key={idx}>
                 {columns.map((_, colIdx) => (
-                  <td key={colIdx} className="px-4 py-3 border-b border-neutral-200">
-                    <Skeleton className="h-4 w-full" />
-                  </td>
+                  <TableCell key={colIdx} sx={{ py: 2 }}>
+                    <Skeleton width="100%" height={20} />
+                  </TableCell>
                 ))}
-              </tr>
+              </TableRow>
             ))}
-          </tbody>
-        </table>
-      </div>
+          </TableBody>
+        </MuiTable>
+      </TableContainer>
     )
   }
 
   if (data.length === 0) {
     return (
-      <div className={`text-center py-12 text-neutral-500 ${className}`}>
-        {emptyMessage}
-      </div>
+      <Box sx={{ py: 10, textAlign: 'center', bgcolor: 'background.paper', borderRadius: 3, border: '1px dashed', borderColor: 'divider' }}>
+        <Typography variant="body2" color="text.secondary">
+          {emptyMessage}
+        </Typography>
+      </Box>
     )
   }
 
   return (
     <>
       {/* 모바일 카드 뷰 */}
-      <div className={`md:hidden space-y-3 ${className}`}>
+      <Box sx={{ display: { xs: 'flex', md: 'none' }, flexDirection: 'column', gap: 2 }} className={className}>
         {sortedData.map((item, rowIdx) => (
-          <div
+          <Card
             key={rowIdx}
+            variant="outlined"
             onClick={() => onRowClick?.(item, rowIdx)}
-            className={`rounded-lg border border-neutral-200 bg-white p-4 shadow-sm transition-all duration-200 ${
-              onRowClick ? 'cursor-pointer hover:shadow-md active:scale-[0.99] touch-manipulation' : ''
-            }`}
-            role={onRowClick ? 'button' : undefined}
-            tabIndex={onRowClick ? 0 : undefined}
-            onKeyDown={(e) => {
-              if (onRowClick && (e.key === 'Enter' || e.key === ' ')) {
-                e.preventDefault()
-                onRowClick(item, rowIdx)
-              }
+            sx={{
+              p: 2.5,
+              borderRadius: 3,
+              cursor: onRowClick ? 'pointer' : 'default',
+              transition: 'all 200ms ease',
+              '&:hover': onRowClick ? { boxShadow: (theme) => theme.shadows[2], transform: 'translateY(-2px)' } : {},
+              '&:active': onRowClick ? { transform: 'scale(0.98)' } : {},
             }}
           >
-            <div className="space-y-2">
+            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
               {columns.map((col, colIdx) => {
                 const value = col.render ? col.render(item, rowIdx) : String(item[col.key as keyof T] ?? '')
                 const isPrimary = colIdx === 0
+
+                if (isPrimary) {
+                  return (
+                    <Box key={colIdx} sx={{ mb: 1 }}>
+                      <Typography variant="subtitle1" fontWeight={700} color="primary.main">
+                        {value}
+                      </Typography>
+                      <Divider sx={{ mt: 1 }} />
+                    </Box>
+                  )
+                }
+
                 return (
-                  <div
-                    key={colIdx}
-                    className={`flex items-start justify-between gap-3 ${
-                      isPrimary ? 'pb-2 border-b border-neutral-100' : ''
-                    }`}
-                  >
-                    <span className={`text-xs font-medium text-neutral-500 flex-shrink-0 ${
-                      isPrimary ? 'hidden' : ''
-                    }`}>
+                  <Box key={colIdx} sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <Typography variant="caption" fontWeight={600} color="text.secondary">
                       {col.header}
-                    </span>
-                    <div className={`flex-1 text-right sm:text-left ${
-                      isPrimary ? 'text-base font-semibold text-neutral-900' : 'text-sm text-neutral-700'
-                    }`}>
-                      {value}
-                    </div>
-                  </div>
+                    </Typography>
+                    <Box sx={{ textAlign: 'right', maxWidth: '70%' }}>
+                      <Typography variant="body2" fontWeight={500}>
+                        {value}
+                      </Typography>
+                    </Box>
+                  </Box>
                 )
               })}
-            </div>
-          </div>
+            </Box>
+          </Card>
         ))}
-      </div>
+      </Box>
 
       {/* 데스크톱 테이블 뷰 */}
-      <div className={`hidden md:block overflow-x-auto rounded-lg border border-neutral-200 bg-white shadow-md ${className}`}>
-        <table className="w-full border-collapse" role="table">
-          <thead>
-            <tr>
+      <TableContainer
+        component={Paper}
+        elevation={0}
+        sx={{
+          display: { xs: 'none', md: 'block' },
+          border: '1px solid',
+          borderColor: 'divider',
+          borderRadius: 3,
+          overflow: 'hidden',
+          boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03)'
+        }}
+        className={className}
+      >
+        <MuiTable stickyHeader>
+          <TableHead>
+            <TableRow>
               {columns.map((col, idx) => (
-                <th
+                <TableCell
                   key={idx}
-                  className={`px-4 py-3 text-sm font-medium text-neutral-900 bg-neutral-100 border-b border-neutral-200 transition-colors duration-300 ${
-                    col.align === 'center' ? 'text-center' : col.align === 'right' ? 'text-right' : 'text-left'
-                  } ${col.sortable && onSort ? 'cursor-pointer hover:bg-neutral-50 touch-manipulation' : ''}`}
-                  style={{ width: col.width }}
-                  onClick={() => col.sortable && onSort && onSort(col.key)}
-                  role="columnheader"
-                  aria-sort={
-                    col.sortable && sortKey === col.key
-                      ? sortDirection === 'asc'
-                        ? 'ascending'
-                        : 'descending'
-                      : undefined
-                  }
+                  align={col.align || 'left'}
+                  sortDirection={sortKey === col.key ? sortDirection : false}
+                  sx={{
+                    fontWeight: 700,
+                    bgcolor: 'action.hover',
+                    py: 2,
+                    width: col.width,
+                    borderBottom: '2px solid',
+                    borderColor: 'divider'
+                  }}
                 >
-                  <div className="flex items-center gap-2">
-                    {col.header}
-                    {col.sortable && sortKey === col.key && (
-                      <span className="text-xs text-[#F472B6]">
-                        {sortDirection === 'asc' ? '↑' : '↓'}
-                      </span>
-                    )}
-                  </div>
-                </th>
+                  {col.sortable && onSort ? (
+                    <TableSortLabel
+                      active={sortKey === col.key}
+                      direction={sortKey === col.key ? sortDirection : 'asc'}
+                      onClick={() => onSort(col.key)}
+                    >
+                      {col.header}
+                    </TableSortLabel>
+                  ) : (
+                    col.header
+                  )}
+                </TableCell>
               ))}
-            </tr>
-          </thead>
-          <tbody>
+            </TableRow>
+          </TableHead>
+          <TableBody>
             {sortedData.map((item, rowIdx) => (
-              <tr
+              <TableRow
                 key={rowIdx}
-                className={`border-b border-neutral-200 transition-colors duration-300 ${
-                  onRowClick ? 'cursor-pointer hover:bg-neutral-50 active:bg-neutral-100 touch-manipulation' : ''
-                }`}
+                hover
                 onClick={() => onRowClick?.(item, rowIdx)}
-                role="row"
-                tabIndex={onRowClick ? 0 : undefined}
-                onKeyDown={(e) => {
-                  if (onRowClick && (e.key === 'Enter' || e.key === ' ')) {
-                    e.preventDefault()
-                    onRowClick(item, rowIdx)
-                  }
+                sx={{
+                  cursor: onRowClick ? 'pointer' : 'default',
+                  '&:last-child td, &:last-child th': { border: 0 }
                 }}
               >
                 {columns.map((col, colIdx) => (
-                  <td
+                  <TableCell
                     key={colIdx}
-                    className={`px-4 py-3 text-sm text-neutral-800 ${
-                      col.align === 'center' ? 'text-center' : col.align === 'right' ? 'text-right' : 'text-left'
-                    }`}
+                    align={col.align || 'left'}
+                    sx={{ py: 2, typography: 'body2', color: 'text.primary' }}
                   >
                     {col.render ? col.render(item, rowIdx) : String(item[col.key as keyof T] ?? '')}
-                  </td>
+                  </TableCell>
                 ))}
-              </tr>
+              </TableRow>
             ))}
-          </tbody>
-        </table>
-      </div>
+          </TableBody>
+        </MuiTable>
+      </TableContainer>
     </>
   )
 }

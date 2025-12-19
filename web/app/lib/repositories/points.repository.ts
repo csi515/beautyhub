@@ -48,35 +48,37 @@ export class PointsRepository {
   /**
    * Supabase 에러 처리
    */
-  private handleSupabaseError(error: any): never {
+  private handleSupabaseError(error: unknown): never {
     console.error(`[PointsRepository] Supabase Error:`, error)
+
+    const err = error as { code?: string; message?: string; status?: number }
 
     // 인증 관련 에러 (401, JWT expired 등)
     if (
-      error.code === 'PGRST301' ||
-      error.message?.includes('JWT') ||
-      error.status === 401 ||
-      error.message?.includes('invalid claim')
+      err.code === 'PGRST301' ||
+      err.message?.includes('JWT') ||
+      err.status === 401 ||
+      err.message?.includes('invalid claim')
     ) {
       throw new UnauthorizedError()
     }
 
-    if (error.code === 'PGRST116') {
+    if (err.code === 'PGRST116') {
       throw new NotFoundError('Resource not found')
     }
 
     // Postgres 에러 코드 처리
-    if (error.code?.startsWith('23')) {
-      if (error.code === '23505') {
-        throw new ApiError(error.message, 409)
+    if (err.code?.startsWith('23')) {
+      if (err.code === '23505') {
+        throw new ApiError(err.message || 'Unique constraint violation', 409)
       }
-      if (error.code === '23503') {
-        throw new ApiError(error.message, 400)
+      if (err.code === '23503') {
+        throw new ApiError(err.message || 'Foreign key violation', 400)
       }
-      throw new ApiError(error.message, 400)
+      throw new ApiError(err.message || 'Database error', 400)
     }
 
-    throw new ApiError(error.message, (error.status && error.status >= 400) ? error.status : 500)
+    throw new ApiError(err.message || 'Unknown error', (err.status && err.status >= 400) ? err.status : 500)
   }
 
   /**

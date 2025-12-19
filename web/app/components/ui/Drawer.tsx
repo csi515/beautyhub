@@ -1,14 +1,15 @@
 'use client'
 
-import { useEffect, useState } from 'react'
-import clsx from 'clsx'
+import MuiDrawer from '@mui/material/Drawer'
+import Box from '@mui/material/Box'
+import IconButton from '@mui/material/IconButton'
 import { X } from 'lucide-react'
-import { lockScroll, unlockScroll } from '@/app/lib/utils/scrollLock'
+import { ReactNode } from 'react'
 
 type Props = {
   open: boolean
   onClose: () => void
-  children: React.ReactNode
+  children: ReactNode
   placement?: 'left' | 'right' | 'top' | 'bottom'
   size?: 'sm' | 'md' | 'lg' | 'xl' | 'full'
   className?: string
@@ -19,168 +20,113 @@ export default function Drawer({
   open,
   onClose,
   children,
-  placement = 'left',
+  placement = 'right',
   size = 'md',
   className,
   closeOnOverlayClick = true,
 }: Props) {
-  const [mounted, setMounted] = useState(open)
-  const [isClosing, setIsClosing] = useState(false)
-
-  useEffect(() => {
-    if (open) {
-      setMounted(true)
-      setIsClosing(false)
-      lockScroll()
-    } else if (mounted) {
-      setIsClosing(true)
-      const timer = setTimeout(() => {
-        setMounted(false)
-        setIsClosing(false)
-      }, 300)
-      unlockScroll()
-      return () => clearTimeout(timer)
-    }
-    return () => {
-      if (open) unlockScroll()
-    }
-  }, [open, mounted])
-
-  useEffect(() => {
-    const handleEscape = (e: KeyboardEvent) => {
-      if (e.key === 'Escape' && open) {
-        onClose()
-      }
-    }
-
-    if (open) {
-      window.addEventListener('keydown', handleEscape)
-      return () => window.removeEventListener('keydown', handleEscape)
-    } else {
-      return undefined
-    }
-  }, [open, onClose])
-
-  if (!mounted) return null
-
-  const getPlacementClasses = () => {
-    const base = 'fixed z-50 bg-white shadow-xl transition-transform duration-300'
-    
-    switch (placement) {
-      case 'right':
-        return clsx(
-          base,
-          'top-0 right-0 bottom-0 h-full',
-          isClosing ? 'translate-x-full' : 'translate-x-0'
-        )
-      case 'left':
-        return clsx(
-          base,
-          'top-0 left-0 bottom-0 h-full',
-          isClosing ? '-translate-x-full' : 'translate-x-0'
-        )
-      case 'top':
-        return clsx(
-          base,
-          'top-0 left-0 right-0 w-full',
-          isClosing ? '-translate-y-full' : 'translate-y-0'
-        )
-      case 'bottom':
-        return clsx(
-          base,
-          'bottom-0 left-0 right-0 w-full',
-          isClosing ? 'translate-y-full' : 'translate-y-0'
-        )
-    }
+  const sizeMap = {
+    sm: 320,
+    md: 400,
+    lg: 560,
+    xl: 720,
+    full: '100%',
   }
 
-  const getSizeClasses = () => {
-    if (placement === 'left' || placement === 'right') {
-      switch (size) {
-        case 'sm':
-          return 'w-64'
-        case 'md':
-          return 'w-80'
-        case 'lg':
-          return 'w-96'
-        case 'xl':
-          return 'w-[32rem]'
-        case 'full':
-          return 'w-full'
-      }
-    } else {
-      switch (size) {
-        case 'sm':
-          return 'h-64'
-        case 'md':
-          return 'h-80'
-        case 'lg':
-          return 'h-96'
-        case 'xl':
-          return 'h-[32rem]'
-        case 'full':
-          return 'h-full'
-      }
-    }
-  }
+  const isVertical = placement === 'left' || placement === 'right'
 
   return (
-    <>
-      {/* Overlay */}
-      <div
-        className={clsx(
-          'fixed inset-0 z-40 bg-black/50 transition-opacity duration-300',
-          isClosing ? 'opacity-0' : 'opacity-100'
-        )}
-        onClick={closeOnOverlayClick ? onClose : undefined}
-        aria-hidden="true"
-      />
-      
-      {/* Drawer */}
-      <div
-        className={clsx(
-          getPlacementClasses(),
-          getSizeClasses(),
-          className
-        )}
-        role="dialog"
-        aria-modal="true"
-        aria-labelledby="drawer-title"
-      >
-        <button
-          type="button"
+    <MuiDrawer
+      anchor={placement}
+      open={open}
+      onClose={onClose}
+      variant="temporary"
+      className={className}
+      PaperProps={{
+        sx: {
+          width: isVertical ? sizeMap[size] : '100%',
+          height: isVertical ? '100%' : sizeMap[size],
+          maxWidth: '100%',
+          maxHeight: '100%',
+          display: 'flex',
+          flexDirection: 'column',
+          boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25)',
+        }
+      }}
+      slotProps={{
+        backdrop: {
+          sx: { backdropFilter: 'blur(4px)', backgroundColor: 'rgba(15, 23, 42, 0.5)' }
+        }
+      }}
+    >
+      <Box sx={{ position: 'relative', height: '100%', display: 'flex', flexDirection: 'column' }}>
+        <IconButton
           onClick={onClose}
-          className="absolute right-4 top-4 p-2 text-neutral-400 hover:text-neutral-600 hover:bg-neutral-100 rounded-lg transition-colors z-10"
           aria-label="닫기"
+          sx={{
+            position: 'absolute',
+            right: 12,
+            top: 12,
+            color: 'text.secondary',
+            zIndex: 10,
+            '&:hover': { bgcolor: 'action.hover' }
+          }}
+          size="small"
         >
-          <X className="h-5 w-5" />
-        </button>
+          <X size={20} />
+        </IconButton>
         {children}
-      </div>
-    </>
+      </Box>
+    </MuiDrawer>
   )
 }
 
-export function DrawerHeader({ children, className }: { children: React.ReactNode; className?: string }) {
+export function DrawerHeader({ children, className }: { children: ReactNode; className?: string }) {
   return (
-    <div className={clsx('px-6 py-4 border-b border-neutral-200', className)}>
+    <Box
+      className={className}
+      sx={{
+        px: 3,
+        py: 2.5,
+        borderBottom: '1px solid',
+        borderColor: 'divider',
+        pr: 6 // For close button space
+      }}
+    >
       {children}
-    </div>
+    </Box>
   )
 }
 
-export function DrawerBody({ children, className }: { children: React.ReactNode; className?: string }) {
+export function DrawerBody({ children, className }: { children: ReactNode; className?: string }) {
   return (
-    <div className={clsx('px-6 py-4 overflow-y-auto flex-1', className)}>
+    <Box
+      className={className}
+      sx={{
+        px: 3,
+        py: 3,
+        overflowY: 'auto',
+        flex: 1
+      }}
+    >
       {children}
-    </div>
+    </Box>
   )
 }
 
-export function DrawerFooter({ children, className }: { children: React.ReactNode; className?: string }) {
+export function DrawerFooter({ children, className }: { children: ReactNode; className?: string }) {
   return (
-    <div className={clsx('px-6 py-4 border-t border-neutral-200', className)}>
+    <Box
+      className={className}
+      sx={{
+        px: 3,
+        py: 2,
+        borderTop: '1px solid',
+        borderColor: 'divider',
+        bgcolor: 'background.default', // Slight background to define footer
+      }}
+    >
       {children}
-    </div>
+    </Box>
   )
 }

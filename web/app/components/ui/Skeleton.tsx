@@ -1,68 +1,71 @@
 'use client'
 
-import clsx from 'clsx'
+import MuiSkeleton from '@mui/material/Skeleton'
+import type { SkeletonProps } from '@mui/material/Skeleton'
+import Box from '@mui/material/Box'
+import Grid from '@mui/material/Grid'
 
-type Props = {
-  className?: string
-  shimmer?: boolean
+type Props = SkeletonProps & {
+  className?: string // For compatibility
 }
 
-export function Skeleton({ className, shimmer = true }: Props) {
+export function Skeleton({ className, animation = 'wave', ...props }: Props) {
   return (
-    <div
-      className={clsx(
-        'rounded-lg border border-neutral-200 bg-neutral-100',
-        shimmer ? 'skeleton-shimmer' : 'animate-pulse',
-        className,
-      )}
+    <MuiSkeleton
+      animation={animation}
+      {...(className ? { className } : {})}
+      sx={{ borderRadius: 3, ...props.sx }}
+      {...props}
     />
   )
 }
 
-export function CardSkeleton({ shimmer = true }: { shimmer?: boolean }) {
+export function CardSkeleton() {
   return (
-    <div className="bg-white rounded-lg border border-neutral-200 p-5 shadow-md">
-      <div className="space-y-3">
-        <Skeleton className="h-5 w-40" shimmer={shimmer} />
-        <Skeleton className="h-8 w-full" shimmer={shimmer} />
-        <Skeleton className="h-32 w-full" shimmer={shimmer} />
-      </div>
-    </div>
+    <Box sx={{ p: 2.5, border: '1px solid', borderColor: 'divider', borderRadius: 3, bgcolor: 'background.paper' }}>
+      <Box sx={{ mb: 2 }}>
+        <Skeleton variant="text" sx={{ width: '40%', height: 28 }} />
+      </Box>
+      <Box sx={{ mb: 3 }}>
+        <Skeleton variant="rectangular" sx={{ width: '100%', height: 40, borderRadius: 1 }} />
+      </Box>
+      <Box>
+        <Skeleton variant="rectangular" sx={{ width: '100%', height: 120, borderRadius: 1 }} />
+      </Box>
+    </Box>
   )
 }
 
-export function TextSkeleton({ lines = 3, shimmer = true }: { lines?: number; shimmer?: boolean }) {
+export function TextSkeleton({ lines = 3 }: { lines?: number }) {
   return (
-    <div className="space-y-2">
+    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
       {Array.from({ length: lines }).map((_, i) => (
         <Skeleton
           key={i}
-          className={clsx(
-            'h-4',
-            i === lines - 1 ? 'w-3/4' : 'w-full',
-          )}
-          shimmer={shimmer}
+          variant="text"
+          sx={{
+            width: i === lines - 1 ? '75%' : '100%',
+            height: 20
+          }}
         />
       ))}
-    </div>
+    </Box>
   )
 }
 
-export function TableSkeleton({ rows = 5, cols = 4, shimmer = true }: { rows?: number; cols?: number; shimmer?: boolean }) {
+export function TableSkeleton({ rows = 5, cols = 4 }: { rows?: number; cols?: number }) {
   return (
-    <div className="space-y-2">
+    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
       {Array.from({ length: rows }).map((_, rowIdx) => (
-        <div key={rowIdx} className="flex gap-4">
+        <Grid container spacing={2} key={rowIdx}>
           {Array.from({ length: cols }).map((_, colIdx) => (
-            <Skeleton
-              key={colIdx}
-              className="h-10 flex-1"
-              shimmer={shimmer}
-            />
+            <Grid xs={12 / cols} key={colIdx}>
+              <Skeleton variant="rectangular" sx={{ height: 40, borderRadius: 1 }} />
+            </Grid>
           ))}
-        </div>
+        </Grid>
       ))}
-    </div>
+    </Box>
   )
 }
 

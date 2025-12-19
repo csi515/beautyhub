@@ -1,135 +1,126 @@
 'use client'
 
-import React, { useId, useState } from 'react'
-import clsx from 'clsx'
+import React, { createContext, useContext } from 'react'
+import MuiTabs from '@mui/material/Tabs'
+import Tab from '@mui/material/Tab'
+import Box from '@mui/material/Box'
+
+type TabsContextType = {
+  value: string
+  onChange: (v: string) => void
+}
+
+const TabsContext = createContext<TabsContextType | undefined>(undefined)
+
+const useTabs = () => {
+  const context = useContext(TabsContext)
+  if (!context) throw new Error('Tabs components must be used within a Tabs provider')
+  return context
+}
 
 type TabsProps = {
   defaultValue?: string
   value?: string
   onValueChange?: (v: string) => void
-  className?: string
   children: React.ReactNode
+  className?: string
 }
 
-export function Tabs({ defaultValue, value: controlled, onValueChange, className, children }: TabsProps) {
-  const [internalValue, setInternalValue] = useState(defaultValue || '')
-  const value = controlled ?? internalValue
-  const setValue = onValueChange ?? setInternalValue
+export function Tabs({ defaultValue, value: controlled, onValueChange, children, className }: TabsProps) {
+  // Simple state management if uncontrolled
+  const [internalValue, setInternalValue] = React.useState(defaultValue || '')
 
-  const childArray = React.Children.toArray(children)
+  const value = controlled ?? internalValue
+  const onChange = (v: string) => {
+    onValueChange?.(v)
+    setInternalValue(v)
+  }
 
   return (
-    <div data-tabs-value={value} className={className}>
-      {childArray.map((child) => {
-        if (!React.isValidElement(child)) return child
-
-        if (child.type === TabsList) {
-          return React.cloneElement(child as React.ReactElement<TabsListProps>, {
-            value,
-            onValueChange: setValue,
-          })
-        }
-
-        if (child.type === TabsContent) {
-          const childValue = child.props.value as string
-          return React.cloneElement(child as React.ReactElement<TabsContentProps>, {
-            selected: childValue === value,
-          })
-        }
-
-        return child
-      })}
-    </div>
+    <TabsContext.Provider value={{ value, onChange }}>
+      <Box className={className} sx={{ width: '100%' }}>
+        {children}
+      </Box>
+    </TabsContext.Provider>
   )
 }
- 
+
 type TabsListProps = {
   children: React.ReactNode
-  value?: string
-  onValueChange?: (v: string) => void
   className?: string
 }
-export function TabsList({ children, value, onValueChange, className }: TabsListProps) {
-  const childArray = React.Children.toArray(children)
+
+export function TabsList({ children, className }: TabsListProps) {
+  const { value, onChange } = useTabs()
+
+  // We need to clone children to extract 'value' prop for MuiTabs standard behavior? 
+  // No, MuiTabs takes 'value' and 'onChange'. The *Children* of MuiTabs must be <Tab>.
+  // But here 'children' are our <TabsTrigger> wrappers.
+  // We can just render MuiTabs and map the children if possible, or we just use Box and let 'TabsTrigger' be 'Tab'.
+  // However, TabsTrigger components are React Elements. We can iterate them.
+
+  // Check if children are valid React elements and map specific props?
+  // Simpler: Just render MuiTabs and let it handle the children if they are MuiTab compatible.
+  // But our TabsTrigger is a custom component. MuiTabs expects children to be Tab or have 'value' prop.
+  // Our TabsTrigger HAS a value prop.
 
   return (
-    <div className={clsx('flex items-center gap-1 sm:gap-6 border-b border-neutral-200 overflow-x-auto', className)} role="tablist">
-      {childArray.map((child) => {
-        if (!React.isValidElement(child)) return child
-
-        if (child.type === TabsTrigger) {
-          const childValue = child.props.value as string
-          const selected = childValue === value
-          return React.cloneElement(child as React.ReactElement<TabsTriggerProps>, {
-            selected,
-            onSelect: () => onValueChange?.(childValue),
-          })
-        }
-
-        return child
-      })}
-    </div>
+    <Box sx={{ borderBottom: 1, borderColor: 'divider', mb: 2 }} className={className}>
+      <MuiTabs
+        value={value}
+        onChange={(_, v) => onChange(v)}
+        variant="scrollable"
+        scrollButtons="auto"
+        textColor="primary"
+        indicatorColor="primary"
+      >
+        {children}
+      </MuiTabs>
+    </Box>
   )
 }
-TabsList.displayName = 'TabsList'
 
 type TabsTriggerProps = {
   value: string
   children: React.ReactNode
-  selected?: boolean
-  onSelect?: () => void
   className?: string
+  // Props injected by MuiTabs parent:
+  // onChange, selected, etc. MuiTabs injects these into direct children.
+  // We must pass them down to the Tab component or just use Mui Tab directly.
 }
-export function TabsTrigger({ value: _v, children, selected, onSelect, className }: TabsTriggerProps) {
+
+export function TabsTrigger({ value, children, className = '', ...props }: TabsTriggerProps) {
+  // MuiTabs passes extra props like 'fullWidth', 'indicator', 'onChange', 'selected', 'textColor', 'value'
+  // We forward them to Tab.
   return (
-    <button
-      type="button"
-      onClick={onSelect}
-      className={clsx(
-        'relative px-3 sm:px-6 py-2 sm:py-3 text-xs sm:text-sm font-medium text-neutral-600 hover:text-neutral-900 rounded-lg transition-all duration-300 whitespace-nowrap flex-shrink-0',
-        selected 
-          ? 'text-[#F472B6] bg-[#FDF2F8]' 
-          : 'hover:bg-neutral-50',
-        className
-      )}
-      role="tab"
-      aria-selected={selected}
-      aria-controls={selected ? undefined : undefined}
-    >
-      {children}
-      <span
-        className={clsx(
-          'absolute left-0 -bottom-[1px] h-[2px] w-full rounded-full bg-[#F472B6] transition-all duration-300',
-          selected ? 'opacity-100 scale-x-100' : 'opacity-0 scale-x-0'
-        )}
-      />
-    </button>
+    <Tab
+      label={children} // Tab takes label, not children for content usually, but supports children too?
+      // Material UI Tab 'label' is usually text/node. Children are not typical for text labels but allowed in some versions.
+      // Safest is using 'label={children}'
+      value={value}
+      className={className}
+      sx={{ textTransform: 'none', fontWeight: 500 }}
+      {...props}
+    />
   )
 }
- TabsTrigger.displayName = 'TabsTrigger'
- 
+
 type TabsContentProps = {
   value: string
   children: React.ReactNode
   className?: string
-  selected?: boolean
 }
-export function TabsContent({ value, children, className, selected }: TabsContentProps) {
-  const id = useId()
-  if (!selected) return null
+
+export function TabsContent({ value: contentValue, children, className }: TabsContentProps) {
+  const { value } = useTabs()
+
+  if (value !== contentValue) return null
+
   return (
-    <div
-      id={`tabs-content-${id}-${value}`}
-      data-value={value}
-      className={clsx('pt-6 animate-fade-in', className)}
-      role="tabpanel"
-    >
+    <Box role="tabpanel" className={className} sx={{ py: 2 }}>
       {children}
-    </div>
+    </Box>
   )
 }
- TabsContent.displayName = 'TabsContent'
- 
- export default Tabs
- 
 
+export default Tabs

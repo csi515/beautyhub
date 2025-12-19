@@ -1,17 +1,18 @@
+﻿import { SupabaseClient } from '@supabase/supabase-js'
 /**
- * 상품 Repository
+ * ?곹뭹 Repository
  */
 
 import { BaseRepository } from './base.repository'
 import type { Product, ProductCreateInput, ProductUpdateInput } from '@/types/entities'
 
 export class ProductsRepository extends BaseRepository<Product> {
-  constructor(userId: string, supabase: any) {
+  constructor(userId: string, supabase: SupabaseClient) {
     super(userId, 'products', supabase)
   }
 
   /**
-   * 상품 생성
+   * ?곹뭹 ?앹꽦
    */
   async createProduct(input: ProductCreateInput): Promise<Product> {
     const name = String(input.name || '').trim()
@@ -30,7 +31,7 @@ export class ProductsRepository extends BaseRepository<Product> {
       active: input.active !== false,
     }
 
-    // description은 값이 있을 때만 포함 (스키마에 없을 수 있음)
+    // description? 媛믪씠 ?덉쓣 ?뚮쭔 ?ы븿 (?ㅽ궎留덉뿉 ?놁쓣 ???덉쓬)
     const descriptionValue = input.description
     if (descriptionValue !== undefined && descriptionValue !== null && descriptionValue !== '' && String(descriptionValue).trim() !== '') {
       payload['description'] = String(descriptionValue).trim()
@@ -43,7 +44,7 @@ export class ProductsRepository extends BaseRepository<Product> {
   }
 
   /**
-   * 상품 업데이트
+   * ?곹뭹 ?낅뜲?댄듃
    */
   async updateProduct(id: string, input: ProductUpdateInput): Promise<Product> {
     const payload: Partial<Product> = {}
@@ -64,7 +65,7 @@ export class ProductsRepository extends BaseRepository<Product> {
       payload.price = price
     }
 
-    // description은 값이 있을 때만 업데이트 (스키마에 없을 수 있음)
+    // description? 媛믪씠 ?덉쓣 ?뚮쭔 ?낅뜲?댄듃 (?ㅽ궎留덉뿉 ?놁쓣 ???덉쓬)
     const descriptionValue = input.description
     if (descriptionValue !== undefined && descriptionValue !== null && descriptionValue !== '' && String(descriptionValue).trim() !== '') {
       payload['description'] = String(descriptionValue).trim()
@@ -77,4 +78,5 @@ export class ProductsRepository extends BaseRepository<Product> {
     return this.update(id, payload)
   }
 }
+
 
