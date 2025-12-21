@@ -99,8 +99,6 @@ export default function CustomerTransactionsTab({
     const [isHistoryExpanded, setIsHistoryExpanded] = useState(false)
     const [historyFilter, setHistoryFilter] = useState<'all' | 'points' | 'products'>('all')
 
-    if (!customerId) return null
-
     // 통합 변동 내역
     const combinedLedger: LedgerEntry[] = useMemo(() => {
         return [
@@ -113,6 +111,8 @@ export default function CustomerTransactionsTab({
         if (historyFilter === 'all') return combinedLedger
         return combinedLedger.filter(entry => entry.type === historyFilter)
     }, [combinedLedger, historyFilter])
+
+    if (!customerId) return null
 
     return (
         <Stack spacing={3}>
