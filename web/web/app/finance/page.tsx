@@ -398,8 +398,8 @@ export default function FinancePage() {
                     const now = new Date()
                     const start = new Date(now.getFullYear(), now.getMonth(), 1)
                     const end = new Date(now.getFullYear(), now.getMonth() + 1, 0)
-                    setRange(r => ({ ...r, from: start.toISOString().split('T')[0] }))
-                    setRange(r => ({ ...r, to: end.toISOString().split('T')[0] }))
+                    setRange(r => ({ ...r, from: start.toISOString().split('T')[0]! }))
+                    setRange(r => ({ ...r, to: end.toISOString().split('T')[0]! }))
                   }}
                 >
                   이번 달
@@ -411,8 +411,8 @@ export default function FinancePage() {
                     const now = new Date()
                     const start = new Date(now.getFullYear(), now.getMonth() - 1, 1)
                     const end = new Date(now.getFullYear(), now.getMonth(), 0)
-                    setRange(r => ({ ...r, from: start.toISOString().split('T')[0] }))
-                    setRange(r => ({ ...r, to: end.toISOString().split('T')[0] }))
+                    setRange(r => ({ ...r, from: start.toISOString().split('T')[0]! }))
+                    setRange(r => ({ ...r, to: end.toISOString().split('T')[0]! }))
                   }}
                 >
                   지난 달
@@ -424,8 +424,8 @@ export default function FinancePage() {
                     const now = new Date()
                     const start = new Date(now.getFullYear(), now.getMonth() - 2, 1)
                     const end = new Date(now.getFullYear(), now.getMonth() + 1, 0)
-                    setRange(r => ({ ...r, from: start.toISOString().split('T')[0] }))
-                    setRange(r => ({ ...r, to: end.toISOString().split('T')[0] }))
+                    setRange(r => ({ ...r, from: start.toISOString().split('T')[0]! }))
+                    setRange(r => ({ ...r, to: end.toISOString().split('T')[0]! }))
                   }}
                 >
                   최근 3개월
