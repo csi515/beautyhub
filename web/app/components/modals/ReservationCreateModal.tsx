@@ -143,7 +143,7 @@ export default function ReservationCreateModal({ open, onClose, draft, onSaved }
             <div className="space-y-3">
               <div className="grid grid-cols-2 gap-2 sm:gap-3">
                 <div className="min-w-0">
-                  <label className="mb-1 block text-sm text-neutral-700">
+                  <label className="mb-1 block text-sm font-medium text-neutral-700">
                     날짜 <span className="text-rose-600">*</span>
                   </label>
                   <input
@@ -156,7 +156,7 @@ export default function ReservationCreateModal({ open, onClose, draft, onSaved }
                   />
                 </div>
                 <div className="min-w-0">
-                  <label className="mb-1 block text-sm text-neutral-700">
+                  <label className="mb-1 block text-sm font-medium text-neutral-700">
                     시작 시간 <span className="text-rose-600">*</span>
                   </label>
                   <input
@@ -169,7 +169,7 @@ export default function ReservationCreateModal({ open, onClose, draft, onSaved }
                   />
                 </div>
                 <div className="col-span-2">
-                  <label className="mb-1 block text-sm text-neutral-700">
+                  <label className="mb-1 block text-sm font-medium text-neutral-700">
                     고객
                   </label>
                   <div className="relative">
@@ -199,7 +199,7 @@ export default function ReservationCreateModal({ open, onClose, draft, onSaved }
                       customerQuery.trim() &&
                       filteredCustomers.length > 0 && (
                         <ul
-                          className="absolute z-50 mt-1 max-h-56 w-full overflow-auto rounded-none border-2 border-neutral-500 bg-white"
+                          className="absolute z-50 mt-1 max-h-56 w-full overflow-auto rounded-lg border border-neutral-300 shadow-lg bg-white"
                           role="listbox"
                         >
                           {filteredCustomers.map((c) => (
@@ -229,7 +229,7 @@ export default function ReservationCreateModal({ open, onClose, draft, onSaved }
                     상태
                   </label>
                   <select
-                    className="h-10 w-full rounded-none border-2 border-neutral-500 bg-white px-3 text-sm text-neutral-900 outline-none hover:border-neutral-600 focus:border-[#1D4ED8] focus:ring-[4px] focus:ring-[#1D4ED8]/20"
+                    className="h-10 w-full rounded-lg border border-neutral-300 bg-white px-3 text-sm outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-300"
                     value={form.status}
                     onChange={(e) =>
                       setForm((f) => ({ ...f, status: e.target.value }))
@@ -265,7 +265,7 @@ export default function ReservationCreateModal({ open, onClose, draft, onSaved }
                     서비스/상품
                   </label>
                   <select
-                    className="h-10 w-full rounded-none border-2 border-neutral-500 bg-white px-3 text-sm text-neutral-900 outline-none hover:border-neutral-600 focus:border-[#1D4ED8] focus:ring-[4px] focus:ring-[#1D4ED8]/20"
+                    className="h-10 w-full rounded-lg border border-neutral-300 bg-white px-3 text-sm outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-300"
                     value={form.service_id || ''}
                     onChange={(e) =>
                       setForm((f) => {

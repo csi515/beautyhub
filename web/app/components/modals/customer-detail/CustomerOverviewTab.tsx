@@ -9,7 +9,7 @@ import Button from '../../ui/Button'
 import ConfirmDialog from '../../ui/ConfirmDialog'
 import type { Customer } from '@/types/entities'
 
-type CustomerForm = Pick<Customer, 'id' | 'name' | 'phone' | 'email' | 'address'>
+type CustomerForm = Pick<Customer, 'id' | 'name' | 'phone' | 'email' | 'address' | 'skin_type' | 'allergy_info' | 'memo'>
 
 type CustomerOverviewTabProps = {
   form: CustomerForm | null
@@ -89,6 +89,44 @@ export default function CustomerOverviewTab({
               value={form.address || ''}
               onChange={e => onChangeForm(f => f ? ({ ...f, address: e.target.value }) : null)}
               leftIcon={<MapPin size={18} />}
+            />
+          </Grid>
+        </Grid>
+      </Card>
+
+      <Card variant="outlined" sx={{ p: 3, borderRadius: 3 }}>
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 3 }}>
+          <User size={20} className="text-primary-main" />
+          <Typography variant="subtitle1" fontWeight={700}>
+            피부 및 상담 정보
+          </Typography>
+        </Box>
+        <Grid container spacing={2.5}>
+          <Grid item xs={12} md={6}>
+            <Input
+              label="피부 타입"
+              fullWidth
+              placeholder="예) 건성, 지성, 복합성"
+              value={form.skin_type || ''}
+              onChange={e => onChangeForm(f => f ? ({ ...f, skin_type: e.target.value }) : null)}
+            />
+          </Grid>
+          <Grid item xs={12} md={6}>
+            <Input
+              label="알레르기 정보"
+              fullWidth
+              placeholder="예) 견과류, 라텍스"
+              value={form.allergy_info || ''}
+              onChange={e => onChangeForm(f => f ? ({ ...f, allergy_info: e.target.value }) : null)}
+            />
+          </Grid>
+          <Grid item xs={12}>
+            <Input
+              label="관리자 메모"
+              fullWidth
+              placeholder="상담 내부 메모 (고객에게 보이지 않음)"
+              value={form.memo || ''}
+              onChange={e => onChangeForm(f => f ? ({ ...f, memo: e.target.value }) : null)}
             />
           </Grid>
         </Grid>

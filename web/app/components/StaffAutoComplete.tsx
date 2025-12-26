@@ -30,7 +30,7 @@ export default function StaffAutoComplete({ value, onChange }: { value?: string;
     const load = async () => {
       try {
         const { staffApi } = await import('@/app/lib/api/staff')
-        const data = await staffApi.list(q.trim() ? { search: q, limit: 50 } : { limit: 50 })
+        const data = await staffApi.list(q.trim() ? { search: q, limit: 50, active: true } : { limit: 50, active: true })
         setList(Array.isArray(data) ? data : [])
       } catch {
         setList([])

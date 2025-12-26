@@ -227,6 +227,41 @@ export type Database = {
           updated_at?: string
         }
       }
+      inquiries: {
+        Row: {
+          id: string
+          name: string
+          email: string
+          phone: string | null
+          subject: string
+          message: string
+          status: 'new' | 'in_progress' | 'resolved'
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          name: string
+          email: string
+          phone?: string | null
+          subject: string
+          message: string
+          status?: 'new' | 'in_progress' | 'resolved'
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          name?: string
+          email?: string
+          phone?: string | null
+          subject?: string
+          message?: string
+          status?: 'new' | 'in_progress' | 'resolved'
+          created_at?: string
+          updated_at?: string
+        }
+      }
     }
   }
 }

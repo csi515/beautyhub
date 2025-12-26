@@ -4,8 +4,7 @@ import { useEffect, useState } from 'react'
 import { useAppToast } from '@/app/lib/ui/toast'
 import { settingsApi } from '@/app/lib/api/settings'
 import { DEFAULT_SETTINGS, type AppSettings, type FinancialSettings, type StaffSettings, type BusinessProfile, type BookingSettings } from '@/types/settings'
-import Card from '@/app/components/ui/Card'
-import { Skeleton } from '@/app/components/ui/Skeleton'
+import SettingsSkeleton from '@/app/components/skeletons/SettingsSkeleton'
 
 // MUI Imports
 import Container from '@mui/material/Container'
@@ -107,18 +106,7 @@ export default function SettingsPage() {
   if (loading) {
     return (
       <Container maxWidth="lg" sx={{ py: 4, pb: 12 }}>
-        <Stack spacing={4}>
-          <Box>
-            <Skeleton className="h-10 w-32 mb-2" />
-            <Skeleton className="h-5 w-64" />
-          </Box>
-          {[1, 2, 3, 4].map((i) => (
-            <Card key={i}>
-              <Skeleton className="h-8 w-48 mb-4" />
-              <Skeleton className="h-32 w-full" />
-            </Card>
-          ))}
-        </Stack>
+        <SettingsSkeleton />
       </Container>
     )
   }
@@ -132,7 +120,7 @@ export default function SettingsPage() {
             설정
           </Typography>
           <Typography variant="body2" color="text.secondary">
-            각 설정 카드의 편집 버튼을 클릭하여 수정하세요.
+            비즈니스 정보, 예약, 재무 등 설정을 관리하세요
           </Typography>
         </Box>
 

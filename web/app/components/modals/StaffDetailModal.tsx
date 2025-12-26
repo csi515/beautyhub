@@ -8,10 +8,24 @@ import { useAppToast } from '@/app/lib/ui/toast'
 import { staffApi } from '@/app/lib/api/staff'
 import { settingsApi } from '@/app/lib/api/settings'
 
-type Staff = { id?: string; name: string; phone?: string; email?: string; role?: string; notes?: string; active?: boolean }
+type Staff = {
+  id?: string;
+  name: string;
+  phone?: string | null;
+  email?: string | null;
+  role?: string | null;
+  notes?: string | null;
+  active?: boolean;
+  status?: string | null;
+  skills?: string | null;
+  profile_image_url?: string | null;
+}
 
 export default function StaffDetailModal({ open, onClose, item, onSaved, onDeleted }: { open: boolean; onClose: () => void; item: Staff | null; onSaved: () => void; onDeleted: () => void }) {
-  const [form, setForm] = useState<Staff>({ name: '', phone: '', email: '', role: '', notes: '', active: true })
+  const [form, setForm] = useState<Staff>({
+    name: '', phone: '', email: '', role: '', notes: '', active: true,
+    status: 'office', skills: '', profile_image_url: ''
+  })
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
   const [positions, setPositions] = useState<string[]>([])
@@ -32,23 +46,27 @@ export default function StaffDetailModal({ open, onClose, item, onSaved, onDelet
   }, [])
 
   useEffect(() => {
-    setForm(item || { name: '', phone: '', email: '', role: '', notes: '', active: true })
+    setForm(item || {
+      name: '', phone: '', email: '', role: '', notes: '', active: true,
+      status: 'office', skills: '', profile_image_url: ''
+    })
   }, [item])
 
   const save = async () => {
     try {
       setLoading(true); setError('')
-      const body: { name: string; phone: string | null; email: string | null; role: string | null; active: boolean; notes?: string } = {
+      const body = {
         name: (form.name || '').trim(),
         phone: form.phone?.trim() ? form.phone.trim() : null,
         email: form.email?.trim() ? form.email.trim() : null,
         role: form.role?.trim() ? form.role.trim() : null,
-        active: form.active !== false
+        active: form.active !== false,
+        notes: form.notes?.trim() || null,
+        status: form.status || 'office',
+        skills: form.skills?.trim() || null,
+        profile_image_url: form.profile_image_url?.trim() || null
       }
-      // notes는 값이 있을 때만 포함
-      if (form.notes && form.notes.trim() !== '') {
-        body.notes = form.notes.trim()
-      }
+
       if (!body.name) throw new Error('이름은 필수입니다.')
       if (form.id) {
         await staffApi.update(form.id, body)
@@ -81,7 +99,7 @@ export default function StaffDetailModal({ open, onClose, item, onSaved, onDelet
     <Modal open={open} onClose={onClose} size="lg">
       <ModalHeader title="직원 상세" description="직원 정보를 관리합니다. 이름은 필수입니다." onClose={onClose} />
       <ModalBody>
-        <div className="space-y-3">
+        <div className="space-y-4">
           {error && (
             <div className="p-2 rounded-md bg-rose-50 border border-rose-200" role="alert">
               <p className="text-xs text-rose-600">{error}</p>
@@ -89,11 +107,11 @@ export default function StaffDetailModal({ open, onClose, item, onSaved, onDelet
           )}
 
           {/* 기본정보 섹션 */}
-          <div className="space-y-2">
-            <h3 className="text-xs font-semibold text-neutral-900">기본정보</h3>
-            <div className="space-y-2">
+          <div className="space-y-3">
+            <h3 className="text-xs font-semibold text-neutral-900 border-b pb-1">기본정보</h3>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
-                <label htmlFor="staff-name" className="block text-xs font-medium text-neutral-700 mb-0.5">
+                <label htmlFor="staff-name" className="block text-xs font-medium text-neutral-700 mb-1">
                   이름 <span className="text-rose-600">*</span>
                 </label>
                 <input
@@ -102,23 +120,10 @@ export default function StaffDetailModal({ open, onClose, item, onSaved, onDelet
                   value={form.name}
                   onChange={e => setForm({ ...form, name: e.target.value })}
                   required
-                  aria-required="true"
                 />
               </div>
               <div>
-                <label htmlFor="staff-id" className="block text-xs font-medium text-neutral-700 mb-0.5">
-                  직원ID
-                </label>
-                <input
-                  id="staff-id"
-                  className="border border-gray-300 rounded-lg px-2.5 py-1.5 h-9 w-full text-sm focus:outline-none focus:ring-2 focus:ring-indigo-200 focus:border-indigo-500 transition-all bg-neutral-50"
-                  value={form.id || ''}
-                  disabled
-                  readOnly
-                />
-              </div>
-              <div>
-                <label htmlFor="staff-role" className="block text-xs font-medium text-neutral-700 mb-0.5">
+                <label htmlFor="staff-role" className="block text-xs font-medium text-neutral-700 mb-1">
                   직책
                 </label>
                 <select
@@ -135,15 +140,39 @@ export default function StaffDetailModal({ open, onClose, item, onSaved, onDelet
                   ))}
                 </select>
               </div>
+              <div>
+                <label htmlFor="staff-profile" className="block text-xs font-medium text-neutral-700 mb-1">
+                  프로필 이미지 URL(선택)
+                </label>
+                <input
+                  id="staff-profile"
+                  className="border border-gray-300 rounded-lg px-2.5 py-1.5 h-9 w-full text-sm focus:outline-none focus:ring-2 focus:ring-indigo-200 focus:border-indigo-500 transition-all"
+                  value={form.profile_image_url || ''}
+                  onChange={e => setForm({ ...form, profile_image_url: e.target.value })}
+                  placeholder="https://..."
+                />
+              </div>
+              <div>
+                <label htmlFor="staff-skills" className="block text-xs font-medium text-neutral-700 mb-1">
+                  보유 기술(선택)
+                </label>
+                <input
+                  id="staff-skills"
+                  className="border border-gray-300 rounded-lg px-2.5 py-1.5 h-9 w-full text-sm focus:outline-none focus:ring-2 focus:ring-indigo-200 focus:border-indigo-500 transition-all"
+                  value={form.skills || ''}
+                  onChange={e => setForm({ ...form, skills: e.target.value })}
+                  placeholder="예: 경락, 아로마, 필링"
+                />
+              </div>
             </div>
           </div>
 
           {/* 연락처 섹션 */}
-          <div className="space-y-2 pt-2 border-t border-gray-200">
-            <h3 className="text-xs font-semibold text-neutral-900">연락처</h3>
-            <div className="space-y-2">
+          <div className="space-y-3 pt-2">
+            <h3 className="text-xs font-semibold text-neutral-900 border-b pb-1">연락처</h3>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
-                <label htmlFor="staff-email" className="block text-xs font-medium text-neutral-700 mb-0.5">
+                <label htmlFor="staff-email" className="block text-xs font-medium text-neutral-700 mb-1">
                   이메일(선택)
                 </label>
                 <input
@@ -156,7 +185,7 @@ export default function StaffDetailModal({ open, onClose, item, onSaved, onDelet
                 />
               </div>
               <div>
-                <label htmlFor="staff-phone" className="block text-xs font-medium text-neutral-700 mb-0.5">
+                <label htmlFor="staff-phone" className="block text-xs font-medium text-neutral-700 mb-1">
                   휴대폰(선택)
                 </label>
                 <input
@@ -171,10 +200,10 @@ export default function StaffDetailModal({ open, onClose, item, onSaved, onDelet
             </div>
           </div>
 
-          {/* 권한/소속 섹션 */}
-          <div className="space-y-2 pt-2 border-t border-gray-200">
-            <h3 className="text-xs font-semibold text-neutral-900">권한/소속</h3>
-            <div className="space-y-2">
+          {/* 권한/소속 및 메모 */}
+          <div className="space-y-3 pt-2">
+            <h3 className="text-xs font-semibold text-neutral-900 border-b pb-1">권한 및 메모</h3>
+            <div className="space-y-3">
               <div className="flex items-center">
                 <label htmlFor="staff-active" className="inline-flex items-center gap-1.5 text-xs font-medium text-neutral-700 cursor-pointer">
                   <input
@@ -184,15 +213,15 @@ export default function StaffDetailModal({ open, onClose, item, onSaved, onDelet
                     checked={form.active !== false}
                     onChange={e => setForm({ ...form, active: e.target.checked })}
                   />
-                  <span>활성</span>
+                  <span>시스템 접근 권한 활성</span>
                 </label>
               </div>
               <div>
                 <Textarea
-                  label="메모(선택)"
+                  label="상세 메모(선택)"
                   value={form.notes || ''}
                   onChange={e => setForm({ ...form, notes: e.target.value })}
-                  placeholder="추가 메모를 입력하세요"
+                  placeholder="직원에 대한 특이사항이나 메모를 입력하세요"
                 />
               </div>
             </div>

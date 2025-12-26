@@ -1,6 +1,6 @@
-# 여우스킨 CRM - Web Application
+# BeautyHub - Web Application
 
-Next.js 14 기반의 피부관리샵 관리 시스템 웹 애플리케이션입니다.
+Next.js 14 기반의 피부관리샵 및 뷰티샵을 위한 올인원 관리 시스템입니다.
 
 ## 기술 스택
 

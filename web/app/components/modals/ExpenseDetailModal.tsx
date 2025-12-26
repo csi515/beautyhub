@@ -5,6 +5,7 @@ import Modal, { ModalBody, ModalFooter, ModalHeader } from '../ui/Modal'
 import Button from '../ui/Button'
 import { expensesApi } from '@/app/lib/api/expenses'
 import { getExpenseCategories, suggestCategory } from '@/app/lib/utils/expenseCategories'
+import ConfirmDialog from '../ui/ConfirmDialog'
 import type { Expense, ExpenseUpdateInput } from '@/types/entities'
 
 type ExpenseForm = Omit<Expense, 'amount' | 'memo'> & { amount: number | string; memo?: string | null }
@@ -14,6 +15,7 @@ export default function ExpenseDetailModal({ open, onClose, item, onSaved, onDel
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
   const [categories] = useState<string[]>(getExpenseCategories())
+  const [confirmOpen, setConfirmOpen] = useState(false)
 
   useEffect(() => {
     setForm(item ? { ...item, amount: item.amount } : null)
@@ -57,7 +59,6 @@ export default function ExpenseDetailModal({ open, onClose, item, onSaved, onDel
   }
   const removeItem = async () => {
     if (!form?.id) return
-    if (!confirm('삭제하시겠습니까?')) return
     try {
       await expensesApi.delete(form.id)
       onDeleted(); onClose()
@@ -87,6 +88,7 @@ export default function ExpenseDetailModal({ open, onClose, item, onSaved, onDel
                   <input
                     className="h-9 w-full min-w-0 rounded-lg border border-neutral-300 px-1.5 sm:px-2.5 text-xs sm:text-sm outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-300 text-right placeholder:text-neutral-400"
                     type="number"
+                    min="0"
                     placeholder="예: 12,000"
                     autoComplete="off"
                     value={form.amount === null || form.amount === undefined || form.amount === '' ? '' : form.amount}
@@ -153,11 +155,20 @@ export default function ExpenseDetailModal({ open, onClose, item, onSaved, onDel
       </ModalBody>
       <ModalFooter>
         <Button variant="secondary" onClick={onClose} disabled={loading} className="w-full md:w-auto">취소</Button>
-        <Button variant="danger" onClick={removeItem} disabled={loading} className="w-full md:w-auto">삭제</Button>
+        <Button variant="danger" onClick={() => setConfirmOpen(true)} disabled={loading} className="w-full md:w-auto">삭제</Button>
         <Button variant="primary" onClick={save} disabled={loading} className="w-full md:w-auto">저장</Button>
       </ModalFooter>
+
+      <ConfirmDialog
+        open={confirmOpen}
+        onClose={() => setConfirmOpen(false)}
+        onConfirm={removeItem}
+        title="지출 삭제"
+        description="이 지출 내역을 삭제하시겠습니까?"
+        confirmText="삭제"
+        cancelText="취소"
+        variant="danger"
+      />
     </Modal>
   )
 }
-
-

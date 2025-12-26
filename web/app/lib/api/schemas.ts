@@ -40,6 +40,9 @@ export const customerCreateSchema = z.object({
   phone: z.string().min(1, '전화번호는 필수입니다'),
   email: z.union([z.string().email('유효한 이메일을 입력하세요'), z.literal(''), z.null()]).optional().nullable(),
   address: z.union([z.string(), z.literal(''), z.null()]).optional().nullable(),
+  skin_type: z.union([z.string(), z.literal(''), z.null()]).optional().nullable(),
+  allergy_info: z.union([z.string(), z.literal(''), z.null()]).optional().nullable(),
+  memo: z.union([z.string(), z.literal(''), z.null()]).optional().nullable(),
 })
 
 /**
@@ -55,6 +58,8 @@ export const productCreateSchema = z.object({
   price: z.coerce.number().min(0, '가격은 0 이상이어야 합니다').optional(),
   description: z.string().optional().nullable(),
   active: z.boolean().optional().default(true),
+  stock_count: z.coerce.number().int().min(0).optional().default(0),
+  safety_stock: z.coerce.number().int().min(0).optional().default(5),
 })
 
 /**
@@ -73,6 +78,7 @@ export const staffCreateSchema = z.object({
   role: z.union([z.string(), z.literal(''), z.null()]).optional().nullable(),
   notes: z.union([z.string(), z.literal(''), z.null()]).optional().nullable(),
   active: z.boolean().optional().default(true),
+  incentive_rate: z.coerce.number().min(0).max(100).optional().nullable(),
 })
 
 /**

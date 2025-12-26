@@ -32,7 +32,7 @@ import {
 } from '@mui/material'
 import LogoutButton from './ui/LogoutButton'
 import { useIsAdmin } from '@/app/lib/hooks/useUserRole'
-import { useIsDemo } from '@/app/lib/hooks/useIsDemo'
+import { useShopName } from '@/app/lib/hooks/useShopName'
 
 type Item = {
   href: string
@@ -65,8 +65,8 @@ export default function Sidebar({
 }: Props = {}) {
   const pathname = usePathname()
   const isAdmin = useIsAdmin()
-  const isDemo = useIsDemo()
   const theme = useTheme()
+  const shopName = useShopName()
 
   const sidebarWidth = collapsed ? 80 : 256
 
@@ -104,7 +104,7 @@ export default function Sidebar({
           {!collapsed && (
             <Box sx={{ display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
               <Typography variant="subtitle1" fontWeight="bold" noWrap color="text.primary">
-                여우스킨 CRM
+                {shopName}
               </Typography>
               <Typography variant="caption" color="text.secondary" noWrap>
                 운영 대시보드
@@ -204,7 +204,7 @@ export default function Sidebar({
         })}
 
         {/* 관리자 메뉴 */}
-        {isAdmin && !isDemo && (
+        {isAdmin && (
           <>
             <Divider sx={{ my: 1, mx: 1 }} />
             <ListItem disablePadding>

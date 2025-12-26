@@ -88,6 +88,17 @@ export const MOCK_POINTS_LEDGER = MOCK_CUSTOMERS.flatMap(c => {
 }).sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
 
 // Derived Dashboard Data
+export const MOCK_TRANSACTIONS = Array.from({ length: 20 }).map((_, i) => ({
+    id: `tx_${i + 1}`,
+    owner_id: 'demo-user',
+    transaction_date: new Date(Date.now() - Math.floor(Math.random() * 30 * 24 * 60 * 60 * 1000)).toISOString(),
+    amount: (Math.floor(Math.random() * 100) + 10) * 1000,
+    type: i % 3 === 0 ? 'expense' : 'income',
+    category: i % 3 === 0 ? '소모품' : '시술비',
+    memo: `거래 내역 ${i + 1}`,
+    created_at: new Date().toISOString()
+}))
+
 export const MOCK_DASHBOARD_DATA = {
     todayAppointments: MOCK_APPOINTMENTS.filter(a => {
         const d = new Date(a.appointment_date)
@@ -110,7 +121,14 @@ export const MOCK_DASHBOARD_DATA = {
         { id: 'tx_3', type: 'expense', date: new Date(Date.now() - 7200000).toISOString(), amount: 15000, memo: '소모품 구매' },
         { id: 'tx_4', type: 'income', date: new Date(Date.now() - 86400000).toISOString(), amount: 120000, memo: '박지민 - 아로마' },
         { id: 'tx_5', type: 'expense', date: new Date(Date.now() - 90000000).toISOString(), amount: 500000, memo: '월세' },
-    ]
+    ],
+    monthlyRevenueData: MOCK_TRANSACTIONS.filter(t => t.type === 'income').map(t => ({
+        id: t.id,
+        amount: t.amount,
+        transaction_date: t.transaction_date,
+        type: 'income',
+        owner_id: 'demo-user'
+    }))
 }
 
 export const MOCK_EXPENSES = Array.from({ length: 15 }).map((_, i) => ({
@@ -123,13 +141,4 @@ export const MOCK_EXPENSES = Array.from({ length: 15 }).map((_, i) => ({
     created_at: new Date().toISOString()
 }))
 
-export const MOCK_TRANSACTIONS = Array.from({ length: 20 }).map((_, i) => ({
-    id: `tx_${i + 1}`,
-    owner_id: 'demo-user',
-    transaction_date: new Date(Date.now() - Math.floor(Math.random() * 30 * 24 * 60 * 60 * 1000)).toISOString(),
-    amount: (Math.floor(Math.random() * 100) + 10) * 1000,
-    type: i % 3 === 0 ? 'expense' : 'income',
-    category: i % 3 === 0 ? '소모품' : '시술비',
-    memo: `거래 내역 ${i + 1}`,
-    created_at: new Date().toISOString()
-}))
+

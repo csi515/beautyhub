@@ -6,14 +6,18 @@ import Button from '../ui/Button'
 import Textarea from '../ui/Textarea'
 import { useAppToast } from '@/app/lib/ui/toast'
 import { productsApi } from '@/app/lib/api/products'
+import { Info } from 'lucide-react'
+import { Alert, Tooltip } from '@mui/material'
+import ConfirmDialog from '../ui/ConfirmDialog'
 import type { Product as ProductEntity, ProductUpdateInput } from '@/types/entities'
 
-type ProductForm = Omit<ProductEntity, 'price'> & { price?: number | string }
+type ProductForm = Omit<ProductEntity, 'price' | 'stock_count' | 'safety_stock'> & { price?: number | string; stock_count?: number | string; safety_stock?: number | string }
 
 export default function ProductDetailModal({ open, onClose, item, onSaved, onDeleted }: { open: boolean; onClose: () => void; item: ProductEntity | null; onSaved: () => void; onDeleted: () => void }) {
   const [form, setForm] = useState<ProductForm | null>(item)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
+  const [confirmOpen, setConfirmOpen] = useState(false)
   const toast = useAppToast()
 
   useEffect(() => { setForm(item) }, [item])
@@ -23,12 +27,18 @@ export default function ProductDetailModal({ open, onClose, item, onSaved, onDel
     try {
       setLoading(true); setError('')
       const priceValue = form.price === '' || form.price === null || form.price === undefined ? null : Number(form.price)
-      if (priceValue === null) {
-        setError('가격은 필수입니다.')
+      if (priceValue === null || priceValue <= 0) {
+        setError('가격은 0보다 커야 합니다.')
         setLoading(false)
         return
       }
-      const body: ProductUpdateInput = { name: form.name, price: priceValue, active: form.active !== false }
+      const body: ProductUpdateInput = {
+        name: form.name,
+        price: priceValue,
+        active: form.active !== false,
+        stock_count: form.stock_count === '' ? 0 : Number(form.stock_count),
+        safety_stock: form.safety_stock === '' ? 0 : Number(form.safety_stock)
+      }
       // description은 값이 있을 때만 포함
       if (form.description && form.description.trim() !== '') {
         body.description = form.description.trim()
@@ -43,7 +53,6 @@ export default function ProductDetailModal({ open, onClose, item, onSaved, onDel
   }
   const removeItem = async () => {
     if (!form?.id) return
-    if (!confirm('정말 삭제하시겠어요? 이 작업은 되돌릴 수 없습니다.')) return
     try {
       await productsApi.delete(String(form.id))
       onDeleted(); onClose(); toast.success('삭제되었습니다.')
@@ -57,10 +66,12 @@ export default function ProductDetailModal({ open, onClose, item, onSaved, onDel
     <Modal open={open} onClose={onClose} size="lg">
       <ModalHeader title="제품 상세" description="제품의 기본 정보를 수정합니다. 이름과 가격은 필수입니다." onClose={onClose} />
       <ModalBody>
-        <div className="grid gap-3 md:grid-cols-[200px,1fr]">
-          <div className="space-y-2">
-            {error && <p className="text-xs text-rose-600">{error}</p>}
-          </div>
+        <div className="space-y-3">
+          {error && (
+            <Alert severity="error" sx={{ borderRadius: 2 }}>
+              {error}
+            </Alert>
+          )}
           <div className="space-y-2">
             <div className="space-y-2">
               <div className="grid gap-2 md:grid-cols-3">
@@ -78,6 +89,7 @@ export default function ProductDetailModal({ open, onClose, item, onSaved, onDel
                   <input
                     className="h-9 w-full rounded-lg border border-neutral-300 px-2.5 text-sm outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-300 text-right placeholder:text-neutral-400"
                     type="number"
+                    min="0"
                     placeholder="예: 12,000"
                     autoComplete="off"
                     value={form.price === null || form.price === undefined || form.price === '' ? '' : form.price}
@@ -86,6 +98,32 @@ export default function ProductDetailModal({ open, onClose, item, onSaved, onDel
                       setForm(f => f && ({ ...f, price: val === '' ? '' : (isNaN(Number(val)) ? '' : Number(val)) }))
                     }}
                     onFocus={e => e.target.select()}
+                  />
+                  <p className="mt-0.5 text-xs text-neutral-400">부가세 포함 여부는 별도 표시 기준을 따릅니다.</p>
+                </div>
+                <div>
+                  <label className="block text-xs font-medium text-neutral-700 mb-0.5">현재 재고</label>
+                  <input
+                    className="h-9 w-full rounded-lg border border-neutral-300 px-2.5 text-sm outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-300 text-right placeholder:text-neutral-400"
+                    type="number"
+                    min="0"
+                    value={form.stock_count ?? 0}
+                    onChange={e => setForm(f => f && ({ ...f, stock_count: e.target.value === '' ? '' : Number(e.target.value) }))}
+                  />
+                </div>
+                <div>
+                  <label className="flex items-center gap-1 text-xs font-medium text-neutral-700 mb-0.5">
+                    안전 재고
+                    <Tooltip title="이 수량 이하로 떨어지면 재고 부족 알림" arrow>
+                      <Info size={14} className="text-neutral-400 cursor-help" />
+                    </Tooltip>
+                  </label>
+                  <input
+                    className="h-9 w-full rounded-lg border border-neutral-300 px-2.5 text-sm outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-300 text-right placeholder:text-neutral-400"
+                    type="number"
+                    min="0"
+                    value={form.safety_stock ?? 5}
+                    onChange={e => setForm(f => f && ({ ...f, safety_stock: e.target.value === '' ? '' : Number(e.target.value) }))}
                   />
                 </div>
               </div>
@@ -96,7 +134,6 @@ export default function ProductDetailModal({ open, onClose, item, onSaved, onDel
                   value={form.description || ''}
                   onChange={e => setForm(f => f && ({ ...f, description: e.target.value }))}
                 />
-                <p className="mt-0.5 text-xs text-neutral-400">부가세 포함 여부는 별도 표시 기준을 따릅니다.</p>
               </div>
               <label className="inline-flex items-center gap-1.5 text-xs">
                 <input type="checkbox" checked={form.active !== false} onChange={e => setForm(f => f && ({ ...f, active: e.target.checked }))} />
@@ -108,11 +145,20 @@ export default function ProductDetailModal({ open, onClose, item, onSaved, onDel
       </ModalBody>
       <ModalFooter>
         <Button variant="secondary" onClick={onClose} disabled={loading} className="w-full md:w-auto">취소</Button>
-        <Button variant="danger" onClick={removeItem} disabled={loading} className="w-full md:w-auto">삭제</Button>
+        <Button variant="danger" onClick={() => setConfirmOpen(true)} disabled={loading} className="w-full md:w-auto">삭제</Button>
         <Button variant="primary" onClick={save} disabled={loading} className="w-full md:w-auto">저장</Button>
       </ModalFooter>
+
+      <ConfirmDialog
+        open={confirmOpen}
+        onClose={() => setConfirmOpen(false)}
+        onConfirm={removeItem}
+        title="제품 삭제"
+        description="정말 이 제품을 삭제하시겠어요? 이 작업은 되돌릴 수 없습니다."
+        confirmText="삭제"
+        cancelText="취소"
+        variant="danger"
+      />
     </Modal>
   )
 }
-
-
