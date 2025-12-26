@@ -46,7 +46,7 @@ export default function StaffScheduler({ events, staffList, onEventChange }: Sta
                 resourceViewMode="tabs" // 직원별 필터링을 위한 탭 모드
                 hourFormat="12"
                 locale={ko}
-                onConfirm={async (event: ProcessedEvent, action) => {
+                onConfirm={async (event: ProcessedEvent, action: 'edit' | 'create') => {
                     if (action === 'edit' || action === 'create') {
                         onEventChange(event)
                     }
