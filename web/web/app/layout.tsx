@@ -3,6 +3,7 @@ import AppShell from './components/AppShell'
 import Providers from './providers'
 import ServiceWorkerRegistration from './components/ServiceWorkerRegistration'
 import InstallPrompt from './components/InstallPrompt'
+import { SnackbarProvider } from './components/GlobalSnackbar'
 import { Inter } from 'next/font/google'
 
 const pretendard = Inter({
@@ -37,16 +38,18 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <meta name="mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-status-bar-style" content="default" />
-        <meta name="apple-mobile-web-app-title" content="여우스킨 CRM" />
+        <meta name="apple-mobile-web-app-title" content="BeautyHub" />
         <link rel="apple-touch-icon" href="/icons/yeowooskin_192x192.png" />
         <link rel="apple-touch-icon" sizes="192x192" href="/icons/yeowooskin_192x192.png" />
         <link rel="apple-touch-icon" sizes="512x512" href="/icons/yeowooskin_512x512.png" />
       </head>
       <body className={`h-full font-sans bg-[var(--bg)] text-[color:var(--neutral-900)] ${pretendard.className}`}>
         <Providers>
-          <ServiceWorkerRegistration />
-          <AppShell>{children}</AppShell>
-          <InstallPrompt />
+          <SnackbarProvider>
+            <ServiceWorkerRegistration />
+            <AppShell>{children}</AppShell>
+            <InstallPrompt />
+          </SnackbarProvider>
         </Providers>
       </body>
     </html>

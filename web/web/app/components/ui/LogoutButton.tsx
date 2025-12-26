@@ -39,7 +39,6 @@ export default function LogoutButton({ collapsed = false, className }: LogoutBut
       if (typeof window !== 'undefined') {
         try {
           localStorage.clear()
-          document.cookie = 'demo_mode=; path=/; max-age=0; SameSite=Lax'
         } catch { }
       }
       router.push('/login')

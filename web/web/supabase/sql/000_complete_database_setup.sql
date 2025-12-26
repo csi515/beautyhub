@@ -152,6 +152,7 @@ CREATE TABLE public.staff (
   phone TEXT,
   email TEXT,
   active BOOLEAN DEFAULT TRUE,
+  notes TEXT,
   created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
   updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );

@@ -6,7 +6,7 @@
 
 import { useState, useMemo } from 'react'
 import { Card, Grid, Typography, Box, Stack, TextField, InputAdornment, MenuItem, FormControl, InputLabel, Select, IconButton, Chip } from '@mui/material'
-import { Plus, Minus, Package, Coins, History, Trash2, ChevronDown, ChevronUp, AlertCircle } from 'lucide-react'
+import { Plus, Minus, Package, Coins, History, Trash2, ChevronDown, ChevronUp } from 'lucide-react'
 import Button from '@/app/components/ui/Button'
 import { DataTable } from '@/app/components/ui/DataTable'
 import type { CustomerProduct } from '@/app/lib/repositories/customer-products.repository'
@@ -136,7 +136,7 @@ export default function CustomerTransactionsTab({
                     <Grid container spacing={2}>
                         <Grid item xs={12} sm={4}>
                             <TextField
-                                label="변경량"
+                                label="수량"
                                 type="number"
                                 fullWidth
                                 size="small"
@@ -149,10 +149,10 @@ export default function CustomerTransactionsTab({
                         </Grid>
                         <Grid item xs={12} sm={8}>
                             <TextField
-                                label="변동 사유"
+                                label="사유"
                                 fullWidth
                                 size="small"
-                                placeholder="사유를 입력하세요 (선택)"
+                                placeholder="선택사항"
                                 value={pointsReason}
                                 onChange={(e) => onChangePointsReason(e.target.value)}
                             />
@@ -255,10 +255,17 @@ export default function CustomerTransactionsTab({
                     </Box>
 
                     {holdings.length === 0 ? (
-                        <Box sx={{ textAlign: 'center', py: 4, bgcolor: 'action.hover', borderRadius: 2 }}>
-                            <AlertCircle size={32} className="mx-auto text-neutral-300 mb-2" />
-                            <Typography variant="body2" color="text.secondary">보유 중인 상품이 없습니다.</Typography>
-                        </Box>
+                        <Stack alignItems="center" spacing={2} sx={{ py: 6, bgcolor: 'background.default', borderRadius: 2, border: '1px dashed', borderColor: 'divider' }}>
+                            <Package size={48} className="text-gray-300" />
+                            <Box textAlign="center">
+                                <Typography variant="body1" fontWeight={600} color="text.secondary" gutterBottom>
+                                    지급된 상품이 없습니다
+                                </Typography>
+                                <Typography variant="caption" color="text.disabled">
+                                    위 입력란에서 첫 상품을 지급해보세요
+                                </Typography>
+                            </Box>
+                        </Stack>
                     ) : (
                         holdings.map(holding => (
                             <Box key={holding.id} sx={{ p: 2, border: '1px solid', borderColor: 'divider', borderRadius: 2 }}>
@@ -276,43 +283,48 @@ export default function CustomerTransactionsTab({
                                         sx={{ fontWeight: 700, borderRadius: 1.5 }}
                                     />
                                 </Box>
-                                <Stack direction={{ xs: 'column', sm: 'row' }} spacing={1.5}>
+                                <Stack direction={{ xs: 'column', sm: 'row' }} spacing={1.5} alignItems={{ xs: 'stretch', sm: 'center' }}>
                                     <TextField
+                                        label="수량"
                                         size="small"
                                         type="number"
-                                        placeholder="변동량"
                                         value={holdingDelta[holding.id] || 1}
                                         onChange={(e) => onChangeHoldingDelta(holding.id, Number(e.target.value))}
-                                        sx={{ width: { xs: '100%', sm: 80 } }}
+                                        sx={{ width: { xs: '100%', sm: 90 } }}
                                         InputProps={{ sx: { fontSize: '0.8125rem' } }}
                                     />
                                     <TextField
+                                        label="사유"
                                         size="small"
-                                        placeholder="사유 (선택)"
+                                        placeholder="선택사항"
                                         value={holdingReason[holding.id] || ''}
                                         onChange={(e) => onChangeHoldingReason(holding.id, e.target.value)}
                                         sx={{ flex: 1 }}
                                         InputProps={{ sx: { fontSize: '0.8125rem' } }}
                                     />
                                     <Stack direction="row" spacing={1}>
-                                        <IconButton
-                                            size="small"
+                                        <Button
+                                            size="sm"
+                                            variant="outline"
                                             onClick={() => onIncrease(holding)}
-                                            sx={{ bgcolor: 'primary.50', color: 'primary.main', '&:hover': { bgcolor: 'primary.100' } }}
+                                            leftIcon={<Plus size={16} />}
+                                            sx={{ minWidth: 80, fontSize: '0.8125rem', px: 1.5 }}
                                         >
-                                            <Plus size={18} />
-                                        </IconButton>
-                                        <IconButton
-                                            size="small"
+                                            추가
+                                        </Button>
+                                        <Button
+                                            size="sm"
+                                            variant="outline"
                                             onClick={() => onDecrease(holding)}
-                                            sx={{ bgcolor: 'error.50', color: 'error.main', '&:hover': { bgcolor: 'error.100' } }}
+                                            leftIcon={<Minus size={16} />}
+                                            sx={{ minWidth: 80, fontSize: '0.8125rem', px: 1.5 }}
                                         >
-                                            <Minus size={18} />
-                                        </IconButton>
+                                            차감
+                                        </Button>
                                         <IconButton
                                             size="small"
                                             onClick={() => onDelete(holding.id)}
-                                            sx={{ color: 'text.secondary', '&:hover': { color: 'error.main' } }}
+                                            sx={{ color: 'text.secondary', '&:hover': { color: 'error.main', bgcolor: 'error.50' } }}
                                         >
                                             <Trash2 size={18} />
                                         </IconButton>

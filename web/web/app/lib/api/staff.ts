@@ -15,6 +15,7 @@ export const staffApi = {
     if (query?.limit) params.set('limit', String(query.limit))
     if (query?.offset) params.set('offset', String(query.offset))
     if (query?.search) params.set('search', query.search)
+    if (query?.active !== undefined) params.set('active', String(query.active))
     const queryString = params.toString()
     return apiClient.get<Staff[]>(`/api/staff${queryString ? `?${queryString}` : ''}`)
   },

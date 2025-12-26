@@ -24,7 +24,7 @@
 
 ```bash
 # ImageMagick이 설치되어 있는 경우
-convert -size 512x512 xc:#2c3e50 -pointsize 200 -fill white -gravity center -annotate +0+0 "여우스킨" public/icons/icon-512.png
+convert -size 512x512 xc:#2c3e50 -pointsize 200 -fill white -gravity center -annotate +0+0 "B" public/icons/icon-512.png
 convert public/icons/icon-512.png -resize 192x192 public/icons/icon-192.png
 ```
 

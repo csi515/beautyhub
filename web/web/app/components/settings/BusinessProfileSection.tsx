@@ -59,7 +59,8 @@ function BusinessProfileSection({ data, onChange }: Props) {
               required
               value={data.storeName}
               onChange={(e) => onChange({ storeName: e.target.value })}
-              placeholder="예) 여우스킨"
+              placeholder="예) 아름다운 피부샵"
+              helperText="여기에 입력한 이름이 시스템 전체에 표시됩니다."
             />
             <Input
               label="대표자 이름"

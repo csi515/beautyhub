@@ -192,15 +192,29 @@ export default function ProductsPage() {
               <MenuItem value="inactive">비활성</MenuItem>
             </Select>
           </FormControl>
-          <Button
-            variant="primary"
-            leftIcon={<Plus className="h-4 w-4" />}
-            onClick={openCreate}
-            fullWidth={false}
-            sx={{ width: { xs: '100%', sm: 'auto' } }}
-          >
-            제품 추가
-          </Button>
+          <Stack direction="row" spacing={1}>
+            {(query || statusFilter !== 'all') && (
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => {
+                  setQuery('')
+                  setStatusFilter('all')
+                }}
+              >
+                초기화
+              </Button>
+            )}
+            <Button
+              variant="primary"
+              leftIcon={<Plus className="h-4 w-4" />}
+              onClick={openCreate}
+              fullWidth={false}
+              sx={{ width: { xs: '100%', sm: 'auto' } }}
+            >
+              제품 추가
+            </Button>
+          </Stack>
         </Stack>
       </Paper>
 

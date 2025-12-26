@@ -8,13 +8,8 @@ export const dynamic = 'force-dynamic'
  * GET /api/settings
  * 설정 조회
  */
-export async function GET(req: NextRequest) {
+export async function GET() {
   try {
-    // 데모 모드 확인
-    if (req.cookies.get('demo_mode')?.value === 'true') {
-      return NextResponse.json(DEFAULT_SETTINGS)
-    }
-
     const supabase = await createSupabaseServerClient()
     const { data: { user }, error: authError } = await supabase.auth.getUser()
 
@@ -74,10 +69,6 @@ export async function GET(req: NextRequest) {
  */
 export async function PUT(req: NextRequest) {
   try {
-    if (req.cookies.get('demo_mode')?.value === 'true') {
-      return NextResponse.json({ error: '데모 모드에서는 설정을 변경할 수 없습니다.' }, { status: 403 })
-    }
-
     const supabase = await createSupabaseServerClient()
     const { data: { user }, error: authError } = await supabase.auth.getUser()
 

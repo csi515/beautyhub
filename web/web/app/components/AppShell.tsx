@@ -24,12 +24,31 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
     pathname === '/signup' ||
     pathname === '/forgot-password' ||
     pathname.startsWith('/reset-password') ||
-    pathname === '/update-password'
+    pathname === '/update-password' ||
+    pathname === '/features' ||
+    pathname.startsWith('/guides') ||
+    pathname === '/faq' ||
+    pathname === '/privacy-policy' ||
+    pathname === '/terms-of-service'
 
   const [navOpen, setNavOpen] = useState(false)
 
-  // Collapse state for desktop
-  const [collapsed, setCollapsed] = useState(false)
+  // Collapse state for desktop with localStorage persistence
+  const [collapsed, setCollapsed] = useState(() => {
+    if (typeof window !== 'undefined') {
+      const saved = localStorage.getItem('sidebar-collapsed')
+      return saved === 'true'
+    }
+    return false
+  })
+
+  const toggleCollapse = () => {
+    const newState = !collapsed
+    setCollapsed(newState)
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('sidebar-collapsed', String(newState))
+    }
+  }
 
   // ESC key handler is handled by MUI Modal/Drawer by default for mobile
 
@@ -43,7 +62,7 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
       {!isMobile && (
         <Sidebar
           collapsed={collapsed}
-          onToggleCollapse={() => setCollapsed(!collapsed)}
+          onToggleCollapse={toggleCollapse}
         />
       )}
 

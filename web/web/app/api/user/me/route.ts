@@ -1,22 +1,10 @@
-import { NextResponse, NextRequest } from 'next/server'
+import { NextResponse } from 'next/server'
 import { createSupabaseServerClient } from '@/lib/supabase/server'
 
 export const dynamic = 'force-dynamic'
 
-export async function GET(req: NextRequest) {
+export async function GET() {
 	try {
-		// 데모 모드 확인
-		if (req.cookies.get('demo_mode')?.value === 'true') {
-			return NextResponse.json({
-				profile: {
-					id: 'demo-user',
-					email: 'demo@example.com',
-					name: '체험 사용자',
-					approved: true
-				}
-			})
-		}
-
 		const supabase = await createSupabaseServerClient()
 		const { data: { user }, error: authError } = await supabase.auth.getUser()
 

@@ -1,7 +1,7 @@
 {
-  "name": "여우스킨 CRM",
-  "short_name": "여우스킨",
-  "description": "피부관리샵 관리 시스템",
+  "name": "BeautyHub",
+  "short_name": "BeautyHub",
+  "description": "피부관리샵 전용 고객 관리 시스템",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#f9fafb",
@@ -9,19 +9,22 @@
   "orientation": "any",
   "icons": [
     {
-      "src": "/icons/yeowooskin_192x192.png",
+      "src": "/icons/icon-192.png",
       "sizes": "192x192",
       "type": "image/png",
       "purpose": "any maskable"
     },
     {
-      "src": "/icons/yeowooskin_512x512.png",
+      "src": "/icons/icon-512.png",
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "any maskable"
     }
   ],
-  "categories": ["business", "productivity"],
+  "categories": [
+    "business",
+    "productivity"
+  ],
   "screenshots": [],
   "shortcuts": [
     {
@@ -29,15 +32,24 @@
       "short_name": "대시보드",
       "description": "대시보드로 이동",
       "url": "/dashboard",
-      "icons": [{ "src": "/icons/yeowooskin_192x192.png", "sizes": "192x192" }]
+      "icons": [
+        {
+          "src": "/icons/icon-192.png",
+          "sizes": "192x192"
+        }
+      ]
     },
     {
       "name": "고객 관리",
       "short_name": "고객",
       "description": "고객 관리 페이지로 이동",
       "url": "/customers",
-      "icons": [{ "src": "/icons/yeowooskin_192x192.png", "sizes": "192x192" }]
+      "icons": [
+        {
+          "src": "/icons/icon-192.png",
+          "sizes": "192x192"
+        }
+      ]
     }
   ]
 }
-

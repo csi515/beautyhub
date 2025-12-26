@@ -32,6 +32,8 @@ export interface UserProfile {
   approved?: boolean
   name?: string | null
   email?: string | null
+  role?: string | null
+  branch_name?: string | null
 }
 
 /**
@@ -133,7 +135,7 @@ export function createAuthApi(supabase: SupabaseClient) {
 
       const { data, error } = await supabase
         .from('users')
-        .select('id, approved, name, email')
+        .select('id, approved, name, email, role, branch_name')
         .eq('id', user.id)
         .maybeSingle()
 

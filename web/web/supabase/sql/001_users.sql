@@ -6,7 +6,7 @@ create table if not exists public.users (
   phone text,
   birthdate date,
   role text not null default 'pending',
-  approved boolean not null default false,
+  approved boolean not null default true,
   created_at timestamptz not null default now()
 );
 
@@ -17,7 +17,7 @@ alter table public.users enable row level security;
 do $$
 begin
   if not exists (
-    select 1 from pg_policies where polname = 'users select own' and tablename = 'users'
+    select 1 from pg_policies where policyname = 'users select own' and tablename = 'users'
   ) then
     create policy "users select own" on public.users
     for select using (auth.uid() = id);

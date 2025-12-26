@@ -59,6 +59,7 @@ export default function CustomerPointsTab({
           <input
             className="h-10 w-full md:w-32 rounded-sm border-2 border-neutral-500 px-3 text-sm outline-none focus:border-[#1D4ED8] focus:ring-[4px] focus:ring-[#1D4ED8]/20 bg-white text-neutral-900 placeholder:text-neutral-500"
             type="number"
+            min="0"
             placeholder="예: 100"
             value={pointsDelta === null || pointsDelta === undefined || pointsDelta === 0 ? '' : pointsDelta}
             onChange={e => {
@@ -73,7 +74,13 @@ export default function CustomerPointsTab({
             onChange={e => onChangeReason(e.target.value)}
           />
           <div className="flex flex-row gap-2 md:gap-3">
-            <Button size="md" variant="outline" onClick={onDeductPoints} className="flex-1 md:flex-none md:w-auto">
+            <Button
+              size="md"
+              variant="outline"
+              onClick={onDeductPoints}
+              disabled={pointsDelta > pointsBalance}
+              className="flex-1 md:flex-none md:w-auto"
+            >
               차감
             </Button>
             <Button size="md" variant="primary" onClick={onAddPoints} className="flex-1 md:flex-none md:w-auto">

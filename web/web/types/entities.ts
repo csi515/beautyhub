@@ -13,6 +13,9 @@ export interface Customer {
   email?: string | null
   address?: string | null
   features?: string | null
+  skin_type?: string | null
+  allergy_info?: string | null
+  memo?: string | null
   created_at?: string
   updated_at?: string
 }
@@ -26,6 +29,9 @@ export interface CustomerCreateInput {
   email?: string | null
   address?: string | null
   features?: string | null
+  skin_type?: string | null
+  allergy_info?: string | null
+  memo?: string | null
 }
 
 export interface CustomerUpdateInput extends Partial<CustomerCreateInput> { }
@@ -40,6 +46,8 @@ export interface Product {
   price: number
   description?: string | null
   active?: boolean
+  stock_count?: number
+  safety_stock?: number
   created_at?: string
   updated_at?: string
 }
@@ -52,6 +60,8 @@ export interface ProductCreateInput {
   price?: number
   description?: string | null
   active?: boolean
+  stock_count?: number
+  safety_stock?: number
 }
 
 export interface ProductUpdateInput extends Partial<ProductCreateInput> { }
@@ -68,6 +78,10 @@ export interface Staff {
   role?: string | null
   notes?: string | null
   active?: boolean
+  status?: string | null      // 출근, 휴무 등 현재 상태
+  skills?: string | null      // 보유 기술
+  incentive_rate?: number | null // 인센티브율 (%)
+  profile_image_url?: string | null
   created_at?: string
   updated_at?: string
 }
@@ -82,6 +96,10 @@ export interface StaffCreateInput {
   role?: string | null
   notes?: string | null
   active?: boolean
+  status?: string | null
+  skills?: string | null
+  incentive_rate?: number | null
+  profile_image_url?: string | null
 }
 
 export interface StaffUpdateInput extends Partial<StaffCreateInput> { }
@@ -199,5 +217,70 @@ export interface CustomerProduct {
 export interface CustomerPoint {
   customer_id: string
   balance: number
+}
+
+/**
+ * 직원 근태 기록 엔티티
+ */
+export interface StaffAttendance {
+  id: string
+  owner_id: string
+  staff_id: string
+  type: 'scheduled' | 'actual'
+  start_time: string
+  end_time: string
+  status?: string | null  // normal, late, absent 등
+  memo?: string | null
+  created_at?: string
+  updated_at?: string
+}
+
+/**
+ * 직원 근태 생성/수정 DTO
+ */
+export interface StaffAttendanceCreateInput {
+  staff_id: string
+  type: 'scheduled' | 'actual'
+  start_time: string
+  end_time: string
+  status?: string | null
+  memo?: string | null
+}
+
+export interface StaffAttendanceUpdateInput extends Partial<StaffAttendanceCreateInput> { }
+
+/**
+ * 사용자 상태 enum
+ */
+export type UserStatus = 'PENDING' | 'ACTIVE' | 'INACTIVE'
+
+/**
+ * 사용자 역할 enum
+ */
+export type UserRole = 'pending' | 'user' | 'admin' | 'super_admin'
+
+/**
+ * 사용자 엔티티
+ */
+export interface User {
+  id: string
+  email: string
+  name?: string | null
+  phone?: string | null
+  birthdate?: string | null
+  branch_name?: string | null
+  status: UserStatus
+  role: UserRole
+  approved: boolean
+  created_at?: string
+}
+
+/**
+ * 사용자 상태 업데이트 DTO
+ */
+export interface UserUpdateInput {
+  status?: UserStatus
+  role?: UserRole
+  approved?: boolean
 }
 

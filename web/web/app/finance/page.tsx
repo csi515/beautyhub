@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect, useMemo, useState, useCallback, lazy, Suspense } from 'react'
-import { Pencil, Plus, Download, FileText } from 'lucide-react'
+import { Pencil, Plus, Download, FileText, TrendingUp, TrendingDown } from 'lucide-react'
 import EmptyState from '../components/EmptyState'
 import { Skeleton } from '../components/ui/Skeleton'
 import { useAppToast } from '../lib/ui/toast'
@@ -124,7 +124,7 @@ export default function FinancePage() {
   const [newAmount, setNewAmount] = useState<string>('')
   const [newMemo, setNewMemo] = useState<string>('')
   const [selectedCategory, setSelectedCategory] = useState<string>('')
-  const [showFilters, setShowFilters] = useState(false)
+  const [showFilters, setShowFilters] = useState(true) // 기본적으로 펼쳐진 상태
 
   const [expenseDetail, setExpenseDetail] = useState<Expense | null>(null)
   const [expenseOpen, setExpenseOpen] = useState(false)
@@ -389,7 +389,50 @@ export default function FinancePage() {
           </Box>
           <Box sx={{ display: { xs: showFilters ? 'block' : 'none', md: 'block' } }}>
             <Stack spacing={2}>
-              {/* 첫 번째 줄: 날짜 범위 */}
+              {/* Quick Date Filters */}
+              <Box sx={{ display: { xs: 'none', sm: 'flex' }, gap: 1, mb: 2 }}>
+                <Button
+                  size="sm"
+                  variant="secondary"
+                  onClick={() => {
+                    const now = new Date()
+                    const start = new Date(now.getFullYear(), now.getMonth(), 1)
+                    const end = new Date(now.getFullYear(), now.getMonth() + 1, 0)
+                    setRange(r => ({ ...r, from: start.toISOString().split('T')[0] }))
+                    setRange(r => ({ ...r, to: end.toISOString().split('T')[0] }))
+                  }}
+                >
+                  이번 달
+                </Button>
+                <Button
+                  size="sm"
+                  variant="secondary"
+                  onClick={() => {
+                    const now = new Date()
+                    const start = new Date(now.getFullYear(), now.getMonth() - 1, 1)
+                    const end = new Date(now.getFullYear(), now.getMonth(), 0)
+                    setRange(r => ({ ...r, from: start.toISOString().split('T')[0] }))
+                    setRange(r => ({ ...r, to: end.toISOString().split('T')[0] }))
+                  }}
+                >
+                  지난 달
+                </Button>
+                <Button
+                  size="sm"
+                  variant="secondary"
+                  onClick={() => {
+                    const now = new Date()
+                    const start = new Date(now.getFullYear(), now.getMonth() - 2, 1)
+                    const end = new Date(now.getFullYear(), now.getMonth() + 1, 0)
+                    setRange(r => ({ ...r, from: start.toISOString().split('T')[0] }))
+                    setRange(r => ({ ...r, to: end.toISOString().split('T')[0] }))
+                  }}
+                >
+                  최근 3개월
+                </Button>
+              </Box>
+
+              {/* Date Range Inputs */}
               <Stack direction="row" spacing={2} alignItems="center">
                 <TextField
                   type="date"
@@ -514,10 +557,15 @@ export default function FinancePage() {
                     <Typography
                       variant="h6"
                       fontWeight="bold"
-                      color={row.type === 'income' ? 'success.main' : 'error.main'}
-                      mb={0.5}
+                      sx={{
+                        color: row.type === 'income' ? '#059669' : '#dc2626',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: 0.5
+                      }}
                     >
-                      ₩{Number(row.amount || 0).toLocaleString()}
+                      {row.type === 'income' ? <TrendingUp size={20} /> : <TrendingDown size={20} />}
+                      {row.type === 'income' ? '+' : '-'}₩{Number(row.amount || 0).toLocaleString()}
                     </Typography>
                     {row.note && (
                       <Typography variant="body2" color="text.secondary" noWrap>

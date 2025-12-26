@@ -64,7 +64,7 @@ export default function LoginForm() {
         }
         setError(''); setInfo(''); setBusy(true)
         try {
-            const { user, session } = await authApi.login({ email: trimmedEmail, password })
+            const { session } = await authApi.login({ email: trimmedEmail, password })
 
             try {
                 await authApi.ensureProfile()
@@ -72,13 +72,7 @@ export default function LoginForm() {
                 // Ignore
             }
 
-            const profile = await authApi.checkApproval(user.id)
-            if (!profile?.approved) {
-                await authApi.logout()
-                setError('관리자 승인 후 로그인할 수 있습니다.')
-                setBusy(false)
-                return
-            }
+            // 승인 체크 제거 - 모든 사용자는 회원가입 시 자동 승인됨
 
             await authApi.setSession(
                 {
@@ -88,11 +82,6 @@ export default function LoginForm() {
                 },
                 remember
             )
-
-            // 실제 계정 로그인 시 데모 모드 쿠키 삭제
-            if (typeof document !== 'undefined') {
-                document.cookie = 'demo_mode=; path=/; max-age=0; SameSite=Lax'
-            }
 
             localStorage.setItem('lastLoginEmail', trimmedEmail)
 
@@ -157,7 +146,7 @@ export default function LoginForm() {
                 <Stack spacing={3}>
                     <Box textAlign="center">
                         <Typography variant="h5" fontWeight="bold" gutterBottom>
-                            여우스킨 · 로그인
+                            BeautyHub · 로그인
                         </Typography>
                         <Typography variant="body2" color="text.secondary">
                             CRM에 접속하려면 계정 정보를 입력하세요.
@@ -239,18 +228,6 @@ export default function LoginForm() {
                         >
                             로그인
                         </Button>
-                        <Button
-                            type="button"
-                            variant="contrast"
-                            onClick={() => {
-                                document.cookie = 'demo_mode=true; path=/; max-age=3600; SameSite=Lax'
-                                router.push('/dashboard')
-                            }}
-                            fullWidth
-                            sx={{ borderStyle: 'dashed', borderWidth: 2 }}
-                        >
-                            로그인 없이 체험하기 (데모)
-                        </Button>
                     </Stack>
 
                     <Stack spacing={1} sx={{ pt: 1 }}>
@@ -283,8 +260,7 @@ export default function LoginForm() {
                     <Stack spacing={1.5}>
                         <Typography>1) 이름/전화번호/이메일/비밀번호/생년월일을 입력하여 회원가입</Typography>
                         <Typography>2) 이메일로 발송된 인증 메일을 확인하여 인증 완료</Typography>
-                        <Typography>3) 관리자가 승인하면 로그인 가능 상태로 전환</Typography>
-                        <Typography>4) 승인 완료 후 로그인하여 서비스를 이용하세요</Typography>
+                        <Typography>3) 회원가입 완료 후 바로 로그인하여 서비스를 이용하세요</Typography>
                         <Box pt={1}>
                             <Typography variant="caption" color="text.secondary">
                                 * 신규 회원가입 문의는 <Link href="mailto:csi515@naver.com" color="inherit" underline="always">csi515@naver.com</Link>으로 메일을 보내주세요.

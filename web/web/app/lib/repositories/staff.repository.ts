@@ -1,6 +1,6 @@
 ﻿import { SupabaseClient } from '@supabase/supabase-js'
 /**
- * 吏곸썝 Repository
+ * 직원 Repository
  */
 
 import { BaseRepository } from './base.repository'
@@ -16,7 +16,7 @@ export class StaffRepository extends BaseRepository<Staff> {
   }
 
   /**
-   * 吏곸썝 ?앹꽦
+   * 직원 생성
    */
   async createStaff(input: StaffCreateInput): Promise<Staff> {
     const name = String(input.name || '').trim()
@@ -30,19 +30,22 @@ export class StaffRepository extends BaseRepository<Staff> {
       email: input.email || null,
       role: input.role || null,
       active: input.active !== false,
+      status: input.status || 'office',
+      skills: input.skills || null,
+      profile_image_url: input.profile_image_url || null,
     }
 
-    // notes ?꾨뱶???곗씠?곕쿋?댁뒪??而щ읆???놁쑝誘濡??쒖쇅
-    // const notesValue = input.notes
-    // if (notesValue !== undefined && notesValue !== null && notesValue !== '' && String(notesValue).trim() !== '') {
-    //   payload['notes'] = String(notesValue).trim()
-    // }
+    // notes 필드 활성화
+    const notesValue = input.notes
+    if (notesValue !== undefined && notesValue !== null && notesValue !== '' && String(notesValue).trim() !== '') {
+      payload['notes'] = String(notesValue).trim()
+    }
 
     return this.create(payload as unknown as Staff)
   }
 
   /**
-   * 吏곸썝 ?낅뜲?댄듃
+   * 직원 업데이트
    */
   async updateStaff(id: string, input: StaffUpdateInput): Promise<Staff> {
     const payload: Partial<Staff> = {}
@@ -58,15 +61,18 @@ export class StaffRepository extends BaseRepository<Staff> {
     if (input.phone !== undefined) payload.phone = input.phone || null
     if (input.email !== undefined) payload.email = input.email || null
     if (input.role !== undefined) payload.role = input.role || null
-    // notes ?꾨뱶???곗씠?곕쿋?댁뒪??而щ읆???놁쑝誘濡??쒖쇅
-    // const notesValue = input.notes
-    // if (notesValue !== undefined && notesValue !== null && notesValue !== '' && String(notesValue).trim() !== '') {
-    //   payload['notes'] = String(notesValue).trim()
-    // }
+    if (input.status !== undefined) payload.status = input.status || 'office'
+    if (input.skills !== undefined) payload.skills = input.skills || null
+    if (input.profile_image_url !== undefined) payload.profile_image_url = input.profile_image_url || null
+
+    // notes 필드 활성화
+    const notesValue = input.notes
+    if (notesValue !== undefined) {
+      payload.notes = notesValue ? String(notesValue).trim() : null
+    }
+
     if (input.active !== undefined) payload.active = input.active
 
     return this.update(id, payload)
   }
 }
-
-
