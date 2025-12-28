@@ -114,6 +114,9 @@ export default function CustomerDetailModal({
                   phone: form.phone ?? null,
                   email: form.email ?? null,
                   address: form.address ?? null,
+                  skin_type: form.skin_type ?? null,
+                  allergy_info: form.allergy_info ?? null,
+                  memo: form.memo ?? null,
                 } : null}
                 features={features}
                 fieldErrors={fieldErrors}
@@ -125,6 +128,9 @@ export default function CustomerDetailModal({
                       phone: f.phone ?? null,
                       email: f.email ?? null,
                       address: f.address ?? null,
+                      skin_type: f.skin_type ?? null,
+                      allergy_info: f.allergy_info ?? null,
+                      memo: f.memo ?? null,
                     } : null)
                     if (!result) return null
                     return {
@@ -133,6 +139,9 @@ export default function CustomerDetailModal({
                       phone: result.phone ?? null,
                       email: result.email ?? null,
                       address: result.address ?? null,
+                      skin_type: result.skin_type ?? null,
+                      allergy_info: result.allergy_info ?? null,
+                      memo: result.memo ?? null,
                     } as Customer
                   })
                 }}
@@ -160,6 +169,9 @@ export default function CustomerDetailModal({
                     phone: form.phone ?? null,
                     email: form.email ?? null,
                     address: form.address ?? null,
+                    skin_type: form.skin_type ?? null,
+                    allergy_info: form.allergy_info ?? null,
+                    memo: form.memo ?? null,
                   } : null}
                   features={features}
                   fieldErrors={fieldErrors}
@@ -171,6 +183,9 @@ export default function CustomerDetailModal({
                         phone: f.phone ?? null,
                         email: f.email ?? null,
                         address: f.address ?? null,
+                        skin_type: f.skin_type ?? null,
+                        allergy_info: f.allergy_info ?? null,
+                        memo: f.memo ?? null,
                       } : null)
                       if (!result) return null
                       return {
@@ -179,6 +194,9 @@ export default function CustomerDetailModal({
                         phone: result.phone ?? null,
                         email: result.email ?? null,
                         address: result.address ?? null,
+                        skin_type: result.skin_type ?? null,
+                        allergy_info: result.allergy_info ?? null,
+                        memo: result.memo ?? null,
                       } as Customer
                     })
                   }}
