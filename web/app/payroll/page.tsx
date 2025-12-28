@@ -26,8 +26,6 @@ import {
     Select,
     MenuItem,
     Divider,
-    useTheme,
-    useMediaQuery,
     Stack
 } from '@mui/material'
 import { TableSkeleton, CardSkeleton } from '../components/ui/SkeletonLoader'
@@ -36,7 +34,6 @@ import PageHeader, { createActionButton } from '../components/common/PageHeader'
 import { useAppToast } from '../lib/ui/toast'
 import { format } from 'date-fns'
 import { useSearch } from '../lib/hooks/useSearch'
-import { useSort } from '../lib/hooks/useSort'
 import { usePagination } from '../lib/hooks/usePagination'
 import { exportToCSV, preparePayrollDataForExport } from '../lib/utils/export'
 import InputAdornment from '@mui/material/InputAdornment'
@@ -91,8 +88,6 @@ export default function PayrollPage() {
     const [settingsStaffName, setSettingsStaffName] = useState('')
 
     const toast = useAppToast()
-    const theme = useTheme()
-    const isMobile = useMediaQuery(theme.breakpoints.down('sm'))
 
     // Search, Sort, Pagination
     const { query, debouncedQuery, setQuery } = useSearch({ debounceMs: 300 })
