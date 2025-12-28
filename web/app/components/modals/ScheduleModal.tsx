@@ -31,7 +31,7 @@ interface ScheduleModalProps {
     defaultWorkHours?: {
         startTime: string
         endTime: string
-    }
+    } | undefined
     onClose: () => void
     onSave: (data: StaffAttendanceCreateInput, repeat?: { days: number[] }) => Promise<void>
     onDelete?: (id: string) => Promise<void>
