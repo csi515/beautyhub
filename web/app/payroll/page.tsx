@@ -25,7 +25,7 @@ import { usePayrollFilters } from '../lib/hooks/usePayrollFilters'
 import { exportToCSV, preparePayrollDataForExport } from '../lib/utils/export'
 
 // Types
-import { type Staff, type PayrollRecord, type PayrollCalculationResult } from '@/types/payroll'
+import { type PayrollCalculationResult } from '@/types/payroll'
 
 export default function PayrollPage() {
     // Modal states
