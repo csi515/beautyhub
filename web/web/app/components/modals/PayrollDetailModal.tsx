@@ -1,8 +1,8 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { Box, Grid, Typography, Divider, Chip } from '@mui/material'
-import { Edit, Save, DollarSign, FileText, User, Calendar } from 'lucide-react'
+import { Box, Grid, Typography, Divider } from '@mui/material'
+import { Edit, Save, User, Calendar } from 'lucide-react'
 import Modal, { ModalBody, ModalFooter, ModalHeader } from '../ui/Modal'
 import Button from '../ui/Button'
 import Input from '../ui/Input'
@@ -186,7 +186,6 @@ export default function PayrollDetailModal({
                                             <Input
                                                 value={formData.base_salary}
                                                 onChange={(e) => handleFieldChange('base_salary', e.target.value)}
-                                                size="sm"
                                                 className="w-32"
                                                 rightIcon={<Typography variant="caption">원</Typography>}
                                             />
@@ -203,7 +202,6 @@ export default function PayrollDetailModal({
                                             <Input
                                                 value={formData.overtime_pay}
                                                 onChange={(e) => handleFieldChange('overtime_pay', e.target.value)}
-                                                size="sm"
                                                 className="w-32"
                                                 rightIcon={<Typography variant="caption">원</Typography>}
                                             />
@@ -220,7 +218,6 @@ export default function PayrollDetailModal({
                                             <Input
                                                 value={formData.incentive_pay}
                                                 onChange={(e) => handleFieldChange('incentive_pay', e.target.value)}
-                                                size="sm"
                                                 className="w-32"
                                                 rightIcon={<Typography variant="caption">원</Typography>}
                                             />
