@@ -288,7 +288,7 @@ export default function InventoryPage() {
 
     if (loading) {
         return (
-            <Container maxWidth="lg" sx={{ py: 4 }}>
+            <Container maxWidth="lg" sx={{ py: 4, px: { xs: 2, sm: 3 } }}>
                 <PageHeader
                     title="재고 관리"
                     description="제품 재고 현황 및 알림 관리"
@@ -306,7 +306,7 @@ export default function InventoryPage() {
     // products가 비어있을 때 처리 (EmptyState)
     if (products.length === 0) {
         return (
-            <Container maxWidth="lg" sx={{ py: 4 }}>
+            <Container maxWidth="lg" sx={{ py: 4, px: { xs: 2, sm: 3 } }}>
                 <PageHeader
                     title="재고 관리"
                     description="제품 재고 현황 및 알림 관리"

@@ -13,7 +13,7 @@ import StaffTabsContainer from '@/app/components/staff/StaffTabsContainer'
 import StaffAttendanceTab from '@/app/components/staff/StaffAttendanceTab'
 import StaffScheduleTab from '@/app/components/staff/StaffScheduleTab'
 import StaffListTab from '@/app/components/staff/StaffListTab'
-import { Stack } from '@mui/material'
+import { Box, Stack } from '@mui/material'
 import { Download } from 'lucide-react'
 import { useTheme, useMediaQuery } from '@mui/material'
 
@@ -79,7 +79,8 @@ export default function StaffPage() {
 
 
   return (
-    <Stack spacing={4} sx={{ minHeight: '100vh', bgcolor: '#f8fafc' }}>
+    <Box sx={{ px: { xs: 2, sm: 3 }, py: 4, maxWidth: 'lg', mx: 'auto', minHeight: '100vh', bgcolor: '#f8fafc' }}>
+      <Stack spacing={4}>
       <PageHeader
         title="직원 통합 관리"
         icon={<Users className="h-5 w-5" />}
@@ -192,5 +193,6 @@ export default function StaffPage() {
         />
       )}
     </Stack>
+    </Box>
   )
 }
