@@ -102,7 +102,7 @@ export default function AnalyticsPage() {
 
     if (loading) {
         return (
-            <Container maxWidth="lg" sx={{ py: 4 }}>
+            <Container maxWidth="lg" sx={{ py: 4, px: { xs: 2, sm: 3 } }}>
                 <PageHeader
                     title="고객 분석"
                     description="고객 생애 가치(LTV) 및 VIP 고객 분석"
@@ -119,7 +119,7 @@ export default function AnalyticsPage() {
 
     if (error) {
         return (
-            <Container maxWidth="lg" sx={{ py: 4 }}>
+            <Container maxWidth="lg" sx={{ py: 4, px: { xs: 2, sm: 3 } }}>
                 <Alert severity="error">{error}</Alert>
             </Container>
         )
@@ -127,7 +127,7 @@ export default function AnalyticsPage() {
 
     if (ltvData.length === 0) {
         return (
-            <Container maxWidth="lg" sx={{ py: 4 }}>
+            <Container maxWidth="lg" sx={{ py: 4, px: { xs: 2, sm: 3 } }}>
                 <PageHeader
                     title="고객 분석"
                     description="고객 생애 가치(LTV) 및 VIP 고객 분석"

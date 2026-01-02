@@ -6,6 +6,7 @@ import { useAppToast } from '../lib/ui/toast'
 import { exportToCSV, prepareCustomerDataForExport } from '../lib/utils/export'
 
 // MUI Imports
+import Box from '@mui/material/Box'
 import Stack from '@mui/material/Stack'
 import Alert from '@mui/material/Alert'
 import AlertTitle from '@mui/material/AlertTitle'
@@ -93,7 +94,8 @@ export default function CustomersPage() {
 
 
   return (
-    <Stack spacing={3}>
+    <Box sx={{ px: { xs: 2, sm: 3 }, py: 4, maxWidth: 'lg', mx: 'auto' }}>
+      <Stack spacing={3}>
       {/* 필터 및 검색 */}
       <CustomerFilters
         query={query}
@@ -197,5 +199,6 @@ export default function CustomersPage() {
         <Plus className="h-5 w-5" />
       </Fab>
     </Stack>
+    </Box>
   )
 }

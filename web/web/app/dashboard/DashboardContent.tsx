@@ -55,7 +55,7 @@ export default function DashboardContent({ initialData }: DashboardContentProps)
     } = initialData
 
     return (
-        <Container maxWidth="lg" sx={{ py: 4 }}>
+        <Container maxWidth="lg" sx={{ py: 4, px: { xs: 2, sm: 3 } }}>
             <Stack spacing={3}>
                 <Box>
                     <Typography variant="h4" fontWeight={800} sx={{ color: 'text.primary', mb: 0.5 }}>

@@ -130,7 +130,7 @@ export default function PayrollPage() {
 
     if (loading) {
         return (
-            <Container maxWidth="lg" sx={{ py: 4 }}>
+            <Container maxWidth="lg" sx={{ py: 4, px: { xs: 2, sm: 3 } }}>
                 <PageHeader
                     title="급여 관리"
                     description="직원 급여 자동 계산 및 관리"

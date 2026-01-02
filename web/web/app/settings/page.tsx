@@ -180,7 +180,7 @@ export default function SettingsPage() {
 
   if (loading) {
     return (
-      <Container maxWidth="lg" sx={{ py: 4, pb: 12 }}>
+      <Container maxWidth="lg" sx={{ py: 4, pb: 12, px: { xs: 2, sm: 3 } }}>
         <SettingsSkeleton />
       </Container>
     )

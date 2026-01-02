@@ -2,7 +2,7 @@
 
 import { lazy, Suspense, useState } from 'react'
 import { Plus } from 'lucide-react'
-import { Stack, Fab, Typography } from '@mui/material'
+import { Box, Stack, Fab, Typography } from '@mui/material'
 
 // Components
 import FinanceHeader from '../components/finance/FinanceHeader'
@@ -98,7 +98,8 @@ export default function FinancePage() {
   }
 
   return (
-    <Stack spacing={3}>
+    <Box sx={{ px: { xs: 2, sm: 3 }, py: 4, maxWidth: 'lg', mx: 'auto' }}>
+      <Stack spacing={3}>
       {/* 헤더 영역 */}
       <FinanceHeader
         onExportExcel={handleExportExcel}
@@ -195,5 +196,6 @@ export default function FinancePage() {
         <Plus />
       </Fab>
     </Stack>
+    </Box>
   )
 }
