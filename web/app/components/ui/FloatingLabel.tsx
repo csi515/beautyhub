@@ -1,7 +1,7 @@
 'use client'
 
+import React, { useState, useEffect } from 'react'
 import clsx from 'clsx'
-import { useState, useEffect } from 'react'
 
 type Props = Omit<React.InputHTMLAttributes<HTMLInputElement>, 'placeholder'> & {
   label: string

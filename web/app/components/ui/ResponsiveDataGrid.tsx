@@ -1,6 +1,6 @@
 'use client'
 
-import { useMemo } from 'react'
+import React, { useMemo } from 'react'
 import { DataGrid, GridColDef, GridRenderCellParams } from '@mui/x-data-grid'
 import { Box, useMediaQuery, useTheme } from '@mui/material'
 import MobileTable, { MobileTableColumn } from '../common/MobileTable'
