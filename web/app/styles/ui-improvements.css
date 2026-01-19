@@ -1,0 +1,224 @@
+/* UI 개선 스타일 */
+
+/* 카드 개선 */
+.card-enhanced {
+  background: white;
+  border: 1px solid var(--neutral-200);
+  border-radius: var(--card-radius);
+  padding: var(--card-padding-default);
+  box-shadow: var(--card-shadow);
+  transition: all 0.2s ease-out;
+}
+
+.card-enhanced:hover {
+  box-shadow: var(--card-shadow-hover);
+  transform: translateY(-2px);
+  border-color: var(--primary-200);
+}
+
+.card-enhanced:active {
+  transform: scale(0.99) translateY(0);
+  box-shadow: var(--shadow-sm);
+}
+
+/* 입력 필드 개선 */
+.input-enhanced {
+  border-radius: var(--input-radius);
+  border: var(--input-border);
+  transition: all 0.2s ease-out;
+}
+
+.input-enhanced:focus {
+  border: var(--input-border-focus);
+  box-shadow: var(--input-shadow-focus);
+  outline: none;
+}
+
+.input-enhanced:focus-within {
+  border-color: var(--primary-500);
+}
+
+/* 버튼 개선 */
+.btn-enhanced {
+  border-radius: var(--button-radius);
+  transition: all 0.2s ease-out;
+  font-weight: var(--font-weight-medium);
+  box-shadow: var(--shadow-sm);
+}
+
+.btn-enhanced:hover {
+  box-shadow: var(--shadow-md);
+  transform: translateY(-1px);
+}
+
+.btn-enhanced:active {
+  transform: translateY(0);
+  box-shadow: var(--shadow-xs);
+}
+
+/* 배지 개선 */
+.badge-enhanced {
+  border-radius: var(--radius-full);
+  font-weight: var(--font-weight-semibold);
+  font-size: var(--font-size-xs);
+  padding: 0.25rem 0.625rem;
+  box-shadow: var(--shadow-xs);
+  transition: all 0.15s ease-out;
+}
+
+.badge-enhanced:hover {
+  transform: scale(1.05);
+}
+
+/* 테이블 개선 */
+.table-enhanced {
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  box-shadow: var(--shadow-sm);
+}
+
+.table-enhanced thead {
+  background: var(--neutral-50);
+  border-bottom: 2px solid var(--neutral-200);
+}
+
+.table-enhanced tbody tr {
+  transition: background-color 0.15s ease-out;
+  border-bottom: 1px solid var(--neutral-100);
+}
+
+.table-enhanced tbody tr:hover {
+  background: var(--primary-50);
+}
+
+.table-enhanced tbody tr:last-child {
+  border-bottom: none;
+}
+
+/* 모달 개선 */
+.modal-enhanced {
+  box-shadow: var(--shadow-modal);
+  border-radius: var(--radius-2xl);
+  border: 1px solid var(--neutral-200);
+}
+
+/* 그림자 유틸리티 */
+.shadow-card {
+  box-shadow: var(--shadow-card);
+}
+
+.shadow-card-hover {
+  box-shadow: var(--shadow-card-hover);
+}
+
+.shadow-elevated {
+  box-shadow: var(--shadow-lg);
+}
+
+/* 간격 유틸리티 */
+.gap-section {
+  gap: var(--section-gap);
+}
+
+.gap-card {
+  gap: var(--card-gap);
+}
+
+/* 타이포그래피 개선 */
+.text-heading {
+  font-weight: var(--font-weight-bold);
+  letter-spacing: -0.01em;
+  line-height: var(--line-height-tight);
+}
+
+.text-subheading {
+  font-weight: var(--font-weight-semibold);
+  letter-spacing: -0.005em;
+  line-height: var(--line-height-normal);
+}
+
+.text-body {
+  font-weight: var(--font-weight-normal);
+  line-height: var(--line-height-relaxed);
+}
+
+/* 포커스 링 개선 */
+.focus-ring {
+  outline: 2px solid var(--primary-500);
+  outline-offset: 2px;
+  border-radius: var(--radius-md);
+}
+
+.focus-ring-visible:focus-visible {
+  outline: 2px solid var(--primary-500);
+  outline-offset: 2px;
+  border-radius: var(--radius-md);
+}
+
+/* 그라데이션 개선 */
+.gradient-primary {
+  background: linear-gradient(135deg, var(--primary-500) 0%, var(--primary-600) 100%);
+}
+
+.gradient-soft {
+  background: linear-gradient(180deg, var(--primary-50) 0%, white 100%);
+}
+
+/* 호버 효과 개선 */
+.hover-lift {
+  transition: transform 0.2s ease-out, box-shadow 0.2s ease-out;
+}
+
+.hover-lift:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-lg);
+}
+
+.hover-glow {
+  transition: box-shadow 0.2s ease-out;
+}
+
+.hover-glow:hover {
+  box-shadow: 0 0 20px rgba(59, 130, 246, 0.3);
+}
+
+/* 아이콘 정렬 개선 */
+.icon-align {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  vertical-align: middle;
+}
+
+/* 구분선 개선 */
+.divider-enhanced {
+  height: 1px;
+  background: linear-gradient(
+    to right,
+    transparent,
+    var(--neutral-200) 20%,
+    var(--neutral-200) 80%,
+    transparent
+  );
+}
+
+/* 스켈레톤 개선 */
+.skeleton-enhanced {
+  background: linear-gradient(
+    90deg,
+    var(--neutral-100) 0%,
+    var(--neutral-50) 50%,
+    var(--neutral-100) 100%
+  );
+  background-size: 200% 100%;
+  animation: skeleton-shimmer 1.5s ease-in-out infinite;
+}
+
+@keyframes skeleton-shimmer {
+  0% {
+    background-position: 200% 0;
+  }
+  100% {
+    background-position: -200% 0;
+  }
+}

@@ -1,0 +1,13 @@
+@import url('https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css');
+@import "tailwindcss";
+/* Force CSS Rebuild */
+
+/* 분할된 CSS 파일들 import */
+@import './styles/variables.css';
+@import './styles/base.css';
+@import './styles/animations.css';
+@import './styles/calendar.css';
+@import './styles/mobile.css';
+@import './styles/utilities.css';
+@import './styles/ui-improvements.css';
+@import './styles/detail-improvements.css';
