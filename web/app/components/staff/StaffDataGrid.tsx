@@ -5,12 +5,12 @@ import { GridColDef, GridRenderCellParams } from '@mui/x-data-grid'
 import {
     Typography,
     Avatar,
-    Chip,
     IconButton,
     useTheme,
     Stack
 } from '@mui/material'
 import ResponsiveDataGrid from '@/app/components/ui/ResponsiveDataGrid'
+import StatusBadge from '../common/StatusBadge'
 import { Edit2 } from 'lucide-react'
 
 interface StaffDataGridProps {
@@ -53,16 +53,11 @@ export default function StaffDataGrid({ rows, loading, onEdit, onStatusClick }: 
             width: 120,
             renderCell: (params: GridRenderCellParams) => {
                 const status = params.value || 'office'
-                const color = status === 'office' ? 'success' : status === 'away' ? 'warning' : 'default'
-                const label = status === 'office' ? '출근' : status === 'away' ? '휴무' : '퇴근'
                 return (
-                    <Chip
-                        label={label}
-                        color={color as any}
-                        size="small"
+                    <StatusBadge
+                        status={status as 'office' | 'away' | 'off_duty'}
                         variant="outlined"
                         onClick={() => onStatusClick(params.row)}
-                        sx={{ cursor: 'pointer' }}
                     />
                 )
             }

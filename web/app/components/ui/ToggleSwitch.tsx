@@ -62,12 +62,22 @@ export default function ToggleSwitch({
             className={className}
             sx={{
                 mr: 0,
+                minHeight: { xs: '44px', sm: 'auto' },
                 '& .MuiTypography-root': {
-                    fontSize: '0.875rem',
+                    fontSize: { xs: '0.9375rem', sm: '0.875rem' },
                     fontWeight: 500,
                     color: disabled ? 'var(--neutral-400)' : 'var(--neutral-700)',
                     transition: 'color 0.2s ease-out',
-                }
+                },
+                '& .MuiSwitch-root': {
+                    '& .MuiSwitch-switchBase': {
+                        padding: { xs: '9px', sm: '9px' },
+                    },
+                    '& .MuiSwitch-thumb': {
+                        width: { xs: '22px', sm: '20px' },
+                        height: { xs: '22px', sm: '20px' },
+                    },
+                },
             }}
         />
     )

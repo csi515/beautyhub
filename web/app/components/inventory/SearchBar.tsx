@@ -35,6 +35,13 @@ export default function SearchBar({ value, onChange, placeholder = '제품명 �
         <TextField
             value={localValue}
             onChange={handleChange}
+            onKeyDown={(e) => {
+                if (e.key === 'Enter') {
+                    e.preventDefault()
+                    const input = e.target as HTMLInputElement
+                    input.blur()
+                }
+            }}
             placeholder={placeholder}
             fullWidth={fullWidth}
             size="small"
@@ -51,6 +58,10 @@ export default function SearchBar({ value, onChange, placeholder = '제품명 �
                         </IconButton>
                     </InputAdornment>
                 ),
+            }}
+            inputProps={{
+                type: 'search',
+                enterKeyHint: 'search',
             }}
         />
     )

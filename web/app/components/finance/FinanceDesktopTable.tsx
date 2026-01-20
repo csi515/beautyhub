@@ -14,11 +14,11 @@ import {
   Paper,
   Stack,
   Pagination,
-  IconButton,
-  Chip
+  IconButton
 } from '@mui/material'
 import { Skeleton } from '../ui/Skeleton'
 import EmptyState from '../EmptyState'
+import StatusBadge from '../common/StatusBadge'
 import { FinanceCombinedRow } from '@/types/finance'
 
 interface FinanceDesktopTableProps {
@@ -87,10 +87,8 @@ export default function FinanceDesktopTable({
             <TableRow key={`${row.type}-${row.id}`} hover>
               <TableCell>{row.date}</TableCell>
               <TableCell>
-                <Chip
-                  label={row.type === 'income' ? '수입' : '지출'}
-                  size="small"
-                  color={row.type === 'income' ? 'success' : 'error'}
+                <StatusBadge
+                  status={row.type as 'income' | 'expense'}
                   variant="outlined"
                 />
               </TableCell>

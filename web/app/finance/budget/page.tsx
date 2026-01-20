@@ -2,9 +2,10 @@
 
 import { useEffect, useState } from 'react'
 import { Box, Container, Typography, Grid, Card, CardContent, Stack, FormControl, InputLabel, Select, MenuItem, Button, CircularProgress, Alert, TextField, Dialog, DialogTitle, DialogContent, DialogActions, Chip, LinearProgress } from '@mui/material'
+import StatusBadge from '../../components/common/StatusBadge'
 import { DollarSign, TrendingUp, AlertCircle, Plus, Edit, Delete } from 'lucide-react'
 import PageHeader, { createActionButton } from '@/app/components/common/PageHeader'
-import { CardSkeleton } from '@/app/components/ui/SkeletonLoader'
+import LoadingState from '../../components/common/LoadingState'
 import EmptyState from '@/app/components/ui/EmptyState'
 import { useAppToast } from '@/app/lib/ui/toast'
 import { format, subMonths } from 'date-fns'
@@ -186,7 +187,7 @@ export default function BudgetManagementPage() {
           actions={[]}
         />
         <Box sx={{ mb: 4 }}>
-          <CardSkeleton count={3} />
+          <LoadingState variant="card" rows={3} />
         </Box>
       </Container>
     )
@@ -365,10 +366,10 @@ export default function BudgetManagementPage() {
                             {budget.category}
                           </Typography>
                           {budget.isOverBudget && (
-                            <Chip label="초과" size="small" color="error" />
+                            <StatusBadge status="error" label="초과" />
                           )}
                           {budget.isWarning && !budget.isOverBudget && (
-                            <Chip label="경고" size="small" color="warning" />
+                            <StatusBadge status="warning" label="경고" />
                           )}
                         </Box>
                         <LinearProgress

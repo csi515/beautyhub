@@ -2,6 +2,7 @@
 
 import MuiPagination from '@mui/material/Pagination'
 import Box from '@mui/material/Box'
+import { useResponsivePaginationSize } from '@/app/lib/hooks/useResponsivePaginationSize'
 
 type Props = {
   currentPage: number
@@ -16,6 +17,8 @@ export default function Pagination({
   onPageChange,
   className,
 }: Props) {
+  const size = useResponsivePaginationSize()
+  
   if (totalPages <= 1) return null
 
   return (
@@ -27,14 +30,23 @@ export default function Pagination({
         color="primary"
         shape="rounded"
         variant="text"
-        size="medium"
-        showFirstButton
-        showLastButton
+        size={size}
+        siblingCount={0}
+        boundaryCount={1}
+        showFirstButton={false}
+        showLastButton={false}
         sx={{
+          '& .MuiPagination-ul': {
+            flexWrap: 'wrap',
+            justifyContent: 'center',
+          },
           '& .MuiPaginationItem-root': {
             borderRadius: 1.5,
             fontWeight: 600,
             transition: 'all 200ms ease-in-out',
+            minWidth: { xs: '36px', sm: '40px' },
+            minHeight: { xs: '36px', sm: '40px' },
+            fontSize: { xs: '0.875rem', sm: '0.9375rem' },
             '&.Mui-selected': {
               backgroundColor: 'primary.main',
               color: 'primary.contrastText',

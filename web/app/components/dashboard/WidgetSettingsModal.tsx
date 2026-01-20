@@ -77,16 +77,21 @@ export default function WidgetSettingsModal({ open, onClose, onSave }: WidgetSet
 
   return (
     <Dialog open={open} onClose={onClose} maxWidth="md" fullWidth>
-      <DialogTitle>
+      <DialogTitle sx={{ fontSize: { xs: '1.125rem', sm: '1.25rem' }, pb: { xs: 1, sm: 1.5 } }}>
         <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-          <Typography variant="h6">대시보드 위젯 설정</Typography>
-          <IconButton onClick={onClose} size="small">
+          <Typography variant="h6" sx={{ fontSize: { xs: '1.125rem', sm: '1.25rem' } }}>대시보드 위젯 설정</Typography>
+          <IconButton 
+            onClick={onClose} 
+            size="small"
+            sx={{ minWidth: { xs: 44, sm: 40 }, minHeight: { xs: 44, sm: 40 } }}
+            aria-label="닫기"
+          >
             <X size={18} />
           </IconButton>
         </Box>
       </DialogTitle>
-      <DialogContent>
-        <Stack spacing={3} sx={{ mt: 1 }}>
+      <DialogContent sx={{ p: { xs: 2, sm: 3 } }}>
+        <Stack spacing={{ xs: 2, sm: 3 }} sx={{ mt: 1 }}>
           <WidgetPresetSection
             presets={presets}
             widgets={widgets}
@@ -102,9 +107,26 @@ export default function WidgetSettingsModal({ open, onClose, onSave }: WidgetSet
           />
         </Stack>
       </DialogContent>
-      <DialogActions>
-        <Button onClick={onClose}>취소</Button>
-        <Button variant="contained" onClick={handleSave}>
+      <DialogActions sx={{ p: { xs: 2, sm: 2 }, gap: 1 }}>
+        <Button 
+          onClick={onClose}
+          sx={{ 
+            minHeight: '44px', 
+            flex: { xs: 1, sm: 'none' },
+            fontSize: { xs: '0.9375rem', sm: '1rem' }
+          }}
+        >
+          취소
+        </Button>
+        <Button 
+          variant="contained" 
+          onClick={handleSave}
+          sx={{ 
+            minHeight: '44px', 
+            flex: { xs: 1, sm: 'none' },
+            fontSize: { xs: '0.9375rem', sm: '1rem' }
+          }}
+        >
           저장
         </Button>
       </DialogActions>

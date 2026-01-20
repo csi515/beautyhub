@@ -142,11 +142,12 @@ function ModalHeader({ title, description, icon, onClose, children }: ModalHeade
         alignItems: 'center',
         justifyContent: 'space-between',
         gap: 2,
-        p: 3,
-        pb: 2,
+        p: { xs: 2, sm: 3 },
+        pb: { xs: 1.5, sm: 2 },
+        flexShrink: 0,
       }}
     >
-      <Stack direction="row" spacing={2} alignItems="flex-start" sx={{ flex: 1, minWidth: 0 }}>
+      <Stack direction="row" spacing={{ xs: 1.5, sm: 2 }} alignItems="flex-start" sx={{ flex: 1, minWidth: 0 }}>
         {icon && (
           <Box sx={{ flexShrink: 0, mt: 0.5, display: 'flex' }}>
             {icon}
@@ -154,13 +155,23 @@ function ModalHeader({ title, description, icon, onClose, children }: ModalHeade
         )}
         <Box sx={{ flex: 1, minWidth: 0 }}>
           <Stack direction="row" alignItems="center" spacing={1}>
-            <Typography variant="h6" component="div" fontWeight="bold" color="text.primary">
+            <Typography 
+              variant="h6" 
+              component="div" 
+              fontWeight="bold" 
+              color="text.primary"
+              sx={{ fontSize: { xs: '1.125rem', sm: '1.25rem' } }}
+            >
               {title}
             </Typography>
             {children}
           </Stack>
           {description && (
-            <Typography variant="body2" color="text.secondary" sx={{ mt: 0.5 }}>
+            <Typography 
+              variant="body2" 
+              color="text.secondary" 
+              sx={{ mt: 0.5, fontSize: { xs: '0.875rem', sm: '0.9375rem' } }}
+            >
               {description}
             </Typography>
           )}
@@ -176,7 +187,9 @@ function ModalHeader({ title, description, icon, onClose, children }: ModalHeade
             color: 'text.secondary',
             alignSelf: 'flex-start',
             mt: -0.5,
-            mr: -0.5
+            mr: { xs: -0.5, sm: -0.5 },
+            minWidth: '44px',
+            minHeight: '44px',
           }}
         >
           <X size={20} />
@@ -188,14 +201,27 @@ function ModalHeader({ title, description, icon, onClose, children }: ModalHeade
 
 type ModalBodyProps = {
   children: React.ReactNode
+  sx?: any
 }
 
-function ModalBody({ children }: ModalBodyProps) {
+function ModalBody({ children, sx }: ModalBodyProps) {
   return (
     <DialogContent
       dividers
       sx={{
-        p: 3,
+        p: { xs: 2, sm: 3 },
+        overflowY: 'auto',
+        WebkitOverflowScrolling: 'touch',
+        // Safe area 대응
+        pb: { xs: 'calc(env(safe-area-inset-bottom) + 16px)', sm: 3 },
+        '&::-webkit-scrollbar': {
+          width: '8px',
+        },
+        '&::-webkit-scrollbar-thumb': {
+          backgroundColor: 'rgba(0, 0, 0, 0.2)',
+          borderRadius: '4px',
+        },
+        ...sx,
       }}
     >
       {children}
@@ -205,14 +231,19 @@ function ModalBody({ children }: ModalBodyProps) {
 
 type ModalFooterProps = {
   children: React.ReactNode
+  sx?: any
 }
 
-function ModalFooter({ children }: ModalFooterProps) {
+function ModalFooter({ children, sx }: ModalFooterProps) {
   return (
     <DialogActions
       sx={{
-        p: 2,
-        gap: 1,
+        p: { xs: 2, sm: 2 },
+        gap: { xs: 1, sm: 1 },
+        flexShrink: 0,
+        // Safe area 대응
+        pb: { xs: 'calc(env(safe-area-inset-bottom) + 8px)', sm: 2 },
+        ...sx,
       }}
     >
       {children}

@@ -36,16 +36,16 @@ export default function CustomerOverviewTab({
   if (!form) return null
 
   return (
-    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
-      <Card variant="outlined" sx={{ p: 3, borderRadius: 3 }}>
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 3 }}>
+    <Box sx={{ display: 'flex', flexDirection: 'column', gap: { xs: 2, sm: 3 } }}>
+      <Card variant="outlined" sx={{ p: { xs: 2, sm: 3 }, borderRadius: 3 }}>
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: { xs: 2, sm: 3 } }}>
           <User size={20} className="text-primary-main" />
-          <Typography variant="subtitle1" fontWeight={700}>
+          <Typography variant="subtitle1" fontWeight={700} sx={{ fontSize: { xs: '1rem', sm: '1.125rem' } }}>
             기본 정보
           </Typography>
         </Box>
 
-        <Grid container spacing={2.5}>
+        <Grid container spacing={{ xs: 2, sm: 2.5 }}>
           <Grid item xs={12} md={6}>
             <Input
               label="이름"
@@ -68,6 +68,10 @@ export default function CustomerOverviewTab({
               onChange={e => onChangeForm(f => f ? ({ ...f, phone: e.target.value }) : null)}
               {...(fieldErrors?.phone && { error: fieldErrors.phone })}
               leftIcon={<Phone size={18} />}
+              inputProps={{
+                inputMode: 'tel',
+                autoComplete: 'tel',
+              }}
             />
           </Grid>
           <Grid item xs={12} md={6}>
@@ -80,6 +84,10 @@ export default function CustomerOverviewTab({
               onChange={e => onChangeForm(f => f ? ({ ...f, email: e.target.value }) : null)}
               {...(fieldErrors?.email && { error: fieldErrors.email })}
               leftIcon={<Mail size={18} />}
+              inputProps={{
+                inputMode: 'email',
+                autoComplete: 'email',
+              }}
             />
           </Grid>
           <Grid item xs={12} md={6}>
@@ -95,14 +103,14 @@ export default function CustomerOverviewTab({
         </Grid>
       </Card>
 
-      <Card variant="outlined" sx={{ p: 3, borderRadius: 3 }}>
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 3 }}>
+      <Card variant="outlined" sx={{ p: { xs: 2, sm: 3 }, borderRadius: 3 }}>
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: { xs: 2, sm: 3 } }}>
           <User size={20} className="text-primary-main" />
-          <Typography variant="subtitle1" fontWeight={700}>
+          <Typography variant="subtitle1" fontWeight={700} sx={{ fontSize: { xs: '1rem', sm: '1.125rem' } }}>
             피부 및 상담 정보
           </Typography>
         </Box>
-        <Grid container spacing={2.5}>
+        <Grid container spacing={{ xs: 2, sm: 2.5 }}>
           <Grid item xs={12} md={6}>
             <Input
               label="피부 타입"
@@ -123,7 +131,7 @@ export default function CustomerOverviewTab({
           </Grid>
           <Grid item xs={12}>
             <Box>
-              <Typography variant="body2" fontWeight={600} sx={{ mb: 1 }}>
+              <Typography variant="body2" fontWeight={600} sx={{ mb: 1, fontSize: { xs: '0.875rem', sm: '0.9375rem' } }}>
                 관리자 메모
               </Typography>
               <CustomerMemoSection
@@ -136,10 +144,10 @@ export default function CustomerOverviewTab({
         </Grid>
       </Card>
 
-      <Card variant="outlined" sx={{ p: 3, borderRadius: 3 }}>
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 3 }}>
+      <Card variant="outlined" sx={{ p: { xs: 2, sm: 3 }, borderRadius: 3 }}>
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: { xs: 2, sm: 3 } }}>
           <FileText size={20} className="text-primary-main" />
-          <Typography variant="subtitle1" fontWeight={700}>
+          <Typography variant="subtitle1" fontWeight={700} sx={{ fontSize: { xs: '1rem', sm: '1.125rem' } }}>
             고객 특징 및 특이사항
           </Typography>
         </Box>
@@ -152,12 +160,13 @@ export default function CustomerOverviewTab({
       </Card>
 
       {!isNewCustomer && onDelete && (
-        <Box sx={{ mt: 2, display: 'flex', justifyContent: 'flex-end' }}>
+        <Box sx={{ mt: 2, display: 'flex', justifyContent: { xs: 'center', sm: 'flex-end' } }}>
           <Button
             variant="ghost"
             className="text-rose-600 hover:bg-rose-50"
             onClick={() => setIsDeleteDialogOpen(true)}
             leftIcon={<Trash2 size={18} />}
+            sx={{ minHeight: '44px' }}
           >
             고객 데이터 삭제
           </Button>

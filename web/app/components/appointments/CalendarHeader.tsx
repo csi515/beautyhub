@@ -30,25 +30,67 @@ export default function CalendarHeader({
   const theme = useTheme()
 
   return (
-    <Paper sx={{ p: 2, borderRadius: 3 }}>
-      <Stack direction={{ xs: 'column', md: 'row' }} spacing={2} justifyContent="space-between" alignItems={{ xs: 'stretch', md: 'center' }}>
+    <Paper sx={{ p: { xs: 1.5, sm: 2 }, borderRadius: 3 }}>
+      <Stack direction={{ xs: 'column', md: 'row' }} spacing={{ xs: 1.5, sm: 2 }} justifyContent="space-between" alignItems={{ xs: 'stretch', md: 'center' }}>
         {/* 날짜 표시 & 모바일 네비게이션 */}
-        <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-          <Stack direction="row" spacing={1} alignItems="center">
-            <CalendarIcon size={20} color={theme.palette.primary.main} />
-            <Typography variant="h6" fontWeight="bold">
+        <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: { xs: '100%', md: 'auto' } }}>
+          <Stack direction="row" spacing={1} alignItems="center" sx={{ flex: 1, minWidth: 0 }}>
+            <CalendarIcon size={20} color={theme.palette.primary.main} style={{ flexShrink: 0 }} />
+            <Typography 
+              variant="h6" 
+              fontWeight="bold"
+              sx={{ 
+                fontSize: { xs: '1rem', sm: '1.125rem', md: '1.25rem' },
+                overflow: 'hidden',
+                textOverflow: 'ellipsis',
+                whiteSpace: 'nowrap'
+              }}
+            >
               {rangeLabel || '로딩 중...'}
             </Typography>
           </Stack>
 
           {/* 모바일 네비게이션 */}
-          <Stack direction="row" spacing={0.5} sx={{ display: { xs: 'flex', md: 'none' } }}>
-            <IconButton onClick={onPrev} size="small" sx={{ border: 1, borderColor: 'divider', borderRadius: 2 }}>
-              <ChevronLeft size={16} />
+          <Stack direction="row" spacing={0.5} sx={{ display: { xs: 'flex', md: 'none' }, flexShrink: 0, ml: 1 }}>
+            <IconButton 
+              onClick={onPrev} 
+              size="small" 
+              sx={{ 
+                border: 1, 
+                borderColor: 'divider', 
+                borderRadius: 2,
+                minWidth: '44px',
+                minHeight: '44px'
+              }}
+              aria-label="이전"
+            >
+              <ChevronLeft size={18} />
             </IconButton>
-            <Button variant="outline" size="sm" onClick={onToday} style={{ height: 32 }}>오늘</Button>
-            <IconButton onClick={onNext} size="small" sx={{ border: 1, borderColor: 'divider', borderRadius: 2 }}>
-              <ChevronRight size={16} />
+            <Button 
+              variant="outline" 
+              size="sm" 
+              onClick={onToday} 
+              sx={{ 
+                minHeight: '44px',
+                px: { xs: 2, sm: 2.5 },
+                fontSize: { xs: '0.875rem', sm: '0.9375rem' }
+              }}
+            >
+              오늘
+            </Button>
+            <IconButton 
+              onClick={onNext} 
+              size="small" 
+              sx={{ 
+                border: 1, 
+                borderColor: 'divider', 
+                borderRadius: 2,
+                minWidth: '44px',
+                minHeight: '44px'
+              }}
+              aria-label="다음"
+            >
+              <ChevronRight size={18} />
             </IconButton>
           </Stack>
         </Box>
@@ -70,11 +112,41 @@ export default function CalendarHeader({
           </ToggleButtonGroup>
 
           <Stack direction="row" spacing={0.5}>
-            <IconButton onClick={onPrev} sx={{ border: 1, borderColor: 'divider', borderRadius: 2 }}>
+            <IconButton 
+              onClick={onPrev} 
+              sx={{ 
+                border: 1, 
+                borderColor: 'divider', 
+                borderRadius: 2,
+                minWidth: '44px',
+                minHeight: '44px'
+              }}
+              aria-label="이전"
+            >
               <ChevronLeft size={18} />
             </IconButton>
-            <Button variant="outline" onClick={onToday} sx={{ height: 36, borderColor: theme.palette.divider }}>오늘</Button>
-            <IconButton onClick={onNext} sx={{ border: 1, borderColor: 'divider', borderRadius: 2 }}>
+            <Button 
+              variant="outline" 
+              onClick={onToday} 
+              sx={{ 
+                height: 36, 
+                borderColor: theme.palette.divider,
+                minWidth: 'auto'
+              }}
+            >
+              오늘
+            </Button>
+            <IconButton 
+              onClick={onNext} 
+              sx={{ 
+                border: 1, 
+                borderColor: 'divider', 
+                borderRadius: 2,
+                minWidth: '44px',
+                minHeight: '44px'
+              }}
+              aria-label="다음"
+            >
               <ChevronRight size={18} />
             </IconButton>
           </Stack>

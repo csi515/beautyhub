@@ -156,7 +156,8 @@ const MobileTimelineView = forwardRef<MobileTimelineViewRef, MobileTimelineViewP
           <p className="text-neutral-500 text-sm">예약이 없습니다</p>
           <button
             onClick={() => onDateClick(selectedDate)}
-            className="mt-4 text-sm text-blue-600 font-medium hover:text-blue-700"
+            className="mt-4 px-4 py-2.5 text-sm text-blue-600 font-medium hover:text-blue-700 hover:bg-blue-50 rounded-lg transition-colors touch-manipulation min-h-[44px] min-w-[120px]"
+            aria-label="새 예약 추가하기"
           >
             새 예약 추가하기
           </button>
@@ -215,7 +216,7 @@ const MobileTimelineView = forwardRef<MobileTimelineViewRef, MobileTimelineViewP
 
                     {/* 이벤트 카드 */}
                     <div
-                      className={`ml-6 rounded-xl border-2 ${statusColor.border} ${statusColor.bg} p-3 shadow-sm hover:shadow-md transition-all duration-200 touch-feedback active:scale-[0.98]`}
+                      className={`ml-6 rounded-xl border-2 ${statusColor.border} ${statusColor.bg} p-3 shadow-sm hover:shadow-md transition-all duration-200 touch-feedback active:scale-[0.98] min-h-[80px]`}
                     >
                       <div className="flex items-start justify-between gap-2">
                         <div className="flex-1 min-w-0">

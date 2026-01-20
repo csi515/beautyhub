@@ -8,29 +8,114 @@ type PageHeaderProps = {
   title?: string
   icon?: ReactNode
   description?: string
+  variant?: 'default' | 'sticky' | 'compact'
   search?: {
     value: string
     onChange: (value: string) => void
     placeholder?: string
   }
   filters?: ReactNode
-  actions?: ReactNode
+  actions?: ReactNode | ReactNode[]
   className?: string
+  // MUI 스타일 옵션 (FinanceHeader 호환)
+  useMUI?: boolean
 }
 
 /**
  * 통합 페이지 헤더 컴포넌트
  * 검색, 필터, 액션 버튼을 포함하는 일관된 헤더 디자인
+ * variant에 따라 다른 스타일 제공:
+ * - default: 기본 카드 스타일 (rounded-xl, shadow-md)
+ * - sticky: 고정 헤더 스타일 (sticky, border-b)
+ * - compact: 간결한 헤더 스타일 (sticky, 필터와 제목이 한 줄)
  */
 export default function PageHeader({
   title,
   icon,
   description,
+  variant = 'default',
   search,
   filters,
   actions,
   className = '',
+  useMUI = false,
 }: PageHeaderProps) {
+  // MUI 기반 렌더링 (FinanceHeader 호환)
+  if (useMUI) {
+    const { Stack, Typography } = require('@mui/material')
+    const actionsArray = Array.isArray(actions) ? actions : (actions ? [actions] : [])
+    
+    return (
+      <Stack direction={{ xs: 'row', sm: 'row' }} justifyContent="space-between" alignItems="center" spacing={1} className={className}>
+        <Typography variant="h5" fontWeight="bold" sx={{ fontSize: { xs: '1.25rem', sm: '1.5rem' } }}>
+          {title}
+        </Typography>
+        {actionsArray.length > 0 && (
+          <Stack direction="row" spacing={1}>
+            {actionsArray.map((action, idx) => (
+              <span key={idx}>{action}</span>
+            ))}
+          </Stack>
+        )}
+      </Stack>
+    )
+  }
+
+  // Sticky variant
+  if (variant === 'sticky') {
+    return (
+      <div className={`-mx-4 md:-mx-0 bg-white/90 backdrop-blur-sm border-b border-neutral-200 shadow-sm sticky top-10 z-sticky ${className}`}>
+        <div className="container py-1.5 md:py-2 px-3 md:px-4">
+          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2">
+            <div className="min-w-0 flex-1">
+              {icon && <span className="inline-block mr-2">{icon}</span>}
+              <h1 className="text-lg md:text-xl font-bold text-neutral-900 break-words leading-tight tracking-tight inline">
+                {title}
+              </h1>
+              {description && (
+                <p className="text-sm text-neutral-600 mt-1">{description}</p>
+              )}
+            </div>
+            {actions && (
+              <div className="flex items-center gap-2 flex-wrap w-full sm:w-auto">
+                {Array.isArray(actions) ? actions.map((action, idx) => <span key={idx}>{action}</span>) : actions}
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
+    )
+  }
+
+  // Compact variant
+  if (variant === 'compact') {
+    return (
+      <div className={`-mx-4 md:-mx-0 bg-white/90 backdrop-blur-sm border-b border-neutral-200 shadow-sm sticky top-10 z-sticky ${className}`}>
+        <div className="container py-1.5 px-3">
+          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2">
+            <div className="min-w-0 flex-1 flex items-center gap-3">
+              {icon && <span className="flex-shrink-0">{icon}</span>}
+              <h1 className="text-lg md:text-xl font-bold text-neutral-900 break-words leading-tight tracking-tight">
+                {title}
+              </h1>
+              {filters && (
+                <div className="flex-1 min-w-0">
+                  {filters}
+                </div>
+              )}
+            </div>
+            {actions && (
+              <div className="flex items-center gap-2 flex-wrap w-full sm:w-auto">
+                {Array.isArray(actions) ? actions.map((action, idx) => <span key={idx}>{action}</span>) : actions}
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
+    )
+  }
+
+  // Default variant
   return (
     <div className={`bg-white rounded-xl border border-neutral-200 shadow-md p-3 sm:p-4 transition-shadow duration-200 ${className}`}>
       {/* 제목 영역 */}
@@ -60,9 +145,16 @@ export default function PageHeader({
                 검색
               </label>
               <input
-                type="text"
+                type="search"
                 value={search.value}
                 onChange={(e) => search.onChange(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') {
+                    e.preventDefault()
+                    const input = e.target as HTMLInputElement
+                    input.blur()
+                  }
+                }}
                 placeholder={search.placeholder || '검색어를 입력하세요'}
                 className="h-11 w-full rounded-lg border border-neutral-300 bg-white px-4 text-base sm:text-sm text-neutral-800 outline-none shadow-sm placeholder:text-neutral-400 focus:border-secondary-500 focus:ring-2 focus:ring-secondary-200 transition-all duration-200 touch-manipulation"
                 onFocus={(e) => {
@@ -80,6 +172,7 @@ export default function PageHeader({
                 autoCorrect="off"
                 autoCapitalize="off"
                 spellCheck="false"
+                enterKeyHint="search"
               />
             </div>
           )}
@@ -94,7 +187,7 @@ export default function PageHeader({
           {/* 액션 버튼 */}
           {actions && (
             <div className="flex items-end">
-              {actions}
+              {Array.isArray(actions) ? actions.map((action, idx) => <span key={idx}>{action}</span>) : actions}
             </div>
           )}
         </div>

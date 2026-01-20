@@ -35,6 +35,8 @@ export default function Select({
         '& .MuiOutlinedInput-root': {
           borderRadius: 'var(--radius-md)',
           transition: 'all 0.2s ease-out',
+          minHeight: { xs: '44px', sm: 'auto' },
+          fontSize: { xs: '16px', sm: '14px' },
           '&:hover': {
             '& .MuiOutlinedInput-notchedOutline': {
               borderColor: 'var(--neutral-400)',
@@ -57,7 +59,11 @@ export default function Select({
           },
         },
         '& .MuiSelect-select': {
-          padding: '0.625rem 0.875rem',
+          padding: { xs: '0.875rem 0.875rem', sm: '0.625rem 0.875rem' },
+          fontSize: { xs: '16px', sm: '14px' },
+        },
+        '& .MuiSelect-nativeInput': {
+          fontSize: { xs: '16px', sm: '14px' },
         },
         ...rest.sx
       }}

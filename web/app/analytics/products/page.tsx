@@ -7,7 +7,7 @@ import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, Responsive
 import { Package, TrendingUp, DollarSign, TrendingDown } from 'lucide-react'
 import PageHeader, { createActionButton } from '@/app/components/common/PageHeader'
 import MobileDataCard from '@/app/components/ui/MobileDataCard'
-import { CardSkeleton } from '@/app/components/ui/SkeletonLoader'
+import LoadingState from '../../components/common/LoadingState'
 import EmptyState from '@/app/components/ui/EmptyState'
 import { exportToCSV } from '@/app/lib/utils/export'
 import { useAppToast } from '@/app/lib/ui/toast'
@@ -101,7 +101,7 @@ export default function ProductProfitabilityPage() {
           actions={[]}
         />
         <Box sx={{ mb: 4 }}>
-          <CardSkeleton count={3} />
+          <LoadingState variant="card" rows={3} />
         </Box>
       </Container>
     )

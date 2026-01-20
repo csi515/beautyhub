@@ -185,19 +185,20 @@ export function BottomSheet({
         <div className="px-6 pt-2 pb-4 border-b border-neutral-200">
           {title && (
             <div className="flex items-center justify-between gap-4">
-              <h2 className="text-xl font-bold text-neutral-900">{title}</h2>
+              <h2 className="text-lg sm:text-xl font-bold text-neutral-900">{title}</h2>
               <IconButton
                 onClick={onClose}
                 aria-label="닫기"
                 edge="end"
                 size="small"
+                sx={{ minWidth: '44px', minHeight: '44px' }}
               >
                 <X className="h-5 w-5" />
               </IconButton>
             </div>
           )}
           {description && (
-            <p className="mt-1 text-sm text-neutral-600">{description}</p>
+            <p className="mt-1 text-xs sm:text-sm text-neutral-600">{description}</p>
           )}
         </div>
       )}

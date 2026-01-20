@@ -13,12 +13,13 @@ import {
     Button,
     Stack,
     Typography,
-    Box,
-    Chip
+    Box
 } from '@mui/material'
 import { Checkbox } from '@mui/material'
 import { Stack as MuiStack } from '@mui/material'
 import Pagination from '@mui/material/Pagination'
+import StatusBadge from '../common/StatusBadge'
+import TableSelectHeader from '../common/TableSelectHeader'
 import { type Staff, type PayrollRecord } from '@/types/payroll'
 
 interface PayrollTableProps {
@@ -66,19 +67,16 @@ export default function PayrollTable({
                     <Table size="small">
                         <TableHead>
                             <TableRow>
-                                <TableCell padding="checkbox">
-                                    <Checkbox
-                                        checked={paginatedStaff.length > 0 && selectedStaffIds.length === paginatedStaff.length}
-                                        indeterminate={selectedStaffIds.length > 0 && selectedStaffIds.length < paginatedStaff.length}
-                                        onChange={(e) => {
-                                            if (e.target.checked) {
-                                                onSelectedStaffIdsChange(paginatedStaff.map(s => s.id))
-                                            } else {
-                                                onSelectedStaffIdsChange([])
-                                            }
-                                        }}
-                                    />
-                                </TableCell>
+                                <TableSelectHeader
+                                    selectedCount={selectedStaffIds.length}
+                                    totalCount={paginatedStaff.length}
+                                    onSelectPage={() => {
+                                        onSelectedStaffIdsChange(paginatedStaff.map(s => s.id))
+                                    }}
+                                    onDeselectAll={() => {
+                                        onSelectedStaffIdsChange([])
+                                    }}
+                                />
                                 <TableCell>직원명</TableCell>
                                 <TableCell align="right">기본급</TableCell>
                                 <TableCell align="right">시급/연장</TableCell>
@@ -145,25 +143,9 @@ export default function PayrollTable({
                                             ) : '-'}
                                         </TableCell>
                                         <TableCell align="center">
-                                            {record ? (
-                                                <Chip
-                                                    label={
-                                                        record.status === 'paid' ? '지급완료' :
-                                                        record.status === 'approved' ? '승인완료' :
-                                                        record.status === 'calculated' ? '계산완료' :
-                                                        '미계산'
-                                                    }
-                                                    color={
-                                                        record.status === 'paid' ? 'success' :
-                                                        record.status === 'approved' ? 'info' :
-                                                        record.status === 'calculated' ? 'warning' :
-                                                        'default'
-                                                    }
-                                                    size="small"
-                                                />
-                                            ) : (
-                                                <Chip label="미계산" color="default" size="small" />
-                                            )}
+                                            <StatusBadge
+                                                status={record?.status || 'not_calculated'}
+                                            />
                                         </TableCell>
                                         <TableCell align="center">
                                             <Button

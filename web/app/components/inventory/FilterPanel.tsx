@@ -2,20 +2,15 @@
 
 import {
     Box,
-    Accordion,
-    AccordionSummary,
-    AccordionDetails,
-    Typography,
     FormControl,
     InputLabel,
     Select,
     MenuItem,
     TextField,
     Stack,
-    Chip,
-    Button
+    Typography,
 } from '@mui/material'
-import { ChevronDown, RotateCcw } from 'lucide-react'
+import FilterAccordion from '../common/FilterAccordion'
 
 export interface InventoryFilters {
     status: string
@@ -41,43 +36,39 @@ export default function FilterPanel({ filters, onFilterChange, onReset }: Filter
 
     const activeFilterCount = Object.values(filters).filter(v => v !== '').length
 
-    const hasActiveFilters = activeFilterCount > 0
-
     return (
-        <Accordion>
-            <AccordionSummary expandIcon={<ChevronDown />}>
-                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                    <Typography variant="body1" fontWeight={600}>
-                        필터
-                    </Typography>
-                    {hasActiveFilters && (
-                        <Chip label={`${activeFilterCount}개 적용됨`} size="small" color="primary" />
-                    )}
-                </Box>
-            </AccordionSummary>
-            <AccordionDetails>
-                <Stack spacing={2}>
+        <FilterAccordion
+            title="필터"
+            activeFilterCount={activeFilterCount}
+            onReset={onReset}
+        >
                     {/* Status Filter */}
                     <FormControl fullWidth size="small">
-                        <InputLabel>재고 상태</InputLabel>
+                        <InputLabel shrink>재고 상태</InputLabel>
                         <Select
                             value={filters.status}
                             onChange={(e) => handleChange('status', e.target.value)}
                             label="재고 상태"
+                            sx={{
+                                minHeight: { xs: '44px', sm: 'auto' },
+                                '& .MuiSelect-select': {
+                                    fontSize: { xs: '16px', sm: '14px' },
+                                },
+                            }}
                         >
-                            <MenuItem value="">전체</MenuItem>
-                            <MenuItem value="normal">정상</MenuItem>
-                            <MenuItem value="low_stock">재고 부족</MenuItem>
-                            <MenuItem value="out_of_stock">품절</MenuItem>
+                            <MenuItem value="" sx={{ fontSize: { xs: '16px', sm: '14px' }, minHeight: '44px' }}>전체</MenuItem>
+                            <MenuItem value="normal" sx={{ fontSize: { xs: '16px', sm: '14px' }, minHeight: '44px' }}>정상</MenuItem>
+                            <MenuItem value="low_stock" sx={{ fontSize: { xs: '16px', sm: '14px' }, minHeight: '44px' }}>재고 부족</MenuItem>
+                            <MenuItem value="out_of_stock" sx={{ fontSize: { xs: '16px', sm: '14px' }, minHeight: '44px' }}>품절</MenuItem>
                         </Select>
                     </FormControl>
 
                     {/* Price Range */}
                     <Box>
-                        <Typography variant="caption" color="text.secondary" gutterBottom display="block">
+                        <Typography variant="caption" color="text.secondary" gutterBottom display="block" sx={{ fontSize: { xs: '0.8125rem', sm: '0.875rem' } }}>
                             가격 범위
                         </Typography>
-                        <Stack direction="row" spacing={1}>
+                        <Stack direction="row" spacing={1} alignItems="center">
                             <TextField
                                 size="small"
                                 type="number"
@@ -85,8 +76,19 @@ export default function FilterPanel({ filters, onFilterChange, onReset }: Filter
                                 value={filters.minPrice}
                                 onChange={(e) => handleChange('minPrice', e.target.value)}
                                 fullWidth
+                                inputProps={{
+                                    inputMode: 'numeric',
+                                    pattern: '[0-9]*',
+                                    style: { fontSize: '16px' },
+                                }}
+                                sx={{
+                                    '& .MuiOutlinedInput-root': {
+                                        minHeight: { xs: '44px', sm: 'auto' },
+                                        fontSize: { xs: '16px', sm: '14px' },
+                                    },
+                                }}
                             />
-                            <Typography sx={{ alignSelf: 'center' }}>-</Typography>
+                            <Typography sx={{ alignSelf: 'center', fontSize: { xs: '0.875rem', sm: '1rem' } }}>-</Typography>
                             <TextField
                                 size="small"
                                 type="number"
@@ -94,16 +96,27 @@ export default function FilterPanel({ filters, onFilterChange, onReset }: Filter
                                 value={filters.maxPrice}
                                 onChange={(e) => handleChange('maxPrice', e.target.value)}
                                 fullWidth
+                                inputProps={{
+                                    inputMode: 'numeric',
+                                    pattern: '[0-9]*',
+                                    style: { fontSize: '16px' },
+                                }}
+                                sx={{
+                                    '& .MuiOutlinedInput-root': {
+                                        minHeight: { xs: '44px', sm: 'auto' },
+                                        fontSize: { xs: '16px', sm: '14px' },
+                                    },
+                                }}
                             />
                         </Stack>
                     </Box>
 
                     {/* Stock Range */}
                     <Box>
-                        <Typography variant="caption" color="text.secondary" gutterBottom display="block">
+                        <Typography variant="caption" color="text.secondary" gutterBottom display="block" sx={{ fontSize: { xs: '0.8125rem', sm: '0.875rem' } }}>
                             재고 수량 범위
                         </Typography>
-                        <Stack direction="row" spacing={1}>
+                        <Stack direction="row" spacing={1} alignItems="center">
                             <TextField
                                 size="small"
                                 type="number"
@@ -111,8 +124,19 @@ export default function FilterPanel({ filters, onFilterChange, onReset }: Filter
                                 value={filters.minStock}
                                 onChange={(e) => handleChange('minStock', e.target.value)}
                                 fullWidth
+                                inputProps={{
+                                    inputMode: 'numeric',
+                                    pattern: '[0-9]*',
+                                    style: { fontSize: '16px' },
+                                }}
+                                sx={{
+                                    '& .MuiOutlinedInput-root': {
+                                        minHeight: { xs: '44px', sm: 'auto' },
+                                        fontSize: { xs: '16px', sm: '14px' },
+                                    },
+                                }}
                             />
-                            <Typography sx={{ alignSelf: 'center' }}>-</Typography>
+                            <Typography sx={{ alignSelf: 'center', fontSize: { xs: '0.875rem', sm: '1rem' } }}>-</Typography>
                             <TextField
                                 size="small"
                                 type="number"
@@ -120,23 +144,20 @@ export default function FilterPanel({ filters, onFilterChange, onReset }: Filter
                                 value={filters.maxStock}
                                 onChange={(e) => handleChange('maxStock', e.target.value)}
                                 fullWidth
+                                inputProps={{
+                                    inputMode: 'numeric',
+                                    pattern: '[0-9]*',
+                                    style: { fontSize: '16px' },
+                                }}
+                                sx={{
+                                    '& .MuiOutlinedInput-root': {
+                                        minHeight: { xs: '44px', sm: 'auto' },
+                                        fontSize: { xs: '16px', sm: '14px' },
+                                    },
+                                }}
                             />
                         </Stack>
                     </Box>
-
-                    {/* Reset Button */}
-                    {hasActiveFilters && (
-                        <Button
-                            variant="outlined"
-                            size="small"
-                            startIcon={<RotateCcw size={16} />}
-                            onClick={onReset}
-                        >
-                            필터 초기화
-                        </Button>
-                    )}
-                </Stack>
-            </AccordionDetails>
-        </Accordion>
+        </FilterAccordion>
     )
 }

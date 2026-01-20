@@ -3,14 +3,12 @@
 import { useState } from 'react'
 import {
     Box,
-    Container,
     Typography,
     Grid,
     Card,
     CardContent,
     Alert,
     Button,
-    Chip,
     Table,
     TableBody,
     TableCell,
@@ -18,17 +16,8 @@ import {
     TableHead,
     TableRow,
     Paper,
-    TextField,
-    Dialog,
-    DialogTitle,
-    DialogContent,
-    DialogActions,
     IconButton,
     Tooltip,
-    FormControl,
-    InputLabel,
-    Select,
-    MenuItem,
     useTheme,
     useMediaQuery,
     Stack,
@@ -37,21 +26,25 @@ import {
     Checkbox
 } from '@mui/material'
 import MobileDataCard from '../components/ui/MobileDataCard'
-import { TableSkeleton, CardSkeleton } from '../components/ui/SkeletonLoader'
-import EmptyState from '../components/ui/EmptyState'
-import { Package, AlertTriangle, Edit, TrendingDown, PackageX, History, Download } from 'lucide-react'
-import PageHeader, { createActionButton } from '../components/common/PageHeader'
-import SearchBar from '../components/inventory/SearchBar'
+import { Package, Edit, History, AlertTriangle, TrendingDown } from 'lucide-react'
+import StatusBadge from '../components/common/StatusBadge'
+import PaginationInfo from '../components/common/PaginationInfo'
+import TableSelectHeader from '../components/common/TableSelectHeader'
 import FilterPanel from '../components/inventory/FilterPanel'
+import StandardPageLayout from '../components/common/StandardPageLayout'
+import PageToolbar from '../components/common/PageToolbar'
 import InventoryHistoryModal from '../components/inventory/InventoryHistoryModal'
-import BulkActionBar from '../components/inventory/BulkActionBar'
+import BulkActionBar from '../components/common/BulkActionBar'
 import ProductAddModal from '../components/inventory/ProductAddModal'
+import InventoryStockAdjustModal from '../components/inventory/InventoryStockAdjustModal'
 import { exportToCSV, prepareInventoryDataForExport } from '../lib/utils/export'
 import { useInventory, type Product } from '../lib/hooks/useInventory'
 import { useAppToast } from '../components/ui/Toast'
+import { useResponsivePaginationSize } from '../lib/hooks/useResponsivePaginationSize'
 
 export default function InventoryPage() {
     const toast = useAppToast()
+    const paginationSize = useResponsivePaginationSize()
     const {
         products,
         alerts,
@@ -80,9 +73,6 @@ export default function InventoryPage() {
 
     const [stockModalOpen, setStockModalOpen] = useState(false)
     const [selectedProduct, setSelectedProduct] = useState<Product | null>(null)
-    const [stockQuantity, setStockQuantity] = useState(0)
-    const [stockType, setStockType] = useState<'purchase' | 'sale' | 'adjustment'>('adjustment')
-    const [stockMemo, setStockMemo] = useState('')
     const theme = useTheme()
     const isMobile = useMediaQuery(theme.breakpoints.down('sm'))
 
@@ -96,13 +86,10 @@ export default function InventoryPage() {
 
     const openStockModal = (product: Product) => {
         setSelectedProduct(product)
-        setStockQuantity(product.stock_count || 0)
-        setStockType('adjustment')
-        setStockMemo('')
         setStockModalOpen(true)
     }
 
-    const handleStockUpdate = async () => {
+    const handleStockUpdate = async (quantity: number, type: 'purchase' | 'sale' | 'adjustment', memo: string) => {
         if (!selectedProduct) return
 
         try {
@@ -111,9 +98,9 @@ export default function InventoryPage() {
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
                     product_id: selectedProduct.id,
-                    quantity: stockQuantity,
-                    type: stockType,
-                    memo: stockMemo,
+                    quantity,
+                    type,
+                    memo,
                 }),
             })
 
@@ -125,6 +112,7 @@ export default function InventoryPage() {
             refetch()
         } catch (error) {
             console.error('Error updating stock:', error)
+            throw error
         }
     }
 
@@ -142,76 +130,39 @@ export default function InventoryPage() {
     const lowStockProducts = products.filter(p => p.inventory_status === 'low_stock')
     const outOfStockProducts = products.filter(p => p.inventory_status === 'out_of_stock')
 
-    if (loading) {
-        return (
-            <Container maxWidth="lg" sx={{ py: 4, px: { xs: 2, sm: 3 } }}>
-                <PageHeader
-                    title="재고 관리"
-                    description="제품 재고 현황 및 알림 관리"
-                    icon={<Package />}
-                    actions={[]}
-                />
-                <Box sx={{ mb: 4 }}>
-                    <CardSkeleton count={3} />
-                </Box>
-                <TableSkeleton rows={5} cols={5} />
-            </Container>
-        )
-    }
-
-    // products가 비어있을 때 처리 (EmptyState)
-    if (products.length === 0) {
-        return (
-            <Container maxWidth="lg" sx={{ py: 4, px: { xs: 2, sm: 3 } }}>
-                <PageHeader
-                    title="재고 관리"
-                    description="제품 재고 현황 및 알림 관리"
-                    icon={<Package />}
-                    actions={[
-                        createActionButton('제품 추가', () => setProductAddModalOpen(true), 'primary')
-                    ]}
-                />
-
-                <Grid container spacing={3} sx={{ mb: 4 }}>
-                    <Grid item xs={12} md={4}>
-                        <Card>
-                            <CardContent>
-                                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1 }}>
-                                    <Package size={20} color="#667eea" />
-                                    <Typography variant="body2" color="text.secondary">
-                                        총 제품 수
-                                    </Typography>
-                                </Box>
-                                <Typography variant="h4" fontWeight={700}>
-                                    0개
-                                </Typography>
-                            </CardContent>
-                        </Card>
-                    </Grid>
-                </Grid>
-
-                <EmptyState
-                    icon={PackageX}
-                    title="등록된 제품이 없습니다"
-                    description="새로운 제품을 등록하고 재고를 관리해보세요."
-                    actionLabel="제품 추가"
-                    onAction={() => setProductAddModalOpen(true)}
-                />
-            </Container>
-        )
-    }
-
-
     return (
-        <Container maxWidth="lg" sx={{ py: 4 }}>
-            <PageHeader
-                title="재고 관리"
-                description="제품 재고 현황 및 알림 관리"
-                icon={<Package />}
-                actions={[
-                    createActionButton('CSV 내보내기', handleExport, 'secondary', <Download size={16} />),
-                    createActionButton('제품 추가', () => setProductAddModalOpen(true), 'primary'),
-                ]}
+        <StandardPageLayout
+            loading={loading}
+            empty={!loading && products.length === 0}
+            emptyTitle="등록된 제품이 없습니다"
+            emptyDescription="새로운 제품을 등록하고 재고를 관리해보세요."
+            emptyActionLabel="제품 추가"
+            emptyActionOnClick={() => setProductAddModalOpen(true)}
+            maxWidth="lg"
+        >
+            <PageToolbar
+                search={{
+                    value: search,
+                    onChange: setSearch,
+                    placeholder: '제품명 검색...',
+                }}
+                filters={
+                    <FilterPanel
+                        filters={filters}
+                        onFilterChange={setFilters}
+                        onReset={handleResetFilters}
+                    />
+                }
+                actions={{
+                    primary: {
+                        label: '제품 추가',
+                        onClick: () => setProductAddModalOpen(true),
+                    },
+                }}
+                export={{
+                    label: 'CSV 내보내기',
+                    onClick: handleExport,
+                }}
             />
 
             {/* 알림 섹션 */}
@@ -280,18 +231,6 @@ export default function InventoryPage() {
                 </Grid>
             </Grid>
 
-            {/* Search and Filter Section */}
-            <Stack spacing={2} sx={{ mb: 3 }}>
-                <SearchBar
-                    value={search}
-                    onChange={setSearch}
-                />
-                <FilterPanel
-                    filters={filters}
-                    onFilterChange={setFilters}
-                    onReset={handleResetFilters}
-                />
-            </Stack>
 
             {/* 재고 현황 테이블 */}
             <Card>
@@ -301,7 +240,7 @@ export default function InventoryPage() {
                     </Typography>
 
                     {isMobile ? (
-                        <Stack spacing={2} sx={{ mt: 2 }}>
+                        <Stack spacing={1.5} sx={{ mt: 2 }}>
                             {products.map((product) => (
                                 <MobileDataCard
                                     key={product.id}
@@ -315,12 +254,18 @@ export default function InventoryPage() {
                                                 : { label: '정상', color: 'success' }
                                     }
                                     action={
-                                        <Stack direction="row" spacing={1}>
+                                        <Stack direction="row" spacing={1} sx={{ flexWrap: 'wrap', gap: 1 }}>
                                             <Button
                                                 size="small"
                                                 variant="outlined"
                                                 color="error"
                                                 onClick={() => quickStockAdjust(product, -1)}
+                                                sx={{ 
+                                                    minHeight: '44px',
+                                                    fontSize: { xs: '0.8125rem', sm: '0.875rem' },
+                                                    flex: { xs: '1 1 calc(50% - 4px)', sm: 'none' },
+                                                    minWidth: { xs: 'calc(50% - 4px)', sm: 'auto' }
+                                                }}
                                             >
                                                 출고
                                             </Button>
@@ -329,6 +274,12 @@ export default function InventoryPage() {
                                                 variant="outlined"
                                                 color="success"
                                                 onClick={() => quickStockAdjust(product, 1)}
+                                                sx={{ 
+                                                    minHeight: '44px',
+                                                    fontSize: { xs: '0.8125rem', sm: '0.875rem' },
+                                                    flex: { xs: '1 1 calc(50% - 4px)', sm: 'none' },
+                                                    minWidth: { xs: 'calc(50% - 4px)', sm: 'auto' }
+                                                }}
                                             >
                                                 입고
                                             </Button>
@@ -337,6 +288,12 @@ export default function InventoryPage() {
                                                 variant="outlined"
                                                 onClick={() => openStockModal(product)}
                                                 startIcon={<Edit size={16} />}
+                                                sx={{ 
+                                                    minHeight: '44px',
+                                                    fontSize: { xs: '0.8125rem', sm: '0.875rem' },
+                                                    flex: { xs: '1 1 100%', sm: 'none' },
+                                                    width: { xs: '100%', sm: 'auto' }
+                                                }}
                                             >
                                                 조정
                                             </Button>
@@ -350,13 +307,13 @@ export default function InventoryPage() {
                             <Table>
                                 <TableHead>
                                     <TableRow>
-                                        <TableCell padding="checkbox">
-                                            <Checkbox
-                                                checked={products.length > 0 && selectedProductIds.size === products.length}
-                                                indeterminate={selectedProductIds.size > 0 && selectedProductIds.size < products.length}
-                                                onChange={toggleSelectAll}
-                                            />
-                                        </TableCell>
+                                        <TableSelectHeader
+                                            selectedCount={selectedProductIds.size}
+                                            totalCount={products.length}
+                                            onSelectPage={toggleSelectAll}
+                                            onDeselectAll={() => setSelectedProductIds(new Set())}
+                                            disabled={products.length === 0}
+                                        />
                                         <TableCell>
                                             <TableSortLabel
                                                 active={sortBy === 'name'}
@@ -406,25 +363,9 @@ export default function InventoryPage() {
                                             </TableCell>
                                             <TableCell align="right">{product.safety_stock ?? 5}</TableCell>
                                             <TableCell>
-                                                {product.inventory_status === 'out_of_stock' && (
-                                                    <Chip
-                                                        label="품절"
-                                                        color="error"
-                                                        size="small"
-                                                        icon={<TrendingDown size={16} />}
-                                                    />
-                                                )}
-                                                {product.inventory_status === 'low_stock' && (
-                                                    <Chip
-                                                        label="재고 부족"
-                                                        color="warning"
-                                                        size="small"
-                                                        icon={<AlertTriangle size={16} />}
-                                                    />
-                                                )}
-                                                {product.inventory_status === 'normal' && (
-                                                    <Chip label="정상" color="success" size="small" />
-                                                )}
+                                                <StatusBadge
+                                                    status={product.inventory_status as 'out_of_stock' | 'low_stock' | 'normal'}
+                                                />
                                             </TableCell>
                                             <TableCell align="right">
                                                 <Stack direction="row" spacing={1} justifyContent="flex-end">
@@ -479,77 +420,66 @@ export default function InventoryPage() {
                                 page={page}
                                 onChange={(_, value) => setPage(value)}
                                 color="primary"
-                                showFirstButton
-                                showLastButton
+                                size={paginationSize}
+                                siblingCount={0}
+                                boundaryCount={1}
+                                showFirstButton={false}
+                                showLastButton={false}
+                                sx={{
+                                    '& .MuiPaginationItem-root': {
+                                        minWidth: { xs: '36px', sm: '40px' },
+                                        minHeight: { xs: '36px', sm: '40px' },
+                                        fontSize: { xs: '0.875rem', sm: '0.9375rem' },
+                                    },
+                                }}
                             />
                         </Box>
                     )}
 
                     {/* Results Info */}
-                    <Typography variant="caption" color="text.secondary" sx={{ display: 'block', textAlign: 'center', mt: 2 }}>
-                        총 {total}개 중 {Math.min((page - 1) * limit + 1, total)}-{Math.min(page * limit, total)}개 표시
-                    </Typography>
+                    <PaginationInfo
+                        totalItems={total}
+                        page={page}
+                        pageSize={limit}
+                        totalPages={totalPages}
+                        format="detailed"
+                        itemLabel="개"
+                        className="mt-2"
+                    />
                 </CardContent>
             </Card>
 
             {/* 재고 조정 모달 */}
-            <Dialog open={stockModalOpen} onClose={() => setStockModalOpen(false)} maxWidth="sm" fullWidth>
-                <DialogTitle>재고 조정 - {selectedProduct?.name}</DialogTitle>
-                <DialogContent>
-                    <Box sx={{ mt: 2, display: 'flex', flexDirection: 'column', gap: 2 }}>
-                        <FormControl fullWidth>
-                            <InputLabel>조정 유형</InputLabel>
-                            <Select
-                                value={stockType}
-                                onChange={(e) => setStockType(e.target.value as any)}
-                                label="조정 유형"
-                            >
-                                <MenuItem value="adjustment">직접 입력</MenuItem>
-                                <MenuItem value="purchase">입고</MenuItem>
-                                <MenuItem value="sale">출고</MenuItem>
-                            </Select>
-                        </FormControl>
-
-                        <TextField
-                            label={stockType === 'adjustment' ? '재고 수량' : '수량 변경'}
-                            type="number"
-                            value={stockQuantity}
-                            onChange={(e) => setStockQuantity(Number(e.target.value))}
-                            fullWidth
-                            helperText={
-                                stockType === 'adjustment'
-                                    ? '현재 재고를 직접 입력하세요'
-                                    : `현재 재고: ${selectedProduct?.stock_count ?? 0}`
-                            }
-                        />
-
-                        <TextField
-                            label="메모"
-                            value={stockMemo}
-                            onChange={(e) => setStockMemo(e.target.value)}
-                            fullWidth
-                            multiline
-                            rows={2}
-                        />
-                    </Box>
-                </DialogContent>
-                <DialogActions>
-                    <Button onClick={() => setStockModalOpen(false)}>취소</Button>
-                    <Button onClick={handleStockUpdate} variant="contained">
-                        저장
-                    </Button>
-                </DialogActions>
-            </Dialog>
+            <InventoryStockAdjustModal
+                open={stockModalOpen}
+                onClose={() => setStockModalOpen(false)}
+                product={selectedProduct}
+                onUpdate={handleStockUpdate}
+            />
 
             {/* Phase 2: Bulk Action Bar */}
             <BulkActionBar
                 selectedCount={selectedProductIds.size}
+                selectedLabel="개의 제품이 선택되었습니다"
+                variant="fixed"
                 onClearSelection={() => setSelectedProductIds(new Set())}
-                onBulkAction={(action) => {
-                    if (action === 'adjust') {
-                        toast.info('대량 조정 기능은 곧 추가됩니다')
-                    }
-                }}
+                actions={[
+                    {
+                        label: '일괄 조정',
+                        onClick: () => {
+                            toast.info('대량 조정 기능은 곧 추가됩니다')
+                        },
+                        variant: 'secondary',
+                    },
+                    {
+                        label: '선택 삭제',
+                        onClick: () => {
+                            // TODO: 선택 삭제 기능 구현
+                            toast.info('선택 삭제 기능은 곧 추가됩니다')
+                        },
+                        variant: 'error',
+                    },
+                ]}
             />
 
             {/* Phase 2: History Modal */}
@@ -566,6 +496,6 @@ export default function InventoryPage() {
                 onClose={() => setProductAddModalOpen(false)}
                 onSuccess={refetch}
             />
-        </Container>
+        </StandardPageLayout>
     )
 }

@@ -6,7 +6,7 @@ import { useTheme } from '@mui/material/styles'
 import { Calendar, AlertTriangle, Clock, Plus } from 'lucide-react'
 import PageHeader, { createActionButton } from '@/app/components/common/PageHeader'
 import MobileDataCard from '@/app/components/ui/MobileDataCard'
-import { CardSkeleton } from '@/app/components/ui/SkeletonLoader'
+import LoadingState from '../../components/common/LoadingState'
 import EmptyState from '@/app/components/ui/EmptyState'
 import { useAppToast } from '@/app/components/ui/Toast'
 import { showNotification } from '@/app/lib/utils/notifications'
@@ -152,7 +152,7 @@ export default function InventoryExpiryPage() {
           actions={[]}
         />
         <Box sx={{ mb: 4 }}>
-          <CardSkeleton count={3} />
+          <LoadingState variant="card" rows={3} />
         </Box>
       </Container>
     )
@@ -185,18 +185,24 @@ export default function InventoryExpiryPage() {
             '기간 설정',
             () => {},
             'secondary',
-            <FormControl size="small" sx={{ minWidth: 120 }}>
-              <InputLabel>알림 기간</InputLabel>
+            <FormControl size="small" sx={{ minWidth: { xs: '100%', sm: 120 }, minHeight: { xs: '44px', sm: 'auto' } }}>
+              <InputLabel shrink>알림 기간</InputLabel>
               <Select
                 value={days}
                 label="알림 기간"
                 onChange={(e) => setDays(Number(e.target.value))}
                 onClick={(e) => e.stopPropagation()}
+                sx={{
+                  minHeight: { xs: '44px', sm: 'auto' },
+                  '& .MuiSelect-select': {
+                    fontSize: { xs: '16px', sm: '14px' },
+                  },
+                }}
               >
-                <MenuItem value={7}>7일</MenuItem>
-                <MenuItem value={14}>14일</MenuItem>
-                <MenuItem value={30}>30일</MenuItem>
-                <MenuItem value={60}>60일</MenuItem>
+                <MenuItem value={7} sx={{ fontSize: { xs: '16px', sm: '14px' }, minHeight: '44px' }}>7일</MenuItem>
+                <MenuItem value={14} sx={{ fontSize: { xs: '16px', sm: '14px' }, minHeight: '44px' }}>14일</MenuItem>
+                <MenuItem value={30} sx={{ fontSize: { xs: '16px', sm: '14px' }, minHeight: '44px' }}>30일</MenuItem>
+                <MenuItem value={60} sx={{ fontSize: { xs: '16px', sm: '14px' }, minHeight: '44px' }}>60일</MenuItem>
               </Select>
             </FormControl>
           ),
@@ -350,10 +356,23 @@ export default function InventoryExpiryPage() {
       </Stack>
 
       {/* 배치 추가 모달 */}
-      <Dialog open={batchModalOpen} onClose={() => setBatchModalOpen(false)} maxWidth="sm" fullWidth>
-        <DialogTitle>배치 추가</DialogTitle>
-        <DialogContent>
-          <Stack spacing={3} sx={{ mt: 1 }}>
+      <Dialog 
+        open={batchModalOpen} 
+        onClose={() => setBatchModalOpen(false)} 
+        maxWidth="sm" 
+        fullWidth
+        PaperProps={{
+          sx: {
+            m: { xs: 1, sm: 2 },
+            borderRadius: { xs: 3, sm: 3 },
+          }
+        }}
+      >
+        <DialogTitle sx={{ fontSize: { xs: '1.125rem', sm: '1.25rem' }, pb: { xs: 1, sm: 1.5 } }}>
+          배치 추가
+        </DialogTitle>
+        <DialogContent sx={{ p: { xs: 2, sm: 3 } }}>
+          <Stack spacing={{ xs: 2.5, sm: 3 }} sx={{ mt: 1 }}>
             <TextField
               label="제품 ID"
               value={formData.product_id}
@@ -361,6 +380,15 @@ export default function InventoryExpiryPage() {
               fullWidth
               required
               placeholder="제품 ID를 입력하세요"
+              sx={{
+                '& .MuiOutlinedInput-root': {
+                  minHeight: '44px',
+                  fontSize: { xs: '16px', sm: '14px' },
+                },
+              }}
+              inputProps={{
+                style: { fontSize: '16px' },
+              }}
             />
             <TextField
               label="배치 번호"
@@ -369,6 +397,15 @@ export default function InventoryExpiryPage() {
               fullWidth
               required
               placeholder="예: BATCH-2024-001"
+              sx={{
+                '& .MuiOutlinedInput-root': {
+                  minHeight: '44px',
+                  fontSize: { xs: '16px', sm: '14px' },
+                },
+              }}
+              inputProps={{
+                style: { fontSize: '16px' },
+              }}
             />
             <TextField
               label="수량"
@@ -380,6 +417,17 @@ export default function InventoryExpiryPage() {
               fullWidth
               required
               type="number"
+              inputProps={{
+                inputMode: 'numeric',
+                pattern: '[0-9]*',
+                style: { fontSize: '16px' },
+              }}
+              sx={{
+                '& .MuiOutlinedInput-root': {
+                  minHeight: '44px',
+                  fontSize: { xs: '16px', sm: '14px' },
+                },
+              }}
             />
             <TextField
               label="유통기한"
@@ -389,6 +437,15 @@ export default function InventoryExpiryPage() {
               fullWidth
               required
               InputLabelProps={{ shrink: true }}
+              sx={{
+                '& .MuiOutlinedInput-root': {
+                  minHeight: '44px',
+                  fontSize: { xs: '16px', sm: '14px' },
+                },
+              }}
+              inputProps={{
+                style: { fontSize: '16px' },
+              }}
             />
             <TextField
               label="구매일 (선택)"
@@ -397,6 +454,15 @@ export default function InventoryExpiryPage() {
               onChange={(e) => setFormData((f) => ({ ...f, purchase_date: e.target.value }))}
               fullWidth
               InputLabelProps={{ shrink: true }}
+              sx={{
+                '& .MuiOutlinedInput-root': {
+                  minHeight: '44px',
+                  fontSize: { xs: '16px', sm: '14px' },
+                },
+              }}
+              inputProps={{
+                style: { fontSize: '16px' },
+              }}
             />
             <TextField
               label="메모 (선택)"
@@ -405,12 +471,35 @@ export default function InventoryExpiryPage() {
               fullWidth
               multiline
               minRows={2}
+              sx={{
+                '& .MuiOutlinedInput-root': {
+                  fontSize: { xs: '16px', sm: '14px' },
+                },
+              }}
             />
           </Stack>
         </DialogContent>
-        <DialogActions>
-          <Button onClick={() => setBatchModalOpen(false)}>취소</Button>
-          <Button variant="contained" onClick={handleCreateBatch} disabled={!formData.product_id || !formData.batch_number || !formData.expiry_date || !formData.quantity}>
+        <DialogActions sx={{ p: { xs: 2, sm: 2 }, gap: 1 }}>
+          <Button 
+            onClick={() => setBatchModalOpen(false)}
+            sx={{ 
+              minHeight: '44px', 
+              flex: { xs: 1, sm: 'none' },
+              fontSize: { xs: '0.9375rem', sm: '1rem' }
+            }}
+          >
+            취소
+          </Button>
+          <Button 
+            variant="contained" 
+            onClick={handleCreateBatch} 
+            disabled={!formData.product_id || !formData.batch_number || !formData.expiry_date || !formData.quantity}
+            sx={{ 
+              minHeight: '44px', 
+              flex: { xs: 1, sm: 'none' },
+              fontSize: { xs: '0.9375rem', sm: '1rem' }
+            }}
+          >
             추가
           </Button>
         </DialogActions>

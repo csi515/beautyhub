@@ -13,17 +13,18 @@ type Props = {
 export default function AccountSettingsSummaryCard({ onLogout, onDeleteAccount, onExportData }: Props) {
     return (
         <Card>
-            <div className="mb-4">
-                <h3 className="text-lg font-semibold text-neutral-900">계정 관리</h3>
-                <p className="text-sm text-neutral-600 mt-1">계정 관련 작업을 수행하세요</p>
+            <div className="mb-3 sm:mb-4">
+                <h3 className="text-base sm:text-lg font-semibold text-neutral-900">계정 관리</h3>
+                <p className="text-xs sm:text-sm text-neutral-600 mt-1">계정 관련 작업을 수행하세요</p>
             </div>
 
-            <div className="space-y-3">
+            <div className="space-y-2.5 sm:space-y-3">
                 <Button
                     variant="outline"
                     onClick={onExportData}
                     leftIcon={<Download className="h-4 w-4" />}
                     className="w-full justify-start"
+                    sx={{ minHeight: '44px', fontSize: { xs: '0.9375rem', sm: '1rem' } }}
                 >
                     내 데이터 내보내기
                 </Button>
@@ -33,12 +34,13 @@ export default function AccountSettingsSummaryCard({ onLogout, onDeleteAccount, 
                     onClick={onLogout}
                     leftIcon={<LogOut className="h-4 w-4" />}
                     className="w-full justify-start text-neutral-700 hover:text-neutral-900"
+                    sx={{ minHeight: '44px', fontSize: { xs: '0.9375rem', sm: '1rem' } }}
                 >
                     로그아웃
                 </Button>
 
                 <div className="pt-3 border-t border-neutral-200">
-                    <p className="text-sm text-neutral-600 mb-3">
+                    <p className="text-xs sm:text-sm text-neutral-600 mb-3">
                         계정을 삭제하면 모든 데이터가 영구적으로 삭제됩니다. 이 작업은 취소할 수 없습니다.
                     </p>
                     <Button
@@ -46,6 +48,7 @@ export default function AccountSettingsSummaryCard({ onLogout, onDeleteAccount, 
                         onClick={onDeleteAccount}
                         leftIcon={<Trash2 className="h-4 w-4" />}
                         className="w-full justify-start"
+                        sx={{ minHeight: '44px', fontSize: { xs: '0.9375rem', sm: '1rem' } }}
                     >
                         계정 삭제
                     </Button>

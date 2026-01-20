@@ -5,7 +5,7 @@ import { Box, Container, Typography, Grid, Card, CardContent, Stack, FormControl
 import { Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, ComposedChart, Bar } from 'recharts'
 import { TrendingUp, DollarSign, TrendingDown, AlertCircle } from 'lucide-react'
 import PageHeader, { createActionButton } from '@/app/components/common/PageHeader'
-import { CardSkeleton } from '@/app/components/ui/SkeletonLoader'
+import LoadingState from '../../components/common/LoadingState'
 import EmptyState from '@/app/components/ui/EmptyState'
 import { format, addMonths } from 'date-fns'
 
@@ -101,7 +101,7 @@ export default function FinanceForecastPage() {
           actions={[]}
         />
         <Box sx={{ mb: 4 }}>
-          <CardSkeleton count={3} />
+          <LoadingState variant="card" rows={3} />
         </Box>
       </Container>
     )

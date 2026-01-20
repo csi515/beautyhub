@@ -53,26 +53,26 @@ type TabsListProps = {
 export function TabsList({ children, className }: TabsListProps) {
   const { value, onChange } = useTabs()
 
-  // We need to clone children to extract 'value' prop for MuiTabs standard behavior? 
-  // No, MuiTabs takes 'value' and 'onChange'. The *Children* of MuiTabs must be <Tab>.
-  // But here 'children' are our <TabsTrigger> wrappers.
-  // We can just render MuiTabs and map the children if possible, or we just use Box and let 'TabsTrigger' be 'Tab'.
-  // However, TabsTrigger components are React Elements. We can iterate them.
-
-  // Check if children are valid React elements and map specific props?
-  // Simpler: Just render MuiTabs and let it handle the children if they are MuiTab compatible.
-  // But our TabsTrigger is a custom component. MuiTabs expects children to be Tab or have 'value' prop.
-  // Our TabsTrigger HAS a value prop.
-
   return (
-    <Box sx={{ borderBottom: 1, borderColor: 'divider', mb: 2 }} className={className}>
+    <Box sx={{ borderBottom: 1, borderColor: 'divider', mb: 2, overflowX: 'auto', scrollbarWidth: 'none', '&::-webkit-scrollbar': { display: 'none' } }} className={className}>
       <MuiTabs
         value={value}
         onChange={(_, v) => onChange(v)}
         variant="scrollable"
-        scrollButtons="auto"
+        scrollButtons={false}
         textColor="primary"
         indicatorColor="primary"
+        sx={{
+          minHeight: { xs: '48px', sm: 'auto' },
+          '& .MuiTab-root': {
+            minHeight: { xs: '48px', sm: 'auto' },
+            minWidth: { xs: '80px', sm: 'auto' },
+            fontSize: { xs: '0.875rem', sm: '0.9375rem' },
+            textTransform: 'none',
+            fontWeight: 500,
+            px: { xs: 2, sm: 3 },
+          },
+        }}
       >
         {children}
       </MuiTabs>
@@ -90,16 +90,19 @@ type TabsTriggerProps = {
 }
 
 export function TabsTrigger({ value, children, className = '', ...props }: TabsTriggerProps) {
-  // MuiTabs passes extra props like 'fullWidth', 'indicator', 'onChange', 'selected', 'textColor', 'value'
-  // We forward them to Tab.
   return (
     <Tab
-      label={children} // Tab takes label, not children for content usually, but supports children too?
-      // Material UI Tab 'label' is usually text/node. Children are not typical for text labels but allowed in some versions.
-      // Safest is using 'label={children}'
+      label={children}
       value={value}
       className={className}
-      sx={{ textTransform: 'none', fontWeight: 500 }}
+      sx={{ 
+        textTransform: 'none', 
+        fontWeight: 500,
+        minHeight: { xs: '48px', sm: 'auto' },
+        minWidth: { xs: '80px', sm: 'auto' },
+        fontSize: { xs: '0.875rem', sm: '0.9375rem' },
+        px: { xs: 2, sm: 3 },
+      }}
       {...props}
     />
   )

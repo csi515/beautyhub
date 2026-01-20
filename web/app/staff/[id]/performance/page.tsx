@@ -6,7 +6,7 @@ import { Box, Container, Typography, Grid, Card, CardContent, Stack, FormControl
 import { LineChart, Line, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts'
 import { User, Calendar, DollarSign, TrendingUp, Clock, Award } from 'lucide-react'
 import PageHeader, { createActionButton } from '@/app/components/common/PageHeader'
-import { CardSkeleton } from '@/app/components/ui/SkeletonLoader'
+import LoadingState from '../../../components/common/LoadingState'
 import EmptyState from '@/app/components/ui/EmptyState'
 
 interface StaffPerformanceData {
@@ -82,7 +82,7 @@ export default function StaffPerformancePage() {
           actions={[]}
         />
         <Box sx={{ mb: 4 }}>
-          <CardSkeleton count={3} />
+          <LoadingState variant="card" rows={3} />
         </Box>
       </Container>
     )

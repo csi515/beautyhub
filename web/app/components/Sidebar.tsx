@@ -165,23 +165,30 @@ export default function Sidebar({
                   onClick={onNavigate}
                   selected={active}
                   sx={{
-                    minHeight: 44,
+                    minHeight: { xs: 48, sm: 44 },
                     justifyContent: collapsed ? 'center' : 'initial',
                     borderRadius: 2,
-                    px: 1.5,
+                    px: { xs: 2, sm: 1.5 },
+                    py: { xs: 1.25, sm: 1 },
                     color: active ? 'primary.main' : 'text.primary',
                     bgcolor: active ? alpha(theme.palette.primary.main, 0.08) : 'transparent',
+                    touchAction: 'manipulation',
+                    WebkitTapHighlightColor: 'transparent',
+                    transition: 'all 0.2s ease',
                     '&:hover': {
                       bgcolor: active
                         ? alpha(theme.palette.primary.main, 0.12)
                         : alpha(theme.palette.text.primary, 0.04),
                     },
+                    '&:active': {
+                      transform: { xs: 'scale(0.98)', md: 'none' },
+                    },
                   }}
                 >
                   <ListItemIcon
                     sx={{
-                      minWidth: 0,
-                      mr: collapsed ? 0 : 2,
+                      minWidth: { xs: 40, sm: collapsed ? 0 : 40 },
+                      mr: collapsed ? 0 : { xs: 2, sm: 2 },
                       justifyContent: 'center',
                       color: active ? 'primary.main' : 'text.secondary',
                     }}
@@ -228,7 +235,7 @@ export default function Sidebar({
                   onClick={onNavigate}
                   selected={pathname?.startsWith('/admin')}
                   sx={{
-                    minHeight: 44,
+                    minHeight: { xs: 48, sm: 44 },
                     justifyContent: collapsed ? 'center' : 'initial',
                     borderRadius: 2,
                     px: 1.5,

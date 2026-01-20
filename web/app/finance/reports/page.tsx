@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react'
 import { Box, Container, Typography, Grid, Card, CardContent, Stack, FormControl, InputLabel, Select, MenuItem, CircularProgress, Alert, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper } from '@mui/material'
 import { FileText, Download } from 'lucide-react'
 import PageHeader, { createActionButton } from '@/app/components/common/PageHeader'
-import { CardSkeleton } from '@/app/components/ui/SkeletonLoader'
+import LoadingState from '../../components/common/LoadingState'
 import EmptyState from '@/app/components/ui/EmptyState'
 import { useAppToast } from '@/app/lib/ui/toast'
 import { generatePDFFromHTML, generateFinancialReportHTML } from '@/app/lib/utils/pdfGenerator'
@@ -126,7 +126,7 @@ export default function FinanceReportsPage() {
           actions={[]}
         />
         <Box sx={{ mb: 4 }}>
-          <CardSkeleton count={3} />
+          <LoadingState variant="card" rows={3} />
         </Box>
       </Container>
     )

@@ -12,11 +12,12 @@ import {
   Paper,
   IconButton,
   Checkbox,
-  Chip,
   Skeleton
 } from '@mui/material'
 import EmptyState from '../EmptyState'
 import CustomerHoldingsBadge from '../CustomerHoldingsBadge'
+import TableSelectHeader from '../common/TableSelectHeader'
+import StatusBadge from '../common/StatusBadge'
 import { type Customer } from '@/types/entities'
 
 interface CustomerTableProps {
@@ -51,19 +52,16 @@ export default function CustomerTable({
       <Table role="table" aria-label="고객 목록 테이블">
         <TableHead sx={{ bgcolor: 'neutral.50' }}>
           <TableRow>
-            <TableCell padding="checkbox">
-              <Checkbox
-                checked={paginatedCustomers.length > 0 && selectedCustomerIds.length === paginatedCustomers.length}
-                indeterminate={selectedCustomerIds.length > 0 && selectedCustomerIds.length < paginatedCustomers.length}
-                onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
-                  if (e.target.checked) {
-                    onSelectedCustomerIdsChange(paginatedCustomers.map(c => c.id))
-                  } else {
-                    onSelectedCustomerIdsChange([])
-                  }
-                }}
-              />
-            </TableCell>
+            <TableSelectHeader
+              selectedCount={selectedCustomerIds.length}
+              totalCount={customers.length}
+              onSelectPage={() => {
+                onSelectedCustomerIdsChange(paginatedCustomers.map(c => c.id))
+              }}
+              onDeselectAll={() => {
+                onSelectedCustomerIdsChange([])
+              }}
+            />
             <TableCell>
               <TableSortLabel
                 active={sortKey === 'name'}
@@ -135,10 +133,8 @@ export default function CustomerTable({
               <TableCell onClick={() => onCustomerClick(c)}>{c.phone || '-'}</TableCell>
               <TableCell onClick={() => onCustomerClick(c)}>{c.email || '-'}</TableCell>
               <TableCell onClick={() => onCustomerClick(c)}>
-                <Chip
-                  label={c.active !== false ? '활성' : '비활성'}
-                  size="small"
-                  color={c.active !== false ? 'success' : 'default'}
+                <StatusBadge
+                  status={c.active !== false ? 'active' : 'inactive'}
                   variant="outlined"
                 />
               </TableCell>

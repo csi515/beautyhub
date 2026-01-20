@@ -208,8 +208,8 @@ export default function ProductAddModal({ open, onClose, onSuccess }: ProductAdd
             disableEscapeKeyDown={loading}
         >
             <DialogTitle>제품 추가</DialogTitle>
-            <DialogContent>
-                <Box sx={{ mt: 1, display: 'flex', flexDirection: 'column', gap: 2 }}>
+            <DialogContent sx={{ p: { xs: 2, sm: 3 } }}>
+                <Box sx={{ mt: 1, display: 'flex', flexDirection: 'column', gap: { xs: 2, sm: 2.5 } }}>
                     <TextField
                         label="제품명"
                         fullWidth
@@ -220,6 +220,15 @@ export default function ProductAddModal({ open, onClose, onSuccess }: ProductAdd
                         error={Boolean(errors['name'] && touched['name'])}
                         helperText={errors['name'] && touched['name'] ? errors['name'] : undefined}
                         disabled={loading}
+                        sx={{
+                            '& .MuiOutlinedInput-root': {
+                                minHeight: '44px',
+                                fontSize: { xs: '16px', sm: '14px' },
+                            },
+                        }}
+                        inputProps={{
+                            style: { fontSize: '16px' },
+                        }}
                     />
 
                     <TextField
@@ -235,6 +244,17 @@ export default function ProductAddModal({ open, onClose, onSuccess }: ProductAdd
                             endAdornment: <InputAdornment position="end">원</InputAdornment>,
                         }}
                         disabled={loading}
+                        inputProps={{
+                            inputMode: 'numeric',
+                            pattern: '[0-9]*',
+                            style: { fontSize: '16px' },
+                        }}
+                        sx={{
+                            '& .MuiOutlinedInput-root': {
+                                minHeight: '44px',
+                                fontSize: { xs: '16px', sm: '14px' },
+                            },
+                        }}
                     />
 
                     <TextField
@@ -246,6 +266,11 @@ export default function ProductAddModal({ open, onClose, onSuccess }: ProductAdd
                         value={formData.description}
                         onChange={(e) => handleFieldChange('description', e.target.value)}
                         disabled={loading}
+                        sx={{
+                            '& .MuiOutlinedInput-root': {
+                                fontSize: { xs: '16px', sm: '14px' },
+                            },
+                        }}
                     />
 
                     <TextField
@@ -258,6 +283,17 @@ export default function ProductAddModal({ open, onClose, onSuccess }: ProductAdd
                         error={Boolean(errors['stock_count'] && touched['stock_count'])}
                         helperText={errors['stock_count'] && touched['stock_count'] ? errors['stock_count'] : "제품 등록 시 초기 재고 수량을 설정합니다"}
                         disabled={loading}
+                        inputProps={{
+                            inputMode: 'numeric',
+                            pattern: '[0-9]*',
+                            style: { fontSize: '16px' },
+                        }}
+                        sx={{
+                            '& .MuiOutlinedInput-root': {
+                                minHeight: '44px',
+                                fontSize: { xs: '16px', sm: '14px' },
+                            },
+                        }}
                     />
 
                     <TextField
@@ -270,6 +306,17 @@ export default function ProductAddModal({ open, onClose, onSuccess }: ProductAdd
                         error={Boolean(errors['safety_stock'] && touched['safety_stock'])}
                         helperText={errors['safety_stock'] && touched['safety_stock'] ? errors['safety_stock'] : "재고가 이 수량 이하로 떨어지면 알림이 표시됩니다"}
                         disabled={loading}
+                        inputProps={{
+                            inputMode: 'numeric',
+                            pattern: '[0-9]*',
+                            style: { fontSize: '16px' },
+                        }}
+                        sx={{
+                            '& .MuiOutlinedInput-root': {
+                                minHeight: '44px',
+                                fontSize: { xs: '16px', sm: '14px' },
+                            },
+                        }}
                     />
 
                     <FormControlLabel
@@ -278,20 +325,44 @@ export default function ProductAddModal({ open, onClose, onSuccess }: ProductAdd
                                 checked={formData.active}
                                 onChange={(e) => handleFieldChange('active', e.target.checked)}
                                 disabled={loading}
+                                sx={{
+                                    '& .MuiSvgIcon-root': {
+                                        fontSize: { xs: '24px', sm: '24px' },
+                                    },
+                                }}
                             />
                         }
                         label="활성 상태"
+                        sx={{
+                            minHeight: '44px',
+                            '& .MuiFormControlLabel-label': {
+                                fontSize: { xs: '0.9375rem', sm: '1rem' },
+                            },
+                        }}
                     />
                 </Box>
             </DialogContent>
-            <DialogActions>
-                <Button onClick={handleClose} disabled={loading}>
+            <DialogActions sx={{ p: { xs: 2, sm: 2 }, gap: 1 }}>
+                <Button 
+                    onClick={handleClose} 
+                    disabled={loading}
+                    sx={{ 
+                        minHeight: '44px', 
+                        flex: { xs: 1, sm: 'none' },
+                        fontSize: { xs: '0.9375rem', sm: '1rem' }
+                    }}
+                >
                     취소
                 </Button>
                 <Button
                     onClick={handleSubmit}
                     variant="contained"
                     disabled={loading || !formData.name.trim()}
+                    sx={{ 
+                        minHeight: '44px', 
+                        flex: { xs: 1, sm: 'none' },
+                        fontSize: { xs: '0.9375rem', sm: '1rem' }
+                    }}
                 >
                     {loading ? '저장 중...' : '저장'}
                 </Button>

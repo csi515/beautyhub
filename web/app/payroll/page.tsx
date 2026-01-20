@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import { Box, Container, Typography, Paper, Stack, TextField } from '@mui/material'
-import { TableSkeleton, CardSkeleton } from '../components/ui/SkeletonLoader'
+import LoadingState from '../components/common/LoadingState'
 import { DollarSign, Download, Calculator, Search } from 'lucide-react'
 import PageHeader, { createActionButton } from '../components/common/PageHeader'
 import { useAppToast } from '../lib/ui/toast'
@@ -147,9 +147,9 @@ export default function PayrollPage() {
                     />
                 </Box>
                 <Box sx={{ mb: 4 }}>
-                    <CardSkeleton count={3} />
+                    <LoadingState variant="card" rows={3} />
                 </Box>
-                <TableSkeleton rows={5} cols={6} />
+                <LoadingState variant="table" rows={5} columns={6} />
             </Container>
         )
     }

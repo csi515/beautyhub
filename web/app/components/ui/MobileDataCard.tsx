@@ -26,23 +26,47 @@ export default function MobileDataCard({
         <Card
             elevation={0}
             sx={{
-                p: 2,
-                mb: 2,
+                p: { xs: 1.5, sm: 2 },
+                mb: { xs: 1.5, sm: 2 },
                 borderRadius: 3,
                 border: '1px solid',
                 borderColor: 'divider',
                 cursor: onClick ? 'pointer' : 'default',
-                '&:active': onClick ? { bgcolor: 'action.hover' } : {}
+                transition: 'all 0.2s ease',
+                '&:active': onClick ? { 
+                    transform: 'scale(0.98)',
+                    bgcolor: 'action.hover' 
+                } : {},
+                minHeight: onClick ? '80px' : 'auto'
             }}
             onClick={onClick}
         >
             <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 1 }}>
                 <Box sx={{ flex: 1, minWidth: 0, mr: 1 }}>
-                    <Typography variant="subtitle1" fontWeight={600} noWrap>
+                    <Typography 
+                        variant="subtitle1" 
+                        fontWeight={600}
+                        sx={{
+                            fontSize: { xs: '0.9375rem', sm: '1rem' },
+                            overflow: 'hidden',
+                            textOverflow: 'ellipsis',
+                            whiteSpace: 'nowrap'
+                        }}
+                    >
                         {title}
                     </Typography>
                     {subtitle && (
-                        <Typography variant="body2" color="text.secondary" noWrap>
+                        <Typography 
+                            variant="body2" 
+                            color="text.secondary"
+                            sx={{
+                                fontSize: { xs: '0.8125rem', sm: '0.875rem' },
+                                mt: 0.5,
+                                overflow: 'hidden',
+                                textOverflow: 'ellipsis',
+                                whiteSpace: 'nowrap'
+                            }}
+                        >
                             {subtitle}
                         </Typography>
                     )}
@@ -52,7 +76,12 @@ export default function MobileDataCard({
                         label={status.label}
                         color={status.color}
                         size="small"
-                        sx={{ height: 24, fontSize: '0.75rem', fontWeight: 600 }}
+                        sx={{ 
+                            height: { xs: 22, sm: 24 }, 
+                            fontSize: { xs: '0.7rem', sm: '0.75rem' }, 
+                            fontWeight: 600,
+                            flexShrink: 0
+                        }}
                     />
                 )}
             </Box>
@@ -65,12 +94,22 @@ export default function MobileDataCard({
 
             {(action || onClick) && (
                 <>
-                    <Divider sx={{ my: 1.5 }} />
-                    <Box sx={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center' }}>
+                    <Divider sx={{ my: { xs: 1, sm: 1.5 } }} />
+                    <Box sx={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center', minHeight: '44px' }}>
                         {action}
                         {onClick && !action && (
-                            <Stack direction="row" spacing={0.5} alignItems="center">
-                                <Typography variant="caption" color="primary.main" fontWeight={600}>
+                            <Stack 
+                                direction="row" 
+                                spacing={0.5} 
+                                alignItems="center"
+                                sx={{ minHeight: '44px', px: 1 }}
+                            >
+                                <Typography 
+                                    variant="caption" 
+                                    color="primary.main" 
+                                    fontWeight={600}
+                                    sx={{ fontSize: { xs: '0.8125rem', sm: '0.875rem' } }}
+                                >
                                     상세보기
                                 </Typography>
                                 <ChevronRight size={16} className="text-blue-600" />

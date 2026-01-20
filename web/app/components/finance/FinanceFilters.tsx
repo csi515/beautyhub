@@ -131,9 +131,18 @@ export default function FinanceFilters({
                 onChange={e => onUpdateRange({ from: e.target.value })}
                 size="small"
                 InputLabelProps={{ shrink: true }}
-                sx={{ flex: 1 }}
+                sx={{ 
+                  flex: 1,
+                  '& .MuiOutlinedInput-root': {
+                    minHeight: { xs: '44px', sm: 'auto' },
+                    fontSize: { xs: '16px', sm: '14px' },
+                  },
+                }}
+                inputProps={{
+                  style: { fontSize: '16px' },
+                }}
               />
-              <Typography variant="body2" color="text.secondary" sx={{ fontSize: '0.875rem' }}>~</Typography>
+              <Typography variant="body2" color="text.secondary" sx={{ fontSize: { xs: '0.875rem', sm: '0.875rem' } }}>~</Typography>
               <TextField
                 type="date"
                 label="종료일"
@@ -141,7 +150,16 @@ export default function FinanceFilters({
                 onChange={e => onUpdateRange({ to: e.target.value })}
                 size="small"
                 InputLabelProps={{ shrink: true }}
-                sx={{ flex: 1 }}
+                sx={{ 
+                  flex: 1,
+                  '& .MuiOutlinedInput-root': {
+                    minHeight: { xs: '44px', sm: 'auto' },
+                    fontSize: { xs: '16px', sm: '14px' },
+                  },
+                }}
+                inputProps={{
+                  style: { fontSize: '16px' },
+                }}
               />
             </Stack>
 
@@ -153,7 +171,13 @@ export default function FinanceFilters({
                 size="small"
                 color="primary"
                 fullWidth={false}
-                sx={{ width: { xs: '100%', sm: 'auto' } }}
+                sx={{ 
+                  width: { xs: '100%', sm: 'auto' },
+                  '& .MuiToggleButton-root': {
+                    minHeight: { xs: '44px', sm: 'auto' },
+                    fontSize: { xs: '0.9375rem', sm: '0.875rem' },
+                  },
+                }}
               >
                 <ToggleButton value="income" sx={{ flex: 1 }}>수입</ToggleButton>
                 <ToggleButton value="expense" sx={{ flex: 1 }}>지출</ToggleButton>

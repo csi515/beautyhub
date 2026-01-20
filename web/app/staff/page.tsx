@@ -13,7 +13,8 @@ import StaffTabsContainer from '@/app/components/staff/StaffTabsContainer'
 import StaffAttendanceTab from '@/app/components/staff/StaffAttendanceTab'
 import StaffScheduleTab from '@/app/components/staff/StaffScheduleTab'
 import StaffListTab from '@/app/components/staff/StaffListTab'
-import { Box, Stack } from '@mui/material'
+import StandardPageLayout from '@/app/components/common/StandardPageLayout'
+import { Stack } from '@mui/material'
 import { Download } from 'lucide-react'
 import { useTheme, useMediaQuery } from '@mui/material'
 
@@ -79,7 +80,12 @@ export default function StaffPage() {
 
 
   return (
-    <Box sx={{ px: { xs: 2, sm: 3 }, py: 4, maxWidth: 'lg', mx: 'auto', minHeight: '100vh', bgcolor: '#f8fafc' }}>
+    <StandardPageLayout
+      loading={loading}
+      error={error || undefined}
+      errorTitle="직원 데이터를 불러오는 중 오류가 발생했습니다"
+      maxWidth="lg"
+    >
       <Stack spacing={4}>
       <PageHeader
         title="직원 통합 관리"
@@ -193,6 +199,6 @@ export default function StaffPage() {
         />
       )}
     </Stack>
-    </Box>
+    </StandardPageLayout>
   )
 }

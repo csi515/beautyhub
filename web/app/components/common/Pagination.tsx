@@ -4,6 +4,7 @@ import PaginationItem from '@mui/material/PaginationItem'
 import Select, { SelectChangeEvent } from '@mui/material/Select'
 import MenuItem from '@mui/material/MenuItem'
 import FormControl from '@mui/material/FormControl'
+import PaginationInfo from './PaginationInfo'
 
 type PaginationProps = {
   page: number
@@ -32,16 +33,18 @@ export default function Pagination({
   className = '',
   showInfo = true,
 }: PaginationProps) {
-  const showingFrom = totalItems === 0 ? 0 : (page - 1) * pageSize + 1
-  const showingTo = Math.min(page * pageSize, totalItems)
-
   return (
     <div className={`flex flex-col sm:flex-row items-center justify-between gap-4 p-4 border-t border-neutral-200 bg-neutral-50 ${className}`}>
       {/* 정보 표시 */}
       {showInfo && (
-        <div className="text-sm text-neutral-600">
-          총 {totalItems.toLocaleString()}개 · {showingFrom.toLocaleString()}-{showingTo.toLocaleString()} 표시
-        </div>
+        <PaginationInfo
+          totalItems={totalItems}
+          page={page}
+          pageSize={pageSize}
+          totalPages={totalPages}
+          format="detailed"
+          itemLabel="개"
+        />
       )}
 
       {/* 컨트롤 */}

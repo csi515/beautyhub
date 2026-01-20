@@ -2,15 +2,20 @@
 
 import { lazy, Suspense, useState } from 'react'
 import { Plus } from 'lucide-react'
-import { Box, Stack, Fab, Typography } from '@mui/material'
+import { Stack } from '@mui/material'
 
 // Components
-import FinanceHeader from '../components/finance/FinanceHeader'
 import FinanceSummaryCards from '../components/finance/FinanceSummaryCards'
 import FinanceFilters from '../components/finance/FinanceFilters'
 import FinanceMobileCards from '../components/finance/FinanceMobileCards'
 import FinanceDesktopTable from '../components/finance/FinanceDesktopTable'
 import FinanceCreateModal from '../components/finance/FinanceCreateModal'
+import StandardPageLayout from '../components/common/StandardPageLayout'
+import MobileFAB from '../components/common/MobileFAB'
+import PageHeader from '../components/common/PageHeader'
+import Button from '../components/ui/Button'
+import { FileText, Download } from 'lucide-react'
+import { IconButton } from '@mui/material'
 
 // Modals
 const ExpenseDetailModal = lazy(() => import('../components/modals/ExpenseDetailModal'))
@@ -98,12 +103,43 @@ export default function FinancePage() {
   }
 
   return (
-    <Box sx={{ px: { xs: 1.5, sm: 2, md: 3 }, py: 4, maxWidth: { xs: '100%', md: '1200px' }, mx: 'auto', width: '100%' }}>
+    <StandardPageLayout
+      loading={loading}
+      error={error || undefined}
+      errorTitle="재무 데이터를 불러오는 중 오류가 발생했습니다"
+      maxWidth={{ xs: '100%', md: '1200px' }}
+    >
       <Stack spacing={3}>
       {/* 헤더 영역 */}
-      <FinanceHeader
-        onExportExcel={handleExportExcel}
-        onGenerateTaxReport={handleGenerateTaxReport}
+      <PageHeader
+        title="재무 관리"
+        useMUI
+        actions={[
+          <Button
+            key="tax-report"
+            variant="outline"
+            size="sm"
+            leftIcon={<FileText className="h-4 w-4" />}
+            onClick={handleGenerateTaxReport}
+            sx={{ display: { xs: 'none', sm: 'flex' } }}
+          >
+            세무 자료 생성
+          </Button>,
+          <Button
+            key="export"
+            variant="outline"
+            size="sm"
+            leftIcon={<Download className="h-4 w-4" />}
+            onClick={handleExportExcel}
+            sx={{ display: { xs: 'none', sm: 'flex' } }}
+          >
+            엑셀로 내보내기
+          </Button>,
+          // 모바일용
+          <IconButton key="export-mobile" onClick={handleExportExcel} sx={{ display: { xs: 'flex', sm: 'none' } }}>
+            <Download className="h-5 w-5" />
+          </IconButton>,
+        ]}
       />
 
       {/* 요약 카드 */}
@@ -179,23 +215,13 @@ export default function FinancePage() {
           onDeleted={load}
         />}
       </Suspense>
-      {error && <Typography color="error" variant="body2">{error}</Typography>}
-
       {/* Mobile FAB */}
-      <Fab
-        color="primary"
-        aria-label="새 수입/지출 추가"
-        sx={{
-          position: 'fixed',
-          bottom: { xs: 72, md: 16 },
-          right: 16,
-          display: { xs: 'flex', md: 'none' },
-        }}
+      <MobileFAB
+        icon={<Plus />}
+        label="새 수입/지출 추가"
         onClick={openCreateModal}
-      >
-        <Plus />
-      </Fab>
+      />
     </Stack>
-    </Box>
+    </StandardPageLayout>
   )
 }

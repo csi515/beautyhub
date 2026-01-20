@@ -175,12 +175,13 @@ export default function ReservationCreateModal({ open, onClose, draft, onSaved }
                     날짜 <span className="text-rose-600">*</span>
                   </label>
                   <input
-                    className="h-10 w-full min-w-0 rounded-lg border border-neutral-300 px-2 sm:px-3 outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-300 text-xs sm:text-sm"
+                    className="h-11 w-full min-w-0 rounded-lg border border-neutral-300 px-2 sm:px-3 outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-300 text-base sm:text-sm touch-manipulation"
                     type="date"
                     value={form.date}
                     onChange={(e) =>
                       setForm((f) => ({ ...f, date: e.target.value }))
                     }
+                    style={{ fontSize: '16px' }}
                   />
                 </div>
                 <div className="min-w-0">
@@ -188,12 +189,13 @@ export default function ReservationCreateModal({ open, onClose, draft, onSaved }
                     시작 시간 <span className="text-rose-600">*</span>
                   </label>
                   <input
-                    className="h-10 w-full min-w-0 rounded-lg border border-neutral-300 px-2 sm:px-3 outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-300 text-xs sm:text-sm"
+                    className="h-11 w-full min-w-0 rounded-lg border border-neutral-300 px-2 sm:px-3 outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-300 text-base sm:text-sm touch-manipulation"
                     type="time"
                     value={form.start}
                     onChange={(e) =>
                       setForm((f) => ({ ...f, start: e.target.value }))
                     }
+                    style={{ fontSize: '16px' }}
                   />
                 </div>
                 <div className="col-span-2">
@@ -202,7 +204,7 @@ export default function ReservationCreateModal({ open, onClose, draft, onSaved }
                   </label>
                   <div className="relative">
                     <input
-                      className="h-10 w-full rounded-lg border border-neutral-300 px-3 outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-300 placeholder:text-neutral-400"
+                      className="h-11 w-full rounded-lg border border-neutral-300 px-3 outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-300 placeholder:text-neutral-400 text-base sm:text-sm touch-manipulation"
                       placeholder="이름/이메일/전화번호로 검색하여 선택"
                       value={customerQuery}
                       onChange={(e) => {
@@ -211,17 +213,26 @@ export default function ReservationCreateModal({ open, onClose, draft, onSaved }
                       }}
                       onFocus={() => setShowSuggest(true)}
                       onKeyDown={(e) => {
-                        if (e.key === 'Enter' && filteredCustomers.length > 0) {
-                          const c = filteredCustomers[0]
-                          if (c) {
-                            setForm((f) => ({ ...f, customer_id: c.id }))
-                            setCustomerQuery(c.name || '')
-                            setShowSuggest(false)
+                        if (e.key === 'Enter') {
+                          if (filteredCustomers.length > 0) {
+                            const c = filteredCustomers[0]
+                            if (c) {
+                              setForm((f) => ({ ...f, customer_id: c.id }))
+                              setCustomerQuery(c.name || '')
+                              setShowSuggest(false)
+                              e.preventDefault()
+                            }
+                          } else {
                             e.preventDefault()
+                            const input = e.target as HTMLInputElement
+                            input.blur()
                           }
                         }
                         if (e.key === 'Escape') setShowSuggest(false)
                       }}
+                      inputMode="search"
+                      enterKeyHint="search"
+                      style={{ fontSize: '16px' }}
                     />
                     {showSuggest &&
                       customerQuery.trim() &&
@@ -235,8 +246,15 @@ export default function ReservationCreateModal({ open, onClose, draft, onSaved }
                               key={c.id}
                               role="option"
                               aria-selected={form.customer_id === c.id}
-                              className="cursor-pointer px-3 py-2 text-sm hover:bg-neutral-50"
-                              onMouseDown={() => {
+                              className="cursor-pointer px-3 py-2.5 text-sm hover:bg-neutral-50 touch-manipulation min-h-[44px] flex items-center"
+                              onMouseDown={(e) => {
+                                e.preventDefault()
+                                setForm((f) => ({ ...f, customer_id: c.id }))
+                                setCustomerQuery(c.name || '')
+                                setShowSuggest(false)
+                              }}
+                              onClick={(e) => {
+                                e.preventDefault()
                                 setForm((f) => ({ ...f, customer_id: c.id }))
                                 setCustomerQuery(c.name || '')
                                 setShowSuggest(false)
@@ -257,11 +275,12 @@ export default function ReservationCreateModal({ open, onClose, draft, onSaved }
                     상태
                   </label>
                   <select
-                    className="h-10 w-full rounded-lg border border-neutral-300 bg-white px-3 text-sm outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-300"
+                    className="h-11 w-full rounded-lg border border-neutral-300 bg-white px-3 text-base sm:text-sm outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-300 touch-manipulation"
                     value={form.status}
                     onChange={(e) =>
                       setForm((f) => ({ ...f, status: e.target.value }))
                     }
+                    style={{ fontSize: '16px' }}
                   >
                     <option value="scheduled">예약확정</option>
                     <option value="pending">대기</option>

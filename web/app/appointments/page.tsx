@@ -1,72 +1,26 @@
 'use client'
 
-import React, { useState, useRef, Suspense, lazy } from 'react'
+import React, { useState, useRef, Suspense } from 'react'
 import ReservationCreateModal from '../components/modals/ReservationCreateModal'
 import ReservationDetailModal from '../components/modals/ReservationDetailModal'
 import MobileTimelineView, { type MobileTimelineViewRef } from '../components/appointments/MobileTimelineView'
 import CalendarHeader from '../components/appointments/CalendarHeader'
-import type { AppointmentEvent } from '../components/appointments/types'
-import { Plus } from 'lucide-react'
-import Button from '../components/ui/Button'
+import AppointmentSearchFilters from '../components/appointments/AppointmentSearchFilters'
+import DesktopCalendarView from '../components/appointments/DesktopCalendarView'
+import MobileCalendarView from '../components/appointments/MobileCalendarView'
+import StandardPageLayout from '../components/common/StandardPageLayout'
 import { Skeleton } from '../components/ui/Skeleton'
-import { format, startOfMonth, endOfMonth, startOfWeek, endOfWeek, addMonths, addWeeks, addDays, subMonths, subWeeks, subDays } from 'date-fns'
-import { ko } from 'date-fns/locale'
-
-import Box from '@mui/material/Box'
-import Paper from '@mui/material/Paper'
-import Stack from '@mui/material/Stack'
-import ToggleButton from '@mui/material/ToggleButton'
-import ToggleButtonGroup from '@mui/material/ToggleButtonGroup'
-
-import TextField from '@mui/material/TextField'
-import InputAdornment from '@mui/material/InputAdornment'
-import Select from '@mui/material/Select'
-import MenuItem from '@mui/material/MenuItem'
-import FormControl from '@mui/material/FormControl'
-import { Search, Download } from 'lucide-react'
+import { format, addMonths, addWeeks, addDays, subMonths, subWeeks, subDays } from 'date-fns'
 import { useSearch } from '../lib/hooks/useSearch'
 import { useMemo } from 'react'
 import { exportToCSV } from '../lib/utils/export'
 import { useAppToast } from '../lib/ui/toast'
+import { useAppointments } from '../lib/hooks/useAppointments'
+import { formatRangeLabel, getDateRange, type AppointmentEvent, type CalendarView } from '../lib/utils/appointmentUtils'
 
-// React Big Calendar를 동적 import로 로드하여 번들 크기 감소
-const BigCalendarWrapper = lazy(async () => {
-  const { Calendar, dateFnsLocalizer } = await import('react-big-calendar')
-
-  // CSS 임포트 추가
-  // @ts-expect-error - CSS import
-  await import('react-big-calendar/lib/css/react-big-calendar.css')
-
-  // date-fns 로컬라이저 설정
-  const localizer = dateFnsLocalizer({
-    format,
-    parse: (str: string) => new Date(str),
-    startOfWeek: () => startOfWeek(new Date(), { locale: ko }),
-    getDay: (date: Date) => date.getDay(),
-    locales: { ko },
-  })
-
-  const WrappedComponent = React.forwardRef<any, any>(
-    function BigCalendarWrapperComponent(props, ref) {
-      return (
-        <Calendar
-          {...props}
-          ref={ref}
-          localizer={localizer}
-          culture="ko"
-        />
-      )
-    }
-  )
-
-  WrappedComponent.displayName = 'BigCalendarWrapper'
-
-  return {
-    default: WrappedComponent
-  }
-})
-
-type CalendarView = 'month' | 'week' | 'day'
+import Paper from '@mui/material/Paper'
+import ToggleButton from '@mui/material/ToggleButton'
+import ToggleButtonGroup from '@mui/material/ToggleButtonGroup'
 
 type SelectedAppointment = {
   id: string
@@ -80,85 +34,9 @@ type SelectedAppointment = {
   staff_id?: string
 }
 
-type AppointmentRow = {
-  id: string
-  appointment_date: string
-  status: string
-  notes?: string | null
-  service_id?: string | null
-  customer_id?: string | null
-  staff_id?: string | null
-}
-
-type Product = {
-  id: string | number
-  name: string
-}
-
-type DateRange = { from?: string; to?: string }
-
-const formatKoreanHour = (iso: string): string => {
-  try {
-    const d = new Date(iso)
-    const h = d.getHours()
-    const isAM = h < 12
-    const hh = h === 0 ? 12 : h > 12 ? h - 12 : h
-    return `${isAM ? '오전' : '오후'} ${String(hh).padStart(2, '0')}시`
-  } catch {
-    return ''
-  }
-}
-
-const mapAppointments = (rows: AppointmentRow[], products: Product[]): AppointmentEvent[] => {
-  const idToName: Record<string, string> = {}
-  products.forEach((p) => {
-    if (p?.id) idToName[String(p.id)] = p.name
-  })
-
-  return rows.map((a) => {
-    const titleParts: string[] = []
-    titleParts.push(formatKoreanHour(a.appointment_date))
-    if (a.service_id && idToName[String(a.service_id)]) {
-      titleParts.push(idToName[String(a.service_id)] || '')
-    }
-    const baseTitle = titleParts.filter(Boolean).join(' · ') || '예약'
-    const title = a.notes ? `${baseTitle} · ${a.notes}` : baseTitle
-
-    return {
-      id: String(a.id),
-      title,
-      start: new Date(a.appointment_date),
-      end: new Date(a.appointment_date),
-      allDay: false,
-      extendedProps: {
-        status: a.status,
-        notes: a.notes ?? '',
-        service_id: a.service_id ?? null,
-        customer_id: a.customer_id ?? null,
-        staff_id: a.staff_id ?? null,
-        product_name: a.service_id ? idToName[String(a.service_id)] || '' : '',
-      },
-    }
-  })
-}
-
-const formatRangeLabel = (start: Date, end: Date, viewType: CalendarView): string => {
-  if (viewType === 'month') {
-    return format(start, 'yyyy년 M월', { locale: ko })
-  }
-
-  if (viewType === 'week') {
-    return `${format(start, 'yyyy년 M월 d일', { locale: ko })} ~ ${format(end, 'M월 d일', { locale: ko })}`
-  }
-
-  return format(start, 'yyyy년 M월 d일', { locale: ko })
-}
-
 
 export default function AppointmentsPage() {
-  const [events, setEvents] = useState<AppointmentEvent[]>([])
   const [view, setView] = useState<CalendarView>('month')
-  const [range, setRange] = useState<DateRange>({})
   const [currentDate, setCurrentDate] = useState<Date | null>(new Date())
   const [rangeLabel, setRangeLabel] = useState<string>('')
   const [createOpen, setCreateOpen] = useState(false)
@@ -179,6 +57,9 @@ export default function AppointmentsPage() {
   // Search & Filter
   const { query, debouncedQuery, setQuery } = useSearch({ debounceMs: 300 })
   const [statusFilter, setStatusFilter] = useState<string>('all')
+
+  // Appointments data
+  const { events, reloadCalendar } = useAppointments()
 
   const filteredEvents = useMemo(() => {
     return events.filter(event => {
@@ -211,36 +92,6 @@ export default function AppointmentsPage() {
   }
 
 
-  const reloadCalendar = async (opt?: { from?: string; to?: string }): Promise<void> => {
-    try {
-      const from = opt?.from ?? range.from
-      const to = opt?.to ?? range.to
-
-      const { appointmentsApi } = await import('@/app/lib/api/appointments')
-      const { productsApi } = await import('@/app/lib/api/products')
-      const options: Parameters<typeof appointmentsApi.list>[0] = {}
-      if (from) {
-        options.from = from
-      }
-      if (to) {
-        options.to = to
-      }
-      const [rows, products] = await Promise.all([
-        appointmentsApi.list(options),
-        productsApi.list({ limit: 1000 }),
-      ])
-      const rowsArray = Array.isArray(rows) ? (rows as AppointmentRow[]) : []
-      const productsArray = Array.isArray(products) ? (products as Product[]) : []
-      setEvents(mapAppointments(rowsArray, productsArray))
-    } catch (error) {
-      if (typeof window !== 'undefined') {
-        const { logger } = await import('../lib/utils/logger')
-        logger.error('예약 캘린더 로딩 실패', error, 'AppointmentsPage')
-      } else {
-        console.error('예약 캘린더 로딩 실패', error)
-      }
-    }
-  }
 
   const handleNavigate = (newDate: Date) => {
     setCurrentDate(newDate)
@@ -248,26 +99,9 @@ export default function AppointmentsPage() {
   }
 
   const updateRangeAndLabel = (date: Date, viewType: CalendarView) => {
-    let start: Date
-    let end: Date
-    // ... logic remains same ...
-    if (viewType === 'month') {
-      start = startOfWeek(startOfMonth(date), { locale: ko })
-      end = endOfWeek(endOfMonth(date), { locale: ko })
-    } else if (viewType === 'week') {
-      start = startOfWeek(date, { locale: ko })
-      end = endOfWeek(date, { locale: ko })
-    } else {
-      start = date
-      end = date
-    }
-
-    const from = start.toISOString()
-    const to = end.toISOString()
-
-    setRange({ from, to })
+    const { start, end } = getDateRange(date, viewType)
     setRangeLabel(formatRangeLabel(start, end, viewType))
-    reloadCalendar({ from, to })
+    reloadCalendar(date, viewType)
   }
 
   const handlePrev = () => {
@@ -342,19 +176,6 @@ export default function AppointmentsPage() {
     setCreateOpen(true)
   }
 
-  const eventStyleGetter = (event: AppointmentEvent) => {
-    const isComplete = String(event.extendedProps?.status || '') === 'complete'
-    return {
-      style: {
-        backgroundColor: '#3b82f6',
-        borderColor: '#3b82f6',
-        color: '#ffffff',
-        opacity: isComplete ? 0.7 : 1,
-        textDecoration: isComplete ? 'line-through' : 'none',
-      }
-    }
-  }
-
   React.useEffect(() => {
     // view가 변경될 때 range와 label 업데이트
     if (currentDate) {
@@ -372,11 +193,15 @@ export default function AppointmentsPage() {
   }, [currentDate, rangeLabel])
 
   if (!currentDate || !rangeLabel) {
-    return <Skeleton className="h-[600px] w-full" />
+    return (
+      <StandardPageLayout loading={true}>
+        <div />
+      </StandardPageLayout>
+    )
   }
 
   return (
-    <Stack spacing={3}>
+    <StandardPageLayout>
       <CalendarHeader
         view={view}
         rangeLabel={rangeLabel}
@@ -385,60 +210,28 @@ export default function AppointmentsPage() {
         onPrev={handlePrev}
         onNext={handleNext}
         actions={
-          <Stack direction="row" spacing={1} alignItems="center">
-            <TextField
-              placeholder="예약 검색"
-              size="small"
-              value={query}
-              onChange={e => setQuery(e.target.value)}
-              sx={{ width: 200 }}
-              InputProps={{
-                startAdornment: <InputAdornment position="start"><Search size={16} /></InputAdornment>
-              }}
-            />
-            <FormControl size="small" sx={{ width: 120 }}>
-              <Select
-                value={statusFilter}
-                onChange={e => setStatusFilter(e.target.value)}
-                displayEmpty
-              >
-                <MenuItem value="all">전체 상태</MenuItem>
-                <MenuItem value="scheduled">예약됨</MenuItem>
-                <MenuItem value="completed">완료</MenuItem>
-                <MenuItem value="cancelled">취소</MenuItem>
-              </Select>
-            </FormControl>
-            <Button
-              variant="secondary"
-              leftIcon={<Download size={16} />}
-              onClick={handleExport}
-              sx={{ whiteSpace: 'nowrap' }}
-            >
-              내보내기
-            </Button>
-            <Button
-              variant="primary"
-              size="md"
-              leftIcon={<Plus size={16} />}
-              onClick={() => {
-                setDraft({
-                  date: new Date().toISOString().slice(0, 10),
-                  start: '10:00',
-                  end: '11:00',
-                  status: 'scheduled',
-                  notes: '',
-                })
-                setCreateOpen(true)
-              }}
-            >
-              예약 추가
-            </Button>
-          </Stack>
+          <AppointmentSearchFilters
+            query={query}
+            onQueryChange={setQuery}
+            statusFilter={statusFilter}
+            onStatusFilterChange={setStatusFilter}
+            onExport={handleExport}
+            onCreateClick={() => {
+              setDraft({
+                date: new Date().toISOString().slice(0, 10),
+                start: '10:00',
+                end: '11:00',
+                status: 'scheduled',
+                notes: '',
+              })
+              setCreateOpen(true)
+            }}
+          />
         }
       />
 
       {/* 모바일 뷰 전환 버튼 */}
-      <Paper sx={{ display: { md: 'none' }, p: 1.5, borderRadius: 3 }}>
+      <Paper sx={{ display: { md: 'none' }, p: { xs: 1, sm: 1.5 }, borderRadius: 3 }}>
         <ToggleButtonGroup
           value={mobileViewMode}
           exclusive
@@ -451,6 +244,12 @@ export default function AppointmentsPage() {
           }}
           fullWidth
           size="small"
+          sx={{
+            '& .MuiToggleButton-root': {
+              minHeight: '44px',
+              fontSize: { xs: '0.875rem', sm: '0.9375rem' },
+            },
+          }}
         >
           <ToggleButton value="timeline">타임라인</ToggleButton>
           <ToggleButton value="calendar">달력</ToggleButton>
@@ -473,89 +272,32 @@ export default function AppointmentsPage() {
       )}
 
       {/* 모바일 달력 뷰 */}
-      {mobileViewMode === 'calendar' && (
-        <Paper sx={{ display: { md: 'none' }, p: 0.5, borderRadius: 3, overflow: 'hidden' }}>
-          <Suspense fallback={<Skeleton className="h-[500px] w-full" />}>
-            <Box sx={{ height: 'calc(100vh - 280px)', minHeight: 400 }} className="rbc-mobile-calendar">
-              <BigCalendarWrapper
-                ref={calendarRef}
-                events={filteredEvents}
-                view={view}
-                date={currentDate}
-                onNavigate={handleNavigate}
-                onView={setView}
-                onSelectSlot={handleSelectSlot}
-                onSelectEvent={handleSelectEvent}
-                eventPropGetter={eventStyleGetter}
-                selectable
-                toolbar={false}
-                formats={{
-                  monthHeaderFormat: 'yyyy년 M월',
-                  weekdayFormat: 'eee',
-                  dayFormat: 'd',
-                }}
-                messages={{
-                  today: '오늘',
-                  previous: '이전',
-                  next: '다음',
-                  month: '월',
-                  week: '주',
-                  day: '일',
-                  agenda: '일정',
-                  date: '날짜',
-                  time: '시간',
-                  event: '이벤트',
-                  noEventsInRange: '이 범위에 이벤트가 없습니다.',
-                  showMore: (total: number) => `+${total} 더보기`,
-                }}
-              />
-            </Box>
-          </Suspense>
-        </Paper>
+      {mobileViewMode === 'calendar' && currentDate && (
+        <MobileCalendarView
+          events={filteredEvents}
+          view={view}
+          currentDate={currentDate}
+          onNavigate={handleNavigate}
+          onViewChange={setView}
+          onSelectSlot={handleSelectSlot}
+          onSelectEvent={handleSelectEvent}
+          calendarRef={calendarRef}
+        />
       )}
 
       {/* 데스크톱 캘린더 뷰 */}
-      <Paper sx={{ display: { xs: 'none', md: 'block' }, p: 2, borderRadius: 3, overflow: 'hidden' }}>
-        <Suspense fallback={<Skeleton className="h-[500px] w-full" />}>
-          <Box sx={{ height: 500, minWidth: 800 }}>
-            <BigCalendarWrapper
-              ref={calendarRef}
-              events={filteredEvents}
-              view={view}
-              date={currentDate}
-              onNavigate={handleNavigate}
-              onView={setView}
-              onSelectSlot={handleSelectSlot}
-              onSelectEvent={handleSelectEvent}
-              eventPropGetter={eventStyleGetter}
-              selectable
-              toolbar={false}
-              formats={{
-                monthHeaderFormat: 'yyyy년 M월',
-                weekdayFormat: 'eee',
-                dayFormat: 'd',
-                timeGutterFormat: 'HH:mm',
-                eventTimeRangeFormat: ({ start, end }: { start: Date; end: Date }) =>
-                  `${format(start, 'HH:mm')} - ${format(end, 'HH:mm')}`,
-              }}
-              messages={{
-                today: '오늘',
-                previous: '이전',
-                next: '다음',
-                month: '월',
-                week: '주',
-                day: '일',
-                agenda: '일정',
-                date: '날짜',
-                time: '시간',
-                event: '이벤트',
-                noEventsInRange: '이 범위에 이벤트가 없습니다.',
-                showMore: (total: number) => `+${total} 더보기`,
-              }}
-            />
-          </Box>
-        </Suspense>
-      </Paper>
+      {currentDate && (
+        <DesktopCalendarView
+          events={filteredEvents}
+          view={view}
+          currentDate={currentDate}
+          onNavigate={handleNavigate}
+          onViewChange={setView}
+          onSelectSlot={handleSelectSlot}
+          onSelectEvent={handleSelectEvent}
+          calendarRef={calendarRef}
+        />
+      )}
 
 
       <ReservationCreateModal
@@ -563,7 +305,9 @@ export default function AppointmentsPage() {
         draft={draft}
         onClose={() => setCreateOpen(false)}
         onSaved={async () => {
-          await reloadCalendar()
+          if (currentDate) {
+            await reloadCalendar(currentDate, view)
+          }
         }}
       />
       <ReservationDetailModal
@@ -571,12 +315,16 @@ export default function AppointmentsPage() {
         item={selected}
         onClose={() => setDetailOpen(false)}
         onSaved={async () => {
-          await reloadCalendar()
+          if (currentDate) {
+            await reloadCalendar(currentDate, view)
+          }
         }}
         onDeleted={async () => {
-          await reloadCalendar()
+          if (currentDate) {
+            await reloadCalendar(currentDate, view)
+          }
         }}
       />
-    </Stack>
+    </StandardPageLayout>
   )
 }

@@ -45,23 +45,24 @@ export default function DisplaySettingsModal({ open, data, onClose, onSave }: Pr
     }
 
     return (
-        <Modal open={open} onClose={handleCancel} size="lg">
-            <div className="px-6 py-4 border-b border-neutral-200 bg-white sticky top-0 z-10">
-                <h2 className="text-2xl font-bold text-neutral-900">표시 설정</h2>
-                <p className="text-sm text-neutral-600 mt-1">앱의 표시 방식을 설정합니다.</p>
+        <Modal open={open} onClose={handleCancel} size="lg" fullScreenOnMobile>
+            <div className="px-4 sm:px-6 py-3 sm:py-4 border-b border-neutral-200 bg-white sticky top-0 z-10">
+                <h2 className="text-xl sm:text-2xl font-bold text-neutral-900">표시 설정</h2>
+                <p className="text-xs sm:text-sm text-neutral-600 mt-1">앱의 표시 방식을 설정합니다.</p>
             </div>
 
-            <ModalBody>
-                <div className="space-y-6">
+            <ModalBody sx={{ p: { xs: 2, sm: 3 } }}>
+                <div className="space-y-4 sm:space-y-6">
                     {/* 테마 설정 */}
                     <div>
-                        <label className="block text-sm font-medium text-neutral-700 mb-2">
+                        <label className="block text-xs sm:text-sm font-medium text-neutral-700 mb-1.5 sm:mb-2">
                             테마
                         </label>
                         <select
                             value={formData.theme}
                             onChange={(e) => handleChange('theme', e.target.value)}
-                            className="w-full px-3 py-2 border border-neutral-300 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-pink-500"
+                            className="w-full h-11 sm:h-10 px-3 py-2 border border-neutral-300 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-pink-500 text-base sm:text-sm touch-manipulation"
+                            style={{ fontSize: '16px' }}
                         >
                             <option value="light">밝은 테마</option>
                             <option value="dark">어두운 테마</option>
@@ -71,13 +72,14 @@ export default function DisplaySettingsModal({ open, data, onClose, onSave }: Pr
 
                     {/* 언어 설정 */}
                     <div>
-                        <label className="block text-sm font-medium text-neutral-700 mb-2">
+                        <label className="block text-xs sm:text-sm font-medium text-neutral-700 mb-1.5 sm:mb-2">
                             언어
                         </label>
                         <select
                             value={formData.language}
                             onChange={(e) => handleChange('language', e.target.value)}
-                            className="w-full px-3 py-2 border border-neutral-300 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-pink-500"
+                            className="w-full h-11 sm:h-10 px-3 py-2 border border-neutral-300 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-pink-500 text-base sm:text-sm touch-manipulation"
+                            style={{ fontSize: '16px' }}
                         >
                             <option value="ko">한국어</option>
                             <option value="en">English</option>
@@ -86,13 +88,14 @@ export default function DisplaySettingsModal({ open, data, onClose, onSave }: Pr
 
                     {/* 시간대 설정 */}
                     <div>
-                        <label className="block text-sm font-medium text-neutral-700 mb-2">
+                        <label className="block text-xs sm:text-sm font-medium text-neutral-700 mb-1.5 sm:mb-2">
                             시간대
                         </label>
                         <select
                             value={formData.timezone}
                             onChange={(e) => handleChange('timezone', e.target.value)}
-                            className="w-full px-3 py-2 border border-neutral-300 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-pink-500"
+                            className="w-full h-11 sm:h-10 px-3 py-2 border border-neutral-300 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-pink-500 text-base sm:text-sm touch-manipulation"
+                            style={{ fontSize: '16px' }}
                         >
                             <option value="Asia/Seoul">대한민국 (KST)</option>
                             <option value="America/New_York">미국 동부 (EST)</option>
@@ -103,13 +106,14 @@ export default function DisplaySettingsModal({ open, data, onClose, onSave }: Pr
 
                     {/* 날짜 형식 */}
                     <div>
-                        <label className="block text-sm font-medium text-neutral-700 mb-2">
+                        <label className="block text-xs sm:text-sm font-medium text-neutral-700 mb-1.5 sm:mb-2">
                             날짜 표시 형식
                         </label>
                         <select
                             value={formData.dateFormat}
                             onChange={(e) => handleChange('dateFormat', e.target.value)}
-                            className="w-full px-3 py-2 border border-neutral-300 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-pink-500"
+                            className="w-full h-11 sm:h-10 px-3 py-2 border border-neutral-300 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-pink-500 text-base sm:text-sm touch-manipulation"
+                            style={{ fontSize: '16px' }}
                         >
                             <option value="YYYY-MM-DD">2024-01-15</option>
                             <option value="MM/DD/YYYY">01/15/2024</option>
@@ -120,13 +124,14 @@ export default function DisplaySettingsModal({ open, data, onClose, onSave }: Pr
 
                     {/* 시간 형식 */}
                     <div>
-                        <label className="block text-sm font-medium text-neutral-700 mb-2">
+                        <label className="block text-xs sm:text-sm font-medium text-neutral-700 mb-1.5 sm:mb-2">
                             시간 표시 형식
                         </label>
                         <select
                             value={formData.timeFormat}
                             onChange={(e) => handleChange('timeFormat', e.target.value)}
-                            className="w-full px-3 py-2 border border-neutral-300 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-pink-500"
+                            className="w-full h-11 sm:h-10 px-3 py-2 border border-neutral-300 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-pink-500 text-base sm:text-sm touch-manipulation"
+                            style={{ fontSize: '16px' }}
                         >
                             <option value="24h">24시간제 (14:30)</option>
                             <option value="12h">12시간제 (2:30 PM)</option>
@@ -135,13 +140,14 @@ export default function DisplaySettingsModal({ open, data, onClose, onSave }: Pr
 
                     {/* 통화 설정 */}
                     <div>
-                        <label className="block text-sm font-medium text-neutral-700 mb-2">
+                        <label className="block text-xs sm:text-sm font-medium text-neutral-700 mb-1.5 sm:mb-2">
                             통화
                         </label>
                         <select
                             value={formData.currency}
                             onChange={(e) => handleChange('currency', e.target.value)}
-                            className="w-full px-3 py-2 border border-neutral-300 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-pink-500"
+                            className="w-full h-11 sm:h-10 px-3 py-2 border border-neutral-300 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-pink-500 text-base sm:text-sm touch-manipulation"
+                            style={{ fontSize: '16px' }}
                         >
                             <option value="KRW">한국 원 (₩)</option>
                             <option value="USD">미국 달러 ($)</option>
@@ -152,23 +158,38 @@ export default function DisplaySettingsModal({ open, data, onClose, onSave }: Pr
                 </div>
             </ModalBody>
 
-            <ModalFooter>
-                <div className="flex items-center justify-between w-full">
-                    <div>
-                        {hasChanges && (
-                            <span className="text-sm text-amber-700 bg-amber-50 px-3 py-1.5 rounded-lg border border-amber-200">
-                                변경사항이 있습니다
-                            </span>
-                        )}
-                    </div>
-                    <div className="flex gap-3">
-                        <Button variant="secondary" onClick={handleCancel}>
-                            취소
-                        </Button>
-                        <Button variant="primary" onClick={handleSave} disabled={!hasChanges}>
-                            저장
-                        </Button>
-                    </div>
+            <ModalFooter sx={{ p: { xs: 2, sm: 3 }, gap: 1, flexDirection: { xs: 'column-reverse', sm: 'row' } }}>
+                <div className="w-full sm:w-auto flex justify-center sm:justify-start">
+                    {hasChanges && (
+                        <span className="text-xs sm:text-sm text-amber-700 bg-amber-50 px-3 py-1.5 rounded-lg border border-amber-200">
+                            변경사항이 있습니다
+                        </span>
+                    )}
+                </div>
+                <div className="flex gap-2 sm:gap-3 w-full sm:w-auto">
+                    <Button 
+                        variant="secondary" 
+                        onClick={handleCancel}
+                        sx={{ 
+                            minHeight: '44px', 
+                            flex: { xs: 1, sm: 'none' },
+                            fontSize: { xs: '0.9375rem', sm: '1rem' }
+                        }}
+                    >
+                        취소
+                    </Button>
+                    <Button 
+                        variant="primary" 
+                        onClick={handleSave} 
+                        disabled={!hasChanges}
+                        sx={{ 
+                            minHeight: '44px', 
+                            flex: { xs: 1, sm: 'none' },
+                            fontSize: { xs: '0.9375rem', sm: '1rem' }
+                        }}
+                    >
+                        저장
+                    </Button>
                 </div>
             </ModalFooter>
         </Modal>

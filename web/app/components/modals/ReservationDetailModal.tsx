@@ -75,12 +75,31 @@ export default function ReservationDetailModal({ open, onClose, item, onSaved, o
             <div className="space-y-3">
               <div className="grid grid-cols-2 gap-2 sm:gap-3">
                 <div className="min-w-0">
-                  <Input label="날짜" type="date" value={form.date} onChange={e => setForm(f => f && ({ ...f, date: e.target.value }))} className="text-xs sm:text-sm" />
+                  <Input 
+                    label="날짜" 
+                    type="date" 
+                    value={form.date} 
+                    onChange={e => setForm(f => f && ({ ...f, date: e.target.value }))} 
+                    className="text-base sm:text-sm"
+                    style={{ fontSize: '16px' }}
+                  />
                 </div>
                 <div className="min-w-0">
-                  <Input label="시작" type="time" value={form.start} onChange={e => setForm(f => f && ({ ...f, start: e.target.value }))} className="text-xs sm:text-sm" />
+                  <Input 
+                    label="시작" 
+                    type="time" 
+                    value={form.start} 
+                    onChange={e => setForm(f => f && ({ ...f, start: e.target.value }))} 
+                    className="text-base sm:text-sm"
+                    style={{ fontSize: '16px' }}
+                  />
                 </div>
-                <Select label="상태" value={form.status} onChange={e => setForm(f => f && ({ ...f, status: e.target.value }))}>
+                <Select 
+                  label="상태" 
+                  value={form.status} 
+                  onChange={e => setForm(f => f && ({ ...f, status: e.target.value }))}
+                  style={{ fontSize: '16px' }}
+                >
                   <option value="scheduled">예약확정</option>
                   <option value="pending">대기</option>
                   <option value="cancelled">취소</option>
@@ -88,16 +107,21 @@ export default function ReservationDetailModal({ open, onClose, item, onSaved, o
                 </Select>
                 <label className="block">
                   <div className="mb-1 text-sm font-medium text-neutral-700">고객(선택)</div>
-                  <select className="w-full h-10 rounded-lg border border-neutral-300 px-3 outline-none focus:border-brand-500 focus:ring-2 focus:ring-brand-300" value={form.customer_id || ''} onChange={e => setForm(f => {
-                    if (!f) return f
-                    const value = e.target.value
-                    if (value) {
-                      return { ...f, customer_id: value }
-                    }
-                    const next = { ...f }
-                    delete next.customer_id
-                    return next
-                  })}>
+                  <select 
+                    className="w-full h-11 rounded-lg border border-neutral-300 px-3 outline-none focus:border-brand-500 focus:ring-2 focus:ring-brand-300 text-base sm:text-sm touch-manipulation" 
+                    value={form.customer_id || ''} 
+                    onChange={e => setForm(f => {
+                      if (!f) return f
+                      const value = e.target.value
+                      if (value) {
+                        return { ...f, customer_id: value }
+                      }
+                      const next = { ...f }
+                      delete next.customer_id
+                      return next
+                    })}
+                    style={{ fontSize: '16px' }}
+                  >
                     <option value="">선택 안 함</option>
                     {customers.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
                   </select>
@@ -119,7 +143,7 @@ export default function ReservationDetailModal({ open, onClose, item, onSaved, o
                     서비스/상품(선택)
                   </div>
                   <select
-                    className="h-10 w-full rounded-none border-2 border-neutral-500 bg-white px-3 text-sm text-neutral-900 outline-none hover:border-neutral-600 focus:border-[#1D4ED8] focus:ring-[4px] focus:ring-[#1D4ED8]/20"
+                    className="h-11 w-full rounded-none border-2 border-neutral-500 bg-white px-3 text-base sm:text-sm text-neutral-900 outline-none hover:border-neutral-600 focus:border-[#1D4ED8] focus:ring-[4px] focus:ring-[#1D4ED8]/20 touch-manipulation"
                     value={form.service_id || ''}
                     onChange={(e) =>
                       setForm((f) => {
@@ -133,6 +157,7 @@ export default function ReservationDetailModal({ open, onClose, item, onSaved, o
                         return next
                       })
                     }
+                    style={{ fontSize: '16px' }}
                   >
                     <option value="">선택 안 함</option>
                     {products.map((p) => (

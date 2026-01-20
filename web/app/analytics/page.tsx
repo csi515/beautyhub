@@ -5,7 +5,7 @@ import { useEffect, useState } from 'react'
 import { Box, Container, Typography, Grid, Card, CardContent, Alert, Chip, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, useMediaQuery, Stack } from '@mui/material';
 import { useTheme } from '@mui/material/styles';
 import MobileDataCard from '../components/ui/MobileDataCard'
-import { CardSkeleton } from '../components/ui/SkeletonLoader'
+import LoadingState from '../components/common/LoadingState'
 import EmptyState from '../components/ui/EmptyState'
 import { TrendingUp, Users, Star, DollarSign, BarChart2, Download } from 'lucide-react'
 import PageHeader, { createActionButton } from '../components/common/PageHeader'
@@ -110,9 +110,9 @@ export default function AnalyticsPage() {
                     actions={[]}
                 />
                 <Box sx={{ mb: 4 }}>
-                    <CardSkeleton count={3} />
+                    <LoadingState variant="card" rows={3} />
                 </Box>
-                <CardSkeleton count={2} />
+                <LoadingState variant="card" rows={2} />
             </Container>
         )
     }

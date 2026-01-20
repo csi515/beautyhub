@@ -4,13 +4,12 @@ import { useEffect, useState } from 'react'
 import { useAppToast } from '@/app/lib/ui/toast'
 import { settingsApi } from '@/app/lib/api/settings'
 import { DEFAULT_SETTINGS, type SystemSettings, type UserProfile, type SecuritySettings, type DisplaySettings } from '@/types/settings'
-import SettingsSkeleton from '@/app/components/skeletons/SettingsSkeleton'
 
 // MUI Imports
-import Container from '@mui/material/Container'
 import Stack from '@mui/material/Stack'
 import Typography from '@mui/material/Typography'
 import Box from '@mui/material/Box'
+import StandardPageLayout from '@/app/components/common/StandardPageLayout'
 
 // Summary Cards
 import UserProfileSummaryCard from '@/app/components/settings/cards/UserProfileSummaryCard'
@@ -178,29 +177,24 @@ export default function SettingsPage() {
     }
   }
 
-  if (loading) {
-    return (
-      <Container maxWidth={false} sx={{ py: 4, pb: 12, px: { xs: 1.5, sm: 2, md: 3 }, maxWidth: { xs: '100%', md: '1200px' }, width: '100%' }}>
-        <SettingsSkeleton />
-      </Container>
-    )
-  }
-
   return (
-    <Container maxWidth={false} sx={{ py: 4, pb: 12, px: { xs: 1.5, sm: 2, md: 3 }, maxWidth: { xs: '100%', md: '1200px' }, width: '100%' }}>
+    <StandardPageLayout
+      loading={loading}
+      maxWidth={{ xs: '100%', md: '1200px' }}
+    >
       <Stack spacing={4}>
         {/* 헤더 */}
         <Box>
-          <Typography variant="h4" fontWeight="bold" gutterBottom>
+          <Typography variant="h4" fontWeight="bold" gutterBottom sx={{ fontSize: { xs: '1.5rem', sm: '2rem' } }}>
             설정
           </Typography>
-          <Typography variant="body2" color="text.secondary">
+          <Typography variant="body2" color="text.secondary" sx={{ fontSize: { xs: '0.875rem', sm: '0.9375rem' } }}>
             계정 정보, 알림, 표시 등 개인 설정을 관리하세요
           </Typography>
         </Box>
 
         {/* 요약 카드들 */}
-        <Stack spacing={3}>
+        <Stack spacing={{ xs: 2, sm: 3 }}>
           <UserProfileSummaryCard
             data={userProfile}
             onEdit={() => setProfileModalOpen(true)}
@@ -257,6 +251,6 @@ export default function SettingsPage() {
         onClose={() => setDisplayModalOpen(false)}
         onSave={handleSaveDisplaySettings}
       />
-    </Container>
+    </StandardPageLayout>
   )
 }

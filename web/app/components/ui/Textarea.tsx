@@ -25,8 +25,14 @@ const Textarea = ({ label, helpText, error, className = '', required, variant = 
       className={className} // Can affect container
       sx={{
         '& .MuiInputBase-root': {
-          borderRadius: 2
-        }
+          borderRadius: 2,
+          fontSize: { xs: '16px', sm: '14px' },
+          '& .MuiInputBase-input': {
+            fontSize: { xs: '16px', sm: '14px' },
+            minHeight: { xs: '44px', sm: 'auto' },
+          },
+        },
+        ...rest.sx
       }}
       {...rest}
     />

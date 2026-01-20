@@ -68,8 +68,8 @@ function MetricCard({
             label={delta.value}
             size="small"
             sx={{
-              height: 20,
-              fontSize: '0.75rem',
+              height: { xs: 18, sm: 20 },
+              fontSize: { xs: '0.7rem', sm: '0.75rem' },
               bgcolor: deltaColor.bg,
               color: deltaColor.text,
               border: `1px solid ${deltaColor.border}`
@@ -78,7 +78,7 @@ function MetricCard({
         )}
       </Box>
       {hint && (
-        <Typography variant="caption" sx={{ mt: 1, display: 'block', color: scheme.text, opacity: 0.7 }}>
+        <Typography variant="caption" sx={{ mt: { xs: 0.75, sm: 1 }, display: 'block', color: scheme.text, opacity: 0.7, fontSize: { xs: '0.7rem', sm: '0.75rem' } }}>
           {hint}
         </Typography>
       )}

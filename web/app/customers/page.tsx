@@ -5,18 +5,13 @@ import { useState, lazy, Suspense } from 'react'
 import { useAppToast } from '../lib/ui/toast'
 import { exportToCSV, prepareCustomerDataForExport } from '../lib/utils/export'
 
-// MUI Imports
-import Box from '@mui/material/Box'
-import Stack from '@mui/material/Stack'
-import Alert from '@mui/material/Alert'
-import AlertTitle from '@mui/material/AlertTitle'
-import Fab from '@mui/material/Fab'
-
 // Components
 import CustomerFilters from '../components/customers/CustomerFilters'
 import CustomerTable from '../components/customers/CustomerTable'
 import CustomerCards from '../components/customers/CustomerCards'
 import CustomerPagination from '../components/customers/CustomerPagination'
+import StandardPageLayout from '../components/common/StandardPageLayout'
+import MobileFAB from '../components/common/MobileFAB'
 
 // Hooks
 import { useCustomers } from '../lib/hooks/useCustomers'
@@ -93,9 +88,22 @@ export default function CustomersPage() {
   }
 
 
+  const handleCreateCustomer = () => {
+    setSelected({ id: '', owner_id: '', name: '', phone: '', email: '', address: '' } as Customer)
+    setDetailOpen(true)
+  }
+
   return (
-    <Box sx={{ px: { xs: 1.5, sm: 2, md: 3 }, py: 4, maxWidth: { xs: '100%', md: '1200px' }, mx: 'auto', width: '100%' }}>
-      <Stack spacing={3}>
+    <StandardPageLayout
+      loading={loading}
+      error={error}
+      empty={!loading && filteredRows.length === 0 && customers.length === 0}
+      emptyTitle="고객이 없습니다"
+      emptyDescription="새로운 고객을 추가하여 시작하세요"
+      emptyActionLabel="고객 추가"
+      emptyActionOnClick={handleCreateCustomer}
+      errorTitle="오류 발생"
+    >
       {/* 필터 및 검색 */}
       <CustomerFilters
         query={query}
@@ -104,20 +112,10 @@ export default function CustomersPage() {
         onFiltersChange={handleFiltersChange}
         onResetFilters={handleResetFilters}
         onExport={handleExport}
-        onCreateCustomer={() => {
-          setSelected({ id: '', owner_id: '', name: '', phone: '', email: '', address: '' } as Customer)
-          setDetailOpen(true)
-        }}
+        onCreateCustomer={handleCreateCustomer}
         filteredCount={filteredRows.length}
         totalCount={customers.length}
       />
-
-      {error && (
-        <Alert severity="error" variant="filled" sx={{ borderRadius: 2 }}>
-          <AlertTitle>오류 발생</AlertTitle>
-          {error}
-        </Alert>
-      )}
 
       {/* 모바일 카드 뷰 */}
       <CustomerCards
@@ -130,7 +128,6 @@ export default function CustomersPage() {
           setDetailOpen(true)
         }}
       />
-
 
       {/* 데스크톱 테이블 뷰 */}
       <CustomerTable
@@ -147,10 +144,7 @@ export default function CustomersPage() {
           setSelected(customer)
           setDetailOpen(true)
         }}
-        onCreateCustomer={() => {
-          setSelected({ id: '', owner_id: '', name: '', phone: '', email: '', address: '', active: true } as Customer)
-          setDetailOpen(true)
-        }}
+        onCreateCustomer={handleCreateCustomer}
       />
 
       {/* 페이지네이션 및 일괄 작업 */}
@@ -181,23 +175,11 @@ export default function CustomersPage() {
       )}
 
       {/* Mobile FAB */}
-      <Fab
-        color="primary"
-        aria-label="새 고객 추가"
-        sx={{
-          position: 'fixed',
-          bottom: { xs: 72, md: 16 },
-          right: 16,
-          display: { xs: 'flex', md: 'none' },
-        }}
-        onClick={() => {
-          setSelected({ id: '', owner_id: '', name: '', phone: '', email: '', address: '' } as Customer)
-          setDetailOpen(true)
-        }}
-      >
-        <Plus className="h-5 w-5" />
-      </Fab>
-    </Stack>
-    </Box>
+      <MobileFAB
+        icon={<Plus className="h-5 w-5" />}
+        label="새 고객 추가"
+        onClick={handleCreateCustomer}
+      />
+    </StandardPageLayout>
   )
 }

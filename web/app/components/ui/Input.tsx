@@ -44,6 +44,11 @@ const Input = forwardRef<HTMLInputElement, Props>(function Input(
         '& .MuiOutlinedInput-root': {
           borderRadius: 'var(--radius-md)',
           transition: 'all 0.2s ease-out',
+          minHeight: { xs: '44px', sm: 'auto' },
+          fontSize: { xs: '16px', sm: '14px' },
+          '& .MuiInputBase-input': {
+            fontSize: { xs: '16px', sm: '14px' },
+          },
           '&:hover': {
             '& .MuiOutlinedInput-notchedOutline': {
               borderColor: isError ? 'var(--error-400)' : 'var(--neutral-400)',

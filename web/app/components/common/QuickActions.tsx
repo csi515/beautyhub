@@ -72,9 +72,12 @@ export default function QuickActions() {
       <Box
         sx={{
           position: 'fixed',
-          bottom: 80,
+          bottom: { 
+            xs: 'calc(64px + env(safe-area-inset-bottom, 0px) + 16px)', 
+            md: 80 
+          },
           right: 16,
-          zIndex: 1000,
+          zIndex: 1099, // 하단 네비게이션(zIndex: 1100) 바로 아래
           display: { xs: 'flex', md: 'none' },
           flexDirection: 'column',
           gap: 2,

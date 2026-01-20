@@ -63,7 +63,11 @@ export function SnackbarProvider({ children }: { children: ReactNode }) {
                 }}
                 sx={{
                     '& .MuiSnackbar-root': {
-                        bottom: { xs: 80, md: 24 }
+                        bottom: { 
+                            xs: 'calc(64px + env(safe-area-inset-bottom, 0px) + 72px)', 
+                            md: 24 
+                        },
+                        zIndex: 1101, // 하단 네비게이션 위
                     }
                 }}
             >

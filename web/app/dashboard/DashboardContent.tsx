@@ -3,9 +3,8 @@
 import { useEffect, useState } from 'react'
 import { useShopName } from '../lib/hooks/useShopName'
 import DashboardInstallPrompt from '../components/dashboard/DashboardInstallPrompt'
-import { Box, Typography, Stack, Grid, Container, IconButton } from '@mui/material'
-import DashboardSkeleton from '../components/skeletons/DashboardSkeleton'
-import ErrorState from '../components/common/ErrorState'
+import { Box, Typography, Stack, Grid, IconButton } from '@mui/material'
+import StandardPageLayout from '../components/common/StandardPageLayout'
 import { Settings } from 'lucide-react'
 import WidgetSettingsModal from '../components/dashboard/WidgetSettingsModal'
 import { useDashboardWidgets } from '../lib/hooks/useDashboardWidgets'
@@ -53,31 +52,15 @@ export default function DashboardContent({ initialData, error }: DashboardConten
         }
     }, [])
 
-    if (error) {
-        const errorMessage = error instanceof Error ? error.message : (typeof error === 'string' ? error : '데이터를 불러오는 중 오류가 발생했습니다.')
+    if (!initialData) {
         return (
-            <Container 
-                maxWidth={false}
-                sx={{ 
-                    py: { xs: 2, sm: 3, md: 4 }, 
-                    px: { xs: 1.5, sm: 2, md: 3 },
-                    width: '100%',
-                    maxWidth: { xs: '100%', md: '1200px' },
-                }}
-            >
-                <ErrorState
-                    title="대시보드 데이터를 불러올 수 없습니다"
-                    message={errorMessage}
-                    onRetry={() => window.location.reload()}
-                    retryLabel="새로고침"
-                />
-            </Container>
+            <StandardPageLayout loading={true}>
+                <div />
+            </StandardPageLayout>
         )
     }
 
-    if (!initialData) {
-        return <DashboardSkeleton />
-    }
+    const errorMessage = error instanceof Error ? error.message : (typeof error === 'string' ? error : undefined)
 
     const {
         todayAppointments,
@@ -116,16 +99,12 @@ export default function DashboardContent({ initialData, error }: DashboardConten
                     },
                 }}
             />
-            <Container 
-                maxWidth={false}
-                sx={{ 
-                    py: { xs: 2, sm: 3, md: 4 }, 
-                    px: { xs: 1.5, sm: 2, md: 3 },
-                    width: '100%',
-                    maxWidth: { xs: '100%', md: '1200px' },
-                    overflowX: 'hidden',
-                    position: 'relative'
-                }}
+            <StandardPageLayout
+                error={errorMessage}
+                errorTitle="대시보드 데이터를 불러올 수 없습니다"
+                errorActionLabel="새로고침"
+                errorActionOnClick={() => window.location.reload()}
+                maxWidth={{ xs: '100%', md: '1200px' }}
             >
             <Stack spacing={{ xs: 2, sm: 2.5, md: 3 }} sx={{ width: '100%', overflowX: 'hidden' }}>
                 <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
@@ -137,8 +116,12 @@ export default function DashboardContent({ initialData, error }: DashboardConten
                             오늘도 힘차게 비즈니스를 관리해 보세요.
                         </Typography>
                     </Box>
-                    <IconButton onClick={() => setWidgetSettingsOpen(true)} aria-label="대시보드 위젯 설정">
-                        <Settings />
+                    <IconButton 
+                        onClick={() => setWidgetSettingsOpen(true)} 
+                        aria-label="대시보드 위젯 설정"
+                        sx={{ minWidth: { xs: 44, sm: 40 }, minHeight: { xs: 44, sm: 40 } }}
+                    >
+                        <Settings size={20} />
                     </IconButton>
                 </Box>
 
@@ -170,7 +153,7 @@ export default function DashboardContent({ initialData, error }: DashboardConten
                     </Grid>
                 </Grid>
             </Stack>
-        </Container>
+        </StandardPageLayout>
         <WidgetSettingsModal
           open={widgetSettingsOpen}
           onClose={() => setWidgetSettingsOpen(false)}

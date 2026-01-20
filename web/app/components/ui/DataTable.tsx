@@ -144,7 +144,19 @@ export function DataTable<T extends Record<string, unknown>>({
                 if (isPrimary) {
                   return (
                     <Box key={colIdx} sx={{ mb: 1 }}>
-                      <Typography variant="subtitle1" fontWeight={700} color="primary.main">
+                      <Typography 
+                        variant="subtitle1" 
+                        fontWeight={700} 
+                        color="primary.main"
+                        sx={{ 
+                          fontSize: { xs: '0.9375rem', sm: '1rem' },
+                          overflow: 'hidden',
+                          textOverflow: 'ellipsis',
+                          display: '-webkit-box',
+                          WebkitLineClamp: 2,
+                          WebkitBoxOrient: 'vertical',
+                        }}
+                      >
                         {value}
                       </Typography>
                       <Divider sx={{ mt: 1 }} />
@@ -153,12 +165,38 @@ export function DataTable<T extends Record<string, unknown>>({
                 }
 
                 return (
-                  <Box key={colIdx} sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                    <Typography variant="caption" fontWeight={600} color="text.secondary">
+                  <Box 
+                    key={colIdx} 
+                    sx={{ 
+                      display: 'flex', 
+                      justifyContent: 'space-between', 
+                      alignItems: 'center',
+                      minHeight: '32px',
+                      gap: 1
+                    }}
+                  >
+                    <Typography 
+                      variant="caption" 
+                      fontWeight={600} 
+                      color="text.secondary"
+                      sx={{ 
+                        fontSize: { xs: '0.75rem', sm: '0.875rem' },
+                        flexShrink: 0
+                      }}
+                    >
                       {col.header}
                     </Typography>
-                    <Box sx={{ textAlign: 'right', maxWidth: '70%' }}>
-                      <Typography variant="body2" fontWeight={500}>
+                    <Box sx={{ textAlign: 'right', maxWidth: '70%', minWidth: 0, flex: 1 }}>
+                      <Typography 
+                        variant="body2" 
+                        fontWeight={500}
+                        sx={{ 
+                          fontSize: { xs: '0.875rem', sm: '0.9375rem' },
+                          overflow: 'hidden',
+                          textOverflow: 'ellipsis',
+                          whiteSpace: 'nowrap'
+                        }}
+                      >
                         {value}
                       </Typography>
                     </Box>

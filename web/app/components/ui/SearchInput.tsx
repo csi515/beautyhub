@@ -48,9 +48,21 @@ export default function SearchInput({
         setLocalValue(newValue)
         onChange?.(newValue)
       }}
+      onKeyDown={(e) => {
+        if (e.key === 'Enter') {
+          e.preventDefault()
+          const input = e.target as HTMLInputElement
+          input.blur()
+        }
+        rest.onKeyDown?.(e)
+      }}
       placeholder={placeholder}
       {...(className ? { className } : {})}
       leftIcon={<Search className="h-4 w-4 text-neutral-400" />}
+      inputProps={{
+        ...rest.inputProps,
+        enterKeyHint: 'search',
+      }}
     />
   )
 }

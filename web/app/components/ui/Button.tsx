@@ -78,8 +78,14 @@ const Button = forwardRef<HTMLButtonElement, Props>(function Button(
       sx={{
         position: 'relative',
         transition: 'all 0.2s ease-out',
+        minHeight: { xs: '44px', sm: 'auto' },
+        touchAction: 'manipulation',
+        WebkitTapHighlightColor: 'transparent',
         '&:disabled': {
           opacity: 0.6,
+        },
+        '&:active': {
+          transform: { xs: 'scale(0.97)', md: 'none' },
         },
         ...sx
       }}

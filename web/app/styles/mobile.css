@@ -17,11 +17,54 @@
 button:not([class*="h-"]):not([class*="w-"]),
 a:not([class*="h-"]):not([class*="w-"]),
 [role="button"]:not([class*="h-"]):not([class*="w-"]),
-.MuiIconButton-root:not([class*="h-"]):not([class*="w-"]),
 .MuiChip-root:not([class*="h-"]):not([class*="w-"]) {
   min-height: 44px;
   min-width: 44px;
   padding: 0.5rem; /* 추가 패딩으로 터치 영역 확보 */
+}
+
+/* IconButton 터치 영역 확보 - 시각적 크기는 유지하되 터치 영역은 확장 */
+.MuiIconButton-root {
+  min-height: 44px;
+  min-width: 44px;
+  padding: 12px !important; /* 터치 영역 확보 */
+}
+
+.MuiIconButton-root svg {
+  width: 20px;
+  height: 20px;
+}
+
+.MuiIconButton-sizeSmall {
+  min-height: 44px;
+  min-width: 44px;
+  padding: 10px !important;
+}
+
+.MuiIconButton-sizeSmall svg {
+  width: 18px;
+  height: 18px;
+}
+
+/* 체크박스, 라디오 버튼 터치 영역 확보 */
+.MuiCheckbox-root,
+.MuiRadio-root,
+.MuiSwitch-root {
+  min-height: 44px;
+  min-width: 44px;
+  padding: 10px !important;
+}
+
+/* Select 메뉴 항목 터치 영역 확보 */
+.MuiMenuItem-root {
+  min-height: 44px;
+  padding: 12px 16px !important;
+}
+
+/* 탭 버튼 터치 영역 확보 */
+.MuiTab-root {
+  min-height: 44px;
+  padding: 12px 16px !important;
 }
 
 /* Better scrolling on mobile */
@@ -194,11 +237,44 @@ img {
   button:not([class*="h-"]):not([class*="w-"]),
   a:not([class*="h-"]):not([class*="w-"]),
   [role="button"]:not([class*="h-"]):not([class*="w-"]),
-  .MuiIconButton-root:not([class*="h-"]):not([class*="w-"]),
   .MuiChip-root:not([class*="h-"]):not([class*="w-"]) {
     min-height: auto;
     min-width: auto;
     padding: initial;
+  }
+
+  /* 데스크톱에서 IconButton 원래 크기로 복원 */
+  .MuiIconButton-root {
+    min-height: auto;
+    min-width: auto;
+    padding: 8px !important;
+  }
+
+  .MuiIconButton-sizeSmall {
+    min-height: auto;
+    min-width: auto;
+    padding: 5px !important;
+  }
+
+  /* 데스크톱에서 체크박스, 라디오 버튼 원래 크기로 복원 */
+  .MuiCheckbox-root,
+  .MuiRadio-root,
+  .MuiSwitch-root {
+    min-height: auto;
+    min-width: auto;
+    padding: 9px !important;
+  }
+
+  /* 데스크톱에서 메뉴 항목 원래 크기로 복원 */
+  .MuiMenuItem-root {
+    min-height: auto;
+    padding: 6px 16px !important;
+  }
+
+  /* 데스크톱에서 탭 원래 크기로 복원 */
+  .MuiTab-root {
+    min-height: auto;
+    padding: 12px 16px !important;
   }
 
   /* 데스크톱에서 스크롤바 크기 증가 */
