@@ -3,6 +3,7 @@ import AppShell from './components/AppShell'
 import Providers from './providers'
 import ServiceWorkerRegistration from './components/ServiceWorkerRegistration'
 import InstallPrompt from './components/InstallPrompt'
+import OfflineIndicator from './components/OfflineIndicator'
 import { SnackbarProvider } from './components/GlobalSnackbar'
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
@@ -37,6 +38,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <Providers>
           <SnackbarProvider>
             <ServiceWorkerRegistration />
+            <OfflineIndicator />
             <AppShell>{children}</AppShell>
             <InstallPrompt />
           </SnackbarProvider>

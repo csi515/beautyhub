@@ -36,12 +36,12 @@ export function useFinanceActions(
           return {
             ...baseData,
             category: (row.raw as Expense).category,
-            ...(row.note && { memo: row.note }),
+            ...(row.memo && { memo: row.memo }),
           }
         } else {
           return {
             ...baseData,
-            ...(row.note && { memo: row.note }),
+            ...(row.memo && { memo: row.memo }),
           }
         }
       })

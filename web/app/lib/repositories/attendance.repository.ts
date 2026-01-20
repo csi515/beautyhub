@@ -7,7 +7,7 @@ import type { StaffAttendance, StaffAttendanceCreateInput, StaffAttendanceUpdate
  */
 export class AttendanceRepository extends BaseRepository<StaffAttendance> {
     constructor(userId: string, supabase: SupabaseClient) {
-        super(userId, 'staff_attendance', supabase)
+        super(userId, 'beautyhub_staff_attendance', supabase)
     }
 
     protected override getSearchFields(): string[] {

@@ -2,7 +2,7 @@
 CREATE TABLE IF NOT EXISTS inventory_transactions (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   owner_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
-  product_id UUID NOT NULL REFERENCES products(id) ON DELETE CASCADE,
+  product_id UUID NOT NULL REFERENCES beautyhub_products(id) ON DELETE CASCADE,
   type TEXT NOT NULL CHECK (type IN ('purchase', 'sale', 'adjustment')),
   quantity INTEGER NOT NULL,
   before_count INTEGER,
@@ -43,7 +43,7 @@ CREATE POLICY "Users can delete their own inventory transactions"
 CREATE TABLE IF NOT EXISTS inventory_alerts (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   owner_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
-  product_id UUID NOT NULL REFERENCES products(id) ON DELETE CASCADE,
+  product_id UUID NOT NULL REFERENCES beautyhub_products(id) ON DELETE CASCADE,
   alert_type TEXT NOT NULL CHECK (alert_type IN ('low_stock', 'out_of_stock')),
   acknowledged BOOLEAN DEFAULT FALSE,
   created_at TIMESTAMPTZ DEFAULT NOW()
@@ -81,7 +81,7 @@ CREATE POLICY "Users can delete their own inventory alerts"
 CREATE TABLE IF NOT EXISTS payroll_settings (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   owner_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
-  staff_id UUID NOT NULL REFERENCES staff(id) ON DELETE CASCADE,
+  staff_id UUID NOT NULL REFERENCES beautyhub_staff(id) ON DELETE CASCADE,
   base_salary INTEGER DEFAULT 0,
   hourly_rate INTEGER DEFAULT 0,
   national_pension_rate NUMERIC(5,2) DEFAULT 4.5,
@@ -124,7 +124,7 @@ CREATE POLICY "Users can delete their own payroll settings"
 CREATE TABLE IF NOT EXISTS payroll_records (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   owner_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
-  staff_id UUID NOT NULL REFERENCES staff(id) ON DELETE CASCADE,
+  staff_id UUID NOT NULL REFERENCES beautyhub_staff(id) ON DELETE CASCADE,
   month TEXT NOT NULL,
   base_salary INTEGER DEFAULT 0,
   overtime_pay INTEGER DEFAULT 0,

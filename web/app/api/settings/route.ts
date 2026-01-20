@@ -19,7 +19,7 @@ export async function GET() {
 
     // settings 테이블에서 조회 (owner_id로 명시적 필터링)
     const { data, error } = await supabase
-      .from('settings')
+      .from('beautyhub_settings')
       .select('*')
       .eq('owner_id', user.id)
       .maybeSingle()
@@ -80,7 +80,7 @@ export async function PUT(req: NextRequest) {
 
     // 기존 설정 조회 (owner_id로 명시적 필터링)
     const { data: existing, error: fetchError } = await supabase
-      .from('settings')
+      .from('beautyhub_settings')
       .select('settings, owner_id')
       .eq('owner_id', user.id)
       .maybeSingle()
@@ -136,7 +136,7 @@ export async function PUT(req: NextRequest) {
 
     // upsert (owner_id는 항상 현재 사용자로 설정)
     const { data: upserted, error } = await supabase
-      .from('settings')
+      .from('beautyhub_settings')
       .upsert({
         owner_id: user.id,
         settings: updatedSettings,

@@ -87,7 +87,7 @@ export async function POST(req: NextRequest) {
             }
 
             await supabase
-                .from('staff_attendance')
+                .from('beautyhub_staff_attendance')
                 .delete()
                 .eq('owner_id', user.id)
                 .eq('staff_id', body.staff_id)
@@ -96,7 +96,7 @@ export async function POST(req: NextRequest) {
                 .lte('end_time', lastDate)
 
             const { error: insertError } = await supabase
-                .from('staff_attendance')
+                .from('beautyhub_staff_attendance')
                 .insert(recordsToInsert)
 
             if (insertError) throw insertError

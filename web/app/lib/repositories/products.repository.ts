@@ -8,7 +8,7 @@ import type { Product, ProductCreateInput, ProductUpdateInput } from '@/types/en
 
 export class ProductsRepository extends BaseRepository<Product> {
   constructor(userId: string, supabase: SupabaseClient) {
-    super(userId, 'products', supabase)
+    super(userId, 'beautyhub_products', supabase)
   }
 
   /**

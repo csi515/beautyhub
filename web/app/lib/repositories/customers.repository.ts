@@ -8,7 +8,7 @@ import type { Customer, CustomerCreateInput, CustomerUpdateInput } from '@/types
 
 export class CustomersRepository extends BaseRepository<Customer> {
   constructor(userId: string, supabase: SupabaseClient) {
-    super(userId, 'customers', supabase)
+    super(userId, 'beautyhub_customers', supabase)
   }
 
   protected override getSearchFields(): string[] {

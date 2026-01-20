@@ -9,6 +9,7 @@ import Tabs, { TabsContent, TabsList, TabsTrigger } from '../ui/Tabs'
 import CustomerSummaryBar from './customer-detail/CustomerSummaryBar'
 import CustomerOverviewTab from './customer-detail/CustomerOverviewTab'
 import CustomerTransactionsTab from './customer-detail/CustomerTransactionsTab'
+import CustomerTimelineTab from './customer-detail/CustomerTimelineTab'
 import type { Customer } from '@/types/entities'
 import { useCustomerDetail } from './customer-detail/useCustomerDetail'
 
@@ -23,7 +24,7 @@ export default function CustomerDetailModal({
   item: Customer | null
   onSaved: () => void
 }) {
-  const [activeTab, setActiveTab] = useState<'overview' | 'transactions'>('overview')
+  const [activeTab, setActiveTab] = useState<'overview' | 'transactions' | 'timeline'>('overview')
 
   const {
     form, setForm,
@@ -149,13 +150,16 @@ export default function CustomerDetailModal({
             </Box>
           ) : (
             // 기존 고객: 탭 표시
-            <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as 'overview' | 'transactions')}>
+            <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as 'overview' | 'transactions' | 'timeline')}>
               <TabsList>
                 <TabsTrigger value="overview">
                   기본 정보
                 </TabsTrigger>
                 <TabsTrigger value="transactions">
                   포인트 & 보유상품
+                </TabsTrigger>
+                <TabsTrigger value="timeline">
+                  타임라인
                 </TabsTrigger>
               </TabsList>
 
@@ -235,6 +239,10 @@ export default function CustomerDetailModal({
                   onDelete={(id: string) => handleDeleteHolding(id)}
                   onUpdateLedgerNote={handleUpdateLedgerNote}
                 />
+              </TabsContent>
+
+              <TabsContent value="timeline">
+                <CustomerTimelineTab customerId={form?.id || ''} />
               </TabsContent>
             </Tabs>
           )}

@@ -9,7 +9,7 @@ import type { QueryOptions } from './base.repository'
 
 export class ExpensesRepository extends BaseRepository<Expense> {
   constructor(userId: string, supabase: SupabaseClient) {
-    super(userId, 'expenses', supabase)
+    super(userId, 'beautyhub_expenses', supabase)
   }
 
   /**

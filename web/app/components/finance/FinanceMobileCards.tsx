@@ -101,9 +101,9 @@ export default function FinanceMobileCards({
                     {row.type === 'income' ? <TrendingUp size={16} /> : <TrendingDown size={16} />}
                     {row.type === 'income' ? '+' : '-'}₩{formatAmount(row.amount)}
                   </Typography>
-                  {row.note && (
+                  {row.memo && (
                     <Typography variant="body2" color="text.secondary" noWrap>
-                      {row.note}
+                      {row.memo}
                     </Typography>
                   )}
                 </CardContent>

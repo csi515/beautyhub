@@ -99,7 +99,7 @@ export class PointsRepository {
 
     // 전체 잔액 계산 (기간 무관)
     const { data: allRows, error: e1 } = await this.supabase
-      .from('points_ledger')
+      .from('beautyhub_points_ledger')
       .select('delta, created_at')
       .eq('customer_id', customerId)
       .eq('owner_id', this.userId)
@@ -117,7 +117,7 @@ export class PointsRepository {
 
     // 기간 필터가 있으면 ledger 범위를 제한
     let query = this.supabase
-      .from('points_ledger')
+      .from('beautyhub_points_ledger')
       .select('*')
       .eq('customer_id', customerId)
       .eq('owner_id', this.userId)
@@ -152,7 +152,7 @@ export class PointsRepository {
       throw new Error('delta must be non-zero')
     }
 
-    const { error: insErr } = await this.supabase.from('points_ledger').insert({
+    const { error: insErr } = await this.supabase.from('beautyhub_points_ledger').insert({
       customer_id: customerId,
       delta,
       reason,
@@ -165,7 +165,7 @@ export class PointsRepository {
 
     // 새로운 잔액 계산
     const { data: ledger, error } = await this.supabase
-      .from('points_ledger')
+      .from('beautyhub_points_ledger')
       .select('delta')
       .eq('customer_id', customerId)
       .eq('owner_id', this.userId)
@@ -196,7 +196,7 @@ export class PointsRepository {
     const { limit = 50, offset = 0, from, to } = options
 
     let query = this.supabase
-      .from('points_ledger')
+      .from('beautyhub_points_ledger')
       .select('created_at, delta, reason')
       .eq('customer_id', customerId)
       .eq('owner_id', this.userId)
@@ -223,7 +223,7 @@ export class PointsRepository {
    */
   async getReport(customerId: string, from?: string, to?: string): Promise<PointsReport> {
     let query = this.supabase
-      .from('points_ledger')
+      .from('beautyhub_points_ledger')
       .select('delta, reason, created_at')
       .eq('customer_id', customerId)
       .eq('owner_id', this.userId)

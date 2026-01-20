@@ -1,10 +1,9 @@
 'use client'
 
 import { memo } from 'react'
-import { Settings, Bell } from 'lucide-react'
+import { Settings } from 'lucide-react'
 import CollapsibleSection from '../ui/CollapsibleSection'
-import ToggleSwitch from '../ui/ToggleSwitch'
-import InfoTooltip from '../ui/InfoTooltip'
+import NotificationSettingsSection from './NotificationSettings'
 import { type SystemSettings } from '@/types/settings'
 
 type Props = {
@@ -21,34 +20,7 @@ function SystemSettingsSection({ data, onChange }: Props) {
       iconColor="from-purple-500 to-purple-600"
     >
       <div className="space-y-6">
-        {/* 알림 설정 */}
-        <div className="space-y-4">
-          <div className="flex items-center gap-2">
-            <Bell className="w-5 h-5 text-neutral-700" />
-            <h3 className="text-lg font-semibold text-neutral-800">알림 설정</h3>
-            <InfoTooltip content="앱의 알림 수신 여부를 설정하세요." />
-          </div>
-
-          <div className="space-y-3">
-            <ToggleSwitch
-              checked={data.pushNotificationsEnabled}
-              onChange={(checked) => onChange({ pushNotificationsEnabled: checked })}
-              label="PUSH 알림 전체"
-            />
-
-            <ToggleSwitch
-              checked={data.customerNotificationsEnabled}
-              onChange={(checked) => onChange({ customerNotificationsEnabled: checked })}
-              label="고객 알림"
-            />
-
-            <ToggleSwitch
-              checked={data.internalNotificationsEnabled}
-              onChange={(checked) => onChange({ internalNotificationsEnabled: checked })}
-              label="내부 알림"
-            />
-          </div>
-        </div>
+        <NotificationSettingsSection data={data} onChange={onChange} />
       </div>
     </CollapsibleSection>
   )

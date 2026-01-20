@@ -10,7 +10,7 @@ import type {
  */
 export class InventoryAlertsRepository extends BaseRepository<InventoryAlert> {
     constructor(userId: string, supabase: SupabaseClient) {
-        super(userId, 'inventory_alerts', supabase)
+        super(userId, 'beautyhub_inventory_alerts', supabase)
     }
 
     /**

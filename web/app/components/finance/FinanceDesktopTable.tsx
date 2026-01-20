@@ -97,7 +97,7 @@ export default function FinanceDesktopTable({
               <TableCell align="right" sx={{ fontWeight: 'bold', color: row.type === 'income' ? 'success.main' : 'error.main' }}>
                 ₩{Number(row.amount || 0).toLocaleString()}
               </TableCell>
-              <TableCell>{row.note || '-'}</TableCell>
+              <TableCell>{row.memo || '-'}</TableCell>
               <TableCell align="center">
                 <IconButton
                   size="small"

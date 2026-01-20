@@ -4,8 +4,8 @@ export default async function CustomerDetailPage({ params }: { params: { id: str
   const { createSupabaseServerClient } = await import('@/lib/supabase/server')
   const supabase = await createSupabaseServerClient()
   const [{ data: customer }, { data: transactions }] = await Promise.all([
-    supabase.from('customers').select('*').eq('id', params.id).single(),
-    supabase.from('transactions').select('*').eq('customer_id', params.id).order('transaction_date', { ascending: false })
+    supabase.from('beautyhub_customers').select('*').eq('id', params.id).single(),
+    supabase.from('beautyhub_transactions').select('*').eq('customer_id', params.id).order('transaction_date', { ascending: false })
   ])
 
   // 포인트/상품권 API가 없다면 섹션만 자리표시

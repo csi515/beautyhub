@@ -33,6 +33,9 @@ export default function ReservationCreateModal({ open, onClose, draft, onSaved }
   const [holdingsByProduct, setHoldingsByProduct] = useState<Record<string, number>>({})
   const [autoCreateTransaction, setAutoCreateTransaction] = useState(false)
   const [transactionAmount, setTransactionAmount] = useState<string>('')
+  const [enableRepeat, setEnableRepeat] = useState(false)
+  const [repeatDays, setRepeatDays] = useState<number[]>([])
+  const [repeatWeeks, setRepeatWeeks] = useState(4)
 
   // Reset form to fresh draft on open
   useEffect(() => {
@@ -40,6 +43,9 @@ export default function ReservationCreateModal({ open, onClose, draft, onSaved }
       setForm(draft)
       setCustomerQuery('')
       setShowSuggest(false)
+      setEnableRepeat(false)
+      setRepeatDays([])
+      setRepeatWeeks(4)
     }
   }, [open, draft])
 
@@ -66,6 +72,28 @@ export default function ReservationCreateModal({ open, onClose, draft, onSaved }
     try {
       setLoading(true); setError('')
       if (!form.date || !form.start) { setError('날짜와 시작 시간은 필수입니다.'); setLoading(false); return }
+
+      // 반복 예약인 경우
+      if (enableRepeat && repeatDays.length > 0) {
+        const result = await appointmentsApi.createRecurring({
+          customer_id: form.customer_id || null,
+          staff_id: form.staff_id || null,
+          service_id: form.service_id || null,
+          start_date: form.date,
+          start_time: form.start,
+          repeat_weeks: repeatWeeks,
+          days: repeatDays,
+          status: form.status,
+          notes: form.notes && form.notes.trim() !== '' ? form.notes.trim() : null,
+        })
+
+        toast.success(`${result.count}개의 반복 예약이 생성되었습니다.`)
+        onSaved()
+        onClose()
+        return
+      }
+
+      // 단일 예약인 경우
       // 로컬 날짜/시간을 UTC ISO 문자열로 변환하여 TZ 오차 방지
       const [y, m, d] = form.date.split('-').map(Number)
       const [hh, mm] = form.start.split(':').map(Number)
@@ -347,6 +375,83 @@ export default function ReservationCreateModal({ open, onClose, draft, onSaved }
                     )}
                   </>
                 )}
+
+                {/* 반복 예약 옵션 */}
+                <div className="col-span-2 border-t border-neutral-200 pt-4 mt-4">
+                  <label className="flex items-center gap-2 cursor-pointer mb-3">
+                    <input
+                      type="checkbox"
+                      checked={enableRepeat}
+                      onChange={(e) => setEnableRepeat(e.target.checked)}
+                      className="w-4 h-4 rounded border-neutral-300 text-blue-600 focus:ring-blue-500"
+                    />
+                    <span className="text-sm font-medium text-neutral-700">
+                      반복 예약 생성
+                    </span>
+                  </label>
+
+                  {enableRepeat && (
+                    <div className="space-y-3 ml-6">
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                          반복 주 수
+                        </label>
+                        <select
+                          className="h-10 w-full rounded-lg border border-neutral-300 bg-white px-3 text-sm outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-300"
+                          value={repeatWeeks}
+                          onChange={(e) => setRepeatWeeks(Number(e.target.value))}
+                        >
+                          <option value={1}>1주</option>
+                          <option value={2}>2주</option>
+                          <option value={4}>4주 (1개월)</option>
+                          <option value={8}>8주 (2개월)</option>
+                          <option value={12}>12주 (3개월)</option>
+                        </select>
+                      </div>
+
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                          반복 요일
+                        </label>
+                        <div className="grid grid-cols-7 gap-2">
+                          {[
+                            { value: 0, label: '일' },
+                            { value: 1, label: '월' },
+                            { value: 2, label: '화' },
+                            { value: 3, label: '수' },
+                            { value: 4, label: '목' },
+                            { value: 5, label: '금' },
+                            { value: 6, label: '토' },
+                          ].map((day) => (
+                            <button
+                              key={day.value}
+                              type="button"
+                              onClick={() => {
+                                setRepeatDays((prev) =>
+                                  prev.includes(day.value)
+                                    ? prev.filter((d) => d !== day.value)
+                                    : [...prev, day.value].sort()
+                                )
+                              }}
+                              className={`h-10 rounded-lg border-2 font-medium text-sm transition-all ${
+                                repeatDays.includes(day.value)
+                                  ? 'border-blue-500 bg-blue-50 text-blue-600 shadow-sm'
+                                  : 'border-neutral-300 bg-white text-neutral-600 hover:border-neutral-400'
+                              }`}
+                            >
+                              {day.label}
+                            </button>
+                          ))}
+                        </div>
+                        {repeatDays.length === 0 && (
+                          <p className="text-xs text-rose-600 mt-1">
+                            최소 하나의 요일을 선택해주세요.
+                          </p>
+                        )}
+                      </div>
+                    </div>
+                  )}
+                </div>
               </div>
             </div>
           </div>
@@ -354,7 +459,9 @@ export default function ReservationCreateModal({ open, onClose, draft, onSaved }
       </ModalBody>
       <ModalFooter>
         <Button variant="secondary" onClick={onClose} disabled={loading} className="w-full md:w-auto">취소</Button>
-        <Button variant="primary" onClick={save} disabled={loading} className="w-full md:w-auto">저장</Button>
+        <Button variant="primary" onClick={save} disabled={loading || (enableRepeat && repeatDays.length === 0)} className="w-full md:w-auto">
+          {enableRepeat ? '반복 예약 생성' : '저장'}
+        </Button>
       </ModalFooter>
     </Modal>
   )

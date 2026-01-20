@@ -7,6 +7,7 @@ import Input from '../../ui/Input'
 import Textarea from '../../ui/Textarea'
 import Button from '../../ui/Button'
 import ConfirmDialog from '../../ui/ConfirmDialog'
+import CustomerMemoSection from './CustomerMemoSection'
 import type { Customer } from '@/types/entities'
 
 type CustomerForm = Pick<Customer, 'id' | 'name' | 'phone' | 'email' | 'address' | 'skin_type' | 'allergy_info' | 'memo'>
@@ -121,13 +122,16 @@ export default function CustomerOverviewTab({
             />
           </Grid>
           <Grid item xs={12}>
-            <Input
-              label="관리자 메모"
-              fullWidth
-              placeholder="상담 내부 메모 (고객에게 보이지 않음)"
-              value={form.memo || ''}
-              onChange={e => onChangeForm(f => f ? ({ ...f, memo: e.target.value }) : null)}
-            />
+            <Box>
+              <Typography variant="body2" fontWeight={600} sx={{ mb: 1 }}>
+                관리자 메모
+              </Typography>
+              <CustomerMemoSection
+                value={form.memo || ''}
+                onChange={(value) => onChangeForm((f) => (f ? { ...f, memo: value } : null))}
+                customerId={form.id}
+              />
+            </Box>
           </Grid>
         </Grid>
       </Card>

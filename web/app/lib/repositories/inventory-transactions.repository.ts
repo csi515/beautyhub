@@ -11,7 +11,7 @@ import type {
  */
 export class InventoryTransactionsRepository extends BaseRepository<InventoryTransaction> {
     constructor(userId: string, supabase: SupabaseClient) {
-        super(userId, 'inventory_transactions', supabase)
+        super(userId, 'beautyhub_inventory_transactions', supabase)
     }
 
     /**

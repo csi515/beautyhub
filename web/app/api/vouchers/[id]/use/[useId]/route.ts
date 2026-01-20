@@ -16,7 +16,7 @@ export const DELETE = withAuth(async (_req: NextRequest, { userId, supabase, par
 
   // 사용 내역 조회
   const { data: useRow, error: uErr } = await supabase
-    .from('voucher_uses')
+    .from('beautyhub_voucher_uses')
     .select('*')
     .eq('id', useId)
     .single()
@@ -27,7 +27,7 @@ export const DELETE = withAuth(async (_req: NextRequest, { userId, supabase, par
 
   // 바우처 조회
   const { data: voucher, error: vErr } = await supabase
-    .from('vouchers')
+    .from('beautyhub_vouchers')
     .select('*')
     .eq('id', id)
     .eq('owner_id', userId)
@@ -41,7 +41,7 @@ export const DELETE = withAuth(async (_req: NextRequest, { userId, supabase, par
   const newRemaining = Number(voucher.remaining_amount || 0) + Number(useRow.amount || 0)
 
   const { error: upErr } = await supabase
-    .from('vouchers')
+    .from('beautyhub_vouchers')
     .update({ remaining_amount: newRemaining })
     .eq('id', id)
     .eq('owner_id', userId)
@@ -51,7 +51,7 @@ export const DELETE = withAuth(async (_req: NextRequest, { userId, supabase, par
   }
 
   // 사용 내역 삭제
-  const { error: delErr } = await supabase.from('voucher_uses').delete().eq('id', useId)
+  const { error: delErr } = await supabase.from('beautyhub_voucher_uses').delete().eq('id', useId)
 
   if (delErr) {
     throw new ApiError(delErr.message, 400)

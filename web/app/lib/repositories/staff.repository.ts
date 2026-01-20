@@ -8,7 +8,7 @@ import type { Staff, StaffCreateInput, StaffUpdateInput } from '@/types/entities
 
 export class StaffRepository extends BaseRepository<Staff> {
   constructor(userId: string, supabase: SupabaseClient) {
-    super(userId, 'staff', supabase)
+    super(userId, 'beautyhub_staff', supabase)
   }
 
   protected override getSearchFields(): string[] {

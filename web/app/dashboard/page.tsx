@@ -46,68 +46,68 @@ async function getDashboardData({ start, end, userId, accessToken }: { start: st
     // Combined fetch
     const [apRes, , , cuMonth, apRecent, trRecent, exRecent, exMonth, trMonth, productsRes, apMonthRes, apStatsRes] = await Promise.all([
       supabase
-        .from('appointments')
+        .from('beautyhub_appointments')
         .select('id, appointment_date')
         .eq('owner_id', userId)
         .gte('appointment_date', start)
         .lt('appointment_date', end),
-      supabase.from('transactions').select('id').eq('owner_id', userId).gte('transaction_date', start).lt('transaction_date', end),
+      supabase.from('beautyhub_transactions').select('id').eq('owner_id', userId).gte('transaction_date', start).lt('transaction_date', end),
 
       supabase
-        .from('customers')
+        .from('beautyhub_customers')
         .select('id, created_at')
         .eq('owner_id', userId)
         .gte('created_at', start)
         .lt('created_at', end),
       // Monthly New Customers
       supabase
-        .from('customers')
+        .from('beautyhub_customers')
         .select('id, created_at')
         .eq('owner_id', userId)
         .gte('created_at', monthStart)
         .lte('created_at', monthEnd),
       // Recent Appointments
       supabase
-        .from('appointments')
+        .from('beautyhub_appointments')
         .select('id, appointment_date, status, notes, customer_id, service_id')
         .eq('owner_id', userId)
         .order('appointment_date', { ascending: false })
         .limit(10),
       // Recent Transactions
       supabase
-        .from('transactions')
+        .from('beautyhub_transactions')
         .select('id, amount, transaction_date, created_at, memo')
         .eq('owner_id', userId)
         .order('transaction_date', { ascending: false })
         .limit(10),
       // Recent Expenses
       supabase
-        .from('expenses')
+        .from('beautyhub_expenses')
         .select('id, amount, expense_date, created_at, memo, category')
         .eq('owner_id', userId)
         .order('expense_date', { ascending: false })
         .limit(10),
       // Monthly Expenses (for Profit)
-      supabase.from('expenses').select('id, amount, expense_date').eq('owner_id', userId).gte('expense_date', fromDate).lte('expense_date', toDate),
+      supabase.from('beautyhub_expenses').select('id, amount, expense_date').eq('owner_id', userId).gte('expense_date', fromDate).lte('expense_date', toDate),
       // Monthly Transactions (for Profit)
-      supabase.from('transactions').select('id, amount, transaction_date, created_at').eq('owner_id', userId).limit(500),
+      supabase.from('beautyhub_transactions').select('id, amount, transaction_date, created_at').eq('owner_id', userId).limit(500),
       // Products
       supabase
-        .from('products')
+        .from('beautyhub_products')
         .select('id, name, price, active')
         .eq('owner_id', userId)
         .order('created_at', { ascending: false })
         .limit(20),
       // Monthly Appointments Count
       supabase
-        .from('appointments')
+        .from('beautyhub_appointments')
         .select('id', { count: 'exact', head: true })
         .eq('owner_id', userId)
         .gte('appointment_date', monthStart)
         .lte('appointment_date', monthEnd),
       // Stats Appointments (for Top Services)
       supabase
-        .from('appointments')
+        .from('beautyhub_appointments')
         .select('id, service_id')
         .eq('owner_id', userId)
         .order('appointment_date', { ascending: false })
@@ -159,11 +159,11 @@ async function getDashboardData({ start, end, userId, accessToken }: { start: st
     const productsById: Record<string, string> = {}
 
     if (cIds.length > 0) {
-      const { data } = await supabase.from('customers').select('id,name').in('id', cIds)
+      const { data } = await supabase.from('beautyhub_customers').select('id,name').in('id', cIds)
       if (data) data.forEach((c: any) => customersById[c.id] = c.name)
     }
     if (sIds.length > 0) {
-      const { data } = await supabase.from('products').select('id,name').in('id', sIds)
+      const { data } = await supabase.from('beautyhub_products').select('id,name').in('id', sIds)
       if (data) data.forEach((p: any) => productsById[p.id] = p.name)
     }
 

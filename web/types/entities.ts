@@ -119,6 +119,7 @@ export interface Appointment {
   status?: string
   total_price?: number | null
   notes?: string | null
+  recurring_id?: string | null
   created_at?: string
   updated_at?: string
 }

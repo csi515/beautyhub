@@ -12,7 +12,7 @@ import { z } from 'zod'
 
 export class AppointmentsRepository extends BaseRepository<Appointment> {
   constructor(userId: string, supabase: SupabaseClient) {
-    super(userId, 'appointments', supabase)
+    super(userId, 'beautyhub_appointments', supabase)
   }
 
   /**

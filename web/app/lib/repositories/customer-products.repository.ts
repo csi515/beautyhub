@@ -50,7 +50,7 @@ export interface CustomerProductUpdateInput {
 
 export class CustomerProductsRepository extends BaseRepository<CustomerProduct> {
   constructor(userId: string, supabase: SupabaseClient) {
-    super(userId, 'customer_products', supabase)
+    super(userId, 'beautyhub_customer_products', supabase)
   }
 
   /**
@@ -64,7 +64,7 @@ export class CustomerProductsRepository extends BaseRepository<CustomerProduct> 
 
     const { data, error } = await this.supabase
       .from(this.tableName)
-      .select('*, products(name)')
+      .select('*, beautyhub_products(name)')
       .eq('owner_id', this.userId)
       .eq('customer_id', customerId)
       .order('created_at', { ascending: true })
@@ -107,7 +107,7 @@ export class CustomerProductsRepository extends BaseRepository<CustomerProduct> 
     const { data, error } = await this.supabase
       .from(this.tableName)
       .insert({ ...payload, owner_id: this.userId } as Omit<CustomerProduct, 'id' | 'created_at' | 'updated_at'>)
-      .select('*, products(name)')
+      .select('*, beautyhub_products(name)')
       .single()
 
     if (error) {
@@ -116,7 +116,7 @@ export class CustomerProductsRepository extends BaseRepository<CustomerProduct> 
 
     // 변경 내역 기록
     if (data && typeof input.quantity !== 'undefined' && input.quantity > 0) {
-      const { error: ledgerError } = await this.supabase.from('customer_product_ledger').insert({
+      const { error: ledgerError } = await this.supabase.from('beautyhub_customer_product_ledger').insert({
         owner_id: this.userId,
         customer_id: input.customer_id,
         product_id: input.product_id,
@@ -148,7 +148,7 @@ export class CustomerProductsRepository extends BaseRepository<CustomerProduct> 
       throw new NotFoundError('holding not found')
     }
 
-    const { error } = await this.supabase.from('customer_product_ledger').insert({
+    const { error } = await this.supabase.from('beautyhub_customer_product_ledger').insert({
       owner_id: this.userId,
       customer_id: holding.customer_id,
       product_id: holding.product_id,
@@ -196,7 +196,7 @@ export class CustomerProductsRepository extends BaseRepository<CustomerProduct> 
       .update(patch as Partial<CustomerProduct>)
       .eq('id', id)
       .eq('owner_id', this.userId)
-      .select('*, products(name)')
+      .select('*, beautyhub_products(name)')
       .single()
 
     if (error) {
@@ -210,7 +210,7 @@ export class CustomerProductsRepository extends BaseRepository<CustomerProduct> 
       const delta = afterQty - beforeQty
 
       if (delta !== 0) {
-        const { error: ledgerError } = await this.supabase.from('customer_product_ledger').insert({
+        const { error: ledgerError } = await this.supabase.from('beautyhub_customer_product_ledger').insert({
           owner_id: this.userId,
           customer_id: prev.customer_id,
           product_id: prev.product_id,
@@ -239,7 +239,7 @@ export class CustomerProductsRepository extends BaseRepository<CustomerProduct> 
     // replaceFrom이 있으면 해당 텍스트를 포함하는 최신 항목을 찾음
     if (replaceFrom) {
       const { data: matching, error: findError } = await this.supabase
-        .from('customer_product_ledger')
+        .from('beautyhub_customer_product_ledger')
         .select('id, reason, delta')
         .eq('owner_id', this.userId)
         .eq('customer_product_id', customerProductId)
@@ -262,7 +262,7 @@ export class CustomerProductsRepository extends BaseRepository<CustomerProduct> 
       }
 
       const { error: updateError } = await this.supabase
-        .from('customer_product_ledger')
+        .from('beautyhub_customer_product_ledger')
         .update(updatePayload)
         .eq('id', matching.id)
 
@@ -272,7 +272,7 @@ export class CustomerProductsRepository extends BaseRepository<CustomerProduct> 
     } else {
       // replaceFrom이 없으면 최신 항목을 업데이트
       const { data: latest, error: findError } = await this.supabase
-        .from('customer_product_ledger')
+        .from('beautyhub_customer_product_ledger')
         .select('id, reason, delta')
         .eq('owner_id', this.userId)
         .eq('customer_product_id', customerProductId)
@@ -290,7 +290,7 @@ export class CustomerProductsRepository extends BaseRepository<CustomerProduct> 
       }
 
       const { error: updateError } = await this.supabase
-        .from('customer_product_ledger')
+        .from('beautyhub_customer_product_ledger')
         .update(updatePayload)
         .eq('id', latest.id)
 
@@ -307,7 +307,7 @@ export class CustomerProductsRepository extends BaseRepository<CustomerProduct> 
     const { limit = 50, offset = 0 } = options
 
     const { data, error } = await this.supabase
-      .from('customer_product_ledger')
+      .from('beautyhub_customer_product_ledger')
       .select('*')
       .eq('owner_id', this.userId)
       .eq('customer_id', customerId)
@@ -326,7 +326,7 @@ export class CustomerProductsRepository extends BaseRepository<CustomerProduct> 
    */
   async updateLedgerNote(ledgerId: string, notes: string): Promise<void> {
     const { error } = await this.supabase
-      .from('customer_product_ledger')
+      .from('beautyhub_customer_product_ledger')
       .update({ notes: notes || null })
       .eq('id', ledgerId)
       .eq('owner_id', this.userId)

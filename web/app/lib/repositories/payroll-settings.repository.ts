@@ -11,7 +11,7 @@ import type {
  */
 export class PayrollSettingsRepository extends BaseRepository<PayrollSettings> {
     constructor(userId: string, supabase: SupabaseClient) {
-        super(userId, 'payroll_settings', supabase)
+        super(userId, 'beautyhub_payroll_settings', supabase)
     }
 
     /**

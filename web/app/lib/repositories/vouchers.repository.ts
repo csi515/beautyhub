@@ -47,7 +47,7 @@ export interface VoucherUseResult {
 
 export class VouchersRepository extends BaseRepository<Voucher> {
   constructor(userId: string, supabase: SupabaseClient) {
-    super(userId, 'vouchers', supabase)
+    super(userId, 'beautyhub_vouchers', supabase)
   }
 
   /**
@@ -139,7 +139,7 @@ export class VouchersRepository extends BaseRepository<Voucher> {
 
     // 사용 내역 기록
     const { data: useRow, error: useErr } = await this.supabase
-      .from('voucher_uses')
+      .from('beautyhub_voucher_uses')
       .insert({
         voucher_id: voucherId,
         amount,

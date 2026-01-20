@@ -33,7 +33,7 @@ export function useCustomerFilters(
 
       // VIP filter (assuming VIP = points > 1000)
       if (filters.vipFilter === 'vip' && points <= 1000) return false
-      if (filters.vipFilter === 'normal' && points > 1000) return false
+      if (filters.vipFilter === 'regular' && points > 1000) return false
 
       // Points range filter
       if (filters.minPoints && points < Number(filters.minPoints)) return false

@@ -3,7 +3,7 @@
  */
 
 import { apiClient } from './client'
-import type { Appointment, AppointmentCreateInput, AppointmentUpdateInput } from '@/types/entities'
+import type { Appointment, AppointmentCreateInput, AppointmentCreateInputExtended, AppointmentUpdateInput } from '@/types/entities'
 import type { AppointmentsListQuery } from '@/types/api'
 
 export const appointmentsApi = {
@@ -46,6 +46,13 @@ export const appointmentsApi = {
    */
   delete: (id: string): Promise<{ ok: boolean }> => {
     return apiClient.delete<{ ok: boolean }>(`/api/appointments/${id}`)
+  },
+
+  /**
+   * 반복 예약 생성
+   */
+  createRecurring: (input: Omit<AppointmentCreateInputExtended, 'appointment_date'> & { start_date: string; start_time: string; repeat_weeks: number; days: number[] }): Promise<{ success: boolean; count: number; recurring_id: string; appointments: Appointment[] }> => {
+    return apiClient.post<{ success: boolean; count: number; recurring_id: string; appointments: Appointment[] }>('/api/appointments/recurring', input)
   },
 }
 
