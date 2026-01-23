@@ -1,9 +1,9 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useRef } from 'react'
 import { useShopName } from '../lib/hooks/useShopName'
 import DashboardInstallPrompt from '../components/dashboard/DashboardInstallPrompt'
-import { Box, Typography, Stack, Grid, IconButton } from '@mui/material'
+import { Box, Typography, Grid, IconButton, useMediaQuery, useTheme } from '@mui/material'
 import StandardPageLayout from '../components/common/StandardPageLayout'
 import { Settings } from 'lucide-react'
 import WidgetSettingsModal from '../components/dashboard/WidgetSettingsModal'
@@ -29,28 +29,34 @@ export default function DashboardContent({ initialData, error }: DashboardConten
     const [scrollProgress, setScrollProgress] = useState(0)
     const { handleSave } = useDashboardWidgets()
     const [widgetSettingsOpen, setWidgetSettingsOpen] = useState(false)
+    const contentRef = useRef<HTMLDivElement>(null)
+    const theme = useTheme()
+    const isMobile = useMediaQuery(theme.breakpoints.down('md'))
 
     // 스크롤 진행률 계산 (모바일 전용)
+    // AppShell의 콘텐츠 영역 스크롤을 감지
     useEffect(() => {
+        if (!isMobile || !contentRef.current) return
+
+        const contentElement = contentRef.current.closest('[role="main"]') || contentRef.current.parentElement
+        if (!contentElement) return
+
         const handleScroll = () => {
-            const windowHeight = window.innerHeight
-            const documentHeight = document.documentElement.scrollHeight
-            const scrollTop = window.scrollY || document.documentElement.scrollTop
-            const scrollableHeight = documentHeight - windowHeight
+            const scrollTop = contentElement.scrollTop
+            const scrollHeight = contentElement.scrollHeight
+            const clientHeight = contentElement.clientHeight
+            const scrollableHeight = scrollHeight - clientHeight
             const progress = scrollableHeight > 0 ? (scrollTop / scrollableHeight) * 100 : 0
             setScrollProgress(Math.min(100, Math.max(0, progress)))
         }
 
-        // 모바일에서만 스크롤 인디케이터 활성화
-        if (window.innerWidth < 768) {
-            window.addEventListener('scroll', handleScroll, { passive: true })
-            handleScroll() // 초기값 설정
-        }
+        contentElement.addEventListener('scroll', handleScroll, { passive: true })
+        handleScroll() // 초기값 설정
 
         return () => {
-            window.removeEventListener('scroll', handleScroll)
+            contentElement.removeEventListener('scroll', handleScroll)
         }
-    }, [])
+    }, [isMobile])
 
     if (!initialData) {
         return (
@@ -106,8 +112,8 @@ export default function DashboardContent({ initialData, error }: DashboardConten
                 errorActionOnClick={() => window.location.reload()}
                 maxWidth={{ xs: '100%', md: '1200px' }}
             >
-            <Stack spacing={{ xs: 2, sm: 2.5, md: 3 }} sx={{ width: '100%', overflowX: 'hidden' }}>
-                <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <Box ref={contentRef} sx={{ width: '100%', overflowX: 'hidden' }}>
+                <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: { xs: 1, sm: 1.5, md: 2 } }}>
                     <Box>
                         <Typography variant="h4" fontWeight={800} sx={{ color: 'text.primary', mb: 0.5, fontSize: { xs: '1.25rem', sm: '1.5rem' } }}>
                             {shopName}
@@ -125,21 +131,27 @@ export default function DashboardContent({ initialData, error }: DashboardConten
                     </IconButton>
                 </Box>
 
-                <DashboardInstallPrompt />
+                <Box sx={{ mb: { xs: 1, sm: 1.5, md: 2 } }}>
+                    <DashboardInstallPrompt />
+                </Box>
 
-                <DashboardMetricsWidget
-                    todayAppointments={todayAppointments}
-                    monthlyProfit={monthlyProfit}
-                    monthlyNewCustomers={monthlyNewCustomers}
-                    monthlyAppointments={monthlyAppointments}
-                />
+                <Box sx={{ mb: { xs: 1, sm: 1.5, md: 2 } }}>
+                    <DashboardMetricsWidget
+                        todayAppointments={todayAppointments}
+                        monthlyProfit={monthlyProfit}
+                        monthlyNewCustomers={monthlyNewCustomers}
+                        monthlyAppointments={monthlyAppointments}
+                    />
+                </Box>
 
-                <DashboardChartsWidget
-                    monthlyRevenueData={monthlyRevenueData}
-                    recentTransactions={recentTransactions}
-                    chartAppointments={chartAppointments}
-                    recentAppointments={recentAppointments}
-                />
+                <Box sx={{ mb: { xs: 1, sm: 1.5, md: 2 } }}>
+                    <DashboardChartsWidget
+                        monthlyRevenueData={monthlyRevenueData}
+                        recentTransactions={recentTransactions}
+                        chartAppointments={chartAppointments}
+                        recentAppointments={recentAppointments}
+                    />
+                </Box>
 
                 <Grid container spacing={{ xs: 0.75, sm: 1.5, md: 2.5, lg: 3 }} sx={{ width: '100%', margin: 0, overflowX: 'hidden' }}>
                     <Grid item xs={12} lg={8}>
@@ -152,7 +164,7 @@ export default function DashboardContent({ initialData, error }: DashboardConten
                         <DashboardTransactionsWidget recentTransactions={recentTransactions as Transaction[]} />
                     </Grid>
                 </Grid>
-            </Stack>
+            </Box>
         </StandardPageLayout>
         <WidgetSettingsModal
           open={widgetSettingsOpen}

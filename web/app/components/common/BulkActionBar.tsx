@@ -41,12 +41,12 @@ export default function BulkActionBar({
   const content = (
     <Stack
       direction={{ xs: 'column', sm: 'row' }}
-      spacing={{ xs: 1.5, sm: 2 }}
+      spacing={{ xs: 1, sm: 1.5 }}
       alignItems={{ xs: 'stretch', sm: 'center' }}
       justifyContent="space-between"
     >
       {/* 선택 정보 */}
-      <Stack direction="row" alignItems="center" spacing={1.5}>
+      <Stack direction="row" alignItems="center" spacing={{ xs: 1, sm: 1.5 }}>
         <Chip
           label={`${selectedCount}${selectedLabel}`}
           color="primary"

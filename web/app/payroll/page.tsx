@@ -1,31 +1,20 @@
+/**
+ * Payroll 페이지 컨트롤러
+ * 인증 확인, 파라미터 결정, 데이터 로딩 결정, View에 props 전달만 담당
+ */
+
 'use client'
 
 import { useState } from 'react'
-import { Box, Container, Typography, Paper, Stack, TextField } from '@mui/material'
-import LoadingState from '../components/common/LoadingState'
-import { DollarSign, Download, Calculator, Search } from 'lucide-react'
-import PageHeader, { createActionButton } from '../components/common/PageHeader'
-import { useAppToast } from '../lib/ui/toast'
-import InputAdornment from '@mui/material/InputAdornment'
-import { Chip } from '@mui/material'
-
-// Components
-import PayrollSummaryCards from '../components/payroll/PayrollSummaryCards'
-import PayrollStatusSummary from '../components/payroll/PayrollStatusSummary'
-import PayrollTable from '../components/payroll/PayrollTable'
+import PayrollPageView from '../components/payroll/PayrollPageView'
 import PayrollCalculationModal from '../components/payroll/PayrollCalculationModal'
 import PayrollSettingsModal from '../components/modals/PayrollSettingsModal'
 import PayrollDetailModal from '../components/modals/PayrollDetailModal'
-
-// Hooks
+import { useAppToast } from '../lib/ui/toast'
 import { usePayroll } from '../lib/hooks/usePayroll'
 import { usePayrollFilters } from '../lib/hooks/usePayrollFilters'
-
-// Utils
 import { exportToCSV, preparePayrollDataForExport } from '../lib/utils/export'
-
-// Types
-import { type PayrollCalculationResult } from '@/types/payroll'
+import type { PayrollCalculationResult } from '@/types/payroll'
 
 export default function PayrollPage() {
     // Modal states
@@ -128,125 +117,31 @@ export default function PayrollPage() {
     }
 
 
-    if (loading) {
-        return (
-            <Container maxWidth="lg" sx={{ py: 4, px: { xs: 2, sm: 3 } }}>
-                <PageHeader
-                    title="급여 관리"
-                    description="직원 급여 자동 계산 및 관리"
-                    icon={<DollarSign />}
-                    actions={[]}
-                />
-                <Box sx={{ mb: 3 }}>
-                    <TextField
-                        type="month"
-                        label="조회 월"
-                        value={selectedMonth}
-                        InputLabelProps={{ shrink: true }}
-                        disabled
-                    />
-                </Box>
-                <Box sx={{ mb: 4 }}>
-                    <LoadingState variant="card" rows={3} />
-                </Box>
-                <LoadingState variant="table" rows={5} columns={6} />
-            </Container>
-        )
-    }
-
     return (
-        <Container maxWidth="lg" sx={{ py: 4 }}>
-            <PageHeader
-                title="급여 관리"
-                description="직원 급여 자동 계산 및 관리"
-                icon={<DollarSign />}
-                actions={[
-                    createActionButton('CSV 내보내기', handleExport, 'secondary', <Download size={16} />),
-                    createActionButton('일괄 계산', () => handleBulkCalculatePayroll(), 'primary', <Calculator size={16} />, bulkCalculating || selectedStaffIds.length === 0),
-                    createActionButton('급여 계산', () => openCalculateModal(), 'primary'),
-                ]}
-            />
-
-            {/* 필터 및 검색 */}
-            <Paper sx={{ p: 2, mb: 3, borderRadius: 2 }} variant="outlined">
-                <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2} alignItems="center">
-                    <TextField
-                        type="month"
-                        label="조회 월"
-                        value={selectedMonth}
-                        onChange={(e) => setSelectedMonth(e.target.value)}
-                        InputLabelProps={{ shrink: true }}
-                        size="small"
-                        sx={{ width: { xs: '100%', sm: 200 } }}
-                    />
-                    <TextField
-                        placeholder="직원명 검색"
-                        value={query}
-                        onChange={(e) => setQuery(e.target.value)}
-                        size="small"
-                        sx={{ flexGrow: 1, width: { xs: '100%', sm: 'auto' } }}
-                        InputProps={{
-                            startAdornment: (
-                                <InputAdornment position="start">
-                                    <Search size={16} className="text-gray-400" />
-                                </InputAdornment>
-                            ),
-                        }}
-                    />
-                </Stack>
-
-                {/* 상태 필터 */}
-                <Box sx={{ mt: 2 }}>
-                    <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
-                        상태 필터
-                    </Typography>
-                    <Stack direction="row" spacing={1} flexWrap="wrap">
-                        {[
-                            { value: 'all', label: '전체', color: 'default' },
-                            { value: 'not_calculated', label: '미계산', color: 'default' },
-                            { value: 'calculated', label: '계산완료', color: 'warning' },
-                            { value: 'approved', label: '승인완료', color: 'info' },
-                            { value: 'paid', label: '지급완료', color: 'success' },
-                        ].map((filter) => (
-                            <Chip
-                                key={filter.value}
-                                label={filter.label}
-                                color={statusFilter === filter.value ? filter.color as any : 'default'}
-                                variant={statusFilter === filter.value ? 'filled' : 'outlined'}
-                                size="small"
-                                onClick={() => setStatusFilter(filter.value)}
-                                sx={{ cursor: 'pointer' }}
-                            />
-                        ))}
-                    </Stack>
-                </Box>
-            </Paper>
-
-            {/* 요약 카드 */}
-            <PayrollSummaryCards
-                totalStaffCount={staff.length}
-                filteredStaffCount={filteredStaff.length}
+        <>
+            <PayrollPageView
+                staff={staff}
+                records={records}
+                loading={loading}
+                selectedMonth={selectedMonth}
+                setSelectedMonth={setSelectedMonth}
+                query={query}
+                setQuery={setQuery}
+                statusFilter={statusFilter}
+                setStatusFilter={setStatusFilter}
+                page={page}
+                setPage={setPage}
+                totalPages={totalPages}
+                paginatedStaff={paginatedStaff}
+                filteredStaff={filteredStaff}
                 totalGrossPay={totalGrossPay}
                 totalNetPay={totalNetPay}
-                calculatedRecordsCount={records.length}
-                filteredStaffLength={filteredStaff.length}
-            />
-
-            {/* 급여 상태 요약 */}
-            <PayrollStatusSummary
-                records={records}
-                filteredStaffLength={filteredStaff.length}
-            />
-
-            <PayrollTable
-                selectedMonth={selectedMonth}
-                records={records}
                 selectedStaffIds={selectedStaffIds}
-                onSelectedStaffIdsChange={setSelectedStaffIds}
-                paginatedStaff={paginatedStaff}
-                totalPages={totalPages}
-                currentPage={page}
-                onPageChange={setPage}
+                setSelectedStaffIds={setSelectedStaffIds}
+                bulkCalculating={bulkCalculating}
+                onExport={handleExport}
+                onCalculate={openCalculateModal}
+                onBulkCalculate={handleBulkCalculatePayroll}
                 onSettingsModalOpen={openSettingsModal}
                 onDetailModalOpen={openDetailModal}
                 onStatusChange={handleStatusChange}
@@ -279,6 +174,6 @@ export default function PayrollPage() {
                 onMonthChange={setSelectedMonth}
                 onCalculate={handleCalculatePayroll}
             />
-        </Container>
+        </>
     )
 }

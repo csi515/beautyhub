@@ -3,7 +3,7 @@
 import { useState } from 'react'
 import { Box, Typography, CircularProgress, Stack } from '@mui/material'
 import { CheckCircle2, UserPlus } from 'lucide-react'
-import Modal, { ModalBody, ModalFooter, ModalHeader } from '../ui/Modal'
+import SwipeableModal, { SwipeableModalBody, SwipeableModalFooter, SwipeableModalHeader } from '../ui/SwipeableModal'
 import Button from '../ui/Button'
 import Tabs, { TabsContent, TabsList, TabsTrigger } from '../ui/Tabs'
 import CustomerSummaryBar from './customer-detail/CustomerSummaryBar'
@@ -62,8 +62,8 @@ export default function CustomerDetailModal({
   const isNew = !form?.id
 
   return (
-    <Modal open={open} onClose={onClose} size="lg">
-      <ModalHeader
+    <SwipeableModal open={open} onClose={onClose} size="fullscreen">
+      <SwipeableModalHeader
         title={isNew ? "신규 고객 추가" : `고객 정보: ${form.name}`}
         onClose={onClose}
       >
@@ -82,9 +82,9 @@ export default function CustomerDetailModal({
             )}
           </Box>
         )}
-      </ModalHeader>
+      </SwipeableModalHeader>
 
-      <ModalBody>
+      <SwipeableModalBody>
         <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
           {error && (
             <Box sx={{ p: 1.5, bgcolor: 'error.50', borderRadius: 1.5, border: '1px solid', borderColor: 'error.100' }}>
@@ -247,10 +247,10 @@ export default function CustomerDetailModal({
             </Tabs>
           )}
         </Box>
-      </ModalBody>
+      </SwipeableModalBody>
 
       {isNew && (
-        <ModalFooter>
+        <SwipeableModalFooter>
           <Box sx={{ display: 'flex', gap: 1.5, width: '100%', justifyContent: 'flex-end' }}>
             <Button variant="ghost" onClick={onClose} disabled={loading}>취소</Button>
             <Button
@@ -263,8 +263,8 @@ export default function CustomerDetailModal({
               고객 등록
             </Button>
           </Box>
-        </ModalFooter>
+        </SwipeableModalFooter>
       )}
-    </Modal>
+    </SwipeableModal>
   )
 }

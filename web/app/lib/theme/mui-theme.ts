@@ -222,6 +222,35 @@ export const theme = createTheme(
                     },
                 },
             },
+            MuiCardContent: {
+                styleOverrides: {
+                    root: {
+                        // 모바일: 기본 padding 축소
+                        padding: '12px',
+                        '@media (min-width: 640px)': {
+                            padding: '14px',
+                        },
+                        '@media (min-width: 768px)': {
+                            padding: '16px',
+                        },
+                        '@media (min-width: 1024px)': {
+                            padding: '20px',
+                        },
+                        '&:last-child': {
+                            paddingBottom: '12px',
+                            '@media (min-width: 640px)': {
+                                paddingBottom: '14px',
+                            },
+                            '@media (min-width: 768px)': {
+                                paddingBottom: '16px',
+                            },
+                            '@media (min-width: 1024px)': {
+                                paddingBottom: '20px',
+                            },
+                        },
+                    },
+                },
+            },
             MuiAlert: {
                 styleOverrides: {
                     root: {

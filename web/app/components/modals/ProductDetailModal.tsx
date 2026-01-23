@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import Modal, { ModalBody, ModalFooter, ModalHeader } from '../ui/Modal'
+import SwipeableModal, { SwipeableModalBody, SwipeableModalFooter, SwipeableModalHeader } from '../ui/SwipeableModal'
 import Button from '../ui/Button'
 import Textarea from '../ui/Textarea'
 import { useAppToast } from '@/app/lib/ui/toast'
@@ -63,9 +63,9 @@ export default function ProductDetailModal({ open, onClose, item, onSaved, onDel
 
   if (!open || !form) return null
   return (
-    <Modal open={open} onClose={onClose} size="lg">
-      <ModalHeader title="제품 상세" description="제품의 기본 정보를 수정합니다. 이름과 가격은 필수입니다." onClose={onClose} />
-      <ModalBody>
+    <SwipeableModal open={open} onClose={onClose} size="fullscreen">
+      <SwipeableModalHeader title="제품 상세" description="제품의 기본 정보를 수정합니다. 이름과 가격은 필수입니다." onClose={onClose} />
+      <SwipeableModalBody>
         <div className="space-y-3">
           {error && (
             <Alert severity="error" sx={{ borderRadius: 2 }}>
@@ -154,8 +154,8 @@ export default function ProductDetailModal({ open, onClose, item, onSaved, onDel
             </div>
           </div>
         </div>
-      </ModalBody>
-      <ModalFooter>
+      </SwipeableModalBody>
+      <SwipeableModalFooter>
         <Button 
           variant="secondary" 
           onClick={onClose} 
@@ -192,7 +192,7 @@ export default function ProductDetailModal({ open, onClose, item, onSaved, onDel
         >
           저장
         </Button>
-      </ModalFooter>
+      </SwipeableModalFooter>
 
       <ConfirmDialog
         open={confirmOpen}
@@ -204,6 +204,6 @@ export default function ProductDetailModal({ open, onClose, item, onSaved, onDel
         cancelText="취소"
         variant="danger"
       />
-    </Modal>
+    </SwipeableModal>
   )
 }

@@ -1,10 +1,6 @@
 'use client'
 
 import {
-  Dialog,
-  DialogTitle,
-  DialogContent,
-  DialogActions,
   Stack,
   ToggleButtonGroup,
   ToggleButton,
@@ -15,6 +11,7 @@ import {
   MenuItem,
   InputAdornment
 } from '@mui/material'
+import SwipeableModal, { SwipeableModalHeader, SwipeableModalBody, SwipeableModalFooter } from '../ui/SwipeableModal'
 import Button from '../ui/Button'
 import { FinanceCreateForm } from '@/types/finance'
 
@@ -45,23 +42,17 @@ export default function FinanceCreateModal({
   }
 
   return (
-    <Dialog 
+    <SwipeableModal 
       open={open} 
       onClose={onClose} 
-      maxWidth="xs" 
-      fullWidth
-      fullScreen={false}
-      PaperProps={{
-        sx: {
-          m: { xs: 1, sm: 2 },
-          borderRadius: { xs: 3, sm: 3 },
-        }
-      }}
+      size="fullscreen"
     >
-      <DialogTitle sx={{ fontSize: { xs: '1.125rem', sm: '1.25rem' }, pb: { xs: 1, sm: 1.5 } }}>
-        새 수입/지출
-      </DialogTitle>
-      <DialogContent sx={{ p: { xs: 2, sm: 3 } }}>
+      <SwipeableModalHeader
+        title="새 수입/지출"
+        description="수입 또는 지출 내역을 추가하세요"
+        onClose={onClose}
+      />
+      <SwipeableModalBody>
         <Stack spacing={{ xs: 2.5, sm: 3 }} sx={{ mt: 1 }}>
           <ToggleButtonGroup
             value={form.newType}
@@ -157,11 +148,11 @@ export default function FinanceCreateModal({
             }}
           />
         </Stack>
-      </DialogContent>
-      <DialogActions sx={{ p: { xs: 2, sm: 2 }, gap: 1 }}>
-        <Button variant="secondary" onClick={onClose} sx={{ minHeight: '44px', flex: { xs: 1, sm: 'none' } }}>취소</Button>
-        <Button variant="primary" onClick={handleSubmit} sx={{ minHeight: '44px', flex: { xs: 1, sm: 'none' } }}>저장</Button>
-      </DialogActions>
-    </Dialog>
+      </SwipeableModalBody>
+      <SwipeableModalFooter>
+        <Button variant="secondary" onClick={onClose} fullWidth sx={{ minHeight: '44px' }}>취소</Button>
+        <Button variant="primary" onClick={handleSubmit} fullWidth sx={{ minHeight: '44px' }}>저장</Button>
+      </SwipeableModalFooter>
+    </SwipeableModal>
   )
 }

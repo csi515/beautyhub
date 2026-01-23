@@ -11,15 +11,17 @@ import Sidebar from './Sidebar'
 import TopBar from './TopBar'
 import MobileBottomNav from './MobileBottomNav'
 import OfflineIndicator from './OfflineIndicator'
-import PullToRefresh from './ui/PullToRefresh'
 import { useScrollRestoration } from '@/app/lib/hooks/useScrollRestoration'
 import { useSwipeNavigation } from '@/app/lib/hooks/useSwipeNavigation'
 import { useMobileGestureNavigation } from '@/app/lib/hooks/useMobileGestureNavigation'
+import { usePWA } from '@/app/lib/hooks/usePWA'
+import { PageHeaderProvider } from '@/app/lib/contexts/PageHeaderContext'
 
 export default function AppShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname() || ''
   const theme = useTheme()
   const isMobile = useMediaQuery(theme.breakpoints.down('md'))
+  const { isStandalone, isIOS } = usePWA()
 
   const isPublic =
     pathname === '/' ||
@@ -83,7 +85,24 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
   }
 
   return (
-    <Box sx={{ display: 'flex', minHeight: '100vh', bgcolor: 'background.default' }}>
+    <PageHeaderProvider>
+      <Box sx={{ 
+        display: 'flex', 
+        minHeight: '100vh', 
+        bgcolor: 'background.default',
+        // 모바일: 페이지 전체 스크롤 금지, 콘텐츠 영역만 스크롤
+        ...(isMobile && {
+          height: '100vh',
+          overflow: 'hidden',
+          // PWA standalone 모드: safe-area-inset 고려
+          ...(isStandalone && {
+            paddingTop: isIOS ? 'env(safe-area-inset-top)' : 0,
+            paddingBottom: 'env(safe-area-inset-bottom)',
+            paddingLeft: 'env(safe-area-inset-left)',
+            paddingRight: 'env(safe-area-inset-right)',
+          }),
+        }),
+      }}>
       {/* Desktop Sidebar */}
       {!isMobile && (
         <Sidebar
@@ -121,6 +140,19 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
           easing: theme.transitions.easing.sharp,
           duration: theme.transitions.duration.enteringScreen,
         }),
+        // 모바일: 전체 높이 사용
+        ...(isMobile && {
+          height: '100vh',
+          overflow: 'hidden',
+          // PWA standalone 모드: 추가 여백 제거
+          ...(isStandalone && {
+            height: '100vh',
+            // iOS notch 대응
+            ...(isIOS && {
+              paddingTop: 'env(safe-area-inset-top)',
+            }),
+          }),
+        }),
       }}>
         <TopBar onMenu={() => setNavOpen(true)} />
         <Box
@@ -131,16 +163,16 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
             width: '100%',
             maxWidth: '100%',
             display: 'flex',
-            flexDirection: 'column'
+            flexDirection: 'column',
+            // 모바일: 콘텐츠 영역만 스크롤 가능
+            // paddingTop은 StandardPageLayout이 처리 (AppBar/BottomNav 높이 고려)
+            ...(isMobile && {
+              overflowY: 'auto',
+              height: '100%',
+            }),
           }}
         >
-          {isMobile ? (
-            <PullToRefresh>
-              {children}
-            </PullToRefresh>
-          ) : (
-            children
-          )}
+          {children}
         </Box>
       </Box>
 
@@ -149,6 +181,7 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
 
       {/* Offline Indicator */}
       <OfflineIndicator />
-    </Box>
+      </Box>
+    </PageHeaderProvider>
   )
 }

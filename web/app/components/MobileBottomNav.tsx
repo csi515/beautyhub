@@ -11,10 +11,12 @@ import {
     DollarSign,
     Package
 } from 'lucide-react'
+import { usePWA } from '@/app/lib/hooks/usePWA'
 
 export default function MobileBottomNav() {
     const pathname = usePathname()
     const router = useRouter()
+    const { isStandalone } = usePWA()
 
     // Don't show on public pages
     const isPublic =
@@ -45,7 +47,14 @@ export default function MobileBottomNav() {
                 display: { xs: 'block', md: 'none' },
                 zIndex: 1100,
                 // Safe Area 대응 - 노치/홈 인디케이터와 겹치지 않도록
-                paddingBottom: { xs: 'calc(env(safe-area-inset-bottom) + 0px)', sm: 0 },
+                paddingBottom: isStandalone 
+                    ? 'env(safe-area-inset-bottom)' 
+                    : { xs: 'calc(env(safe-area-inset-bottom) + 0px)', sm: 0 },
+                // PWA standalone 모드: 좌우 safe-area도 고려
+                ...(isStandalone && {
+                    paddingLeft: 'env(safe-area-inset-left)',
+                    paddingRight: 'env(safe-area-inset-right)',
+                }),
             }}
             elevation={8}
         >

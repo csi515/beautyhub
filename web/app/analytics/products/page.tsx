@@ -76,17 +76,9 @@ export default function ProductProfitabilityPage() {
 
   const handleExport = () => {
     if (!data) return
-    const dataToExport = data.products.map((product) => ({
-      제품명: product.product_name,
-      가격: product.product_price.toLocaleString(),
-      판매횟수: product.sales_count,
-      총매출: product.total_revenue.toLocaleString(),
-      평균매출: Math.round(product.avg_revenue).toLocaleString(),
-      회전율: product.turnover_rate.toFixed(2),
-      마진율: `${product.margin_rate.toFixed(1)}%`,
-      총마진: Math.round(product.total_margin).toLocaleString(),
-      수익성점수: Math.round(product.profitability_score).toLocaleString(),
-    }))
+    // Service 레이어를 사용한 데이터 변환
+    const { AnalyticsService } = require('../../lib/services/analytics.service')
+    const dataToExport = AnalyticsService.prepareProductProfitabilityForExport(data.products)
     exportToCSV(dataToExport, `제품수익성분석_${new Date().toISOString().slice(0, 10)}.csv`)
     toast.success('CSV 파일이 다운로드되었습니다')
   }

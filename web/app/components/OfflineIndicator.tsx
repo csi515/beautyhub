@@ -6,12 +6,15 @@ import Alert from '@mui/material/Alert'
 import AlertTitle from '@mui/material/AlertTitle'
 import Slide from '@mui/material/Slide'
 import { WifiOff, Wifi } from 'lucide-react'
+import { usePWA } from '@/app/lib/hooks/usePWA'
 
 export default function OfflineIndicator() {
     const [isOnline, setIsOnline] = useState(true)
     const [wasOffline, setWasOffline] = useState(false)
+    const [isReconnecting, setIsReconnecting] = useState(false)
     const router = useRouter()
     const reconnectTimeoutRef = useRef<NodeJS.Timeout | null>(null)
+    const { isStandalone, isIOS } = usePWA()
 
     useEffect(() => {
         // Check initial status
@@ -36,15 +39,19 @@ export default function OfflineIndicator() {
         const handleOnline = async () => {
             // navigator.onLine이 true여도 실제 연결 확인
             const actuallyOnline = await checkNetworkConnection()
-            setIsOnline(actuallyOnline)
             
             if (actuallyOnline && wasOffline) {
                 // 오프라인에서 온라인으로 전환 시
+                setIsReconnecting(true)
+                setIsOnline(true)
                 setWasOffline(false)
                 // 약간의 지연 후 자동 새로고침 (사용자가 알 수 있도록)
                 reconnectTimeoutRef.current = setTimeout(() => {
                     router.refresh()
-                }, 1000)
+                    setIsReconnecting(false)
+                }, 1500)
+            } else {
+                setIsOnline(actuallyOnline)
             }
         }
 
@@ -83,12 +90,13 @@ export default function OfflineIndicator() {
         }
     }, [router, wasOffline])
 
-    if (isOnline) return null
+    // 온라인 상태이고 재연결 중이 아닐 때는 표시하지 않음
+    if (isOnline && !isReconnecting) return null
 
-    if (isOnline && wasOffline) {
-        // 재연결 중 표시
+    // 재연결 중 표시
+    if (isReconnecting && isOnline) {
         return (
-            <Slide direction="down" in={true} mountOnEnter unmountOnExit>
+            <Slide direction="down" in={isReconnecting} mountOnEnter unmountOnExit>
                 <Alert
                     severity="success"
                     icon={<Wifi size={20} />}
@@ -100,6 +108,10 @@ export default function OfflineIndicator() {
                         zIndex: 9999,
                         borderRadius: 0,
                         boxShadow: 2,
+                        // PWA standalone 모드: safe-area-inset 고려
+                        ...(isStandalone && isIOS && {
+                            paddingTop: 'calc(env(safe-area-inset-top) + 8px)',
+                        }),
                     }}
                 >
                     <AlertTitle>연결 복구됨</AlertTitle>
@@ -109,6 +121,7 @@ export default function OfflineIndicator() {
         )
     }
 
+    // 오프라인 상태 표시
     if (!isOnline) {
         return (
             <Slide direction="down" in={!isOnline} mountOnEnter unmountOnExit>
@@ -123,6 +136,10 @@ export default function OfflineIndicator() {
                         zIndex: 9999,
                         borderRadius: 0,
                         boxShadow: 2,
+                        // PWA standalone 모드: safe-area-inset 고려
+                        ...(isStandalone && isIOS && {
+                            paddingTop: 'calc(env(safe-area-inset-top) + 8px)',
+                        }),
                     }}
                 >
                     <AlertTitle>오프라인 모드</AlertTitle>

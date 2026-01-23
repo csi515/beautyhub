@@ -72,10 +72,10 @@ a:not([class*="h-"]):not([class*="w-"]),
   -webkit-overflow-scrolling: touch;
 }
 
-/* Container padding - 모바일 기본 */
+/* Container padding - 모바일 기본 (축소) */
 .container {
-  padding-left: 1rem;
-  padding-right: 1rem;
+  padding-left: 0.75rem;
+  padding-right: 0.75rem;
 }
 
 /* Safe area insets for notched devices */
@@ -294,6 +294,14 @@ img {
   }
 }
 
+/* 태블릿 (768px 이상) */
+@media (min-width: 768px) {
+  .container {
+    padding-left: 1rem;
+    padding-right: 1rem;
+  }
+}
+
 /* 데스크톱 (1024px 이상) */
 @media (min-width: 1024px) {
   /* 데스크톱 컨테이너 패딩 증가 */
@@ -306,5 +314,55 @@ img {
   .hover-effect-desktop:hover {
     transform: translateY(-2px);
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  }
+}
+
+/* 모바일 elevation 최소화 (sm 이하) */
+@media (max-width: 600px) {
+  /* Card elevation 최소화 */
+  .MuiCard-root {
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08) !important;
+  }
+
+  .MuiCard-root.MuiCard-elevation1 {
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08) !important;
+  }
+
+  .MuiCard-root.MuiCard-elevation2 {
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1) !important;
+  }
+
+  /* Paper elevation 최소화 */
+  .MuiPaper-elevation1 {
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08) !important;
+  }
+
+  .MuiPaper-elevation2 {
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1) !important;
+  }
+
+  .MuiPaper-elevation3,
+  .MuiPaper-elevation4,
+  .MuiPaper-elevation5,
+  .MuiPaper-elevation6,
+  .MuiPaper-elevation7,
+  .MuiPaper-elevation8,
+  .MuiPaper-elevation9,
+  .MuiPaper-elevation10,
+  .MuiPaper-elevation11,
+  .MuiPaper-elevation12,
+  .MuiPaper-elevation13,
+  .MuiPaper-elevation14,
+  .MuiPaper-elevation15,
+  .MuiPaper-elevation16,
+  .MuiPaper-elevation17,
+  .MuiPaper-elevation18,
+  .MuiPaper-elevation19,
+  .MuiPaper-elevation20,
+  .MuiPaper-elevation21,
+  .MuiPaper-elevation22,
+  .MuiPaper-elevation23,
+  .MuiPaper-elevation24 {
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.12) !important;
   }
 }

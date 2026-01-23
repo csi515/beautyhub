@@ -3,18 +3,14 @@ import { getUserIdFromCookies } from '@/lib/auth/user'
 import { Box } from '@mui/material'
 import DashboardContent from './DashboardContent'
 
+import { DashboardService } from '../lib/services/dashboard.service'
+
 function getTodayRange() {
-  const now = new Date()
-  const start = new Date(now.getFullYear(), now.getMonth(), now.getDate()).toISOString()
-  const end = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1).toISOString()
-  return { start, end }
+  return DashboardService.getTodayRange()
 }
 
 function monthBounds() {
-  const now = new Date()
-  const monthStart = new Date(now.getFullYear(), now.getMonth(), 1)
-  const nextMonth = new Date(now.getFullYear(), now.getMonth() + 1, 1)
-  return { monthStart: monthStart.toISOString(), monthEnd: nextMonth.toISOString() }
+  return DashboardService.getMonthBounds()
 }
 
 async function getDashboardData({ start, end, userId, accessToken }: { start: string; end: string; userId: string; accessToken?: string | undefined }) {
@@ -114,33 +110,21 @@ async function getDashboardData({ start, end, userId, accessToken }: { start: st
         .limit(100)
     ])
 
-    const todayAppointments = Array.isArray(apRes.data) ? apRes.data.length : 0
-    const monthlyAppointments = apMonthRes.count || 0
+    // Raw data 준비
+    const rawData = {
+      todayAppointments: apRes.data || [],
+      monthlyAppointments: apMonthRes.count || 0, // count 사용
+      monthlyNewCustomers: cuMonth.data || [],
+      monthlyTransactions: trMonth.data || [],
+      monthlyExpenses: exMonth.data || [],
+      recentAppointments: apRecent.data || [],
+      recentTransactions: trRecent.data || [],
+      recentExpenses: exRecent.data || [],
+      products: productsRes.data || [],
+      appointmentStats: apStatsRes.data || []
+    }
 
-    // Monthly Profit
-    const monthlyIncome = Array.isArray(trMonth.data)
-      ? (trMonth.data as any[])
-        .filter((t) => {
-          const d = (t.transaction_date || t.created_at || '').slice(0, 10)
-          return (!fromDate || d >= fromDate) && (!toDate || d <= toDate)
-        })
-        .reduce((s: number, t) => s + Number(t.amount || 0), 0)
-      : 0
-
-    const monthlyExpense = Array.isArray(exMonth.data)
-      ? (exMonth.data as any[]).reduce((s: number, e) => s + Number(e.amount || 0), 0)
-      : 0
-
-    const monthlyProfit = Number(monthlyIncome || 0) - Number(monthlyExpense || 0)
-
-    const monthlyNewCustomers = Array.isArray(cuMonth.data) ? cuMonth.data.length : 0
-
-    // Active products
-    const activeProducts = Array.isArray(productsRes.data)
-      ? productsRes.data.filter((p: any) => p.active !== false)
-      : []
-
-    // Recent Appointments helper
+    // 고객/제품 매핑 생성
     const apRecentData = Array.isArray(apRecent.data) ? apRecent.data : []
     const apStatsData = Array.isArray(apStatsRes.data) ? apStatsRes.data : []
 
@@ -167,53 +151,25 @@ async function getDashboardData({ start, end, userId, accessToken }: { start: st
       if (data) data.forEach((p: any) => productsById[p.id] = p.name)
     }
 
-    // Combined Transactions
-    const trData = Array.isArray(trRecent.data) ? trRecent.data : []
-    const exData = Array.isArray(exRecent.data) ? exRecent.data : []
-    const combinedTransactions = [
-      ...trData.map((t: any) => ({
-        id: t.id,
-        type: 'income' as const,
-        date: t.transaction_date || t.created_at || new Date().toISOString(),
-        amount: Number(t.amount),
-        memo: t.memo || '수입'
-      })),
-      ...exData.map((e: any) => ({
-        id: e.id,
-        type: 'expense' as const,
-        date: e.expense_date || e.created_at || new Date().toISOString(),
-        amount: Number(e.amount),
-        memo: e.memo || e.category
-      }))
-    ].sort((a, b) => {
-      const dA = new Date(a.date).getTime() || 0
-      const dB = new Date(b.date).getTime() || 0
-      return dB - dA
-    }).slice(0, 10)
+    // Service 레이어를 사용한 데이터 가공
+    const processed = DashboardService.processDashboardData(
+      rawData,
+      customersById,
+      productsById,
+      fromDate,
+      toDate
+    )
 
     return {
-      todayAppointments,
-      monthlyProfit,
-      monthlyNewCustomers,
-      monthlyAppointments,
-      recentAppointments: apRecentData.map((a: any) => ({
-        id: a.id,
-        appointment_date: a.appointment_date,
-        customer_name: a.customer_id ? customersById[a.customer_id] || '-' : '-',
-        product_name: a.service_id ? productsById[a.service_id] || '-' : '-',
-      })),
-      chartAppointments: apStatsData.map((a: any) => ({
-        product_name: a.service_id ? productsById[a.service_id] || '-' : '-',
-      })),
-      recentTransactions: combinedTransactions,
-      monthlyRevenueData: Array.isArray(trMonth.data) ? trMonth.data.map((t: any) => ({
-        id: t.id,
-        amount: Number(t.amount),
-        transaction_date: t.transaction_date || t.created_at,
-        type: 'income',
-        owner_id: userId
-      })) : [],
-      activeProducts
+      todayAppointments: processed.todayAppointments,
+      monthlyProfit: processed.monthlyProfit,
+      monthlyNewCustomers: processed.monthlyNewCustomers,
+      monthlyAppointments: processed.monthlyAppointments,
+      recentAppointments: processed.recentAppointments,
+      chartAppointments: processed.chartAppointments,
+      recentTransactions: processed.recentTransactions,
+      monthlyRevenueData: processed.monthlyRevenueData,
+      activeProducts: processed.activeProducts
     }
   } catch (error) {
     console.error('Failed to fetch dashboard data:', error)

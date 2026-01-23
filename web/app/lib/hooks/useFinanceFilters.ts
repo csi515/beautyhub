@@ -1,5 +1,6 @@
-import { useMemo, useState } from 'react'
+import { useMemo, useState, useEffect } from 'react'
 import { usePagination } from './usePagination'
+import { FinanceService } from '../services/finance.service'
 import { Expense, Transaction } from '@/types/entities'
 import { FinanceFilters, FinanceDateRange } from '@/types/finance'
 
@@ -20,63 +21,26 @@ export function useFinanceFilters(
     initialPageSize: 10,
     totalItems: 0,
   })
-  const { page, pageSize } = pagination
+  const { page, pageSize, setPage } = pagination
 
-  // 결합된 데이터 생성
-  const combined = useMemo(() => {
-    const inRange = (iso: string) => {
-      const d = (iso || '').slice(0, 10)
-      return (!dateRange.from || d >= dateRange.from) && (!dateRange.to || d <= dateRange.to)
+  // Service 레이어를 사용한 데이터 가공
+  const processed = useMemo(() => {
+    return FinanceService.processFinanceData(
+      transactions,
+      expenses,
+      filters,
+      dateRange,
+      page,
+      pageSize
+    )
+  }, [transactions, expenses, filters, dateRange, page, pageSize])
+
+  // 페이지 변경 시 필터 변경으로 인해 현재 페이지가 유효 범위를 벗어나면 첫 페이지로 이동
+  useEffect(() => {
+    if (page > processed.totalPages && processed.totalPages > 0) {
+      setPage(1)
     }
-    const incomeRows = filters.filterType.includes('income') ? transactions
-      .filter(t => inRange(t.transaction_date || t.created_at || ''))
-      .map(t => ({
-        id: t.id,
-        type: 'income' as const,
-        date: (t.transaction_date || t.created_at || '').slice(0, 10),
-        amount: Number(t.amount || 0),
-        note: t.category || '',
-        raw: t,
-      })) : []
-    const expenseRows = filters.filterType.includes('expense') ? expenses
-      .filter(e => inRange(e.expense_date || ''))
-      .map(e => ({
-        id: e.id,
-        type: 'expense' as const,
-        date: (e.expense_date || '').slice(0, 10),
-        amount: Number(e.amount || 0),
-        note: e.category || e.memo || '',
-        raw: e,
-      })) : []
-    const rows = [...incomeRows, ...expenseRows]
-    rows.sort((a, b) => {
-      if (filters.sortKey === 'date') {
-        const dateA = a.date || ''
-        const dateB = b.date || ''
-        return filters.sortDir === 'asc' ? dateA.localeCompare(dateB) : dateB.localeCompare(dateA)
-      }
-      if (a.amount < b.amount) return filters.sortDir === 'asc' ? -1 : 1
-      if (a.amount > b.amount) return filters.sortDir === 'asc' ? 1 : -1
-      return 0
-    })
-    return rows
-  }, [transactions, expenses, filters, dateRange])
-
-  const pagedCombined = useMemo(() => {
-    const start = (page - 1) * pageSize
-    return combined.slice(start, start + pageSize)
-  }, [combined, page, pageSize])
-
-  // 통계 계산
-  const sumIncome = useMemo(() => transactions
-    .filter(t => {
-      const d = (t.transaction_date || t.created_at || '').slice(0, 10)
-      return (!dateRange.from || d >= dateRange.from) && (!dateRange.to || d <= dateRange.to)
-    })
-    .reduce((s, t) => s + Number(t.amount || 0), 0), [transactions, dateRange])
-
-  const sumExpense = useMemo(() => expenses.reduce((s, e) => s + Number(e.amount || 0), 0), [expenses])
-  const profit = sumIncome - sumExpense
+  }, [processed.totalPages, page, setPage])
 
   const updateFilters = (newFilters: Partial<FinanceFilters>) => {
     setFilters(prev => ({ ...prev, ...newFilters }))
@@ -101,12 +65,12 @@ export function useFinanceFilters(
     ...pagination,
 
     // Data
-    combined,
-    pagedCombined,
+    combined: processed.combined,
+    pagedCombined: processed.paginated,
 
     // Stats
-    sumIncome,
-    sumExpense,
-    profit,
+    sumIncome: processed.sumIncome,
+    sumExpense: processed.sumExpense,
+    profit: processed.profit,
   }
 }

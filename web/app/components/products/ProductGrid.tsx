@@ -1,6 +1,6 @@
 'use client'
 
-import { Grid, Card, CardContent, CardActions, Stack, Typography } from '@mui/material'
+import { Grid, Card, CardContent, CardActions, Stack, Typography, List, ListItemButton, ListItemText, useTheme, useMediaQuery, Box } from '@mui/material'
 import Button from '../ui/Button'
 import EmptyState from '../EmptyState'
 import StatusBadge from '../common/StatusBadge'
@@ -15,26 +15,99 @@ type Props = {
 }
 
 export default function ProductGrid({ products, loading, onProductClick, onCreateClick }: Props) {
+  const theme = useTheme()
+  const isMobile = useMediaQuery(theme.breakpoints.down('sm'))
+
   if (loading) {
     return (
-      <LoadingState variant="card" rows={8} className="" />
+      <LoadingState variant={isMobile ? "list" : "card"} rows={isMobile ? 8 : 8} className="" />
     )
   }
 
   if (products.length === 0) {
     return (
-      <Grid container spacing={{ xs: 0.75, sm: 1.5, md: 2 }}>
-        <Grid item xs={12}>
-          <EmptyState
-            title="제품이 없습니다."
-            actionLabel="제품 추가"
-            actionOnClick={onCreateClick}
-          />
-        </Grid>
-      </Grid>
+      <Box>
+        <EmptyState
+          title="제품이 없습니다."
+          actionLabel="제품 추가"
+          actionOnClick={onCreateClick}
+        />
+      </Box>
     )
   }
 
+  // 모바일: List + ListItemButton
+  if (isMobile) {
+    return (
+      <List sx={{ p: 0 }}>
+        {products.map((p) => {
+          const price = Number(p.price || 0).toLocaleString()
+          const secondaryText = p.description 
+            ? `₩${price} • ${p.description}`
+            : `₩${price}`
+          
+          return (
+            <ListItemButton
+              key={String(p.id)}
+              onClick={() => onProductClick(p)}
+              sx={{
+                minHeight: 72,
+                py: 2,
+                px: 2,
+                borderBottom: '1px solid',
+                borderColor: 'divider',
+                '&:active': {
+                  bgcolor: 'action.selected',
+                },
+              }}
+            >
+              <ListItemText
+                primary={
+                  <Stack direction="row" alignItems="center" spacing={1} mb={0.5}>
+                    <Typography
+                      variant="subtitle1"
+                      fontWeight={600}
+                      sx={{
+                        fontSize: '1rem',
+                        flex: 1,
+                        overflow: 'hidden',
+                        textOverflow: 'ellipsis',
+                        whiteSpace: 'nowrap',
+                      }}
+                    >
+                      {p.name}
+                    </Typography>
+                    <StatusBadge
+                      status={p.active ? 'active' : 'inactive'}
+                      variant="outlined"
+                    />
+                  </Stack>
+                }
+                secondary={
+                  <Typography
+                    variant="body2"
+                    color="text.secondary"
+                    sx={{
+                      fontSize: '0.875rem',
+                      overflow: 'hidden',
+                      textOverflow: 'ellipsis',
+                      display: '-webkit-box',
+                      WebkitLineClamp: 1,
+                      WebkitBoxOrient: 'vertical',
+                    }}
+                  >
+                    {secondaryText}
+                  </Typography>
+                }
+              />
+            </ListItemButton>
+          )
+        })}
+      </List>
+    )
+  }
+
+  // 데스크탑: Grid + Card (기존 구조 유지)
   return (
     <Grid container spacing={{ xs: 0.75, sm: 1.5, md: 2 }}>
       {products.map((p) => (
@@ -52,11 +125,11 @@ export default function ProductGrid({ products, loading, onProductClick, onCreat
                 transform: 'scale(0.98)',
                 boxShadow: 2,
               },
-              '&:hover': { boxShadow: { xs: 2, md: 4 } }
+              '&:hover': { boxShadow: 4 }
             }}
             onClick={() => onProductClick(p)}
           >
-            <CardContent sx={{ flexGrow: 1, p: { xs: 1.5, sm: 2 }, pb: { xs: 0.5, sm: 1 } }}>
+            <CardContent sx={{ flexGrow: 1, p: { xs: 1, sm: 1.5, md: 2 }, pb: { xs: 0.5, sm: 1 } }}>
               <Stack direction="row" justifyContent="space-between" alignItems="flex-start" mb={1}>
                 <StatusBadge
                   status={p.active ? 'active' : 'inactive'}

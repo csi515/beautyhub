@@ -1,8 +1,10 @@
 'use client'
 
-import { ReactNode } from 'react'
+import { ReactNode, useEffect } from 'react'
 import { Plus } from 'lucide-react'
+import { useTheme, useMediaQuery } from '@mui/material'
 import Button from '../ui/Button'
+import { usePageHeader } from '@/app/lib/contexts/PageHeaderContext'
 
 type PageHeaderProps = {
   title?: string
@@ -19,6 +21,12 @@ type PageHeaderProps = {
   className?: string
   // MUI 스타일 옵션 (FinanceHeader 호환)
   useMUI?: boolean
+  // 모바일에서 TopBar에 헤더 정보 전달 여부
+  useMobileHeader?: boolean
+  // 필터 Bottom Sheet 트리거 (모바일용)
+  onFilterOpen?: () => void
+  // 활성 필터 개수 (모바일용)
+  filterBadge?: number
 }
 
 /**
@@ -39,7 +47,52 @@ export default function PageHeader({
   actions,
   className = '',
   useMUI = false,
+  useMobileHeader = true,
+  onFilterOpen,
+  filterBadge,
 }: PageHeaderProps) {
+  const theme = useTheme()
+  const isMobile = useMediaQuery(theme.breakpoints.down('sm'))
+  const { setHeaderInfo, clearHeaderInfo } = usePageHeader()
+
+  // 모바일에서 Context에 헤더 정보 전달
+  useEffect(() => {
+    if (isMobile && useMobileHeader && title) {
+      const handleFilterClick = () => {
+        if (onFilterOpen) {
+          onFilterOpen()
+        }
+        // filters prop이 있으면 onFilterOpen이 반드시 제공되어야 함
+      }
+
+      setHeaderInfo({
+        title,
+        icon,
+        showBack: true, // 기본적으로 뒤로가기 표시
+        onFilter: filters || onFilterOpen ? handleFilterClick : undefined,
+        filterBadge,
+        actions,
+        description,
+      })
+
+      return () => {
+        clearHeaderInfo()
+      }
+    } else {
+      // 모바일이 아니거나 useMobileHeader가 false면 Context 클리어
+      clearHeaderInfo()
+      return () => {
+        // cleanup 함수는 항상 반환되어야 함
+      }
+    }
+  }, [isMobile, useMobileHeader, title, icon, filters, onFilterOpen, filterBadge, actions, description, setHeaderInfo, clearHeaderInfo])
+
+  // 모바일에서 Context를 사용하므로 여기서는 아무것도 렌더링하지 않음
+  // (TopBar가 Context에서 정보를 읽어서 표시)
+  if (isMobile && useMobileHeader && title) {
+    return null
+  }
+
   // MUI 기반 렌더링 (FinanceHeader 호환)
   if (useMUI) {
     const { Stack, Typography } = require('@mui/material')

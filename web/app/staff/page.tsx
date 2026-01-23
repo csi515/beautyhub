@@ -1,24 +1,17 @@
+/**
+ * Staff 페이지 컨트롤러
+ * 인증 확인, 파라미터 결정, 데이터 로딩 결정, View에 props 전달만 담당
+ */
+
 'use client'
 
 import { useState } from 'react'
-import { Users } from 'lucide-react'
-import PageHeader, { createActionButton } from '@/app/components/common/PageHeader'
+import StaffPageView from '@/app/components/staff/StaffPageView'
 import StaffDetailModal from '@/app/components/modals/StaffDetailModal'
 import StatusChangeModal from '@/app/components/modals/StatusChangeModal'
 import AttendanceRecordModal from '@/app/components/modals/AttendanceRecordModal'
 import ScheduleModal from '@/app/components/modals/ScheduleModal'
 import WeeklyScheduleModal from '@/app/components/modals/WeeklyScheduleModal'
-import StaffStatsCards from '@/app/components/staff/StaffStatsCards'
-import StaffTabsContainer from '@/app/components/staff/StaffTabsContainer'
-import StaffAttendanceTab from '@/app/components/staff/StaffAttendanceTab'
-import StaffScheduleTab from '@/app/components/staff/StaffScheduleTab'
-import StaffListTab from '@/app/components/staff/StaffListTab'
-import StandardPageLayout from '@/app/components/common/StandardPageLayout'
-import { Stack } from '@mui/material'
-import { Download } from 'lucide-react'
-import { useTheme, useMediaQuery } from '@mui/material'
-
-// Hooks
 import { useStaffData } from '@/app/lib/hooks/useStaffData'
 import { useStaffHandlers } from '@/app/lib/hooks/useStaffHandlers'
 
@@ -28,9 +21,6 @@ import { useStaffHandlers } from '@/app/lib/hooks/useStaffHandlers'
  */
 export default function StaffPage() {
   const [tabIndex, setTabIndex] = useState(0) // 0: 근태현황, 1: 스케줄 표, 2: 명부관리
-
-  const theme = useTheme()
-  const isMobile = useMediaQuery(theme.breakpoints.down('md'))
 
   // Data hook
   const {
@@ -75,77 +65,31 @@ export default function StaffPage() {
     setAttendanceRecordOpen,
     setScheduleOpen,
     setWeeklyScheduleOpen,
-    setSelected,
   } = useStaffHandlers(staff, schedules, loadAll)
 
 
   return (
-    <StandardPageLayout
-      loading={loading}
-      error={error || undefined}
-      errorTitle="직원 데이터를 불러오는 중 오류가 발생했습니다"
-      maxWidth="lg"
-    >
-      <Stack spacing={4}>
-      <PageHeader
-        title="직원 통합 관리"
-        icon={<Users className="h-5 w-5" />}
-        description="출결 확인부터 상세 일정 구성까지 한 곳에서 관리하세요"
-        actions={[
-          ...(isMobile ? [] : [createActionButton('CSV 내보내기', () => handleExport(tabIndex), 'secondary', <Download size={16} />)]),
-          createActionButton(
-            '직원 추가',
-            () => {
-              setSelected(null)
-              setDetailOpen(true)
-            }
-          ),
-          // 주간 스케줄 버튼은 스케줄 탭(index 1)일 때만 보이거나 항상 보이게 할 수 있음
-          ...(tabIndex === 1 ? [createActionButton('주간 반복 설정', () => { setSelected(null); setWeeklyScheduleOpen(true) }, 'primary')] : [])
-        ]}
-      />
-
-      {/* 통계 카드 */}
-      <StaffStatsCards
+    <>
+      <StaffPageView
+        staff={staff}
+        actualAttendance={actualAttendance}
+        schedules={schedules}
+        workingStaff={workingStaff}
         stats={stats}
-        schedulesCount={schedules.length}
-      />
-
-      {/* 탭 컨테이너 */}
-      <StaffTabsContainer
-        tabIndex={tabIndex}
-        onTabChange={setTabIndex}
         loading={loading}
         error={error}
-        staffCount={staff.length}
-        onRetry={loadAll}
+        tabIndex={tabIndex}
+        setTabIndex={setTabIndex}
+        onExport={handleExport}
+        onCheckIn={handleCheckIn}
+        onCheckOut={handleCheckOut}
+        onOpenAttendanceRecord={handleOpenAttendanceRecord}
+        onOpenSchedule={handleOpenSchedule}
+        onQuickScheduleCreate={handleQuickScheduleCreate}
+        onBulkScheduleApply={handleBulkScheduleApply}
+        onEdit={handleEdit}
+        onStatusClick={handleStatusClick}
         onCreateStaff={handleCreateStaff}
-        attendanceTab={
-          <StaffAttendanceTab
-            staff={staff}
-            actualAttendance={actualAttendance}
-            workingStaff={workingStaff}
-            onCheckIn={handleCheckIn}
-            onCheckOut={handleCheckOut}
-            onOpenAttendanceRecord={handleOpenAttendanceRecord}
-          />
-        }
-        scheduleTab={
-          <StaffScheduleTab
-            staff={staff}
-            schedules={schedules}
-            onOpenSchedule={handleOpenSchedule}
-            onBulkSchedule={handleBulkScheduleApply}
-            onQuickSchedule={handleQuickScheduleCreate}
-          />
-        }
-        listTab={
-          <StaffListTab
-            staff={staff}
-            onEdit={handleEdit}
-            onStatusClick={handleStatusClick}
-          />
-        }
       />
 
       {/* 모달 관리 */}
@@ -198,7 +142,6 @@ export default function StaffPage() {
           onSaved={loadAll}
         />
       )}
-    </Stack>
-    </StandardPageLayout>
+    </>
   )
 }

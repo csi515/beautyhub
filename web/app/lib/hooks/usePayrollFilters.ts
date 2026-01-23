@@ -1,6 +1,7 @@
-import { useState, useMemo } from 'react'
+import { useState, useMemo, useEffect } from 'react'
 import { useSearch } from './useSearch'
 import { usePagination } from './usePagination'
+import { PayrollService } from '../services/payroll.service'
 import { type Staff, type PayrollRecord } from '@/types/payroll'
 
 export function usePayrollFilters(staff: Staff[], records: PayrollRecord[]) {
@@ -13,43 +14,28 @@ export function usePayrollFilters(staff: Staff[], records: PayrollRecord[]) {
 
     const [statusFilter, setStatusFilter] = useState<string>('all')
 
-    const filteredStaff = useMemo(() => {
-        return staff.filter(s => {
-            // Search filter
-            if (debouncedQuery.trim()) {
-                const qLower = debouncedQuery.toLowerCase()
-                if (!s.name.toLowerCase().includes(qLower)) return false
-            }
+    // Service 레이어를 사용한 데이터 가공
+    const processed = useMemo(() => {
+        return PayrollService.processPayrollList(
+            staff,
+            records,
+            {
+                search: debouncedQuery,
+                status: statusFilter
+            },
+            'name', // 기본 정렬 키
+            'asc', // 기본 정렬 방향
+            page,
+            pageSize
+        )
+    }, [staff, records, debouncedQuery, statusFilter, page, pageSize])
 
-            // Status filter
-            if (statusFilter !== 'all') {
-                const record = records.find(r => r.staff_id === s.id)
-                if (statusFilter === 'not_calculated') {
-                    return !record
-                } else {
-                    return record?.status === statusFilter
-                }
-            }
-
-            return true
-        })
-    }, [staff, debouncedQuery, statusFilter, records])
-
-    const sortedStaff = useMemo(() => {
-        return [...filteredStaff].sort((a, b) => a.name.localeCompare(b.name))
-    }, [filteredStaff])
-
-    const paginatedStaff = useMemo(() => {
-        const start = (page - 1) * pageSize
-        const end = start + pageSize
-        return sortedStaff.slice(start, end)
-    }, [sortedStaff, page, pageSize])
-
-    const totalPages = Math.max(1, Math.ceil(filteredStaff.length / pageSize))
-
-    // Calculations
-    const totalGrossPay = records.reduce((sum, r) => sum + r.total_gross, 0)
-    const totalNetPay = records.reduce((sum, r) => sum + r.net_salary, 0)
+    // 페이지 변경 시 필터 변경으로 인해 현재 페이지가 유효 범위를 벗어나면 첫 페이지로 이동
+    useEffect(() => {
+        if (page > processed.totalPages && processed.totalPages > 0) {
+            setPage(1)
+        }
+    }, [processed.totalPages, page, setPage])
 
     return {
         // Search
@@ -60,18 +46,18 @@ export function usePayrollFilters(staff: Staff[], records: PayrollRecord[]) {
         page,
         pageSize,
         setPage,
-        totalPages,
+        totalPages: processed.totalPages,
 
         // Filters
         statusFilter,
         setStatusFilter,
 
         // Filtered data
-        filteredStaff,
-        paginatedStaff,
+        filteredStaff: processed.filtered,
+        paginatedStaff: processed.paginated,
 
         // Calculations
-        totalGrossPay,
-        totalNetPay,
+        totalGrossPay: processed.totalGrossPay,
+        totalNetPay: processed.totalNetPay,
     }
 }

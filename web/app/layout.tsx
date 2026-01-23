@@ -14,6 +14,11 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=5, user-scalable=yes, viewport-fit=cover" />
         {/* Pretendard 폰트 로드 - 모바일 성능 최적화 */}
         <link
+          rel="preconnect"
+          href="https://cdn.jsdelivr.net"
+          crossOrigin="anonymous"
+        />
+        <link
           rel="preload"
           href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css"
           as="style"
@@ -28,11 +33,14 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         {/* Apple PWA 설정 */}
         <meta name="mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-capable" content="yes" />
-        <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+        <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
         <meta name="apple-mobile-web-app-title" content="BeautyHub" />
-        <link rel="apple-touch-icon" href="/icons/yeowooskin_192x192.png" />
-        <link rel="apple-touch-icon" sizes="192x192" href="/icons/yeowooskin_192x192.png" />
-        <link rel="apple-touch-icon" sizes="512x512" href="/icons/yeowooskin_512x512.png" />
+        <link rel="apple-touch-icon" href="/icons/icon-192.png" />
+        <link rel="apple-touch-icon" sizes="192x192" href="/icons/icon-192.png" />
+        <link rel="apple-touch-icon" sizes="512x512" href="/icons/icon-512.png" />
+        {/* PWA 아이콘 preload */}
+        <link rel="preload" href="/icons/icon-192.png" as="image" />
+        <link rel="preload" href="/icons/icon-512.png" as="image" />
       </head>
       <body className="h-full font-sans bg-[var(--bg)] text-[color:var(--neutral-900)]">
         <Providers>

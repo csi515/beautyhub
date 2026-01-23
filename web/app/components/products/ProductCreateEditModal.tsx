@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import Modal, { ModalBody, ModalFooter, ModalHeader } from '../ui/Modal'
+import SwipeableModal, { SwipeableModalBody, SwipeableModalFooter, SwipeableModalHeader } from '../ui/SwipeableModal'
 import Button from '../ui/Button'
 import { Stack, TextField, InputAdornment, FormControlLabel, Checkbox } from '@mui/material'
 import { useForm } from '@/app/lib/hooks/useForm'
@@ -79,16 +79,17 @@ export default function ProductCreateEditModal({ open, onClose, editing, onSaved
   }
 
   return (
-    <Modal
+    <SwipeableModal
       open={open}
       onClose={handleClose}
-      size="lg"
+      size="fullscreen"
     >
-      <ModalHeader
+      <SwipeableModalHeader
         title={editing ? '제품 수정' : '제품 추가'}
         description="제품의 기본 정보를 입력하세요. 이름과 가격은 필수입니다."
+        onClose={handleClose}
       />
-      <ModalBody>
+      <SwipeableModalBody>
         <Stack spacing={{ xs: 2.5, sm: 3 }} sx={{ mt: 1 }}>
           <TextField
             label="이름"
@@ -175,15 +176,15 @@ export default function ProductCreateEditModal({ open, onClose, editing, onSaved
             }}
           />
         </Stack>
-      </ModalBody>
-      <ModalFooter>
+      </SwipeableModalBody>
+      <SwipeableModalFooter>
         <Button
           variant="secondary"
           onClick={handleClose}
           disabled={loading}
+          fullWidth
           sx={{ 
             minHeight: '44px', 
-            flex: { xs: 1, sm: 'none' },
             fontSize: { xs: '0.9375rem', sm: '1rem' }
           }}
         >
@@ -193,15 +194,15 @@ export default function ProductCreateEditModal({ open, onClose, editing, onSaved
           variant="primary"
           onClick={() => form.handleSubmit()}
           disabled={loading || !form.isValid}
+          fullWidth
           sx={{ 
             minHeight: '44px', 
-            flex: { xs: 1, sm: 'none' },
             fontSize: { xs: '0.9375rem', sm: '1rem' }
           }}
         >
           저장
         </Button>
-      </ModalFooter>
-    </Modal>
+      </SwipeableModalFooter>
+    </SwipeableModal>
   )
 }

@@ -17,6 +17,7 @@ import { exportToCSV } from '../lib/utils/export'
 import { useAppToast } from '../lib/ui/toast'
 import { useAppointments } from '../lib/hooks/useAppointments'
 import { formatRangeLabel, getDateRange, type AppointmentEvent, type CalendarView } from '../lib/utils/appointmentUtils'
+import { AppointmentsService } from '../lib/services/appointments.service'
 
 import Paper from '@mui/material/Paper'
 import ToggleButton from '@mui/material/ToggleButton'
@@ -61,32 +62,17 @@ export default function AppointmentsPage() {
   // Appointments data
   const { events, reloadCalendar } = useAppointments()
 
+  // Service 레이어를 사용한 필터링
   const filteredEvents = useMemo(() => {
-    return events.filter(event => {
-      // Search
-      if (debouncedQuery.trim()) {
-        const q = debouncedQuery.toLowerCase()
-        const titleMatch = event.title.toLowerCase().includes(q)
-        const noteMatch = (event.extendedProps?.notes || '').toLowerCase().includes(q)
-        const productMatch = (event.extendedProps?.product_name || '').toLowerCase().includes(q)
-        if (!titleMatch && !noteMatch && !productMatch) return false
-      }
-      // Status
-      if (statusFilter !== 'all' && event.extendedProps?.status !== statusFilter) return false
-      return true
+    return AppointmentsService.filterAppointments(events, {
+      search: debouncedQuery,
+      status: statusFilter
     })
   }, [events, debouncedQuery, statusFilter])
 
   const handleExport = () => {
-    const dataToExport = filteredEvents.map(event => ({
-      '예약일시': format(event.start, 'yyyy-MM-dd HH:mm'),
-      '제목': event.title.split(' · ')[0] || event.title,
-      '서비스': event.extendedProps?.product_name || '-',
-      '상태': event.extendedProps?.status === 'scheduled' ? '예약됨' :
-        event.extendedProps?.status === 'completed' ? '완료' :
-          event.extendedProps?.status === 'cancelled' ? '취소' : event.extendedProps?.status,
-      '메모': event.extendedProps?.notes || '-'
-    }))
+    // Service 레이어를 사용한 데이터 변환
+    const dataToExport = AppointmentsService.prepareAppointmentsForExport(filteredEvents)
     exportToCSV(dataToExport, `예약목록_${new Date().toISOString().slice(0, 10)}.csv`)
     toast.success('예약 목록이 다운로드되었습니다')
   }

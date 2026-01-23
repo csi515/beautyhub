@@ -1,6 +1,7 @@
-import { useMemo } from 'react'
+import { useMemo, useEffect } from 'react'
 import { useSort } from './useSort'
 import { usePagination } from './usePagination'
+import { CustomersService } from '../services/customers.service'
 import { type Customer } from '@/types/entities'
 import { type CustomerFilters } from '@/types/customer'
 
@@ -9,7 +10,7 @@ export function useCustomerFilters(
   pointsByCustomer: Record<string, number>,
   filters: CustomerFilters
 ) {
-  const { sortKey, sortDirection, toggleSort, sortFn } = useSort<Customer & Record<string, unknown>>({
+  const { sortKey, sortDirection, toggleSort } = useSort<Customer & Record<string, unknown>>({
     initialKey: 'name',
     initialDirection: 'asc',
   })
@@ -22,47 +23,25 @@ export function useCustomerFilters(
 
   const { page, pageSize, setPage, setPageSize } = pagination
 
-  // Filter and sort logic
-  const filteredRows = useMemo(() => {
-    return customers.filter(customer => {
-      const points = pointsByCustomer[customer.id] || 0
+  // Service 레이어를 사용한 데이터 가공
+  const processed = useMemo(() => {
+    return CustomersService.processCustomerList(
+      customers,
+      filters,
+      sortKey as string,
+      sortDirection,
+      page,
+      pageSize,
+      pointsByCustomer
+    )
+  }, [customers, filters, sortKey, sortDirection, page, pageSize, pointsByCustomer])
 
-      // Status filter
-      if (filters.statusFilter === 'active' && customer.active === false) return false
-      if (filters.statusFilter === 'inactive' && customer.active !== false) return false
-
-      // VIP filter (assuming VIP = points > 1000)
-      if (filters.vipFilter === 'vip' && points <= 1000) return false
-      if (filters.vipFilter === 'regular' && points > 1000) return false
-
-      // Points range filter
-      if (filters.minPoints && points < Number(filters.minPoints)) return false
-      if (filters.maxPoints && points > Number(filters.maxPoints)) return false
-
-      return true
-    })
-  }, [customers, pointsByCustomer, filters])
-
-  // 정렬된 데이터
-  const sortedRows = useMemo(() => {
-    return sortFn(filteredRows as (Customer & Record<string, unknown>)[])
-  }, [filteredRows, sortFn])
-
-  // 페이지네이션된 데이터
-  const paginatedRows = useMemo(() => {
-    const start = (page - 1) * pageSize
-    const end = start + pageSize
-    return sortedRows.slice(start, end)
-  }, [sortedRows, page, pageSize])
-
-  // Update totalPages based on filtered data
-  const filteredTotalPages = Math.max(1, Math.ceil(filteredRows.length / pageSize))
-
-  // 필터 초기화
-  const resetFilters = () => {
-    // Note: This function will be implemented in the component
-    // as it needs to update the filters state
-  }
+  // 페이지 변경 시 필터 변경으로 인해 현재 페이지가 유효 범위를 벗어나면 첫 페이지로 이동
+  useEffect(() => {
+    if (page > processed.totalPages && processed.totalPages > 0) {
+      setPage(1)
+    }
+  }, [processed.totalPages, page, setPage])
 
   return {
     // Sorting
@@ -75,13 +54,13 @@ export function useCustomerFilters(
     pageSize,
     setPage,
     setPageSize,
-    filteredTotalPages,
+    filteredTotalPages: processed.totalPages,
 
     // Filtered data
-    filteredRows,
-    paginatedRows,
+    filteredRows: processed.filtered,
+    paginatedRows: processed.paginated,
 
     // Actions
-    resetFilters,
+    resetFilters: () => {}, // 컴포넌트에서 구현
   }
 }

@@ -1,3 +1,10 @@
+/**
+ * Container 컴포넌트 (공개 페이지 전용)
+ * 
+ * 주의: 인증이 필요한 페이지에서는 StandardPageLayout을 사용하세요.
+ * 이 컴포넌트는 공개 페이지(landing, features 등)에서만 사용됩니다.
+ */
+
 'use client'
 
 import clsx from 'clsx'

@@ -12,7 +12,7 @@ interface StaffTabsContainerProps {
   tabIndex: number
   onTabChange: (index: number) => void
   loading: boolean
-  error: string
+  error: string | undefined
   staffCount: number
   onRetry: () => void
   onCreateStaff: () => void

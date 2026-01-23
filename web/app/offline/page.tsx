@@ -1,26 +1,25 @@
-'use client'
-
-import { useEffect, useState } from 'react'
-import { useRouter } from 'next/navigation'
-import { Box, Typography, Button, Stack } from '@mui/material'
-import { WifiOff, RefreshCw, Home } from 'lucide-react'
-
 /**
  * 오프라인 페이지
  * 네트워크 연결이 없을 때 표시되는 페이지
  */
+
+'use client'
+
+import { useEffect, useState } from 'react'
+import { useRouter } from 'next/navigation'
+import { Box, Container, Typography, Button, Stack, Card, CardContent } from '@mui/material'
+import { WifiOff, RefreshCw, Home } from 'lucide-react'
+import StandardPageLayout from '../components/common/StandardPageLayout'
+
 export default function OfflinePage() {
   const router = useRouter()
-  const [isOnline, setIsOnline] = useState(true)
-  const [isChecking, setIsChecking] = useState(false)
+  const [isOnline, setIsOnline] = useState(false)
 
   useEffect(() => {
-    // 초기 온라인 상태 확인
-    if (typeof window !== 'undefined') {
-      setIsOnline(navigator.onLine)
-    }
+    // 초기 상태 확인
+    setIsOnline(navigator.onLine)
 
-    // 온라인/오프라인 이벤트 리스너
+    // 네트워크 상태 변경 감지
     const handleOnline = () => setIsOnline(true)
     const handleOffline = () => setIsOnline(false)
 
@@ -33,87 +32,96 @@ export default function OfflinePage() {
     }
   }, [])
 
-  // 네트워크 상태 확인
-  const checkConnection = async () => {
-    setIsChecking(true)
-    try {
-      const response = await fetch('/api/health', {
-        method: 'GET',
-        cache: 'no-cache',
-      })
-      if (response.ok) {
-        setIsOnline(true)
-        // 연결이 복구되면 홈으로 이동
-        setTimeout(() => {
-          router.push('/')
-        }, 500)
-      } else {
-        setIsOnline(false)
-      }
-    } catch {
-      setIsOnline(false)
-    } finally {
-      setIsChecking(false)
+  const handleRetry = () => {
+    if (navigator.onLine) {
+      router.refresh()
+    } else {
+      // 오프라인 상태에서도 재시도 (캐시된 페이지 로드)
+      router.push('/')
     }
   }
 
-  // 온라인 상태로 복구되면 자동으로 홈으로 이동
-  useEffect(() => {
-    if (isOnline) {
-      const timer = setTimeout(() => {
-        router.push('/')
-      }, 1000)
-      return () => clearTimeout(timer)
-    }
-    return undefined
-  }, [isOnline, router])
+  const handleGoHome = () => {
+    router.push('/')
+  }
 
   return (
-    <Box
-      sx={{
-        display: 'flex',
-        flexDirection: 'column',
-        alignItems: 'center',
-        justifyContent: 'center',
-        minHeight: '100vh',
-        p: 3,
-        textAlign: 'center',
-        bgcolor: 'background.default',
-      }}
-    >
-      <WifiOff size={64} className="text-neutral-400 mb-4" />
-      
-      <Typography variant="h4" fontWeight="bold" gutterBottom>
-        오프라인 상태입니다
-      </Typography>
-      
-      <Typography variant="body1" color="text.secondary" sx={{ mb: 4, maxWidth: 400 }}>
-        인터넷 연결을 확인해주세요. 네트워크가 복구되면 자동으로 다시 시도합니다.
-      </Typography>
+    <StandardPageLayout maxWidth="sm">
+      <Container maxWidth="sm" sx={{ py: 8 }}>
+        <Stack spacing={4} alignItems="center" textAlign="center">
+          <Box
+            sx={{
+              width: 120,
+              height: 120,
+              borderRadius: '50%',
+              bgcolor: 'action.hover',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+            }}
+          >
+            <WifiOff size={64} color="#9ca3af" />
+          </Box>
 
-      <Stack direction="row" spacing={2}>
-        <Button
-          variant="outlined"
-          startIcon={<Home size={20} />}
-          onClick={() => router.push('/')}
-        >
-          홈으로
-        </Button>
-        <Button
-          variant="contained"
-          startIcon={<RefreshCw size={20} className={isChecking ? 'animate-spin' : ''} />}
-          onClick={checkConnection}
-          disabled={isChecking}
-        >
-          {isChecking ? '확인 중...' : '다시 시도'}
-        </Button>
-      </Stack>
+          <Box>
+            <Typography variant="h4" fontWeight={700} gutterBottom>
+              오프라인 상태입니다
+            </Typography>
+            <Typography variant="body1" color="text.secondary" sx={{ mt: 2 }}>
+              인터넷 연결을 확인하고 다시 시도해주세요.
+            </Typography>
+          </Box>
 
-      {isOnline && (
-        <Typography variant="body2" color="success.main" sx={{ mt: 3 }}>
-          연결이 복구되었습니다. 잠시 후 이동합니다...
-        </Typography>
-      )}
-    </Box>
+          <Card sx={{ width: '100%', maxWidth: 400 }}>
+            <CardContent>
+              <Stack spacing={2}>
+                <Typography variant="subtitle2" fontWeight={600} color="text.secondary">
+                  사용 가능한 기능
+                </Typography>
+                <Stack spacing={1}>
+                  <Typography variant="body2" color="text.secondary">
+                    • 캐시된 페이지 보기
+                  </Typography>
+                  <Typography variant="body2" color="text.secondary">
+                    • 이전에 본 콘텐츠 확인
+                  </Typography>
+                  <Typography variant="body2" color="text.secondary">
+                    • 오프라인 모드 사용
+                  </Typography>
+                </Stack>
+              </Stack>
+            </CardContent>
+          </Card>
+
+          <Stack direction="row" spacing={2} sx={{ width: '100%', maxWidth: 400 }}>
+            <Button
+              variant="outlined"
+              fullWidth
+              startIcon={<Home size={20} />}
+              onClick={handleGoHome}
+              sx={{ minHeight: '44px' }}
+            >
+              홈으로
+            </Button>
+            <Button
+              variant="contained"
+              fullWidth
+              startIcon={<RefreshCw size={20} />}
+              onClick={handleRetry}
+              disabled={!isOnline && !navigator.onLine}
+              sx={{ minHeight: '44px' }}
+            >
+              다시 시도
+            </Button>
+          </Stack>
+
+          {isOnline && (
+            <Typography variant="caption" color="success.main">
+              인터넷 연결이 복구되었습니다. 페이지를 새로고침합니다...
+            </Typography>
+          )}
+        </Stack>
+      </Container>
+    </StandardPageLayout>
   )
 }

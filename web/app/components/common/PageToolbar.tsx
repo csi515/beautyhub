@@ -61,7 +61,7 @@ export default function PageToolbar({
   const isTablet = useMediaQuery(theme.breakpoints.between('md', 'lg')) // 768~1024px: 태블릿
 
   return (
-    <Stack spacing={{ xs: 1.5, sm: 2, md: 2, lg: 2.5 }} className={className}>
+    <Stack spacing={{ xs: 1, sm: 1.5, md: 2 }} className={className}>
       {/* 검색 및 액션 버튼 */}
       {(search || actions || exportAction) && (
         <Paper 
@@ -74,7 +74,7 @@ export default function PageToolbar({
         >
           <Stack 
             direction={{ xs: 'column', sm: 'row' }} 
-            spacing={{ xs: 1.5, sm: 2, md: 2 }} 
+            spacing={{ xs: 1, sm: 1.5, md: 2 }} 
             alignItems="center"
           >
             {/* 검색 */}

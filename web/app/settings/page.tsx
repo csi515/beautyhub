@@ -1,24 +1,15 @@
+/**
+ * Settings 페이지 컨트롤러
+ * 인증 확인, 파라미터 결정, 데이터 로딩 결정, View에 props 전달만 담당
+ */
+
 'use client'
 
 import { useEffect, useState } from 'react'
 import { useAppToast } from '@/app/lib/ui/toast'
 import { settingsApi } from '@/app/lib/api/settings'
 import { DEFAULT_SETTINGS, type SystemSettings, type UserProfile, type SecuritySettings, type DisplaySettings } from '@/types/settings'
-
-// MUI Imports
-import Stack from '@mui/material/Stack'
-import Typography from '@mui/material/Typography'
-import Box from '@mui/material/Box'
-import StandardPageLayout from '@/app/components/common/StandardPageLayout'
-
-// Summary Cards
-import UserProfileSummaryCard from '@/app/components/settings/cards/UserProfileSummaryCard'
-import SystemSettingsSummaryCard from '@/app/components/settings/cards/SystemSettingsSummaryCard'
-import SecuritySettingsSummaryCard from '@/app/components/settings/cards/SecuritySettingsSummaryCard'
-import DisplaySettingsSummaryCard from '@/app/components/settings/cards/DisplaySettingsSummaryCard'
-import AccountSettingsSummaryCard from '@/app/components/settings/cards/AccountSettingsSummaryCard'
-
-// Modals
+import SettingsPageView from '@/app/components/settings/SettingsPageView'
 import UserProfileModal from '@/app/components/settings/modals/UserProfileModal'
 import SystemSettingsModal from '@/app/components/settings/modals/SystemSettingsModal'
 import SecuritySettingsModal from '@/app/components/settings/modals/SecuritySettingsModal'
@@ -178,50 +169,21 @@ export default function SettingsPage() {
   }
 
   return (
-    <StandardPageLayout
-      loading={loading}
-      maxWidth={{ xs: '100%', md: '1200px' }}
-    >
-      <Stack spacing={4}>
-        {/* 헤더 */}
-        <Box>
-          <Typography variant="h4" fontWeight="bold" gutterBottom sx={{ fontSize: { xs: '1.5rem', sm: '2rem' } }}>
-            설정
-          </Typography>
-          <Typography variant="body2" color="text.secondary" sx={{ fontSize: { xs: '0.875rem', sm: '0.9375rem' } }}>
-            계정 정보, 알림, 표시 등 개인 설정을 관리하세요
-          </Typography>
-        </Box>
-
-        {/* 요약 카드들 */}
-        <Stack spacing={{ xs: 2, sm: 3 }}>
-          <UserProfileSummaryCard
-            data={userProfile}
-            onEdit={() => setProfileModalOpen(true)}
-          />
-
-          <SystemSettingsSummaryCard
-            data={systemSettings}
-            onEdit={() => setSystemModalOpen(true)}
-          />
-
-          <SecuritySettingsSummaryCard
-            data={securitySettings}
-            onEdit={() => setSecurityModalOpen(true)}
-          />
-
-          <DisplaySettingsSummaryCard
-            data={displaySettings}
-            onEdit={() => setDisplayModalOpen(true)}
-          />
-
-          <AccountSettingsSummaryCard
-            onLogout={handleLogout}
-            onDeleteAccount={handleDeleteAccount}
-            onExportData={handleExportData}
-          />
-        </Stack>
-      </Stack>
+    <>
+      <SettingsPageView
+        systemSettings={systemSettings}
+        userProfile={userProfile}
+        securitySettings={securitySettings}
+        displaySettings={displaySettings}
+        loading={loading}
+        onEditProfile={() => setProfileModalOpen(true)}
+        onEditSystemSettings={() => setSystemModalOpen(true)}
+        onEditSecuritySettings={() => setSecurityModalOpen(true)}
+        onEditDisplaySettings={() => setDisplayModalOpen(true)}
+        onLogout={handleLogout}
+        onDeleteAccount={handleDeleteAccount}
+        onExportData={handleExportData}
+      />
 
       {/* 모달들 */}
       <UserProfileModal
@@ -251,6 +213,6 @@ export default function SettingsPage() {
         onClose={() => setDisplayModalOpen(false)}
         onSave={handleSaveDisplaySettings}
       />
-    </StandardPageLayout>
+    </>
   )
 }
