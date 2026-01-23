@@ -1,7 +1,7 @@
 'use client'
 
 import { useMemo } from 'react'
-import { Box, Typography, Stack, List, ListItem, ListItemText } from '@mui/material'
+import { Box, Typography, Stack, List, ListItem, ListItemText, useTheme, useMediaQuery } from '@mui/material'
 import Link from 'next/link'
 import { CalendarX } from 'lucide-react'
 import Card from '../../ui/Card'
@@ -19,13 +19,22 @@ interface DashboardAppointmentsWidgetProps {
 }
 
 export default function DashboardAppointmentsWidget({ recentAppointments }: DashboardAppointmentsWidgetProps) {
+  const theme = useTheme()
+  const isMobile = useMediaQuery(theme.breakpoints.down('sm'))
+  
   const slicedAppointments = useMemo(
-    () => recentAppointments?.slice(0, 8) || [],
-    [recentAppointments]
+    () => recentAppointments?.slice(0, isMobile ? 3 : 8) || [],
+    [recentAppointments, isMobile]
   )
 
   return (
-    <Card sx={{ height: '100%' }}>
+    <Card sx={{ 
+      height: '100%',
+      maxHeight: { xs: 200, md: 'none' },
+      display: 'flex',
+      flexDirection: 'column',
+      overflow: 'hidden'
+    }}>
       <Box sx={{ borderBottom: 1, borderColor: 'divider', pb: 2.5, mb: 2, display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: { xs: 'wrap', sm: 'nowrap' }, gap: { xs: 1, sm: 0 } }}>
         <Typography variant="subtitle1" fontWeight={700} sx={{ background: 'linear-gradient(to right, #db2777, #e11d48)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>
           최근 예약
@@ -49,7 +58,15 @@ export default function DashboardAppointmentsWidget({ recentAppointments }: Dash
           전체보기 →
         </Box>
       </Box>
-      <List disablePadding sx={{ width: '100%', overflowX: 'hidden' }}>
+      <List 
+        disablePadding 
+        sx={{ 
+          width: '100%',
+          overflowX: 'hidden',
+          overflowY: { xs: 'auto', md: 'visible' },
+          flex: 1
+        }}
+      >
         {slicedAppointments.length > 0 ? slicedAppointments.map((a: RecentAppointment, index: number) => {
           const isToday = new Date(a.appointment_date).toDateString() === new Date().toDateString()
           return (
@@ -104,14 +121,18 @@ export default function DashboardAppointmentsWidget({ recentAppointments }: Dash
             alignItems="center"
             justifyContent="center"
             spacing={2}
-            sx={{ py: 6 }}
+            sx={{ 
+              py: 3,
+              minHeight: { xs: 100, sm: 120 },
+              maxHeight: { xs: 140, sm: 160 }
+            }}
           >
             <CalendarX
-              size={48}
+              size={isMobile ? 32 : 40}
               className="text-gray-300"
               style={{
-                width: 'clamp(40px, 12vw, 48px)',
-                height: 'clamp(40px, 12vw, 48px)'
+                width: isMobile ? '32px' : 'clamp(40px, 12vw, 48px)',
+                height: isMobile ? '32px' : 'clamp(40px, 12vw, 48px)'
               }}
             />
             <Box textAlign="center">

@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import Modal, { ModalBody, ModalFooter, ModalHeader } from '../ui/Modal'
+import SwipeableModal, { SwipeableModalBody, SwipeableModalFooter, SwipeableModalHeader } from '../ui/SwipeableModal'
 import Button from '../ui/Button'
 import { useAppToast } from '@/app/lib/ui/toast'
 import StaffAutoComplete from '../StaffAutoComplete'
@@ -156,13 +156,13 @@ export default function ReservationCreateModal({ open, onClose, draft, onSaved }
 
   if (!open) return null
   return (
-    <Modal open={open} onClose={onClose} size="lg">
-      <ModalHeader
+    <SwipeableModal open={open} onClose={onClose} size="fullscreen">
+      <SwipeableModalHeader
         title="새 예약"
         description="날짜와 시간, 고객, 서비스를 선택해 새로운 예약을 등록합니다."
         onClose={onClose}
       />
-      <ModalBody>
+      <SwipeableModalBody>
         <div className="grid gap-4 md:grid-cols-[280px,1fr]">
           <div className="space-y-3">
             {error && <p className="text-sm text-rose-600">{error}</p>}
@@ -475,14 +475,14 @@ export default function ReservationCreateModal({ open, onClose, draft, onSaved }
             </div>
           </div>
         </div>
-      </ModalBody>
-      <ModalFooter>
-        <Button variant="secondary" onClick={onClose} disabled={loading} className="w-full md:w-auto">취소</Button>
-        <Button variant="primary" onClick={save} disabled={loading || (enableRepeat && repeatDays.length === 0)} className="w-full md:w-auto">
+      </SwipeableModalBody>
+      <SwipeableModalFooter>
+        <Button variant="secondary" onClick={onClose} disabled={loading} fullWidth sx={{ minHeight: '44px' }}>취소</Button>
+        <Button variant="primary" onClick={save} disabled={loading || (enableRepeat && repeatDays.length === 0)} fullWidth sx={{ minHeight: '44px' }}>
           {enableRepeat ? '반복 예약 생성' : '저장'}
         </Button>
-      </ModalFooter>
-    </Modal>
+      </SwipeableModalFooter>
+    </SwipeableModal>
   )
 }
 

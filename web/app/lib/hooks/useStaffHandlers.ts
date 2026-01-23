@@ -1,9 +1,10 @@
-import { useState } from 'react'
 import { format, addWeeks, getDay, addDays } from 'date-fns'
 import { useAppToast } from '../ui/toast'
 import { staffApi } from '../api/staff'
 import { attendanceApi } from '../api/attendance'
 import { exportToCSV } from '../utils/export'
+import { useModals } from './useModals'
+import { useModalWithData } from './useModalWithData'
 import { Staff, StaffAttendance, StaffAttendanceCreateInput } from '@/types/entities'
 import { StaffScheduleRepeat } from '@/types/staff'
 
@@ -15,16 +16,12 @@ export function useStaffHandlers(
   const toast = useAppToast()
 
   // Modal states
-  const [detailOpen, setDetailOpen] = useState(false)
-  const [statusOpen, setStatusOpen] = useState(false)
-  const [attendanceRecordOpen, setAttendanceRecordOpen] = useState(false)
-  const [scheduleOpen, setScheduleOpen] = useState(false)
-  const [weeklyScheduleOpen, setWeeklyScheduleOpen] = useState(false)
-
+  const modals = useModals<'detail' | 'status' | 'attendanceRecord' | 'schedule' | 'weeklySchedule'>()
+  
   // Selected items
-  const [selected, setSelected] = useState<Staff | null>(null)
-  const [selectedAttendance, setSelectedAttendance] = useState<StaffAttendance | null>(null)
-  const [selectedDate, setSelectedDate] = useState<Date | null>(null)
+  const selectedStaff = useModalWithData<Staff>()
+  const selectedAttendance = useModalWithData<StaffAttendance>()
+  const selectedDate = useModalWithData<Date>()
 
   // === Export ===
   const handleExport = (tabIndex: number) => {
@@ -115,15 +112,17 @@ export function useStaffHandlers(
   }
 
   const handleOpenAttendanceRecord = (staff: Staff, record?: StaffAttendance) => {
-    setSelected(staff)
-    setSelectedAttendance(record || null)
-    setAttendanceRecordOpen(true)
+    selectedStaff.openModal(staff)
+    if (record) {
+      selectedAttendance.openModal(record)
+    }
+    modals.open('attendanceRecord')
   }
 
   const handleSaveAttendanceRecord = async (data: StaffAttendanceCreateInput) => {
     try {
-      if (selectedAttendance) {
-        await attendanceApi.update(selectedAttendance.id, data)
+      if (selectedAttendance.data) {
+        await attendanceApi.update(selectedAttendance.data.id, data)
         toast.success('근태 기록이 수정되었습니다')
       } else {
         await attendanceApi.create(data)
@@ -149,10 +148,12 @@ export function useStaffHandlers(
 
   // === 스케줄 핸들러 ===
   const handleOpenSchedule = (staff: Staff, date: Date, schedule?: StaffAttendance) => {
-    setSelected(staff)
-    setSelectedDate(date)
-    setSelectedAttendance(schedule || null)
-    setScheduleOpen(true)
+    selectedStaff.openModal(staff)
+    selectedDate.openModal(date)
+    if (schedule) {
+      selectedAttendance.openModal(schedule)
+    }
+    modals.open('schedule')
   }
 
   const handleSaveSchedule = async (
@@ -160,9 +161,9 @@ export function useStaffHandlers(
     repeat?: StaffScheduleRepeat
   ) => {
     try {
-      if (selectedAttendance) {
+      if (selectedAttendance.data) {
         // 수정 모드
-        await attendanceApi.update(selectedAttendance.id, data)
+        await attendanceApi.update(selectedAttendance.data.id, data)
         toast.success('스케줄이 수정되었습니다')
       } else {
         // 추가 모드
@@ -287,21 +288,21 @@ export function useStaffHandlers(
 
   // === 직원 관리 핸들러 ===
   const handleEdit = (staff: Staff) => {
-    setSelected(staff)
-    setDetailOpen(true)
+    selectedStaff.openModal(staff)
+    modals.open('detail')
   }
 
   const handleStatusClick = (staff: Staff) => {
-    setSelected(staff)
-    setStatusOpen(true)
+    selectedStaff.openModal(staff)
+    modals.open('status')
   }
 
   const handleStatusSave = async (status: string) => {
-    if (!selected) return
+    if (!selectedStaff.data) return
     try {
-      await staffApi.update(selected.id, { status })
+      await staffApi.update(selectedStaff.data.id, { status })
       await loadAll()
-      setStatusOpen(false)
+      modals.close('status')
       toast.success('상태가 변경되었습니다')
     } catch (e) {
       console.error(e)
@@ -310,8 +311,8 @@ export function useStaffHandlers(
   }
 
   const handleCreateStaff = () => {
-    setSelected(null)
-    setDetailOpen(true)
+    selectedStaff.closeModal()
+    modals.open('detail')
   }
 
   // const handleOpenWeeklySchedule = (staff: Staff) => {
@@ -321,16 +322,16 @@ export function useStaffHandlers(
 
   return {
     // Modal states
-    detailOpen,
-    statusOpen,
-    attendanceRecordOpen,
-    scheduleOpen,
-    weeklyScheduleOpen,
+    detailOpen: modals.isOpen('detail'),
+    statusOpen: modals.isOpen('status'),
+    attendanceRecordOpen: modals.isOpen('attendanceRecord'),
+    scheduleOpen: modals.isOpen('schedule'),
+    weeklyScheduleOpen: modals.isOpen('weeklySchedule'),
 
     // Selected items
-    selected,
-    selectedAttendance,
-    selectedDate,
+    selected: selectedStaff.data,
+    selectedAttendance: selectedAttendance.data,
+    selectedDate: selectedDate.data,
 
     // Handlers
     handleExport: (tabIndex: number) => handleExport(tabIndex),
@@ -350,11 +351,17 @@ export function useStaffHandlers(
     handleCreateStaff,
 
     // Modal setters
-    setDetailOpen,
-    setStatusOpen,
-    setAttendanceRecordOpen,
-    setScheduleOpen,
-    setWeeklyScheduleOpen,
-    setSelected,
+    setDetailOpen: (open: boolean) => modals.setOpen('detail', open),
+    setStatusOpen: (open: boolean) => modals.setOpen('status', open),
+    setAttendanceRecordOpen: (open: boolean) => modals.setOpen('attendanceRecord', open),
+    setScheduleOpen: (open: boolean) => modals.setOpen('schedule', open),
+    setWeeklyScheduleOpen: (open: boolean) => modals.setOpen('weeklySchedule', open),
+    setSelected: (staff: Staff | null) => {
+      if (staff) {
+        selectedStaff.openModal(staff)
+      } else {
+        selectedStaff.closeModal()
+      }
+    },
   }
 }

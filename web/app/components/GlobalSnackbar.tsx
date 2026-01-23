@@ -1,5 +1,17 @@
 'use client'
 
+/**
+ * Snackbar 시스템
+ * 
+ * Toast vs Snackbar 사용 가이드:
+ * - Toast (useAppToast): 풍부한 UI (title, description), 여러 개 동시 표시 가능, 복잡한 알림
+ * - Snackbar (useSnackbar): 간단한 메시지, 단일 알림, 빠른 피드백
+ * 
+ * 권장 사용:
+ * - Toast: 성공/실패 메시지, 상세한 설명이 필요한 경우
+ * - Snackbar: 간단한 상태 변경 알림, 빠른 피드백
+ */
+
 import { createContext, useContext, useState, useCallback, ReactNode } from 'react'
 import Snackbar from '@mui/material/Snackbar'
 import Alert from '@mui/material/Alert'

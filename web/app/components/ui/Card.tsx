@@ -42,7 +42,7 @@ export default function Card({
         }
       }}
       sx={{
-        p: compact ? { xs: 2, sm: 2.5 } : { xs: 2.5, sm: 3 }, // 모바일에서 패딩 축소
+        p: compact ? { xs: 1.5, sm: 2, md: 2.5 } : { xs: 1.5, sm: 2.5, md: 3 }, // 모바일에서 패딩 축소
         borderRadius: 3, // rounded-xl (12px)
         border: `1px solid ${theme.palette.divider}`, // border-neutral-200
         boxShadow: 'var(--shadow-card)',

@@ -1,9 +1,10 @@
 'use client'
 
-import { createContext, useContext, useState, useCallback, useMemo, ReactNode } from 'react'
+import { createContext, useContext, useState, useCallback, useMemo, useEffect, ReactNode } from 'react'
 import { CheckCircle2, AlertCircle, Info, AlertTriangle, X } from 'lucide-react'
 import IconButton from '@mui/material/IconButton'
 import clsx from 'clsx'
+import { useHapticFeedback } from '@/app/lib/hooks/useHapticFeedback'
 
 type ToastVariant = 'success' | 'error' | 'info' | 'warning'
 
@@ -78,6 +79,18 @@ function ToastItem({
   index: number
 }) {
   const [isExiting, setIsExiting] = useState(false)
+  const { success, error, light } = useHapticFeedback()
+
+  // Toast 표시 시 햅틱 피드백
+  useEffect(() => {
+    if (toast.variant === 'success') {
+      success()
+    } else if (toast.variant === 'error') {
+      error()
+    } else {
+      light()
+    }
+  }, [toast.id, toast.variant, success, error, light])
 
   const variantConfig = {
     success: {

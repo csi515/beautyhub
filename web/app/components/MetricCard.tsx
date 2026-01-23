@@ -44,7 +44,7 @@ function MetricCard({
         background: scheme.bg,
         borderRadius: 'var(--radius-xl)',
         border: `2px solid ${scheme.border}`,
-        p: { xs: 1.5, md: 3 },
+        p: { xs: 1, sm: 1.5, md: 2.5, lg: 3 },
         height: '100%',
         transition: 'all 300ms ease-out',
         boxShadow: 'var(--shadow-card)',

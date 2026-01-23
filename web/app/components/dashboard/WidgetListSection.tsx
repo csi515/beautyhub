@@ -70,7 +70,7 @@ export default function WidgetListSection({
             onClick={onReset} 
             color="warning"
             sx={{ 
-              minHeight: { xs: '36px', sm: 'auto' },
+              minHeight: { xs: '44px', sm: 'auto' },
               fontSize: { xs: '0.875rem', sm: '0.8125rem' }
             }}
           >
@@ -176,7 +176,7 @@ export default function WidgetListSection({
                 variant="outlined"
                 sx={{ 
                   cursor: 'pointer',
-                  minHeight: { xs: '36px', sm: '32px' },
+                  minHeight: { xs: '44px', sm: '32px' },
                   fontSize: { xs: '0.875rem', sm: '0.8125rem' },
                   '&:active': {
                     transform: 'scale(0.95)'

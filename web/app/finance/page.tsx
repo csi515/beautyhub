@@ -5,13 +5,14 @@
 
 'use client'
 
-import { lazy, Suspense, useState } from 'react'
+import { lazy, Suspense } from 'react'
 import FinancePageView from '../components/finance/FinancePageView'
 import FinanceCreateModal from '../components/finance/FinanceCreateModal'
 import { useFinanceData } from '../lib/hooks/useFinanceData'
 import { useFinanceFilters } from '../lib/hooks/useFinanceFilters'
 import { useFinanceActions } from '../lib/hooks/useFinanceActions'
-import type { FinanceModalState, FinanceCombinedRow } from '@/types/finance'
+import { useModals } from '../lib/hooks/useModals'
+import type { FinanceCombinedRow } from '@/types/finance'
 
 // Modals
 const ExpenseDetailModal = lazy(() => import('../components/modals/ExpenseDetailModal'))
@@ -19,13 +20,7 @@ const TransactionDetailModal = lazy(() => import('../components/modals/Transacti
 
 export default function FinancePage() {
   // 모달 상태 관리 (컨트롤러 역할)
-  const [modalState, setModalState] = useState<FinanceModalState>({
-    newOpen: false,
-    expenseOpen: false,
-    txOpen: false,
-    expenseDetail: null,
-    txDetail: null
-  })
+  const modals = useModals<'new' | 'expense' | 'tx'>()
 
   // Data hooks
   const {
@@ -66,11 +61,11 @@ export default function FinancePage() {
 
   // 이벤트 핸들러 (컨트롤러 역할)
   const openCreateModal = () => {
-    setModalState(prev => ({ ...prev, newOpen: true }))
+    modals.open('new')
   }
 
   const closeCreateModal = () => {
-    setModalState(prev => ({ ...prev, newOpen: false }))
+    modals.close('new')
   }
 
   const handleCreateSubmit = async (incomeCategories: string[], expenseCategories: string[]): Promise<boolean> => {
@@ -83,17 +78,9 @@ export default function FinancePage() {
 
   const handleItemClick = (row: FinanceCombinedRow) => {
     if (row.type === 'income') {
-      setModalState(prev => ({
-        ...prev,
-        txDetail: row.raw as any,
-        txOpen: true
-      }))
+      modals.open('tx', row.raw)
     } else {
-      setModalState(prev => ({
-        ...prev,
-        expenseDetail: row.raw as any,
-        expenseOpen: true
-      }))
+      modals.open('expense', row.raw)
     }
   }
 
@@ -123,7 +110,7 @@ export default function FinancePage() {
 
       {/* 신규 등록 모달 */}
       <FinanceCreateModal
-        open={modalState.newOpen}
+        open={modals.isOpen('new')}
         onClose={closeCreateModal}
         form={createForm}
         onFormChange={updateCreateForm}
@@ -134,20 +121,20 @@ export default function FinancePage() {
 
       {/* 상세 모달 (Lazy) */}
       <Suspense fallback={null}>
-        {modalState.expenseOpen && (
+        {modals.isOpen('expense') && (
           <ExpenseDetailModal
-            open={modalState.expenseOpen}
-            item={modalState.expenseDetail}
-            onClose={() => setModalState(prev => ({ ...prev, expenseOpen: false, expenseDetail: null }))}
+            open={modals.isOpen('expense')}
+            item={modals.getSelected<any>('expense')}
+            onClose={() => modals.close('expense')}
             onSaved={load}
             onDeleted={load}
           />
         )}
-        {modalState.txOpen && (
+        {modals.isOpen('tx') && (
           <TransactionDetailModal
-            open={modalState.txOpen}
-            item={modalState.txDetail}
-            onClose={() => setModalState(prev => ({ ...prev, txOpen: false, txDetail: null }))}
+            open={modals.isOpen('tx')}
+            item={modals.getSelected<any>('tx')}
+            onClose={() => modals.close('tx')}
             onSaved={load}
             onDeleted={load}
           />

@@ -72,6 +72,16 @@ a:not([class*="h-"]):not([class*="w-"]),
   -webkit-overflow-scrolling: touch;
 }
 
+/* 스크롤 컨테이너 성능 최적화 */
+.scroll-container,
+[class*="scroll"],
+.MuiBox-root[style*="overflow"],
+.MuiContainer-root {
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior: contain;
+  scroll-behavior: smooth;
+}
+
 /* Container padding - 모바일 기본 (축소) */
 .container {
   padding-left: 0.75rem;

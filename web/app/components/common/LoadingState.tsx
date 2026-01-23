@@ -2,11 +2,12 @@
 
 import { Box, Grid, Card, CardContent } from '@mui/material'
 import { Skeleton } from '../ui/Skeleton'
+import { useResponsiveSpacing } from '../../lib/hooks/useResponsiveSpacing'
 
 type LoadingStateProps = {
   rows?: number
   columns?: number
-  variant?: 'table' | 'card' | 'list'
+  variant?: 'table' | 'card' | 'list' | 'listSimple'
   className?: string
 }
 
@@ -21,6 +22,8 @@ export default function LoadingState({
   variant = 'list',
   className = '',
 }: LoadingStateProps) {
+  const spacing = useResponsiveSpacing()
+
   if (variant === 'table') {
     return (
       <Box className={className}>
@@ -40,7 +43,7 @@ export default function LoadingState({
     return (
       <Grid 
         container 
-        spacing={{ xs: 0.75, sm: 1.5, md: 2 }} 
+        spacing={spacing.card as { xs?: number; sm?: number; md?: number; lg?: number }} 
         className={className}
       >
         {Array.from({ length: rows }).map((_, i) => (
@@ -56,6 +59,32 @@ export default function LoadingState({
           </Grid>
         ))}
       </Grid>
+    )
+  }
+
+  if (variant === 'listSimple') {
+    // 아바타 없는 간단한 리스트 스켈레톤 (제목 + 보조 텍스트)
+    return (
+      <Box className={className}>
+        {Array.from({ length: rows }).map((_, i) => (
+          <Box 
+            key={i} 
+            sx={{ 
+              minHeight: 72,
+              py: 2,
+              px: 2,
+              borderBottom: '1px solid',
+              borderColor: 'divider',
+              mb: 0,
+            }}
+          >
+            <Box sx={{ width: '100%' }}>
+              <Skeleton width="45%" height={20} sx={{ mb: 0.5 }} />
+              <Skeleton width="75%" height={16} />
+            </Box>
+          </Box>
+        ))}
+      </Box>
     )
   }
 

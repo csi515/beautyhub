@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import { Box, Grid, Typography } from '@mui/material'
 import { Save, Percent } from 'lucide-react'
-import Modal, { ModalBody, ModalFooter, ModalHeader } from '../ui/Modal'
+import SwipeableModal, { SwipeableModalBody, SwipeableModalFooter, SwipeableModalHeader } from '../ui/SwipeableModal'
 import Button from '../ui/Button'
 import Input from '../ui/Input'
 import { useAppToast } from '../../lib/ui/toast'
@@ -110,9 +110,9 @@ export default function PayrollSettingsModal({
     }
 
     return (
-        <Modal open={open} onClose={onClose} size="md">
-            <ModalHeader title={`${staffName}님 급여 설정`} onClose={onClose} />
-            <ModalBody>
+        <SwipeableModal open={open} onClose={onClose} size="fullscreen">
+            <SwipeableModalHeader title={`${staffName}님 급여 설정`} onClose={onClose} />
+            <SwipeableModalBody>
                 <Box className="space-y-6">
                     <Box>
                         <Typography variant="subtitle2" className="mb-3 font-bold text-gray-700">기본 급여 정보</Typography>
@@ -182,20 +182,20 @@ export default function PayrollSettingsModal({
                         </Grid>
                     </Box>
                 </Box>
-            </ModalBody>
-            <ModalFooter>
-                <div className="flex justify-end gap-2 w-full">
-                    <Button variant="ghost" onClick={onClose}>취소</Button>
-                    <Button
-                        variant="primary"
-                        onClick={handleSubmit}
-                        loading={saving}
-                        leftIcon={<Save size={18} />}
-                    >
-                        저장하기
-                    </Button>
-                </div>
-            </ModalFooter>
-        </Modal>
+            </SwipeableModalBody>
+            <SwipeableModalFooter>
+                <Button variant="secondary" onClick={onClose} fullWidth sx={{ minHeight: '44px' }}>취소</Button>
+                <Button
+                    variant="primary"
+                    onClick={handleSubmit}
+                    loading={saving}
+                    leftIcon={<Save size={18} />}
+                    fullWidth
+                    sx={{ minHeight: '44px' }}
+                >
+                    저장하기
+                </Button>
+            </SwipeableModalFooter>
+        </SwipeableModal>
     )
 }

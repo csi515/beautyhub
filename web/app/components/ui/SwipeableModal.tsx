@@ -10,11 +10,11 @@ import IconButton from '@mui/material/IconButton'
 import Typography from '@mui/material/Typography'
 import Box from '@mui/material/Box'
 import Stack from '@mui/material/Stack'
-import useMediaQuery from '@mui/material/useMediaQuery'
-import { useTheme } from '@mui/material/styles'
+import { useTheme, useMediaQuery } from '@mui/material'
 import { X } from 'lucide-react'
 import { lockScroll, unlockScroll } from '@/app/lib/utils/scrollLock'
 import { useHapticFeedback } from '@/app/lib/hooks/useHapticFeedback'
+import { useModalVariant } from '@/app/lib/hooks/useModalVariant'
 
 type SwipeableModalSize = 'sm' | 'md' | 'lg' | 'xl' | 'full' | 'fullscreen'
 
@@ -41,37 +41,31 @@ function SwipeableModal({
   disableAutoFocus = false,
   ...props
 }: SwipeableModalProps) {
-  const theme = useTheme()
-  const isMobile = useMediaQuery(theme.breakpoints.down('sm'))
+  const modal = useModalVariant({
+    open,
+    size,
+    closeOnOutsideClick,
+    disableAutoFocus,
+    onClose,
+  })
+
   const [drawerOpen, setDrawerOpen] = useState(false)
   
   // 햅틱 피드백
   const { light } = useHapticFeedback()
 
-  // size를 MUI maxWidth로 매핑
-  const getMaxWidth = (): 'xs' | 'sm' | 'md' | 'lg' | 'xl' | false => {
-    if (size === 'full' || size === 'fullscreen') return false
-    const sizeMap: Record<string, 'xs' | 'sm' | 'md' | 'lg' | 'xl'> = {
-      sm: 'sm',
-      md: 'md',
-      lg: 'lg',
-      xl: 'xl',
-    }
-    return sizeMap[size] || 'lg'
-  }
-
   // Drawer 상태 동기화
   useEffect(() => {
-    if (isMobile) {
+    if (modal.isMobile) {
       setDrawerOpen(open)
     }
-  }, [open, isMobile])
+  }, [open, modal.isMobile])
 
   // 스크롤 잠금
   useEffect(() => {
     if (open) {
       lockScroll()
-      if (isMobile) {
+      if (modal.isMobile) {
         light() // 모바일에서만 햅틱 피드백
       }
     } else {
@@ -80,29 +74,14 @@ function SwipeableModal({
     return () => {
       unlockScroll()
     }
-  }, [open, isMobile, light])
+  }, [open, modal.isMobile, light])
 
   // 모바일: fullscreen일 때 Dialog 사용, 그 외에는 SwipeableDrawer
-  if (isMobile) {
+  if (modal.isMobile) {
     // fullscreen: Dialog fullScreen 사용
-    if (size === 'fullscreen') {
+    if (modal.variant === 'fullscreen') {
       return (
-        <Dialog
-          open={open}
-          onClose={closeOnOutsideClick ? onClose : undefined}
-          fullScreen
-          disableAutoFocus={disableAutoFocus}
-          sx={{
-            '& .MuiDialog-paper': {
-              m: 0,
-              borderRadius: 0,
-              maxHeight: '100vh',
-            },
-          }}
-          TransitionProps={{
-            timeout: 300,
-          }}
-        >
+        <Dialog {...modal.dialogProps} TransitionProps={{ timeout: 300 }}>
           {children}
         </Dialog>
       )
@@ -110,24 +89,7 @@ function SwipeableModal({
 
     // 그 외: SwipeableDrawer 사용
     return (
-      <SwipeableDrawer
-        anchor="bottom"
-        open={drawerOpen}
-        onClose={onClose}
-        onOpen={() => {}}
-        disableSwipeToOpen
-        ModalProps={{
-          keepMounted: false,
-        }}
-        sx={{
-          '& .MuiDrawer-paper': {
-            maxHeight: size === 'full' ? '100%' : '90vh',
-            borderTopLeftRadius: 16,
-            borderTopRightRadius: 16,
-            overflow: 'visible',
-          },
-        }}
-      >
+      <SwipeableDrawer {...modal.drawerProps} open={drawerOpen}>
         <Box
           sx={{
             display: 'flex',
@@ -158,18 +120,10 @@ function SwipeableModal({
   // 데스크탑: Dialog
   return (
     <Dialog
-      open={open}
-      onClose={closeOnOutsideClick ? onClose : undefined}
-      maxWidth={getMaxWidth()}
-      fullWidth
-      disableAutoFocus={disableAutoFocus}
+      {...modal.dialogProps}
       aria-labelledby="swipeable-modal-title"
       sx={{
-        '& .MuiDialog-paper': {
-          borderRadius: 'var(--radius-2xl)',
-          boxShadow: 'var(--shadow-modal)',
-          border: '1px solid var(--neutral-200)',
-        },
+        ...modal.dialogProps.sx,
         ...((props as any).sx || {}),
       }}
       {...props}

@@ -16,6 +16,7 @@ import { useMemo } from 'react'
 import { exportToCSV } from '../lib/utils/export'
 import { useAppToast } from '../lib/ui/toast'
 import { useAppointments } from '../lib/hooks/useAppointments'
+import { useModalWithData } from '../lib/hooks/useModalWithData'
 import { formatRangeLabel, getDateRange, type AppointmentEvent, type CalendarView } from '../lib/utils/appointmentUtils'
 import { AppointmentsService } from '../lib/services/appointments.service'
 
@@ -40,16 +41,8 @@ export default function AppointmentsPage() {
   const [view, setView] = useState<CalendarView>('month')
   const [currentDate, setCurrentDate] = useState<Date | null>(new Date())
   const [rangeLabel, setRangeLabel] = useState<string>('')
-  const [createOpen, setCreateOpen] = useState(false)
-  const [detailOpen, setDetailOpen] = useState(false)
-  const [draft, setDraft] = useState<{ date: string; start: string; end: string; status: string; notes: string }>({
-    date: '',
-    start: '10:00',
-    end: '11:00',
-    status: 'scheduled',
-    notes: '',
-  })
-  const [selected, setSelected] = useState<SelectedAppointment | null>(null)
+  const createModal = useModalWithData<{ date: string; start: string; end: string; status: string; notes: string }>()
+  const detailModal = useModalWithData<SelectedAppointment>()
   const calendarRef = useRef<any>(null)
   const timelineRef = useRef<MobileTimelineViewRef>(null)
   const [mobileViewMode, setMobileViewMode] = useState<'timeline' | 'calendar'>('calendar')
@@ -80,8 +73,10 @@ export default function AppointmentsPage() {
 
 
   const handleNavigate = (newDate: Date) => {
-    setCurrentDate(newDate)
-    updateRangeAndLabel(newDate, view)
+    // 날짜 객체를 명시적으로 복사하여 참조 문제 방지
+    const normalizedDate = new Date(newDate.getFullYear(), newDate.getMonth(), newDate.getDate())
+    setCurrentDate(normalizedDate)
+    updateRangeAndLabel(normalizedDate, view)
   }
 
   const updateRangeAndLabel = (date: Date, viewType: CalendarView) => {
@@ -111,7 +106,10 @@ export default function AppointmentsPage() {
   }
 
   const handleToday = () => {
-    handleNavigate(new Date())
+    // 오늘 날짜를 명시적으로 생성 (시간은 0으로 초기화하여 날짜만 사용)
+    const today = new Date()
+    const todayNormalized = new Date(today.getFullYear(), today.getMonth(), today.getDate())
+    handleNavigate(todayNormalized)
   }
 
   const handleChangeView = (nextView: CalendarView) => {
@@ -121,19 +119,18 @@ export default function AppointmentsPage() {
   }
 
   const handleSelectSlot = ({ start }: { start: Date; end: Date }) => {
-    setDraft({
+    createModal.openModal({
       date: start.toISOString().slice(0, 10),
       start: '10:00',
       end: '11:00',
       status: 'scheduled',
       notes: '',
     })
-    setCreateOpen(true)
   }
 
   const handleSelectEvent = (event: AppointmentEvent) => {
     const startDate = typeof event.start === 'string' ? new Date(event.start) : event.start
-    setSelected({
+    detailModal.openModal({
       id: event.id,
       date: startDate.toISOString().slice(0, 10),
       start: format(startDate, 'HH:mm'),
@@ -144,7 +141,6 @@ export default function AppointmentsPage() {
       customer_id: event.extendedProps?.customer_id || '',
       staff_id: event.extendedProps?.staff_id || '',
     })
-    setDetailOpen(true)
   }
 
   const handleMobileEventClick = (event: AppointmentEvent) => {
@@ -152,14 +148,13 @@ export default function AppointmentsPage() {
   }
 
   const handleMobileDateClick = (date: Date) => {
-    setDraft({
+    createModal.openModal({
       date: date.toISOString().slice(0, 10),
       start: '10:00',
       end: '11:00',
       status: 'scheduled',
       notes: '',
     })
-    setCreateOpen(true)
   }
 
   React.useEffect(() => {
@@ -203,14 +198,13 @@ export default function AppointmentsPage() {
             onStatusFilterChange={setStatusFilter}
             onExport={handleExport}
             onCreateClick={() => {
-              setDraft({
+              createModal.openModal({
                 date: new Date().toISOString().slice(0, 10),
                 start: '10:00',
                 end: '11:00',
                 status: 'scheduled',
                 notes: '',
               })
-              setCreateOpen(true)
             }}
           />
         }
@@ -286,31 +280,36 @@ export default function AppointmentsPage() {
       )}
 
 
-      <ReservationCreateModal
-        open={createOpen}
-        draft={draft}
-        onClose={() => setCreateOpen(false)}
-        onSaved={async () => {
-          if (currentDate) {
-            await reloadCalendar(currentDate, view)
-          }
-        }}
-      />
-      <ReservationDetailModal
-        open={detailOpen}
-        item={selected}
-        onClose={() => setDetailOpen(false)}
-        onSaved={async () => {
-          if (currentDate) {
-            await reloadCalendar(currentDate, view)
-          }
-        }}
-        onDeleted={async () => {
-          if (currentDate) {
-            await reloadCalendar(currentDate, view)
-          }
-        }}
-      />
+      {createModal.open && createModal.data && (
+        <ReservationCreateModal
+          open={createModal.open}
+          draft={createModal.data}
+          onClose={createModal.closeModal}
+          onSaved={async () => {
+            if (currentDate) {
+              await reloadCalendar(currentDate, view)
+            }
+            createModal.closeModal()
+          }}
+        />
+      )}
+      {detailModal.open && detailModal.data && (
+        <ReservationDetailModal
+          open={detailModal.open}
+          item={detailModal.data}
+          onClose={detailModal.closeModal}
+          onSaved={async () => {
+            if (currentDate) {
+              await reloadCalendar(currentDate, view)
+            }
+          }}
+          onDeleted={async () => {
+            if (currentDate) {
+              await reloadCalendar(currentDate, view)
+            }
+          }}
+        />
+      )}
     </StandardPageLayout>
   )
 }

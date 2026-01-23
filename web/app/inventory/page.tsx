@@ -5,7 +5,6 @@
 
 'use client'
 
-import { useState } from 'react'
 import InventoryPageView from '../components/inventory/InventoryPageView'
 import InventoryHistoryModal from '../components/inventory/InventoryHistoryModal'
 import ProductAddModal from '../components/inventory/ProductAddModal'
@@ -14,17 +13,16 @@ import { exportToCSV, prepareInventoryDataForExport } from '../lib/utils/export'
 import { useInventory, type Product } from '../lib/hooks/useInventory'
 import { useAppToast } from '../components/ui/Toast'
 import { InventoryService } from '../lib/services/inventory.service'
+import { useModalWithData } from '../lib/hooks/useModalWithData'
+import { useModal } from '../lib/hooks/useModal'
 
 export default function InventoryPage() {
     const toast = useAppToast()
     
     // 모달 상태 관리 (컨트롤러 역할)
-    const [stockModalOpen, setStockModalOpen] = useState(false)
-    const [selectedProduct, setSelectedProduct] = useState<Product | null>(null)
-    const [historyModalOpen, setHistoryModalOpen] = useState(false)
-    const [historyProductId, setHistoryProductId] = useState<string | null>(null)
-    const [historyProductName, setHistoryProductName] = useState('')
-    const [productAddModalOpen, setProductAddModalOpen] = useState(false)
+    const stockModal = useModalWithData<Product>()
+    const historyModal = useModal<{ productId: string; productName: string }>()
+    const productAddModal = useModal()
 
     // 데이터 로딩 및 가공은 훅에서 처리
     const {
@@ -58,19 +56,18 @@ export default function InventoryPage() {
 
     // 이벤트 핸들러 (컨트롤러 역할)
     const openStockModal = (product: Product) => {
-        setSelectedProduct(product)
-        setStockModalOpen(true)
+        stockModal.openModal(product)
     }
 
     const handleStockUpdate = async (quantity: number, type: 'purchase' | 'sale' | 'adjustment', memo: string) => {
-        if (!selectedProduct) return
+        if (!stockModal.data) return
 
         try {
             const response = await fetch('/api/inventory', {
                 method: 'PATCH',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
-                    product_id: selectedProduct.id,
+                    product_id: stockModal.data.id,
                     quantity,
                     type,
                     memo,
@@ -81,7 +78,7 @@ export default function InventoryPage() {
                 throw new Error('Failed to update stock')
             }
 
-            setStockModalOpen(false)
+            stockModal.closeModal()
             refetch()
         } catch (error) {
             console.error('Error updating stock:', error)
@@ -90,9 +87,7 @@ export default function InventoryPage() {
     }
 
     const openHistoryModal = (product: Product) => {
-        setHistoryProductId(product.id)
-        setHistoryProductName(product.name)
-        setHistoryModalOpen(true)
+        historyModal.openModal({ productId: product.id, productName: product.name })
     }
 
     const handleExport = () => {
@@ -130,31 +125,33 @@ export default function InventoryPage() {
                 onStockAdjust={openStockModal}
                 onHistoryClick={openHistoryModal}
                 onQuickStockAdjust={quickStockAdjust}
-                onCreateProduct={() => setProductAddModalOpen(true)}
+                onCreateProduct={() => productAddModal.openModal()}
                 onExport={handleExport}
                 onAcknowledgeAllAlerts={acknowledgeAllAlerts}
             />
 
             {/* 재고 조정 모달 */}
             <InventoryStockAdjustModal
-                open={stockModalOpen}
-                onClose={() => setStockModalOpen(false)}
-                product={selectedProduct}
+                open={stockModal.open}
+                onClose={stockModal.closeModal}
+                product={stockModal.data}
                 onUpdate={handleStockUpdate}
             />
 
             {/* History Modal */}
-            <InventoryHistoryModal
-                open={historyModalOpen}
-                onClose={() => setHistoryModalOpen(false)}
-                productId={historyProductId}
-                productName={historyProductName}
-            />
+            {historyModal.selected && (
+                <InventoryHistoryModal
+                    open={historyModal.open}
+                    onClose={historyModal.closeModal}
+                    productId={historyModal.selected.productId}
+                    productName={historyModal.selected.productName}
+                />
+            )}
 
             {/* Product Add Modal */}
             <ProductAddModal
-                open={productAddModalOpen}
-                onClose={() => setProductAddModalOpen(false)}
+                open={productAddModal.open}
+                onClose={productAddModal.closeModal}
                 onSuccess={refetch}
             />
         </>

@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import Modal, { ModalBody, ModalFooter, ModalHeader } from '../ui/Modal'
+import SwipeableModal, { SwipeableModalBody, SwipeableModalFooter, SwipeableModalHeader } from '../ui/SwipeableModal'
 import Button from '../ui/Button'
 import Input from '../ui/Input'
 import Select from '../ui/Select'
@@ -64,9 +64,9 @@ export default function ReservationDetailModal({ open, onClose, item, onSaved, o
 
   if (!open || !form) return null
   return (
-    <Modal open={open} onClose={onClose} size="lg">
-      <ModalHeader title="예약 상세" description="예약 정보를 확인하고 수정합니다. 날짜와 시작 시간, 상태를 변경할 수 있습니다." onClose={onClose} />
-      <ModalBody>
+    <SwipeableModal open={open} onClose={onClose} size="fullscreen">
+      <SwipeableModalHeader title="예약 상세" description="예약 정보를 확인하고 수정합니다. 날짜와 시작 시간, 상태를 변경할 수 있습니다." onClose={onClose} />
+      <SwipeableModalBody>
         <div className="grid gap-4 md:grid-cols-[280px,1fr]">
           <div className="space-y-3">
             {error && <p className="text-sm text-rose-600">{error}</p>}
@@ -181,13 +181,13 @@ export default function ReservationDetailModal({ open, onClose, item, onSaved, o
             </div>
           </div>
         </div>
-      </ModalBody>
-      <ModalFooter>
-        <Button variant="secondary" onClick={onClose} disabled={loading} className="w-full md:w-auto">취소</Button>
-        <Button variant="danger" onClick={removeItem} disabled={loading} className="w-full md:w-auto">삭제</Button>
-        <Button variant="primary" onClick={save} disabled={loading} className="w-full md:w-auto">저장</Button>
-      </ModalFooter>
-    </Modal>
+      </SwipeableModalBody>
+      <SwipeableModalFooter>
+        <Button variant="secondary" onClick={onClose} disabled={loading} fullWidth sx={{ minHeight: '44px' }}>취소</Button>
+        <Button variant="danger" onClick={removeItem} disabled={loading} fullWidth sx={{ minHeight: '44px' }}>삭제</Button>
+        <Button variant="primary" onClick={save} disabled={loading} fullWidth sx={{ minHeight: '44px' }}>저장</Button>
+      </SwipeableModalFooter>
+    </SwipeableModal>
   )
 }
 

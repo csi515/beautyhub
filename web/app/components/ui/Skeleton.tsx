@@ -5,21 +5,32 @@ import type { SkeletonProps } from '@mui/material/Skeleton'
 import Box from '@mui/material/Box'
 import Grid from '@mui/material/Grid'
 
-type Props = SkeletonProps & {
+type Props = Omit<SkeletonProps, 'animation'> & {
   className?: string // For compatibility
+  animation?: 'pulse' | 'wave' | 'shimmer' | false
 }
 
 export function Skeleton({ className, animation = 'pulse', ...props }: Props) {
+  // shimmer 옵션을 wave 애니메이션으로 변환
+  const muiAnimation = animation === 'shimmer' ? 'wave' : animation
+  
   return (
     <MuiSkeleton
-      animation={animation}
+      animation={muiAnimation}
       {...(className ? { className } : {})}
       sx={{
         borderRadius: 3,
         backgroundColor: 'rgba(0, 0, 0, 0.06)',
-        '&::after': {
-          background: 'linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.4), transparent)',
-        },
+        ...(animation === 'shimmer' ? {
+          '&::after': {
+            background: 'linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.6), transparent)',
+            animation: 'shimmer 1.5s ease-in-out infinite',
+          },
+        } : {
+          '&::after': {
+            background: 'linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.4), transparent)',
+          },
+        }),
         ...props.sx
       }}
       {...props}

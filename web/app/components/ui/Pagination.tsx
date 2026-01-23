@@ -44,8 +44,8 @@ export default function Pagination({
             borderRadius: 1.5,
             fontWeight: 600,
             transition: 'all 200ms ease-in-out',
-            minWidth: { xs: '36px', sm: '40px' },
-            minHeight: { xs: '36px', sm: '40px' },
+            minWidth: { xs: '44px', sm: '44px' },
+            minHeight: { xs: '44px', sm: '44px' },
             fontSize: { xs: '0.875rem', sm: '0.9375rem' },
             '&.Mui-selected': {
               backgroundColor: 'primary.main',

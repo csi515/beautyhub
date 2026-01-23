@@ -14,7 +14,7 @@ import {
     InputLabel
 } from '@mui/material'
 import { Save, Calendar, Repeat } from 'lucide-react'
-import Modal, { ModalBody, ModalFooter, ModalHeader } from '../ui/Modal'
+import SwipeableModal, { SwipeableModalBody, SwipeableModalFooter, SwipeableModalHeader } from '../ui/SwipeableModal'
 import Button from '../ui/Button'
 import Input from '../ui/Input'
 import { useAppToast } from '../../lib/ui/toast'
@@ -139,9 +139,9 @@ export default function WeeklyScheduleModal({
     }
 
     return (
-        <Modal open={open} onClose={onClose} size="lg">
-            <ModalHeader title={`${staff.name} 주간 스케줄 설정`} onClose={onClose} />
-            <ModalBody>
+        <SwipeableModal open={open} onClose={onClose} size="fullscreen">
+            <SwipeableModalHeader title={`${staff.name} 주간 스케줄 설정`} onClose={onClose} />
+            <SwipeableModalBody>
                 <Box className="space-y-6">
                     <Grid container spacing={2} alignItems="center">
                         <Grid item xs={12} sm={6}>
@@ -231,20 +231,20 @@ export default function WeeklyScheduleModal({
                         })}
                     </Box>
                 </Box>
-            </ModalBody>
-            <ModalFooter>
-                <div className="flex justify-end gap-2 w-full">
-                    <Button variant="ghost" onClick={onClose}>취소</Button>
-                    <Button
-                        variant="primary"
-                        onClick={handleSubmit}
-                        loading={saving}
-                        leftIcon={<Save size={18} />}
-                    >
-                        스케줄 생성
-                    </Button>
-                </div>
-            </ModalFooter>
-        </Modal>
+            </SwipeableModalBody>
+            <SwipeableModalFooter>
+                <Button variant="secondary" onClick={onClose} fullWidth sx={{ minHeight: '44px' }}>취소</Button>
+                <Button
+                    variant="primary"
+                    onClick={handleSubmit}
+                    loading={saving}
+                    leftIcon={<Save size={18} />}
+                    fullWidth
+                    sx={{ minHeight: '44px' }}
+                >
+                    스케줄 생성
+                </Button>
+            </SwipeableModalFooter>
+        </SwipeableModal>
     )
 }

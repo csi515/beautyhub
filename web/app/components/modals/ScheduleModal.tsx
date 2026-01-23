@@ -3,11 +3,6 @@
 import { useState, useEffect } from 'react'
 import { Staff, StaffAttendance, StaffAttendanceCreateInput } from '@/types/entities'
 import {
-    Dialog,
-    DialogTitle,
-    DialogContent,
-    DialogActions,
-    Button,
     TextField,
     Stack,
     MenuItem,
@@ -17,10 +12,9 @@ import {
     Typography,
     Checkbox,
     FormControlLabel,
-    Box,
-    useTheme,
-    useMediaQuery
 } from '@mui/material'
+import Button from '../ui/Button'
+import SwipeableModal, { SwipeableModalBody, SwipeableModalFooter, SwipeableModalHeader } from '../ui/SwipeableModal'
 import { format } from 'date-fns'
 import { ko } from 'date-fns/locale'
 
@@ -152,29 +146,14 @@ export default function ScheduleModal({
         { value: 0, label: '일' }
     ]
 
-    const theme = useTheme()
-    const isMobile = useMediaQuery(theme.breakpoints.down('sm'))
-
     return (
-        <Dialog
-            open={open}
-            onClose={onClose}
-            maxWidth="sm"
-            fullWidth
-            fullScreen={isMobile}
-        >
-            <DialogTitle>
-                {schedule ? '스케줄 수정' : '스케줄 추가'}
-            </DialogTitle>
-            {preSelectedDate && (
-                <Box sx={{ px: 3, pb: 1 }}>
-                    <Typography variant="caption" color="text.secondary">
-                        {format(preSelectedDate, 'yyyy년 M월 d일 (EEE)', { locale: ko })}
-                    </Typography>
-                </Box>
-            )}
-
-            <DialogContent>
+        <SwipeableModal open={open} onClose={onClose} size="fullscreen">
+            <SwipeableModalHeader
+                title={schedule ? '스케줄 수정' : '스케줄 추가'}
+                description={preSelectedDate ? format(preSelectedDate, 'yyyy년 M월 d일 (EEE)', { locale: ko }) : undefined}
+                onClose={onClose}
+            />
+            <SwipeableModalBody>
                 <Stack spacing={3} sx={{ mt: 1 }}>
                     <FormControl fullWidth>
                         <InputLabel>직원</InputLabel>
@@ -235,8 +214,8 @@ export default function ScheduleModal({
                                         {weekDays.map(day => (
                                             <Button
                                                 key={day.value}
-                                                size="small"
-                                                variant={repeatDays.includes(day.value) ? 'contained' : 'outlined'}
+                                                size="sm"
+                                                variant={repeatDays.includes(day.value) ? 'primary' : 'outline'}
                                                 onClick={() => toggleRepeatDay(day.value)}
                                                 sx={{ minWidth: 40 }}
                                             >
@@ -259,30 +238,33 @@ export default function ScheduleModal({
                         fullWidth
                     />
                 </Stack>
-            </DialogContent>
+            </SwipeableModalBody>
 
-            <DialogActions sx={{ p: 2, gap: 1 }}>
+            <SwipeableModalFooter>
                 {schedule && onDelete && (
                     <Button
                         onClick={handleDelete}
                         disabled={loading}
-                        color="error"
-                        sx={{ mr: 'auto' }}
+                        variant="danger"
+                        fullWidth
+                        sx={{ minHeight: '44px' }}
                     >
                         삭제
                     </Button>
                 )}
-                <Button onClick={onClose} disabled={loading}>
+                <Button onClick={onClose} disabled={loading} variant="secondary" fullWidth sx={{ minHeight: '44px' }}>
                     취소
                 </Button>
                 <Button
                     onClick={handleSave}
-                    variant="contained"
+                    variant="primary"
                     disabled={loading}
+                    fullWidth
+                    sx={{ minHeight: '44px' }}
                 >
                     저장
                 </Button>
-            </DialogActions>
-        </Dialog>
+            </SwipeableModalFooter>
+        </SwipeableModal>
     )
 }

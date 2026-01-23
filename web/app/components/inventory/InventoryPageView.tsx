@@ -456,8 +456,8 @@ export default function InventoryPageView({
                                 showLastButton={false}
                                 sx={{
                                     '& .MuiPaginationItem-root': {
-                                        minWidth: { xs: '36px', sm: '40px' },
-                                        minHeight: { xs: '36px', sm: '40px' },
+                                        minWidth: { xs: '44px', sm: '44px' },
+                                        minHeight: { xs: '44px', sm: '44px' },
                                         fontSize: { xs: '0.875rem', sm: '0.9375rem' },
                                     },
                                 }}

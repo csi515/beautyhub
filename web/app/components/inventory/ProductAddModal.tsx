@@ -2,17 +2,14 @@
 
 import { useState, useEffect } from 'react'
 import {
-    Dialog,
-    DialogTitle,
-    DialogContent,
-    DialogActions,
     TextField,
-    Button,
     FormControlLabel,
     Checkbox,
     Box,
     InputAdornment,
 } from '@mui/material'
+import Button from '../ui/Button'
+import SwipeableModal, { SwipeableModalBody, SwipeableModalFooter, SwipeableModalHeader } from '../ui/SwipeableModal'
 import { useAppToast } from '../../lib/ui/toast'
 import { productsApi } from '../../lib/api/products'
 import type { ProductCreateInput } from '@/types/entities'
@@ -200,15 +197,13 @@ export default function ProductAddModal({ open, onClose, onSuccess }: ProductAdd
     }
 
     return (
-        <Dialog
+        <SwipeableModal
             open={open}
             onClose={handleClose}
-            maxWidth="sm"
-            fullWidth
-            disableEscapeKeyDown={loading}
+            size="fullscreen"
         >
-            <DialogTitle>제품 추가</DialogTitle>
-            <DialogContent sx={{ p: { xs: 2, sm: 3 } }}>
+            <SwipeableModalHeader title="제품 추가" onClose={handleClose} />
+            <SwipeableModalBody>
                 <Box sx={{ mt: 1, display: 'flex', flexDirection: 'column', gap: { xs: 2, sm: 2.5 } }}>
                     <TextField
                         label="제품명"
@@ -341,32 +336,27 @@ export default function ProductAddModal({ open, onClose, onSuccess }: ProductAdd
                         }}
                     />
                 </Box>
-            </DialogContent>
-            <DialogActions sx={{ p: { xs: 2, sm: 2 }, gap: 1 }}>
+            </SwipeableModalBody>
+            <SwipeableModalFooter>
                 <Button 
                     onClick={handleClose} 
                     disabled={loading}
-                    sx={{ 
-                        minHeight: '44px', 
-                        flex: { xs: 1, sm: 'none' },
-                        fontSize: { xs: '0.9375rem', sm: '1rem' }
-                    }}
+                    variant="secondary"
+                    fullWidth
+                    sx={{ minHeight: '44px' }}
                 >
                     취소
                 </Button>
                 <Button
                     onClick={handleSubmit}
-                    variant="contained"
+                    variant="primary"
                     disabled={loading || !formData.name.trim()}
-                    sx={{ 
-                        minHeight: '44px', 
-                        flex: { xs: 1, sm: 'none' },
-                        fontSize: { xs: '0.9375rem', sm: '1rem' }
-                    }}
+                    fullWidth
+                    sx={{ minHeight: '44px' }}
                 >
                     {loading ? '저장 중...' : '저장'}
                 </Button>
-            </DialogActions>
-        </Dialog>
+            </SwipeableModalFooter>
+        </SwipeableModal>
     )
 }

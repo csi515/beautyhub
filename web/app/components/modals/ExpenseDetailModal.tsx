@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import Modal, { ModalBody, ModalFooter, ModalHeader } from '../ui/Modal'
+import SwipeableModal, { SwipeableModalBody, SwipeableModalFooter, SwipeableModalHeader } from '../ui/SwipeableModal'
 import Button from '../ui/Button'
 import { expensesApi } from '@/app/lib/api/expenses'
 import { getExpenseCategories, suggestCategory } from '@/app/lib/utils/expenseCategories'
@@ -69,9 +69,9 @@ export default function ExpenseDetailModal({ open, onClose, item, onSaved, onDel
 
   if (!open || !form) return null
   return (
-    <Modal open={open} onClose={onClose} size="lg">
-      <ModalHeader title="지출 상세" description="지출 일자와 금액을 확인·수정합니다. 일자와 금액은 필수입니다." onClose={onClose} />
-      <ModalBody>
+    <SwipeableModal open={open} onClose={onClose} size="fullscreen">
+      <SwipeableModalHeader title="지출 상세" description="지출 일자와 금액을 확인·수정합니다. 일자와 금액은 필수입니다." onClose={onClose} />
+      <SwipeableModalBody>
         <div className="grid gap-3 md:grid-cols-[200px,1fr]">
           <div className="space-y-2">
             {error && <p className="text-xs text-rose-600">{error}</p>}
@@ -163,12 +163,12 @@ export default function ExpenseDetailModal({ open, onClose, item, onSaved, onDel
             </div>
           </div>
         </div>
-      </ModalBody>
-      <ModalFooter>
-        <Button variant="secondary" onClick={onClose} disabled={loading} className="w-full md:w-auto">취소</Button>
-        <Button variant="danger" onClick={() => setConfirmOpen(true)} disabled={loading} className="w-full md:w-auto">삭제</Button>
-        <Button variant="primary" onClick={save} disabled={loading} className="w-full md:w-auto">저장</Button>
-      </ModalFooter>
+      </SwipeableModalBody>
+      <SwipeableModalFooter>
+        <Button variant="secondary" onClick={onClose} disabled={loading} fullWidth sx={{ minHeight: '44px' }}>취소</Button>
+        <Button variant="danger" onClick={() => setConfirmOpen(true)} disabled={loading} fullWidth sx={{ minHeight: '44px' }}>삭제</Button>
+        <Button variant="primary" onClick={save} disabled={loading} fullWidth sx={{ minHeight: '44px' }}>저장</Button>
+      </SwipeableModalFooter>
 
       <ConfirmDialog
         open={confirmOpen}
@@ -180,6 +180,6 @@ export default function ExpenseDetailModal({ open, onClose, item, onSaved, onDel
         cancelText="취소"
         variant="danger"
       />
-    </Modal>
+    </SwipeableModal>
   )
 }

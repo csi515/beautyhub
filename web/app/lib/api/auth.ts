@@ -97,8 +97,8 @@ export function createAuthApi(supabase: SupabaseClient) {
      * 비밀번호 재설정
      */
     async resetPassword(options: ResetPasswordOptions) {
-      const origin = typeof window !== 'undefined' ? window.location.origin : ''
-      const redirectTo = options.redirectTo || `${origin}/reset-password`
+      const { getAuthRedirectTo } = await import('@/app/lib/utils/authRedirect')
+      const redirectTo = options.redirectTo || getAuthRedirectTo('/reset-password')
 
       const { error } = await supabase.auth.resetPasswordForEmail(options.email.trim(), {
         redirectTo,

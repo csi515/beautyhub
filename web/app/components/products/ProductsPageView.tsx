@@ -72,6 +72,9 @@ export default function ProductsPageView({
   setMinPrice,
   maxPrice,
   setMaxPrice,
+  sortKey,
+  sortDirection,
+  toggleSort,
   page,
   pageSize,
   setPage,
@@ -125,6 +128,10 @@ export default function ProductsPageView({
       onMaxPriceChange={setMaxPrice}
       hasActiveFilters={hasActiveFilters}
       onReset={onResetFilters}
+      sortKey={sortKey}
+      sortDirection={sortDirection}
+      toggleSort={toggleSort}
+      hideReset={isMobile}
     />
   )
 
@@ -146,7 +153,7 @@ export default function ProductsPageView({
           placeholder: '상품명 또는 설명으로 검색',
         }}
         filters={!isMobile ? filterContent : undefined}
-        actions={{
+        actions={isMobile ? undefined : {
           primary: {
             label: '상품 등록',
             onClick: onCreateClick,
@@ -208,8 +215,8 @@ export default function ProductsPageView({
                   justifyContent: 'center',
                 },
                 '& .MuiPaginationItem-root': {
-                  minWidth: { xs: '36px', sm: '40px' },
-                  minHeight: { xs: '36px', sm: '40px' },
+                  minWidth: { xs: '44px', sm: '44px' },
+                  minHeight: { xs: '44px', sm: '44px' },
                   fontSize: { xs: '0.875rem', sm: '0.9375rem' },
                 },
               }}
@@ -223,7 +230,11 @@ export default function ProductsPageView({
           <Typography variant="body1" color="text.secondary">
             검색 결과가 없습니다.
           </Typography>
-          <Button variant="primary" onClick={onCreateClick}>
+          <Button 
+            variant="primary" 
+            onClick={onCreateClick}
+            sx={{ minHeight: '44px' }}
+          >
             제품 추가
           </Button>
         </Stack>

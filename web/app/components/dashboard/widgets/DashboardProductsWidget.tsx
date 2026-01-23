@@ -1,10 +1,11 @@
 'use client'
 
 import { useMemo } from 'react'
-import { Box, Grid, Typography, Stack } from '@mui/material'
+import { Box, Grid, Typography, Stack, useTheme, useMediaQuery } from '@mui/material'
 import Link from 'next/link'
 import { PackageOpen } from 'lucide-react'
 import Card from '../../ui/Card'
+import { useResponsiveSpacing } from '../../../lib/hooks/useResponsiveSpacing'
 
 type ProductSummary = {
   id: string | number
@@ -18,6 +19,10 @@ interface DashboardProductsWidgetProps {
 }
 
 export default function DashboardProductsWidget({ activeProducts }: DashboardProductsWidgetProps) {
+  const theme = useTheme()
+  const isMobile = useMediaQuery(theme.breakpoints.down('sm'))
+  const spacing = useResponsiveSpacing()
+  
   const slicedProducts = useMemo(
     () => activeProducts?.slice(0, 12) || [],
     [activeProducts]
@@ -49,7 +54,7 @@ export default function DashboardProductsWidget({ activeProducts }: DashboardPro
         </Box>
       </Box>
       {activeProducts.length > 0 ? (
-        <Grid container spacing={{ xs: 0.75, sm: 1.5, md: 2 }}>
+        <Grid container spacing={spacing.card as any}>
           {slicedProducts.map((p: ProductSummary, index: number) => (
             <Grid item xs={12} sm={6} md={4} key={p.id}>
               <Box
@@ -105,14 +110,22 @@ export default function DashboardProductsWidget({ activeProducts }: DashboardPro
           alignItems="center"
           justifyContent="center"
           spacing={2}
-          sx={{ py: 8, bgcolor: 'background.default', borderRadius: 3, border: '1px dashed', borderColor: 'divider' }}
+          sx={{ 
+            py: 3,
+            minHeight: { xs: 120, sm: 120 },
+            maxHeight: { xs: 140, sm: 160 },
+            bgcolor: 'background.default', 
+            borderRadius: 3, 
+            border: '1px dashed', 
+            borderColor: 'divider' 
+          }}
         >
           <PackageOpen
-            size={48}
+            size={isMobile ? 32 : 40}
             className="text-gray-300"
             style={{
-              width: 'clamp(40px, 12vw, 48px)',
-              height: 'clamp(40px, 12vw, 48px)'
+              width: isMobile ? '32px' : 'clamp(40px, 12vw, 48px)',
+              height: isMobile ? '32px' : 'clamp(40px, 12vw, 48px)'
             }}
           />
           <Box textAlign="center">

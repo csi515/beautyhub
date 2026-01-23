@@ -3,8 +3,10 @@
 import { forwardRef } from 'react'
 import MuiButton from '@mui/material/Button'
 import CircularProgress from '@mui/material/CircularProgress'
+import { useTheme, useMediaQuery } from '@mui/material'
 import type { ButtonProps as MuiButtonProps } from '@mui/material/Button'
 import type { ReactNode } from 'react'
+import { useHapticFeedback } from '@/app/lib/hooks/useHapticFeedback'
 
 type Props = Omit<MuiButtonProps, 'variant' | 'color' | 'size'> & {
   variant?: 'primary' | 'secondary' | 'danger' | 'ghost' | 'outline' | 'contrast'
@@ -30,6 +32,16 @@ const Button = forwardRef<HTMLButtonElement, Props>(function Button(
   ref
 ) {
   const isDisabled = disabled || loading
+  const theme = useTheme()
+  const isMobile = useMediaQuery(theme.breakpoints.down('sm'))
+  const { light } = useHapticFeedback()
+
+  const handleClick = (e: React.MouseEvent<HTMLButtonElement>) => {
+    if (isMobile && !isDisabled) {
+      light()
+    }
+    rest.onClick?.(e)
+  }
 
   // variant를 MUI props로 매핑
   const getMuiProps = (): { variant: MuiButtonProps['variant']; color: MuiButtonProps['color'] } => {
@@ -90,6 +102,7 @@ const Button = forwardRef<HTMLButtonElement, Props>(function Button(
         ...sx
       }}
       {...rest}
+      onClick={handleClick}
       startIcon={
         loading ? (
           <CircularProgress

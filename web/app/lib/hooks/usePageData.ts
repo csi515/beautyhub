@@ -23,9 +23,18 @@ export interface UsePageDataReturn<T> {
 
 /**
  * 페이지 데이터 로딩 및 상태 관리 훅
- *
+ * 
+ * @deprecated useDataFetching을 사용하세요. 이 훅은 useDataFetching으로 통합되었습니다.
+ * 
  * @example
+ * // Before
  * const { data, loading, error, refetch } = usePageData({
+ *   fetchFn: () => customersApi.list(),
+ *   immediate: true,
+ * })
+ * 
+ * // After
+ * const { data, loading, error, refetch } = useDataFetching({
  *   fetchFn: () => customersApi.list(),
  *   immediate: true,
  * })

@@ -1,5 +1,7 @@
 import { useState, useEffect, useCallback } from 'react'
 import { useAppToast } from '../ui/toast'
+import { useSelection } from './useSelection'
+import { useFilters } from './useFilters'
 
 export interface Product {
   id: string
@@ -45,18 +47,25 @@ export function useInventory() {
   const [total, setTotal] = useState(0)
   const [totalPages, setTotalPages] = useState(0)
   const [search, setSearch] = useState('')
-  const [filters, setFilters] = useState<InventoryFilters>({
+  
+  const initialFilters: InventoryFilters = {
     status: '',
     minPrice: '',
     maxPrice: '',
     minStock: '',
     maxStock: ''
+  }
+  
+  const filterHook = useFilters(initialFilters, {
+    resetPageOnChange: true,
+    getPageSetter: () => setPage,
   })
+  
   const [sortBy, setSortBy] = useState<string>('name')
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('asc')
 
   // Phase 2: Bulk selection
-  const [selectedProductIds, setSelectedProductIds] = useState<Set<string>>(new Set())
+  const selection = useSelection<string>({ useSet: true })
 
   const fetchData = useCallback(async () => {
     try {
@@ -67,11 +76,11 @@ export function useInventory() {
       params.append('page', page.toString())
       params.append('limit', limit.toString())
       if (search) params.append('search', search)
-      if (filters.status) params.append('status', filters.status)
-      if (filters.minPrice) params.append('min_price', filters.minPrice)
-      if (filters.maxPrice) params.append('max_price', filters.maxPrice)
-      if (filters.minStock) params.append('min_stock', filters.minStock)
-      if (filters.maxStock) params.append('max_stock', filters.maxStock)
+      if (filterHook.filters.status) params.append('status', filterHook.filters.status)
+      if (filterHook.filters.minPrice) params.append('min_price', filterHook.filters.minPrice)
+      if (filterHook.filters.maxPrice) params.append('max_price', filterHook.filters.maxPrice)
+      if (filterHook.filters.minStock) params.append('min_stock', filterHook.filters.minStock)
+      if (filterHook.filters.maxStock) params.append('max_stock', filterHook.filters.maxStock)
       params.append('sort_by', sortBy)
       params.append('sort_order', sortOrder)
 
@@ -89,7 +98,7 @@ export function useInventory() {
     } finally {
       setLoading(false)
     }
-  }, [page, limit, search, filters, sortBy, sortOrder, toast])
+  }, [page, limit, search, filterHook.filters, sortBy, sortOrder, toast])
 
   const fetchAlerts = useCallback(async () => {
     try {
@@ -159,46 +168,8 @@ export function useInventory() {
     }
   }, [toast, fetchData])
 
-  const toggleSelectProduct = useCallback((productId: string) => {
-    setSelectedProductIds(prev => {
-      const newSelection = new Set(prev)
-      if (newSelection.has(productId)) {
-        newSelection.delete(productId)
-      } else {
-        newSelection.add(productId)
-      }
-      return newSelection
-    })
-  }, [])
-
-  const toggleSelectAll = useCallback(() => {
-    setSelectedProductIds(prev => {
-      if (prev.size === products.length) {
-        return new Set()
-      } else {
-        return new Set(products.map(p => p.id))
-      }
-    })
-  }, [products])
-
   const handleSearchChange = useCallback((newSearch: string) => {
     setSearch(newSearch)
-    setPage(1)
-  }, [])
-
-  const handleFilterChange = useCallback((newFilters: InventoryFilters) => {
-    setFilters(newFilters)
-    setPage(1)
-  }, [])
-
-  const handleResetFilters = useCallback(() => {
-    setFilters({
-      status: '',
-      minPrice: '',
-      maxPrice: '',
-      minStock: '',
-      maxStock: ''
-    })
     setPage(1)
   }, [])
 
@@ -227,9 +198,9 @@ export function useInventory() {
     // Search & Filter
     search,
     setSearch: handleSearchChange,
-    filters,
-    setFilters: handleFilterChange,
-    handleResetFilters,
+    filters: filterHook.filters,
+    setFilters: filterHook.updateFilters,
+    handleResetFilters: filterHook.resetFilters,
     
     // Sort
     sortBy,
@@ -237,10 +208,16 @@ export function useInventory() {
     handleSortChange,
     
     // Selection
-    selectedProductIds,
-    toggleSelectProduct,
-    toggleSelectAll,
-    setSelectedProductIds,
+    selectedProductIds: selection.selected as Set<string>,
+    toggleSelectProduct: selection.toggle,
+    toggleSelectAll: () => {
+      if (selection.selectedCount === products.length) {
+        selection.clear()
+      } else {
+        selection.selectAll(products.map(p => p.id))
+      }
+    },
+    setSelectedProductIds: selection.setSelected,
     
     // Actions
     quickStockAdjust,

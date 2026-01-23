@@ -8,11 +8,15 @@ import {
   CardContent,
   Typography,
   Stack,
-  Pagination
+  Pagination,
+  useTheme,
+  useMediaQuery
 } from '@mui/material'
 import { Skeleton } from '../ui/Skeleton'
 import EmptyState from '../EmptyState'
 import StatusBadge from '../common/StatusBadge'
+import { useSwipe } from '@/app/lib/hooks/useSwipe'
+import { useHapticFeedback } from '@/app/lib/hooks/useHapticFeedback'
 import { FinanceCombinedRow } from '@/types/finance'
 
 // 금액 포맷팅 함수
@@ -44,6 +48,10 @@ export default function FinanceMobileCards({
   onPageChange,
   onItemClick
 }: FinanceMobileCardsProps) {
+  const theme = useTheme()
+  const isMobile = useMediaQuery(theme.breakpoints.down('sm'))
+  const { light } = useHapticFeedback()
+
   return (
     <Box sx={{ display: { xs: 'block', md: 'none' } }}>
       <Typography fontWeight="bold" mb={2}>수입/지출 내역</Typography>
@@ -61,24 +69,37 @@ export default function FinanceMobileCards({
       )}
       {!loading && (
         <Grid container spacing={1.5}>
-          {pagedCombined.map(row => (
-            <Grid item xs={12} sm={6} key={`${row.type}-${row.id}`}>
-              <Card
-                variant="outlined"
-                sx={{
-                  borderRadius: 3,
-                  cursor: 'pointer',
-                  transition: 'all 0.2s ease',
-                  '&:active': {
-                    transform: 'scale(0.98)',
-                    boxShadow: 2,
-                  },
-                  '&:hover': { bgcolor: 'action.hover' },
-                  height: '100%',
-                  minHeight: { xs: '100px', sm: 'auto' }
-                }}
-                onClick={() => onItemClick(row)}
-              >
+          {pagedCombined.map(row => {
+            const swipeHandlers = useSwipe({
+              onSwipeLeft: () => {
+                if (isMobile) {
+                  light()
+                  onItemClick(row)
+                }
+              },
+              threshold: 50,
+            })
+
+            return (
+              <Grid item xs={12} sm={6} key={`${row.type}-${row.id}`}>
+                <Card
+                  variant="outlined"
+                  {...(isMobile ? swipeHandlers : {})}
+                  sx={{
+                    borderRadius: 3,
+                    cursor: 'pointer',
+                    transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
+                    '&:active': {
+                      transform: 'scale(0.97)',
+                      transition: 'transform 0.1s ease-out',
+                      boxShadow: 2,
+                    },
+                    '&:hover': { bgcolor: 'action.hover' },
+                    height: '100%',
+                    minHeight: { xs: '100px', sm: 'auto' }
+                  }}
+                  onClick={() => onItemClick(row)}
+                >
                 <CardContent sx={{ pb: { xs: 1.5, sm: 1.5 }, px: { xs: 2, sm: 2 }, pt: { xs: 1.5, sm: 1.5 } }}>
                   <Stack direction="row" justifyContent="space-between" alignItems="flex-start" mb={1}>
                     <StatusBadge
@@ -143,7 +164,8 @@ export default function FinanceMobileCards({
                 </CardContent>
               </Card>
             </Grid>
-          ))}
+            )
+          })}
         </Grid>
       )}
       {/* 페이지네이션 */}
@@ -161,8 +183,8 @@ export default function FinanceMobileCards({
             showLastButton={false}
             sx={{
               '& .MuiPaginationItem-root': {
-                minWidth: { xs: '36px', sm: '40px' },
-                minHeight: { xs: '36px', sm: '40px' },
+                minWidth: { xs: '44px', sm: '44px' },
+                minHeight: { xs: '44px', sm: '44px' },
                 fontSize: { xs: '0.875rem', sm: '0.9375rem' },
               },
             }}

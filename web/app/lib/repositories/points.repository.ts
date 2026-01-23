@@ -3,7 +3,7 @@
  */
 
 import { SupabaseClient } from '@supabase/supabase-js'
-import { ApiError, NotFoundError, UnauthorizedError } from '../api/errors'
+import { BaseRepository } from './base.repository'
 import type { QueryOptions } from './base.repository'
 
 export interface PointsLedger {
@@ -36,49 +36,9 @@ export interface PointsLedgerCreateInput {
   reason?: string
 }
 
-export class PointsRepository {
-  protected supabase: SupabaseClient
-  protected userId: string
-
+export class PointsRepository extends BaseRepository<PointsLedger> {
   constructor(userId: string, supabase: SupabaseClient) {
-    this.userId = userId
-    this.supabase = supabase
-  }
-
-  /**
-   * Supabase 에러 처리
-   */
-  private handleSupabaseError(error: unknown): never {
-    console.error(`[PointsRepository] Supabase Error:`, error)
-
-    const err = error as { code?: string; message?: string; status?: number }
-
-    // 인증 관련 에러 (401, JWT expired 등)
-    if (
-      err.code === 'PGRST301' ||
-      err.message?.includes('JWT') ||
-      err.status === 401 ||
-      err.message?.includes('invalid claim')
-    ) {
-      throw new UnauthorizedError()
-    }
-
-    if (err.code === 'PGRST116') {
-      throw new NotFoundError('Resource not found')
-    }
-
-    // Postgres 에러 코드 처리
-    if (err.code?.startsWith('23')) {
-      if (err.code === '23505') {
-        throw new ApiError(err.message || 'Unique constraint violation', 409)
-      }
-      if (err.code === '23503') {
-        throw new ApiError(err.message || 'Foreign key violation', 400)
-      }
-      throw new ApiError(err.message || 'Database error', 400)
-    }
-
-    throw new ApiError(err.message || 'Unknown error', (err.status && err.status >= 400) ? err.status : 500)
+    super(userId, 'beautyhub_points_ledger', supabase)
   }
 
   /**

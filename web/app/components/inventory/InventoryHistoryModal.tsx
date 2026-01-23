@@ -1,10 +1,6 @@
 'use client'
 
 import {
-    Dialog,
-    DialogTitle,
-    DialogContent,
-    IconButton,
     Typography,
     Table,
     TableBody,
@@ -17,7 +13,8 @@ import {
     Box,
     CircularProgress
 } from '@mui/material'
-import { X, TrendingUp, TrendingDown, Edit3 } from 'lucide-react'
+import { TrendingUp, TrendingDown, Edit3 } from 'lucide-react'
+import SwipeableModal, { SwipeableModalBody, SwipeableModalHeader } from '../ui/SwipeableModal'
 import { useEffect, useState } from 'react'
 import { format } from 'date-fns'
 import { ko } from 'date-fns/locale'
@@ -106,18 +103,12 @@ export default function InventoryHistoryModal({ open, onClose, productId, produc
     }
 
     return (
-        <Dialog open={open} onClose={onClose} maxWidth="md" fullWidth>
-            <DialogTitle>
-                <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                    <Typography variant="h6" fontWeight={600}>
-                        재고 이력 - {productName}
-                    </Typography>
-                    <IconButton onClick={onClose} size="small">
-                        <X size={20} />
-                    </IconButton>
-                </Box>
-            </DialogTitle>
-            <DialogContent>
+        <SwipeableModal open={open} onClose={onClose} size="fullscreen">
+            <SwipeableModalHeader
+                title={`재고 이력 - ${productName}`}
+                onClose={onClose}
+            />
+            <SwipeableModalBody>
                 {loading ? (
                     <Box sx={{ display: 'flex', justifyContent: 'center', py: 4 }}>
                         <CircularProgress />
@@ -185,7 +176,7 @@ export default function InventoryHistoryModal({ open, onClose, productId, produc
                         </Table>
                     </TableContainer>
                 )}
-            </DialogContent>
-        </Dialog>
+            </SwipeableModalBody>
+        </SwipeableModal>
     )
 }

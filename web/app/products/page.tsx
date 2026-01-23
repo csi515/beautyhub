@@ -5,11 +5,12 @@
 
 'use client'
 
-import { useState, lazy, Suspense, useCallback } from 'react'
+import { lazy, Suspense, useCallback } from 'react'
 import { useAppToast } from '../lib/ui/toast'
 import { useProductsPage } from '../lib/hooks/useProductsPage'
 import ProductsPageView from '../components/products/ProductsPageView'
 import { exportToCSV, prepareProductDataForExport } from '../lib/utils/export'
+import { useModalWithData } from '../lib/hooks/useModalWithData'
 import type { Product } from '@/types/entities'
 
 const ProductDetailModal = lazy(() => import('../components/modals/ProductDetailModal'))
@@ -17,10 +18,8 @@ const ProductCreateEditModal = lazy(() => import('../components/products/Product
 
 export default function ProductsPage() {
   // 모달 상태 관리 (컨트롤러 역할)
-  const [showModal, setShowModal] = useState(false)
-  const [editing, setEditing] = useState<Product | null>(null)
-  const [detailOpen, setDetailOpen] = useState(false)
-  const [selected, setSelected] = useState<Product | null>(null)
+  const createEditModal = useModalWithData<Product>()
+  const detailModal = useModalWithData<Product>()
   
   const toast = useAppToast()
   
@@ -29,20 +28,20 @@ export default function ProductsPage() {
 
   // 이벤트 핸들러 (컨트롤러 역할)
   const handleCreate = () => {
-    setEditing(null)
-    setShowModal(true)
+    createEditModal.closeModal()
+    // 새로 생성할 때는 null을 전달하지 않고 빈 객체나 undefined를 사용
+    // 모달 컴포넌트에서 editing이 null이면 생성 모드로 처리
+    createEditModal.openModal({} as Product)
   }
 
   const handleProductClick = (product: Product) => {
-    setSelected(product)
-    setDetailOpen(true)
+    detailModal.openModal(product)
   }
 
   const handleProductSaved = useCallback(async () => {
     await pageData.refetch()
-    setShowModal(false)
-    setEditing(null)
-  }, [pageData])
+    createEditModal.closeModal()
+  }, [pageData, createEditModal])
 
   const handleResetFilters = () => {
     pageData.setStatusFilter('all')
@@ -69,18 +68,18 @@ export default function ProductsPage() {
       />
       
       <ProductCreateEditModal
-        open={showModal}
-        onClose={() => { setShowModal(false); setEditing(null) }}
-        editing={editing}
+        open={createEditModal.open}
+        onClose={createEditModal.closeModal}
+        editing={createEditModal.data}
         onSaved={handleProductSaved}
       />
 
-      {detailOpen && (
+      {detailModal.open && detailModal.data && (
         <Suspense fallback={null}>
           <ProductDetailModal
-            open={detailOpen}
-            item={selected}
-            onClose={() => setDetailOpen(false)}
+            open={detailModal.open}
+            item={detailModal.data}
+            onClose={detailModal.closeModal}
             onSaved={pageData.refetch}
             onDeleted={pageData.refetch}
           />

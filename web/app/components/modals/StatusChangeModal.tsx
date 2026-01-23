@@ -2,16 +2,13 @@
 
 import { Staff } from '@/types/entities'
 import {
-    Dialog,
-    DialogTitle,
-    DialogContent,
-    DialogActions,
-    Button,
     Stack,
     Typography,
     Box,
     useTheme
 } from '@mui/material'
+import Button from '../ui/Button'
+import SwipeableModal, { SwipeableModalBody, SwipeableModalFooter, SwipeableModalHeader } from '../ui/SwipeableModal'
 import { Clock, LogOut, Sun } from 'lucide-react'
 
 interface StatusChangeModalProps {
@@ -36,12 +33,13 @@ export default function StatusChangeModal({ open, staff, onClose, onSave }: Stat
     ]
 
     return (
-        <Dialog open={open} onClose={onClose} maxWidth="xs" fullWidth sx={{ zIndex: 9999 }}>
-            <DialogTitle sx={{ pb: 1 }}>
-                <Typography variant="h6" fontWeight="bold">{staff.name}님 상태 변경</Typography>
-                <Typography variant="caption" color="text.secondary">현재 상태: {staff.status === 'office' ? '출근' : staff.status === 'away' ? '휴무' : '퇴근'}</Typography>
-            </DialogTitle>
-            <DialogContent sx={{ pt: 1 }}>
+        <SwipeableModal open={open} onClose={onClose} size="lg">
+            <SwipeableModalHeader
+                title={`${staff.name}님 상태 변경`}
+                description={`현재 상태: ${staff.status === 'office' ? '출근' : staff.status === 'away' ? '휴무' : '퇴근'}`}
+                onClose={onClose}
+            />
+            <SwipeableModalBody>
                 <Stack spacing={2} sx={{ mt: 1 }}>
                     {options.map((opt) => (
                         <Box
@@ -75,10 +73,10 @@ export default function StatusChangeModal({ open, staff, onClose, onSave }: Stat
                         </Box>
                     ))}
                 </Stack>
-            </DialogContent>
-            <DialogActions sx={{ p: 2, bgcolor: theme.palette.grey[50] }}>
-                <Button onClick={onClose} variant="text" color="inherit">닫기</Button>
-            </DialogActions>
-        </Dialog>
+            </SwipeableModalBody>
+            <SwipeableModalFooter>
+                <Button onClick={onClose} variant="secondary" fullWidth sx={{ minHeight: '44px' }}>닫기</Button>
+            </SwipeableModalFooter>
+        </SwipeableModal>
     )
 }

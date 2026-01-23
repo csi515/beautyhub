@@ -113,7 +113,8 @@ export default function DashboardContent({ initialData, error }: DashboardConten
                 maxWidth={{ xs: '100%', md: '1200px' }}
             >
             <Box ref={contentRef} sx={{ width: '100%', overflowX: 'hidden' }}>
-                <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: { xs: 1, sm: 1.5, md: 2 } }}>
+                {/* 헤더: StandardPageLayout spacing으로 자동 간격 처리 */}
+                <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                     <Box>
                         <Typography variant="h4" fontWeight={800} sx={{ color: 'text.primary', mb: 0.5, fontSize: { xs: '1.25rem', sm: '1.5rem' } }}>
                             {shopName}
@@ -131,28 +132,24 @@ export default function DashboardContent({ initialData, error }: DashboardConten
                     </IconButton>
                 </Box>
 
-                <Box sx={{ mb: { xs: 1, sm: 1.5, md: 2 } }}>
-                    <DashboardInstallPrompt />
-                </Box>
+                {/* 위젯들: StandardPageLayout spacing으로 자동 간격 처리 */}
+                <DashboardInstallPrompt />
 
-                <Box sx={{ mb: { xs: 1, sm: 1.5, md: 2 } }}>
-                    <DashboardMetricsWidget
-                        todayAppointments={todayAppointments}
-                        monthlyProfit={monthlyProfit}
-                        monthlyNewCustomers={monthlyNewCustomers}
-                        monthlyAppointments={monthlyAppointments}
-                    />
-                </Box>
+                <DashboardMetricsWidget
+                    todayAppointments={todayAppointments}
+                    monthlyProfit={monthlyProfit}
+                    monthlyNewCustomers={monthlyNewCustomers}
+                    monthlyAppointments={monthlyAppointments}
+                />
 
-                <Box sx={{ mb: { xs: 1, sm: 1.5, md: 2 } }}>
-                    <DashboardChartsWidget
-                        monthlyRevenueData={monthlyRevenueData}
-                        recentTransactions={recentTransactions}
-                        chartAppointments={chartAppointments}
-                        recentAppointments={recentAppointments}
-                    />
-                </Box>
+                <DashboardChartsWidget
+                    monthlyRevenueData={monthlyRevenueData}
+                    recentTransactions={recentTransactions}
+                    chartAppointments={chartAppointments}
+                    recentAppointments={recentAppointments}
+                />
 
+                {/* Grid 내부 spacing은 컴포넌트 간 간격이므로 유지 */}
                 <Grid container spacing={{ xs: 0.75, sm: 1.5, md: 2.5, lg: 3 }} sx={{ width: '100%', margin: 0, overflowX: 'hidden' }}>
                     <Grid item xs={12} lg={8}>
                         <DashboardProductsWidget activeProducts={activeProducts} />

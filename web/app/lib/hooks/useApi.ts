@@ -21,17 +21,39 @@ export interface UseApiReturn<T, P extends unknown[] = []> {
 }
 
 /**
- * API 호출 및 상태 관리 훅
+ * API 호출 및 상태 관리 훅 (수동 실행)
+ * 
+ * useApi vs useDataFetching:
+ * - useApi: 파라미터를 받는 API 호출, 수동 실행 (execute 호출 필요)
+ * - useDataFetching: 파라미터 없는 API 호출, 자동 실행 (immediate 옵션)
+ * 
+ * 사용 사례:
+ * - 파라미터가 필요한 API 호출 (예: getById, search 등)
+ * - 사용자 액션에 따라 실행되는 API 호출
+ * - 조건부 실행이 필요한 경우
  * 
  * @example
+ * // 파라미터가 필요한 경우
  * const { data, loading, error, execute } = useApi(
  *   (id: string) => customersApi.get(id),
  *   { immediate: false }
  * )
  * 
  * useEffect(() => {
- *   execute('customer-id')
- * }, [])
+ *   if (customerId) {
+ *     execute(customerId)
+ *   }
+ * }, [customerId])
+ * 
+ * @example
+ * // 사용자 액션에 따라 실행
+ * const { data, loading, error, execute } = useApi(
+ *   (searchQuery: string) => customersApi.search(searchQuery)
+ * )
+ * 
+ * const handleSearch = () => {
+ *   execute(searchInput)
+ * }
  */
 export function useApi<T, P extends unknown[] = []>(
   apiFunction: (...args: P) => Promise<T>,
@@ -80,13 +102,22 @@ export function useApi<T, P extends unknown[] = []>(
 }
 
 /**
- * 즉시 실행되는 API 호출 훅
+ * 즉시 실행되는 API 호출 훅 (자동 실행)
+ * 
+ * @deprecated useDataFetching을 사용하세요. useDataFetching이 더 일관된 API와 retry 로직을 제공합니다.
  * 
  * @example
+ * // Before
  * const { data, loading, error } = useApiImmediate(
  *   () => customersApi.list(),
  *   [searchQuery] // dependencies
  * )
+ * 
+ * // After
+ * const { data, loading, error } = useDataFetching({
+ *   fetchFn: () => customersApi.list(),
+ *   immediate: true
+ * })
  */
 export function useApiImmediate<T>(
   apiFunction: () => Promise<T>,

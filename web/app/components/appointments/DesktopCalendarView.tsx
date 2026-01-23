@@ -90,7 +90,11 @@ export default function DesktopCalendarView({
             events={events}
             view={view}
             date={currentDate}
-            onNavigate={onNavigate}
+            onNavigate={(newDate: Date) => {
+              // 날짜 객체를 명시적으로 복사하여 참조 문제 방지
+              const normalizedDate = new Date(newDate.getFullYear(), newDate.getMonth(), newDate.getDate())
+              onNavigate(normalizedDate)
+            }}
             onView={onViewChange}
             onSelectSlot={onSelectSlot}
             onSelectEvent={onSelectEvent}

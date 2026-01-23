@@ -2,11 +2,6 @@
 
 import { useState, useEffect } from 'react'
 import {
-    Dialog,
-    DialogTitle,
-    DialogContent,
-    DialogActions,
-    Button,
     TextField,
     FormControl,
     InputLabel,
@@ -14,6 +9,8 @@ import {
     MenuItem,
     Box,
 } from '@mui/material'
+import Button from '../ui/Button'
+import SwipeableModal, { SwipeableModalBody, SwipeableModalFooter, SwipeableModalHeader } from '../ui/SwipeableModal'
 import type { Product } from '@/app/lib/hooks/useInventory'
 
 type Props = {
@@ -53,22 +50,12 @@ export default function InventoryStockAdjustModal({ open, onClose, product, onUp
     }
 
     return (
-        <Dialog 
-            open={open} 
-            onClose={onClose} 
-            maxWidth="sm" 
-            fullWidth
-            PaperProps={{
-                sx: {
-                    m: { xs: 1, sm: 2 },
-                    borderRadius: { xs: 3, sm: 3 },
-                }
-            }}
-        >
-            <DialogTitle sx={{ fontSize: { xs: '1.125rem', sm: '1.25rem' }, pb: { xs: 1, sm: 1.5 } }}>
-                재고 조정 - {product?.name}
-            </DialogTitle>
-            <DialogContent sx={{ p: { xs: 2, sm: 3 } }}>
+        <SwipeableModal open={open} onClose={onClose} size="lg">
+            <SwipeableModalHeader
+                title={`재고 조정 - ${product?.name || ''}`}
+                onClose={onClose}
+            />
+            <SwipeableModalBody>
                 <Box sx={{ mt: 1, display: 'flex', flexDirection: 'column', gap: { xs: 2, sm: 2.5 } }}>
                     <FormControl fullWidth>
                         <InputLabel shrink>조정 유형</InputLabel>
@@ -127,32 +114,27 @@ export default function InventoryStockAdjustModal({ open, onClose, product, onUp
                         }}
                     />
                 </Box>
-            </DialogContent>
-            <DialogActions sx={{ p: { xs: 2, sm: 2 }, gap: 1 }}>
+            </SwipeableModalBody>
+            <SwipeableModalFooter>
                 <Button 
                     onClick={onClose}
                     disabled={loading}
-                    sx={{ 
-                        minHeight: '44px', 
-                        flex: { xs: 1, sm: 'none' },
-                        fontSize: { xs: '0.9375rem', sm: '1rem' }
-                    }}
+                    variant="secondary"
+                    fullWidth
+                    sx={{ minHeight: '44px' }}
                 >
                     취소
                 </Button>
                 <Button 
                     onClick={handleUpdate} 
-                    variant="contained"
+                    variant="primary"
                     disabled={loading}
-                    sx={{ 
-                        minHeight: '44px', 
-                        flex: { xs: 1, sm: 'none' },
-                        fontSize: { xs: '0.9375rem', sm: '1rem' }
-                    }}
+                    fullWidth
+                    sx={{ minHeight: '44px' }}
                 >
                     저장
                 </Button>
-            </DialogActions>
-        </Dialog>
+            </SwipeableModalFooter>
+        </SwipeableModal>
     )
 }

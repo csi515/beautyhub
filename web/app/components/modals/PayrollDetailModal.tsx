@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react'
 import { Box, Grid, Typography, Divider } from '@mui/material'
 import { Edit, Save, User, Calendar } from 'lucide-react'
-import Modal, { ModalBody, ModalFooter, ModalHeader } from '../ui/Modal'
+import SwipeableModal, { SwipeableModalBody, SwipeableModalFooter, SwipeableModalHeader } from '../ui/SwipeableModal'
 import Button from '../ui/Button'
 import Input from '../ui/Input'
 import Textarea from '../ui/Textarea'
@@ -119,10 +119,10 @@ export default function PayrollDetailModal({
     const netSalary = totalGross - totalDeductions
 
     return (
-        <Modal open={open} onClose={onClose} size="xl">
-            <ModalHeader title={`${staffName || '직원'} 급여 상세`} onClose={onClose} />
+        <SwipeableModal open={open} onClose={onClose} size="fullscreen">
+            <SwipeableModalHeader title={`${staffName || '직원'} 급여 상세`} onClose={onClose} />
 
-            <ModalBody>
+            <SwipeableModalBody>
                 <Box className="space-y-6">
                     {/* 기본 정보 */}
                     <Box className="bg-gray-50 p-4 rounded-lg">
@@ -318,23 +318,23 @@ export default function PayrollDetailModal({
                         )}
                     </Box>
                 </Box>
-            </ModalBody>
+            </SwipeableModalBody>
 
-            <ModalFooter>
-                <div className="flex justify-end gap-2 w-full">
-                    <Button variant="ghost" onClick={onClose}>닫기</Button>
-                    {isEditing && (
-                        <Button
-                            variant="primary"
-                            onClick={handleSave}
-                            loading={saving}
-                            leftIcon={<Save size={18} />}
-                        >
-                            저장하기
-                        </Button>
-                    )}
-                </div>
-            </ModalFooter>
-        </Modal>
+            <SwipeableModalFooter>
+                <Button variant="secondary" onClick={onClose} fullWidth sx={{ minHeight: '44px' }}>닫기</Button>
+                {isEditing && (
+                    <Button
+                        variant="primary"
+                        onClick={handleSave}
+                        loading={saving}
+                        leftIcon={<Save size={18} />}
+                        fullWidth
+                        sx={{ minHeight: '44px' }}
+                    >
+                        저장하기
+                    </Button>
+                )}
+            </SwipeableModalFooter>
+        </SwipeableModal>
     )
 }

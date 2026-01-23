@@ -20,17 +20,21 @@ export interface UsePageControllerReturn<TData, TViewProps> {
  * 페이지 컨트롤러 훅
  * 데이터 로딩, 상태 관리, View props 변환을 담당
  * 
+ * @deprecated useDataFetching을 사용하세요. 이 훅은 useDataFetching으로 통합되었습니다.
+ * View props 변환이 필요한 경우 컴포넌트에서 직접 처리하세요.
+ * 
  * @example
+ * // Before
  * const { viewProps, loading, error, refetch } = usePageController({
- *   loadData: async () => {
- *     const { productsApi } = await import('@/app/lib/api/products')
- *     return await productsApi.list()
- *   },
- *   mapToViewProps: (data) => ({
- *     products: data,
- *     onRefresh: refetch
- *   })
+ *   loadData: async () => productsApi.list(),
+ *   mapToViewProps: (data) => ({ products: data })
  * })
+ * 
+ * // After
+ * const { data, loading, error, refetch } = useDataFetching({
+ *   fetchFn: () => productsApi.list()
+ * })
+ * const viewProps = useMemo(() => ({ products: data }), [data])
  */
 export function usePageController<TData, TViewProps>(
   config: PageControllerConfig<TData, TViewProps>

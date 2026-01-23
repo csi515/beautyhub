@@ -12,8 +12,10 @@ export default function OfflineIndicator() {
     const [isOnline, setIsOnline] = useState(true)
     const [wasOffline, setWasOffline] = useState(false)
     const [isReconnecting, setIsReconnecting] = useState(false)
+    const [showOfflineAlert, setShowOfflineAlert] = useState(false)
     const router = useRouter()
     const reconnectTimeoutRef = useRef<NodeJS.Timeout | null>(null)
+    const autoHideTimeoutRef = useRef<NodeJS.Timeout | null>(null)
     const { isStandalone, isIOS } = usePWA()
 
     useEffect(() => {
@@ -21,6 +23,14 @@ export default function OfflineIndicator() {
         const initialOnline = navigator.onLine
         setIsOnline(initialOnline)
         setWasOffline(!initialOnline)
+        // 초기 오프라인 상태면 알림 표시
+        if (!initialOnline) {
+            setShowOfflineAlert(true)
+            // 5초 후 자동으로 알림 숨기기
+            autoHideTimeoutRef.current = setTimeout(() => {
+                setShowOfflineAlert(false)
+            }, 5000)
+        }
 
         // 실제 네트워크 연결 확인 함수
         const checkNetworkConnection = async () => {
@@ -58,10 +68,22 @@ export default function OfflineIndicator() {
         const handleOffline = () => {
             setIsOnline(false)
             setWasOffline(true)
+            setShowOfflineAlert(true)
+            
+            // 기존 타임아웃 정리
             if (reconnectTimeoutRef.current) {
                 clearTimeout(reconnectTimeoutRef.current)
                 reconnectTimeoutRef.current = null
             }
+            if (autoHideTimeoutRef.current) {
+                clearTimeout(autoHideTimeoutRef.current)
+                autoHideTimeoutRef.current = null
+            }
+            
+            // 5초 후 자동으로 알림 숨기기
+            autoHideTimeoutRef.current = setTimeout(() => {
+                setShowOfflineAlert(false)
+            }, 5000)
         }
 
         // 주기적으로 네트워크 상태 확인 (오프라인일 때만)
@@ -87,9 +109,23 @@ export default function OfflineIndicator() {
             if (reconnectTimeoutRef.current) {
                 clearTimeout(reconnectTimeoutRef.current)
             }
+            if (autoHideTimeoutRef.current) {
+                clearTimeout(autoHideTimeoutRef.current)
+            }
         }
     }, [router, wasOffline])
 
+    // 온라인 상태로 복구되면 알림 숨기기
+    useEffect(() => {
+        if (isOnline) {
+            setShowOfflineAlert(false)
+            if (autoHideTimeoutRef.current) {
+                clearTimeout(autoHideTimeoutRef.current)
+                autoHideTimeoutRef.current = null
+            }
+        }
+    }, [isOnline])
+    
     // 온라인 상태이고 재연결 중이 아닐 때는 표시하지 않음
     if (isOnline && !isReconnecting) return null
 
@@ -121,13 +157,14 @@ export default function OfflineIndicator() {
         )
     }
 
-    // 오프라인 상태 표시
-    if (!isOnline) {
+    // 오프라인 상태 표시 (showOfflineAlert가 true일 때만)
+    if (!isOnline && showOfflineAlert) {
         return (
-            <Slide direction="down" in={!isOnline} mountOnEnter unmountOnExit>
+            <Slide direction="down" in={showOfflineAlert} mountOnEnter unmountOnExit>
                 <Alert
                     severity="warning"
                     icon={<WifiOff size={20} />}
+                    onClose={() => setShowOfflineAlert(false)}
                     sx={{
                         position: 'fixed',
                         top: 0,

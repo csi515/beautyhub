@@ -3,20 +3,15 @@
 import { useState, useEffect } from 'react'
 import { Staff, StaffAttendance, StaffAttendanceCreateInput } from '@/types/entities'
 import {
-    Dialog,
-    DialogTitle,
-    DialogContent,
-    DialogActions,
-    Button,
     TextField,
     Stack,
     MenuItem,
     FormControl,
     InputLabel,
-    Select,
-    Typography,
-    Box
+    Select
 } from '@mui/material'
+import Button from '../ui/Button'
+import SwipeableModal, { SwipeableModalBody, SwipeableModalFooter, SwipeableModalHeader } from '../ui/SwipeableModal'
 import { format } from 'date-fns'
 
 interface AttendanceRecordModalProps {
@@ -113,17 +108,13 @@ export default function AttendanceRecordModal({
     }
 
     return (
-        <Dialog open={open} onClose={onClose} maxWidth="sm" fullWidth>
-            <DialogTitle>
-                {record ? '근태 기록 수정' : '근태 기록 추가'}
-            </DialogTitle>
-            <Box sx={{ px: 3, pb: 1 }}>
-                <Typography variant="caption" color="text.secondary">
-                    출퇴근 시간을 수동으로 입력하거나 수정합니다
-                </Typography>
-            </Box>
-
-            <DialogContent>
+        <SwipeableModal open={open} onClose={onClose} size="fullscreen">
+            <SwipeableModalHeader
+                title={record ? '근태 기록 수정' : '근태 기록 추가'}
+                description="출퇴근 시간을 수동으로 입력하거나 수정합니다"
+                onClose={onClose}
+            />
+            <SwipeableModalBody>
                 <Stack spacing={3} sx={{ mt: 1 }}>
                     <FormControl fullWidth>
                         <InputLabel>직원</InputLabel>
@@ -199,30 +190,33 @@ export default function AttendanceRecordModal({
                         fullWidth
                     />
                 </Stack>
-            </DialogContent>
+            </SwipeableModalBody>
 
-            <DialogActions sx={{ p: 2, gap: 1 }}>
+            <SwipeableModalFooter>
                 {record && onDelete && (
                     <Button
                         onClick={handleDelete}
                         disabled={loading}
-                        color="error"
-                        sx={{ mr: 'auto' }}
+                        variant="danger"
+                        fullWidth
+                        sx={{ minHeight: '44px' }}
                     >
                         삭제
                     </Button>
                 )}
-                <Button onClick={onClose} disabled={loading}>
+                <Button onClick={onClose} disabled={loading} variant="secondary" fullWidth sx={{ minHeight: '44px' }}>
                     취소
                 </Button>
                 <Button
                     onClick={handleSave}
-                    variant="contained"
+                    variant="primary"
                     disabled={loading}
+                    fullWidth
+                    sx={{ minHeight: '44px' }}
                 >
                     저장
                 </Button>
-            </DialogActions>
-        </Dialog>
+            </SwipeableModalFooter>
+        </SwipeableModal>
     )
 }

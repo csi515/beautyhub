@@ -13,13 +13,17 @@ import {
     Button,
     Stack,
     Typography,
-    Box
+    Box,
+    useTheme,
+    useMediaQuery
 } from '@mui/material'
 import { Checkbox } from '@mui/material'
 import { Stack as MuiStack } from '@mui/material'
 import Pagination from '@mui/material/Pagination'
 import StatusBadge from '../common/StatusBadge'
 import TableSelectHeader from '../common/TableSelectHeader'
+import { useResponsivePaginationSize } from '@/app/lib/hooks/useResponsivePaginationSize'
+import PayrollMobileCards from './PayrollMobileCards'
 import { type Staff, type PayrollRecord } from '@/types/payroll'
 
 interface PayrollTableProps {
@@ -49,6 +53,10 @@ export default function PayrollTable({
     onDetailModalOpen,
     onStatusChange
 }: PayrollTableProps) {
+    const theme = useTheme()
+    const isMobile = useMediaQuery(theme.breakpoints.down('sm'))
+    const paginationSize = useResponsivePaginationSize()
+    
     return (
         <Card>
             <CardContent>
@@ -63,7 +71,20 @@ export default function PayrollTable({
                     )}
                 </Stack>
 
-                <TableContainer component={Paper} variant="outlined">
+                {/* 모바일 카드 뷰 */}
+                <PayrollMobileCards
+                  selectedMonth={selectedMonth}
+                  records={records}
+                  selectedStaffIds={selectedStaffIds}
+                  onSelectedStaffIdsChange={onSelectedStaffIdsChange}
+                  paginatedStaff={paginatedStaff}
+                  onSettingsModalOpen={onSettingsModalOpen}
+                  onDetailModalOpen={onDetailModalOpen}
+                  onStatusChange={onStatusChange}
+                />
+
+                {/* 데스크톱 테이블 뷰 */}
+                <TableContainer component={Paper} variant="outlined" sx={{ display: { xs: 'none', md: 'block' } }}>
                     <Table size="small">
                         <TableHead>
                             <TableRow>
@@ -214,8 +235,18 @@ export default function PayrollTable({
                             page={currentPage}
                             onChange={(_, p) => onPageChange(p)}
                             color="primary"
-                            showFirstButton
-                            showLastButton
+                            size={paginationSize}
+                            siblingCount={0}
+                            boundaryCount={1}
+                            showFirstButton={!isMobile}
+                            showLastButton={!isMobile}
+                            sx={{
+                                '& .MuiPaginationItem-root': {
+                                    minWidth: { xs: '44px', sm: '44px' },
+                                    minHeight: { xs: '44px', sm: '44px' },
+                                    fontSize: { xs: '0.875rem', sm: '0.9375rem' },
+                                },
+                            }}
                         />
                     </Stack>
                 )}

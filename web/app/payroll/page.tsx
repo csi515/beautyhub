@@ -14,25 +14,23 @@ import { useAppToast } from '../lib/ui/toast'
 import { usePayroll } from '../lib/hooks/usePayroll'
 import { usePayrollFilters } from '../lib/hooks/usePayrollFilters'
 import { exportToCSV, preparePayrollDataForExport } from '../lib/utils/export'
+import { useModals } from '../lib/hooks/useModals'
+import { useModalWithData } from '../lib/hooks/useModalWithData'
+import { useSelection } from '../lib/hooks/useSelection'
 import type { PayrollCalculationResult } from '@/types/payroll'
 
 export default function PayrollPage() {
     // Modal states
-    const [calculateModalOpen, setCalculateModalOpen] = useState(false)
-    const [settingsModalOpen, setSettingsModalOpen] = useState(false)
-    const [detailModalOpen, setDetailModalOpen] = useState(false)
-    const [selectedRecord, setSelectedRecord] = useState<any>(null)
-
-    // Calculation modal state
-    const [selectedStaffId, setSelectedStaffId] = useState('')
-    const [calculationResult, setCalculationResult] = useState<PayrollCalculationResult | null>(null)
-
-    // Settings modal state
-    const [settingsStaffId, setSettingsStaffId] = useState('')
-    const [settingsStaffName, setSettingsStaffName] = useState('')
+    const modals = useModals<'calculate' | 'settings' | 'detail'>()
+    const calculationModal = useModalWithData<{
+        staffId: string
+        result: PayrollCalculationResult | null
+    }>()
+    const settingsModal = useModalWithData<{ staffId: string; staffName: string }>()
+    const detailModal = useModalWithData<any>()
 
     // Bulk calculation state
-    const [selectedStaffIds, setSelectedStaffIds] = useState<string[]>([])
+    const selectedStaffIds = useSelection<string>({ useSet: false })
     const [bulkCalculating, setBulkCalculating] = useState(false)
 
     const toast = useAppToast()
@@ -66,41 +64,40 @@ export default function PayrollPage() {
     } = usePayrollFilters(staff, records)
 
     async function handleCalculatePayroll() {
-        if (!selectedStaffId) return
+        if (!calculationModal.data?.staffId) return
 
-        const result = await calculatePayroll(selectedStaffId, selectedMonth)
-            setCalculationResult(result)
+        const result = await calculatePayroll(calculationModal.data.staffId, selectedMonth)
+        calculationModal.updateData({ result })
     }
 
     async function handleBulkCalculatePayroll() {
-        if (selectedStaffIds.length === 0) return
+        const ids = selectedStaffIds.selected as string[]
+        if (ids.length === 0) return
 
-            setBulkCalculating(true)
-        await calculateBulkPayroll(selectedStaffIds, selectedMonth)
-                setSelectedStaffIds([])
-            setBulkCalculating(false)
+        setBulkCalculating(true)
+        await calculateBulkPayroll(ids, selectedMonth)
+        selectedStaffIds.clear()
+        setBulkCalculating(false)
     }
 
     function openCalculateModal() {
-        setCalculateModalOpen(true)
-        setCalculationResult(null)
+        calculationModal.openModal({ staffId: '', result: null })
+        modals.open('calculate')
     }
 
     function closeCalculateModal() {
-        setCalculateModalOpen(false)
-        setCalculationResult(null)
-        setSelectedStaffId('')
+        modals.close('calculate')
+        calculationModal.closeModal()
     }
 
     const openSettingsModal = (staffId: string, staffName: string) => {
-        setSettingsStaffId(staffId)
-        setSettingsStaffName(staffName)
-        setSettingsModalOpen(true)
+        settingsModal.openModal({ staffId, staffName })
+        modals.open('settings')
     }
 
     const openDetailModal = (record: any) => {
-        setSelectedRecord(record)
-        setDetailModalOpen(true)
+        detailModal.openModal(record)
+        modals.open('detail')
     }
 
     const handleStatusChange = async (record: any, newStatus: 'approved' | 'paid') => {
@@ -136,8 +133,8 @@ export default function PayrollPage() {
                 filteredStaff={filteredStaff}
                 totalGrossPay={totalGrossPay}
                 totalNetPay={totalNetPay}
-                selectedStaffIds={selectedStaffIds}
-                setSelectedStaffIds={setSelectedStaffIds}
+                selectedStaffIds={selectedStaffIds.selected as string[]}
+                setSelectedStaffIds={selectedStaffIds.setSelected}
                 bulkCalculating={bulkCalculating}
                 onExport={handleExport}
                 onCalculate={openCalculateModal}
@@ -148,29 +145,35 @@ export default function PayrollPage() {
             />
 
             <PayrollSettingsModal
-                open={settingsModalOpen}
-                onClose={() => setSettingsModalOpen(false)}
-                staffId={settingsStaffId}
-                staffName={settingsStaffName}
+                open={modals.isOpen('settings')}
+                onClose={() => {
+                    modals.close('settings')
+                    settingsModal.closeModal()
+                }}
+                staffId={settingsModal.data?.staffId || ''}
+                staffName={settingsModal.data?.staffName || ''}
                 onSaved={refreshData}
             />
 
             <PayrollDetailModal
-                open={detailModalOpen}
-                onClose={() => setDetailModalOpen(false)}
-                record={selectedRecord}
-                staffName={selectedRecord?.staff?.name || undefined}
+                open={modals.isOpen('detail')}
+                onClose={() => {
+                    modals.close('detail')
+                    detailModal.closeModal()
+                }}
+                record={detailModal.data}
+                staffName={detailModal.data?.staff?.name || undefined}
                 onSaved={refreshData}
             />
 
             <PayrollCalculationModal
-                open={calculateModalOpen}
+                open={modals.isOpen('calculate')}
                 onClose={closeCalculateModal}
                 staff={staff}
-                selectedStaffId={selectedStaffId}
+                selectedStaffId={calculationModal.data?.staffId || ''}
                 selectedMonth={selectedMonth}
-                calculationResult={calculationResult}
-                onStaffChange={setSelectedStaffId}
+                calculationResult={calculationModal.data?.result || null}
+                onStaffChange={(id) => calculationModal.updateData({ staffId: id })}
                 onMonthChange={setSelectedMonth}
                 onCalculate={handleCalculatePayroll}
             />

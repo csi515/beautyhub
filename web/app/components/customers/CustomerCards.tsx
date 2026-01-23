@@ -1,9 +1,11 @@
 'use client'
 
-import { Box, List, ListItemButton, ListItemText, Typography, Stack } from '@mui/material'
+import { Box, List, ListItemButton, ListItemText, Typography, Stack, useTheme, useMediaQuery } from '@mui/material'
 import StatusBadge from '../common/StatusBadge'
 import LoadingState from '../common/LoadingState'
 import EmptyState from '../ui/EmptyState'
+import { useSwipe } from '@/app/lib/hooks/useSwipe'
+import { useHapticFeedback } from '@/app/lib/hooks/useHapticFeedback'
 import { type Customer } from '@/types/entities'
 
 interface CustomerCardsProps {
@@ -21,6 +23,10 @@ export default function CustomerCards({
   pointsByCustomer,
   onCustomerClick
 }: CustomerCardsProps) {
+  const theme = useTheme()
+  const isMobile = useMediaQuery(theme.breakpoints.down('sm'))
+  const { light } = useHapticFeedback()
+
   if (loading) {
     return (
       <Box sx={{ display: { xs: 'block', md: 'none' } }}>
@@ -52,9 +58,20 @@ export default function CustomerCards({
             ? `${contactParts.join(' • ')} • ${points} P`
             : `${points} P`
 
+          const swipeHandlers = useSwipe({
+            onSwipeLeft: () => {
+              if (isMobile) {
+                light()
+                onCustomerClick(c)
+              }
+            },
+            threshold: 50,
+          })
+
           return (
             <ListItemButton
               key={c.id}
+              {...(isMobile ? swipeHandlers : {})}
               onClick={() => onCustomerClick(c)}
               sx={{
                 minHeight: 72,
@@ -62,8 +79,11 @@ export default function CustomerCards({
                 px: 2,
                 borderBottom: '1px solid',
                 borderColor: 'divider',
+                transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
                 '&:active': {
                   bgcolor: 'action.selected',
+                  transform: 'scale(0.98)',
+                  transition: 'transform 0.1s ease-out',
                 },
               }}
             >

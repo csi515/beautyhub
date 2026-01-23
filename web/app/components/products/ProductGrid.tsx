@@ -5,6 +5,7 @@ import Button from '../ui/Button'
 import EmptyState from '../EmptyState'
 import StatusBadge from '../common/StatusBadge'
 import LoadingState from '../common/LoadingState'
+import { useResponsiveSpacing } from '../../lib/hooks/useResponsiveSpacing'
 import type { Product } from '@/types/entities'
 
 type Props = {
@@ -17,10 +18,11 @@ type Props = {
 export default function ProductGrid({ products, loading, onProductClick, onCreateClick }: Props) {
   const theme = useTheme()
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'))
+  const spacing = useResponsiveSpacing()
 
   if (loading) {
     return (
-      <LoadingState variant={isMobile ? "list" : "card"} rows={isMobile ? 8 : 8} className="" />
+      <LoadingState variant={isMobile ? "listSimple" : "card"} rows={isMobile ? 8 : 8} className="" />
     )
   }
 
@@ -109,7 +111,7 @@ export default function ProductGrid({ products, loading, onProductClick, onCreat
 
   // 데스크탑: Grid + Card (기존 구조 유지)
   return (
-    <Grid container spacing={{ xs: 0.75, sm: 1.5, md: 2 }}>
+    <Grid container spacing={spacing.card as any}>
       {products.map((p) => (
         <Grid item xs={12} sm={6} md={4} lg={3} key={String(p.id)}>
           <Card 

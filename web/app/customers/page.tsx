@@ -5,13 +5,15 @@
 
 'use client'
 
-import { useState, lazy, Suspense } from 'react'
+import { lazy, Suspense } from 'react'
 import { useAppToast } from '../lib/ui/toast'
 import { exportToCSV, prepareCustomerDataForExport } from '../lib/utils/export'
 import CustomersPageView from '../components/customers/CustomersPageView'
 import { useCustomers } from '../lib/hooks/useCustomers'
 import { useCustomerFilters } from '../lib/hooks/useCustomerFilters'
 import { useSearch } from '../lib/hooks/useSearch'
+import { useModalWithData } from '../lib/hooks/useModalWithData'
+import { useFilters } from '../lib/hooks/useFilters'
 import type { Customer } from '@/types/entities'
 import type { CustomerFilters as CustomerFiltersType } from '@/types/customer'
 
@@ -19,20 +21,21 @@ const CustomerDetailModal = lazy(() => import('../components/modals/CustomerDeta
 
 export default function CustomersPage() {
   // 모달 상태 관리 (컨트롤러 역할)
-  const [detailOpen, setDetailOpen] = useState(false)
-  const [selected, setSelected] = useState<Customer | null>(null)
+  const detailModal = useModalWithData<Customer>()
   const toast = useAppToast()
 
   // Search
   const { query, setQuery } = useSearch({ debounceMs: 300 })
 
   // Filters state
-  const [filters, setFilters] = useState<CustomerFiltersType>({
+  const initialFilters: CustomerFiltersType = {
     statusFilter: 'all',
     vipFilter: 'all',
     minPoints: '',
     maxPoints: ''
-  })
+  }
+  
+  const filters = useFilters(initialFilters)
 
   // Customer data hook
   const {
@@ -57,7 +60,7 @@ export default function CustomersPage() {
     filteredTotalPages,
     filteredRows,
     paginatedRows
-  } = useCustomerFilters(customers, pointsByCustomer, filters)
+  } = useCustomerFilters(customers, pointsByCustomer, filters.filters)
 
   // 이벤트 핸들러 (컨트롤러 역할)
   const handleExport = () => {
@@ -66,27 +69,12 @@ export default function CustomersPage() {
     toast.success('CSV 파일이 다운로드되었습니다')
   }
 
-  const handleResetFilters = () => {
-    setFilters({
-      statusFilter: 'all',
-      vipFilter: 'all',
-      minPoints: '',
-      maxPoints: ''
-    })
-  }
-
-  const handleFiltersChange = (newFilters: Partial<CustomerFiltersType>) => {
-    setFilters(prev => ({ ...prev, ...newFilters }))
-  }
-
   const handleCreateCustomer = () => {
-    setSelected({ id: '', owner_id: '', name: '', phone: '', email: '', address: '' } as Customer)
-    setDetailOpen(true)
+    detailModal.openModal({ id: '', owner_id: '', name: '', phone: '', email: '', address: '' } as Customer)
   }
 
   const handleCustomerClick = (customer: Customer) => {
-    setSelected(customer)
-    setDetailOpen(true)
+    detailModal.openModal(customer)
   }
 
   return (
@@ -101,8 +89,8 @@ export default function CustomersPage() {
         pointsByCustomer={pointsByCustomer}
         query={query}
         setQuery={setQuery}
-        filters={filters}
-        onFiltersChange={handleFiltersChange}
+        filters={filters.filters}
+        onFiltersChange={filters.updateFilters}
         sortKey={sortKey}
         sortDirection={sortDirection}
         toggleSort={toggleSort}
@@ -113,18 +101,18 @@ export default function CustomersPage() {
         totalPages={filteredTotalPages}
         onCustomerClick={handleCustomerClick}
         onCreateCustomer={handleCreateCustomer}
-        onResetFilters={handleResetFilters}
+        onResetFilters={filters.resetFilters}
         onExport={handleExport}
         onSelectedCustomerIdsChange={updateSelectedCustomerIds}
         onClearSelection={() => updateSelectedCustomerIds([])}
       />
 
-      {detailOpen && (
+      {detailModal.open && detailModal.data && (
         <Suspense fallback={null}>
           <CustomerDetailModal
-            open={detailOpen}
-            item={selected}
-            onClose={() => setDetailOpen(false)}
+            open={detailModal.open}
+            item={detailModal.data}
+            onClose={detailModal.closeModal}
             onSaved={refreshCustomers}
           />
         </Suspense>
