@@ -51,6 +51,13 @@ export function middleware(req: NextRequest) {
     return NextResponse.redirect(url)
   }
 
+  // 4. 통합된 경로 리다이렉트 (급여→직원, 고객분석→고객, 재고→제품)
+  if (pathname === '/payroll') return NextResponse.redirect(new URL('/staff?tab=payroll', req.url))
+  if (pathname === '/analytics') return NextResponse.redirect(new URL('/customers?tab=analytics', req.url))
+  if (pathname === '/inventory' || pathname.startsWith('/inventory/')) {
+    return NextResponse.redirect(new URL('/products?tab=inventory', req.url))
+  }
+
   return NextResponse.next()
 }
 

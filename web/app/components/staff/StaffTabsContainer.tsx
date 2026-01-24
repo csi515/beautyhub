@@ -1,7 +1,7 @@
 'use client'
 
 import { ReactNode } from 'react'
-import { Clock, Calendar, List } from 'lucide-react'
+import { Clock, Calendar, List, DollarSign } from 'lucide-react'
 import { Box, Typography, Paper } from '@mui/material'
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/app/components/ui/Tabs'
 import LoadingState from '@/app/components/common/LoadingState'
@@ -19,6 +19,7 @@ interface StaffTabsContainerProps {
   attendanceTab: ReactNode
   scheduleTab: ReactNode
   listTab: ReactNode
+  payrollTab?: ReactNode
 }
 
 export default function StaffTabsContainer({
@@ -31,7 +32,8 @@ export default function StaffTabsContainer({
   onCreateStaff,
   attendanceTab,
   scheduleTab,
-  listTab
+  listTab,
+  payrollTab,
 }: StaffTabsContainerProps) {
   return (
     <Paper
@@ -71,6 +73,14 @@ export default function StaffTabsContainer({
                 <Typography variant="body2" fontWeight={500}>직원 명부</Typography>
               </Box>
             </TabsTrigger>
+            {payrollTab != null && (
+              <TabsTrigger value="3">
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                  <DollarSign size={18} />
+                  <Typography variant="body2" fontWeight={500}>급여</Typography>
+                </Box>
+              </TabsTrigger>
+            )}
           </TabsList>
         </Box>
 
@@ -91,6 +101,12 @@ export default function StaffTabsContainer({
               <TabsContent value="2">
                 {listTab}
               </TabsContent>
+
+              {payrollTab != null && (
+                <TabsContent value="3">
+                  {payrollTab}
+                </TabsContent>
+              )}
             </>
           )}
 

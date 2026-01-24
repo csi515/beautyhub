@@ -5,9 +5,8 @@
 
 'use client'
 
-import { Plus } from 'lucide-react'
-import { useEffect, useState } from 'react'
-import { useTheme, useMediaQuery } from '@mui/material'
+import { Plus, List, TrendingUp } from 'lucide-react'
+import { Box, Typography } from '@mui/material'
 import CustomerFilters from './CustomerFilters'
 import CustomerTable from './CustomerTable'
 import CustomerCards from './CustomerCards'
@@ -15,11 +14,15 @@ import CustomerPagination from './CustomerPagination'
 import StandardPageLayout from '../common/StandardPageLayout'
 import MobileFAB from '../common/MobileFAB'
 import FilterBottomSheet from '../common/FilterBottomSheet'
-import { usePageHeader } from '@/app/lib/contexts/PageHeaderContext'
+import { Tabs, TabsList, TabsTrigger, TabsContent } from '../ui/Tabs'
+import { useMobilePageHeader } from '@/app/lib/hooks/useMobilePageHeader'
 import type { Customer } from '@/types/entities'
 import type { CustomerFilters as CustomerFiltersType } from '@/types/customer'
 
 export interface CustomersPageViewProps {
+  tab?: 'list' | 'analytics'
+  onTabChange?: (tab: 'list' | 'analytics') => void
+  analyticsTab?: React.ReactNode
   // 데이터
   customers: Customer[]
   paginatedCustomers: Customer[]
@@ -57,6 +60,9 @@ export interface CustomersPageViewProps {
 }
 
 export default function CustomersPageView({
+  tab = 'list',
+  onTabChange,
+  analyticsTab,
   customers,
   paginatedCustomers,
   filteredCustomers,
@@ -83,12 +89,6 @@ export default function CustomersPageView({
   onSelectedCustomerIdsChange,
   onClearSelection,
 }: CustomersPageViewProps) {
-  const theme = useTheme()
-  const isMobile = useMediaQuery(theme.breakpoints.down('sm'))
-  const { setHeaderInfo, clearHeaderInfo } = usePageHeader()
-  const [filterSheetOpen, setFilterSheetOpen] = useState(false)
-
-  // 활성 필터 개수 계산
   const activeFilterCount = [
     query !== '',
     filters.statusFilter !== 'all',
@@ -96,25 +96,10 @@ export default function CustomersPageView({
     filters.minPoints !== '',
     filters.maxPoints !== '',
   ].filter(Boolean).length
-
-  // 모바일에서 Context에 헤더 정보 설정
-  useEffect(() => {
-    if (isMobile) {
-      setHeaderInfo({
-        title: '고객 관리',
-        onFilter: () => setFilterSheetOpen(true),
-        filterBadge: activeFilterCount,
-      })
-    } else {
-      clearHeaderInfo()
-    }
-
-    return () => {
-      if (isMobile) {
-        clearHeaderInfo()
-      }
-    }
-  }, [isMobile, setHeaderInfo, clearHeaderInfo, activeFilterCount])
+  const { isMobile, filterSheetOpen, closeFilterSheet } = useMobilePageHeader({
+    title: '고객 관리',
+    filterBadge: activeFilterCount,
+  })
 
   // 필터 콘텐츠
   const filterContent = (
@@ -131,22 +116,15 @@ export default function CustomersPageView({
     />
   )
 
-  return (
-    <StandardPageLayout
-      loading={loading}
-      error={error}
-      empty={!loading && filteredCustomers.length === 0 && customers.length === 0}
-      emptyTitle="고객이 없습니다"
-      emptyDescription="새로운 고객을 추가하여 시작하세요"
-      emptyActionLabel="고객 추가"
-      emptyActionOnClick={onCreateCustomer}
-      errorTitle="오류 발생"
-    >
-      {/* 필터 및 검색 */}
+  const isListTab = tab === 'list'
+  const showListEmpty = !loading && filteredCustomers.length === 0 && customers.length === 0
+
+  const listContent = (
+    <>
       {isMobile ? (
         <FilterBottomSheet
           open={filterSheetOpen}
-          onClose={() => setFilterSheetOpen(false)}
+          onClose={closeFilterSheet}
           title="필터"
         >
           {filterContent}
@@ -165,7 +143,6 @@ export default function CustomersPageView({
         />
       )}
 
-      {/* 모바일 카드 뷰 */}
       <CustomerCards
         customers={customers}
         paginatedCustomers={paginatedCustomers}
@@ -174,7 +151,6 @@ export default function CustomersPageView({
         onCustomerClick={onCustomerClick}
       />
 
-      {/* 데스크톱 테이블 뷰 */}
       <CustomerTable
         customers={customers}
         paginatedCustomers={paginatedCustomers}
@@ -189,7 +165,6 @@ export default function CustomersPageView({
         onCreateCustomer={onCreateCustomer}
       />
 
-      {/* 페이지네이션 및 일괄 작업 */}
       <CustomerPagination
         loading={loading}
         filteredCount={filteredCustomers.length}
@@ -205,12 +180,52 @@ export default function CustomersPageView({
         onClearSelection={onClearSelection}
       />
 
-      {/* Mobile FAB */}
-      <MobileFAB
-        icon={<Plus className="h-5 w-5" />}
-        label="새 고객 추가"
-        onClick={onCreateCustomer}
-      />
+      {isListTab && (
+        <MobileFAB
+          icon={<Plus className="h-5 w-5" />}
+          label="새 고객 추가"
+          onClick={onCreateCustomer}
+        />
+      )}
+    </>
+  )
+
+  return (
+    <StandardPageLayout
+      loading={isListTab ? loading : false}
+      error={isListTab ? error : undefined}
+      empty={isListTab && showListEmpty}
+      emptyTitle="고객이 없습니다"
+      emptyDescription="새로운 고객을 추가하여 시작하세요"
+      emptyActionLabel="고객 추가"
+      emptyActionOnClick={onCreateCustomer}
+      errorTitle="오류 발생"
+    >
+      {onTabChange != null && analyticsTab != null ? (
+        <Tabs value={tab} onValueChange={(v) => onTabChange(v as 'list' | 'analytics')}>
+          <Box sx={{ mb: 2 }}>
+            <TabsList>
+              <TabsTrigger value="list">
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                  <List size={18} />
+                  <Typography variant="body2" fontWeight={500}>고객 목록</Typography>
+                </Box>
+              </TabsTrigger>
+              <TabsTrigger value="analytics">
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                  <TrendingUp size={18} />
+                  <Typography variant="body2" fontWeight={500}>고객 분석</Typography>
+                </Box>
+              </TabsTrigger>
+            </TabsList>
+          </Box>
+
+          <TabsContent value="list">{listContent}</TabsContent>
+          <TabsContent value="analytics">{analyticsTab}</TabsContent>
+        </Tabs>
+      ) : (
+        listContent
+      )}
     </StandardPageLayout>
   )
 }

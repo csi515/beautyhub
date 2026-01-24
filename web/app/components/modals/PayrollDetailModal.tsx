@@ -2,12 +2,15 @@
 
 import { useState, useEffect } from 'react'
 import { Box, Grid, Typography, Divider } from '@mui/material'
-import { Edit, Save, User, Calendar } from 'lucide-react'
+import { Edit, Save } from 'lucide-react'
 import SwipeableModal, { SwipeableModalBody, SwipeableModalFooter, SwipeableModalHeader } from '../ui/SwipeableModal'
 import Button from '../ui/Button'
-import Input from '../ui/Input'
 import Textarea from '../ui/Textarea'
 import { useAppToast } from '../../lib/ui/toast'
+import PayrollBasicInfo from './payroll-detail/PayrollBasicInfo'
+import PayrollPaymentSection from './payroll-detail/PayrollPaymentSection'
+import PayrollDeductionSection from './payroll-detail/PayrollDeductionSection'
+import PayrollFinalAmount from './payroll-detail/PayrollFinalAmount'
 import type { PayrollRecord } from '@/types/entities'
 
 interface PayrollDetailModalProps {
@@ -124,29 +127,7 @@ export default function PayrollDetailModal({
 
             <SwipeableModalBody>
                 <Box className="space-y-6">
-                    {/* 기본 정보 */}
-                    <Box className="bg-gray-50 p-4 rounded-lg">
-                        <Grid container spacing={3}>
-                            <Grid item xs={12} sm={6}>
-                                <Box className="flex items-center gap-2 mb-2">
-                                    <User size={16} className="text-gray-500" />
-                                    <Typography variant="body2" color="text.secondary">직원</Typography>
-                                </Box>
-                                <Typography variant="body1" fontWeight={600}>
-                                    {staffName || '직원'}
-                                </Typography>
-                            </Grid>
-                            <Grid item xs={12} sm={6}>
-                                <Box className="flex items-center gap-2 mb-2">
-                                    <Calendar size={16} className="text-gray-500" />
-                                    <Typography variant="body2" color="text.secondary">급여 월</Typography>
-                                </Box>
-                                <Typography variant="body1" fontWeight={600}>
-                                    {record.month}
-                                </Typography>
-                            </Grid>
-                        </Grid>
-                    </Box>
+                    <PayrollBasicInfo staffName={staffName} record={record} />
 
                     {/* 수정 모드 토글 */}
                     <Box className="flex justify-between items-center">
@@ -172,132 +153,24 @@ export default function PayrollDetailModal({
 
                     {/* 급여 항목 */}
                     <Grid container spacing={3}>
-                        {/* 지급 항목 */}
                         <Grid item xs={12} md={6}>
-                            <Box className="bg-green-50 p-4 rounded-lg border border-green-200">
-                                <Typography variant="subtitle1" fontWeight={600} color="success.main" className="mb-3">
-                                    지급 항목
-                                </Typography>
-
-                                <Box className="space-y-3">
-                                    <Box className="flex justify-between items-center">
-                                        <Typography variant="body2">기본급</Typography>
-                                        {isEditing ? (
-                                            <Input
-                                                value={formData.base_salary}
-                                                onChange={(e) => handleFieldChange('base_salary', e.target.value)}
-                                                className="w-32"
-                                                rightIcon={<Typography variant="caption">원</Typography>}
-                                            />
-                                        ) : (
-                                            <Typography variant="body2" fontWeight={600}>
-                                                ₩{record.base_salary.toLocaleString()}
-                                            </Typography>
-                                        )}
-                                    </Box>
-
-                                    <Box className="flex justify-between items-center">
-                                        <Typography variant="body2">연장/시급 수당</Typography>
-                                        {isEditing ? (
-                                            <Input
-                                                value={formData.overtime_pay}
-                                                onChange={(e) => handleFieldChange('overtime_pay', e.target.value)}
-                                                className="w-32"
-                                                rightIcon={<Typography variant="caption">원</Typography>}
-                                            />
-                                        ) : (
-                                            <Typography variant="body2" fontWeight={600}>
-                                                ₩{record.overtime_pay.toLocaleString()}
-                                            </Typography>
-                                        )}
-                                    </Box>
-
-                                    <Box className="flex justify-between items-center">
-                                        <Typography variant="body2">인센티브</Typography>
-                                        {isEditing ? (
-                                            <Input
-                                                value={formData.incentive_pay}
-                                                onChange={(e) => handleFieldChange('incentive_pay', e.target.value)}
-                                                className="w-32"
-                                                rightIcon={<Typography variant="caption">원</Typography>}
-                                            />
-                                        ) : (
-                                            <Typography variant="body2" fontWeight={600}>
-                                                ₩{record.incentive_pay.toLocaleString()}
-                                            </Typography>
-                                        )}
-                                    </Box>
-
-                                    <Divider />
-
-                                    <Box className="flex justify-between items-center">
-                                        <Typography variant="body1" fontWeight={600}>총 지급액</Typography>
-                                        <Typography variant="body1" fontWeight={700} color="success.main">
-                                            ₩{totalGross.toLocaleString()}
-                                        </Typography>
-                                    </Box>
-                                </Box>
-                            </Box>
+                            <PayrollPaymentSection
+                                record={record}
+                                formData={formData}
+                                isEditing={isEditing}
+                                totalGross={totalGross}
+                                onFieldChange={handleFieldChange}
+                            />
                         </Grid>
-
-                        {/* 공제 항목 */}
                         <Grid item xs={12} md={6}>
-                            <Box className="bg-red-50 p-4 rounded-lg border border-red-200">
-                                <Typography variant="subtitle1" fontWeight={600} color="error.main" className="mb-3">
-                                    공제 항목
-                                </Typography>
-
-                                <Box className="space-y-2">
-                                    <Box className="flex justify-between items-center">
-                                        <Typography variant="body2">국민연금</Typography>
-                                        <Typography variant="body2" color="error.main">
-                                            -₩{record.national_pension.toLocaleString()}
-                                        </Typography>
-                                    </Box>
-
-                                    <Box className="flex justify-between items-center">
-                                        <Typography variant="body2">건강보험</Typography>
-                                        <Typography variant="body2" color="error.main">
-                                            -₩{record.health_insurance.toLocaleString()}
-                                        </Typography>
-                                    </Box>
-
-                                    <Box className="flex justify-between items-center">
-                                        <Typography variant="body2">고용보험</Typography>
-                                        <Typography variant="body2" color="error.main">
-                                            -₩{record.employment_insurance.toLocaleString()}
-                                        </Typography>
-                                    </Box>
-
-                                    <Box className="flex justify-between items-center">
-                                        <Typography variant="body2">소득세</Typography>
-                                        <Typography variant="body2" color="error.main">
-                                            -₩{record.income_tax.toLocaleString()}
-                                        </Typography>
-                                    </Box>
-
-                                    <Divider />
-
-                                    <Box className="flex justify-between items-center">
-                                        <Typography variant="body1" fontWeight={600}>총 공제액</Typography>
-                                        <Typography variant="body1" fontWeight={600} color="error.main">
-                                            -₩{totalDeductions.toLocaleString()}
-                                        </Typography>
-                                    </Box>
-                                </Box>
-                            </Box>
+                            <PayrollDeductionSection
+                                record={record}
+                                totalDeductions={totalDeductions}
+                            />
                         </Grid>
                     </Grid>
 
-                    {/* 최종 금액 */}
-                    <Box className="bg-blue-50 p-4 rounded-lg border border-blue-200">
-                        <Box className="flex justify-between items-center">
-                            <Typography variant="h6" fontWeight={700}>실지급액</Typography>
-                            <Typography variant="h5" fontWeight={700} color="primary.main">
-                                ₩{netSalary.toLocaleString()}
-                            </Typography>
-                        </Box>
-                    </Box>
+                    <PayrollFinalAmount netSalary={netSalary} />
 
                     {/* 메모 */}
                     <Box>

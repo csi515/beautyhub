@@ -5,9 +5,7 @@
 
 'use client'
 
-import { useState, useEffect } from 'react'
-import { Plus } from 'lucide-react'
-import { useTheme, useMediaQuery } from '@mui/material'
+import { Plus, FileText, Download } from 'lucide-react'
 import FinanceSummaryCards from './FinanceSummaryCards'
 import FinanceFilters from './FinanceFilters'
 import FinanceMobileCards from './FinanceMobileCards'
@@ -17,9 +15,7 @@ import FilterBottomSheet from '../common/FilterBottomSheet'
 import MobileFAB from '../common/MobileFAB'
 import PageHeader from '../common/PageHeader'
 import Button from '../ui/Button'
-import { FileText, Download } from 'lucide-react'
-import { IconButton } from '@mui/material'
-import { usePageHeader } from '@/app/lib/contexts/PageHeaderContext'
+import { useMobilePageHeader } from '@/app/lib/hooks/useMobilePageHeader'
 import type { FinanceCombinedRow, FinanceDateRange, FinanceFilters as FinanceFiltersType } from '@/types/finance'
 
 export interface FinancePageViewProps {
@@ -49,6 +45,7 @@ export interface FinancePageViewProps {
   profit: number
   
   // 액션
+  onRetry?: () => void
   onCreateNew: () => void
   onItemClick: (row: FinanceCombinedRow) => void
   onExportExcel: () => void
@@ -71,52 +68,27 @@ export default function FinancePageView({
   sumIncome,
   sumExpense,
   profit,
+  onRetry,
   onCreateNew,
   onItemClick,
   onExportExcel,
   onGenerateTaxReport,
 }: FinancePageViewProps) {
-  const theme = useTheme()
-  const isMobile = useMediaQuery(theme.breakpoints.down('sm'))
-  const { setHeaderInfo, clearHeaderInfo } = usePageHeader()
-  const [filterSheetOpen, setFilterSheetOpen] = useState(false)
-
-  // 활성 필터 개수 계산
   const activeFilterCount = filters.filterType.length < 2 ? 1 : 0
+  const { isMobile, filterSheetOpen, closeFilterSheet } = useMobilePageHeader({
+    title: '재무 관리',
+    filterBadge: activeFilterCount,
+    actions: [],
+  })
 
-  // 모바일에서 Context에 헤더 정보 설정
-  useEffect(() => {
-    if (isMobile) {
-      setHeaderInfo({
-        title: '재무 관리',
-        onFilter: () => setFilterSheetOpen(true),
-        filterBadge: activeFilterCount,
-        actions: (
-          <IconButton onClick={onExportExcel} sx={{ minWidth: '44px', minHeight: '44px' }}>
-            <Download size={20} />
-          </IconButton>
-        ),
-      })
-    } else {
-      clearHeaderInfo()
-    }
-
-    return () => {
-      if (isMobile) {
-        clearHeaderInfo()
-      }
-    }
-  }, [isMobile, setHeaderInfo, clearHeaderInfo, activeFilterCount, onExportExcel])
-
-  // 필터 콘텐츠
   const filterContent = (
     <FinanceFilters
       dateRange={dateRange}
       onUpdateRange={onUpdateRange}
       filterType={filters.filterType}
       onFilterTypeChange={(types) => onUpdateFilters({ filterType: types })}
-      showFilters={true} // Bottom Sheet 내부에서는 항상 표시
-      onToggleShowFilters={() => {}} // 사용 안 함
+      showFilters={true}
+      onToggleShowFilters={isMobile ? closeFilterSheet : () => {}}
       onCreateNew={onCreateNew}
       onExportExcel={onExportExcel}
     />
@@ -127,6 +99,7 @@ export default function FinancePageView({
       loading={loading}
       error={error || undefined}
       errorTitle="재무 데이터를 불러오는 중 오류가 발생했습니다"
+      errorActionOnClick={onRetry}
       maxWidth={{ xs: '100%', md: '1200px' }}
     >
       {/* 데스크탑 헤더 */}
@@ -171,7 +144,7 @@ export default function FinancePageView({
         {isMobile && (
           <FilterBottomSheet
             open={filterSheetOpen}
-            onClose={() => setFilterSheetOpen(false)}
+            onClose={closeFilterSheet}
             title="필터"
             description="재무 데이터를 필터링하세요"
             activeFilterCount={activeFilterCount}

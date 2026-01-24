@@ -57,15 +57,6 @@ export default function FinanceFilters({
             >
               {showFilters ? '접기' : '필터'}
             </Button>
-            <Button
-              variant="outline"
-              size="sm"
-              leftIcon={<Download className="h-4 w-4" />}
-              onClick={onExportExcel}
-              sx={{ flex: 1, fontSize: '0.875rem' }}
-            >
-              엑셀
-            </Button>
           </Box>
         </Stack>
         <Box sx={{ display: { xs: showFilters ? 'block' : 'none', md: 'block' } }}>

@@ -54,7 +54,8 @@ export class FinanceService {
             type: 'expense' as const,
             date: (e.expense_date || '').slice(0, 10),
             amount: Number(e.amount || 0),
-            note: e.category || e.memo || '',
+            memo: e.memo ?? '',
+            category: e.category ?? '',
             raw: e,
           }))
       : []

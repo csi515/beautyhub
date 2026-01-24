@@ -6,6 +6,7 @@ export function usePayroll(initialMonth?: string) {
     const [staff, setStaff] = useState<Staff[]>([])
     const [records, setRecords] = useState<PayrollRecord[]>([])
     const [loading, setLoading] = useState(true)
+    const [error, setError] = useState<string | null>(null)
     const [selectedMonth, setSelectedMonth] = useState(initialMonth || new Date().toISOString().slice(0, 7))
 
     const toast = useAppToast()
@@ -17,6 +18,7 @@ export function usePayroll(initialMonth?: string) {
     async function fetchData() {
         try {
             setLoading(true)
+            setError(null)
             const [staffResponse, recordsResponse] = await Promise.all([
                 fetch('/api/staff'),
                 fetch(`/api/payroll/records?month=${selectedMonth}`),
@@ -46,8 +48,10 @@ export function usePayroll(initialMonth?: string) {
                 console.error('Payroll records API error:', recordsResponse.status, recordsResponse.statusText)
                 setRecords([])
             }
-        } catch (error) {
-            console.error('Error fetching payroll data:', error)
+        } catch (err) {
+            console.error('Error fetching payroll data:', err)
+            const msg = err instanceof Error ? err.message : '데이터를 불러오는데 실패했습니다'
+            setError(msg)
             toast.error('데이터를 불러오는데 실패했습니다')
             setStaff([])
             setRecords([])
@@ -149,13 +153,11 @@ export function usePayroll(initialMonth?: string) {
     }
 
     return {
-        // Data
         staff,
         records,
         loading,
+        error,
         selectedMonth,
-
-        // Actions
         setSelectedMonth,
         refreshData: fetchData,
         calculatePayroll,

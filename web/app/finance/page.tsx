@@ -89,6 +89,7 @@ export default function FinancePage() {
       <FinancePageView
         loading={loading}
         error={error}
+        onRetry={load}
         dateRange={dateRange}
         onUpdateRange={updateRange}
         filters={filters}

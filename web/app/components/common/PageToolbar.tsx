@@ -122,8 +122,8 @@ export default function PageToolbar({
               spacing={{ xs: 1, sm: 1, md: 1.5 }} 
               sx={{ width: { xs: '100%', sm: '100%', md: 'auto' }, flexWrap: { xs: 'wrap', md: 'nowrap' } }}
             >
-              {/* 내보내기 버튼 (태블릿 이상에서만 표시) */}
-              {exportAction && !isSmallMobile && (
+              {/* 내보내기 버튼 (데스크톱 md 이상에서만 표시, 모바일 비노출) */}
+              {exportAction && !isMobile && (
                 <Button
                   variant="secondary"
                   leftIcon={<Download className="h-4 w-4" />}
@@ -177,20 +177,6 @@ export default function PageToolbar({
                   }}
                 >
                   {actions.primary.label}
-                </Button>
-              )}
-              
-              {/* 작은 모바일 내보내기 버튼 (작은 모바일에서만 표시) */}
-              {exportAction && isSmallMobile && (
-                <Button
-                  variant="secondary"
-                  leftIcon={<Download className="h-4 w-4" />}
-                  onClick={exportAction.onClick}
-                  disabled={exportAction.disabled}
-                  fullWidth
-                  size="sm"
-                >
-                  {exportAction.label || '내보내기'}
                 </Button>
               )}
             </Stack>

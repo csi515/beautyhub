@@ -1,6 +1,6 @@
 'use client'
 
-import { Users, Clock, Calendar, TrendingUp } from 'lucide-react'
+import { Users, Clock, Calendar, TrendingUp, Briefcase, UserX } from 'lucide-react'
 import { Grid, Paper, Typography, Box } from '@mui/material'
 import { StaffStats } from '@/types/staff'
 
@@ -51,6 +51,26 @@ export default function StaffStatsCards({ stats, schedulesCount }: StaffStatsCar
             icon: <TrendingUp size={24} />,
             description: '등록된 근무 스케줄'
           },
+          ...(typeof stats.totalMonthWorkDays === 'number'
+            ? [{
+                label: '이번 달 총 근무일',
+                value: stats.totalMonthWorkDays,
+                color: 'primary' as const,
+                bgColor: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                icon: <Briefcase size={24} />,
+                description: '실근무 기준 누적 근무일'
+              }]
+            : []),
+          ...(typeof stats.todayAbsentCount === 'number'
+            ? [{
+                label: '오늘 미출근',
+                value: stats.todayAbsentCount,
+                color: 'warning' as const,
+                bgColor: 'linear-gradient(135deg, #fa8c16 0%, #ff7875 100%)',
+                icon: <UserX size={24} />,
+                description: '스케줄 있는데 실근무 없음'
+              }]
+            : []),
         ].map((s) => (
           <Grid item xs={12} sm={6} lg={3} key={s.label}>
             <Paper

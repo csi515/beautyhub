@@ -1,7 +1,8 @@
 'use client'
 
+import { useMemo } from 'react'
 import { Staff } from '@/types/entities'
-import { GridColDef, GridRenderCellParams } from '@mui/x-data-grid'
+import { GridColDef, GridRenderCellParams, type GridRowSelectionModel } from '@mui/x-data-grid'
 import {
     Typography,
     Avatar,
@@ -18,14 +19,38 @@ interface StaffDataGridProps {
     loading?: boolean
     onEdit: (staff: Staff) => void
     onStatusClick: (staff: Staff) => void
+    /** 다중 선택 시 선택된 ID 목록 */
+    selectedIds?: string[]
+    /** 다중 선택 변경 콜백 */
+    onSelectedIdsChange?: (ids: string[]) => void
 }
 
 /**
  * MUI Data Grid 기반의 반응형 직원 명부
  * PC: 테이블 뷰 / Mobile: 카드 리스트 뷰
  */
-export default function StaffDataGrid({ rows, loading, onEdit, onStatusClick }: StaffDataGridProps) {
+function idsToSelectionModel(ids: string[]): GridRowSelectionModel {
+    return { type: 'include' as const, ids: new Set(ids) }
+}
+
+function selectionModelToIds(model: GridRowSelectionModel): string[] {
+    if (!model || model.type !== 'include') return []
+    return Array.from(model.ids as Set<string>)
+}
+
+export default function StaffDataGrid({
+    rows,
+    loading,
+    onEdit,
+    onStatusClick,
+    selectedIds = [],
+    onSelectedIdsChange,
+}: StaffDataGridProps) {
     const theme = useTheme()
+    const rowSelectionModel = useMemo(() => idsToSelectionModel(selectedIds), [selectedIds])
+    const handleSelectionChange = (model: GridRowSelectionModel) => {
+        onSelectedIdsChange?.(selectionModelToIds(model))
+    }
 
     // Data Grid 컬럼 정의
     const columns: GridColDef[] = [
@@ -96,6 +121,9 @@ export default function StaffDataGrid({ rows, loading, onEdit, onStatusClick }: 
                 pagination: { paginationModel: { pageSize: 10 } },
             }}
             disableRowSelectionOnClick
+            checkboxSelection={!!onSelectedIdsChange}
+            rowSelectionModel={onSelectedIdsChange ? rowSelectionModel : undefined}
+            onRowSelectionModelChange={onSelectedIdsChange ? handleSelectionChange : undefined}
             sx={{
                 '& .MuiDataGrid-columnHeaders': {
                     bgcolor: theme.palette.grey[50],

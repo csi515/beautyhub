@@ -202,7 +202,15 @@ export default function BudgetManagementPage() {
           icon={<DollarSign />}
           actions={[]}
         />
-        <Alert severity="error" sx={{ mt: 3 }}>
+        <Alert
+          severity="error"
+          sx={{ mt: 3 }}
+          action={
+            <Button color="inherit" size="small" onClick={fetchBudgets}>
+              다시 시도
+            </Button>
+          }
+        >
           {error}
         </Alert>
       </Container>
@@ -216,26 +224,20 @@ export default function BudgetManagementPage() {
         description="카테고리별 월별 예산 설정 및 추적"
         icon={<DollarSign />}
         actions={[
-          createActionButton(
-            '월 선택',
-            () => {},
-            'secondary',
-            <FormControl size="small" sx={{ minWidth: 150 }}>
-              <InputLabel>월</InputLabel>
-              <Select
-                value={selectedMonth}
-                label="월"
-                onChange={(e) => setSelectedMonth(e.target.value)}
-                onClick={(e) => e.stopPropagation()}
-              >
-                {months.map((m) => (
-                  <MenuItem key={m.value} value={m.value}>
-                    {m.label}
-                  </MenuItem>
-                ))}
-              </Select>
-            </FormControl>
-          ),
+          <FormControl key="month" size="small" sx={{ minWidth: 150 }}>
+            <InputLabel>월</InputLabel>
+            <Select
+              value={selectedMonth}
+              label="월"
+              onChange={(e) => setSelectedMonth(e.target.value)}
+            >
+              {months.map((m) => (
+                <MenuItem key={m.value} value={m.value}>
+                  {m.label}
+                </MenuItem>
+              ))}
+            </Select>
+          </FormControl>,
           createActionButton(
             '예산 추가',
             () => {

@@ -1,4 +1,4 @@
-﻿import { SupabaseClient } from '@supabase/supabase-js'
+import { SupabaseClient } from '@supabase/supabase-js'
 /**
  * 嫄곕옒 Repository
  */
@@ -12,10 +12,9 @@ export class TransactionsRepository extends BaseRepository<Transaction> {
     super(userId, 'beautyhub_transactions', supabase)
   }
 
-  /**
-   * 怨좉컼蹂?嫄곕옒 議고쉶
-   */
-  override async findAll(options: QueryOptions & { customer_id?: string } = {}): Promise<Transaction[]> {
+  override async findAll(
+    options: QueryOptions & { customer_id?: string; from?: string; to?: string } = {}
+  ): Promise<Transaction[]> {
     if (this.userId === 'demo-user') {
       const { MOCK_TRANSACTIONS } = await import('@/app/lib/mock-data')
       return MOCK_TRANSACTIONS as unknown as Transaction[]
@@ -25,6 +24,8 @@ export class TransactionsRepository extends BaseRepository<Transaction> {
       limit = 50,
       offset = 0,
       customer_id,
+      from,
+      to,
       orderBy = 'transaction_date',
       ascending = false,
     } = options
@@ -35,16 +36,13 @@ export class TransactionsRepository extends BaseRepository<Transaction> {
       .eq('owner_id', this.userId)
       .order(orderBy, { ascending })
 
-    if (customer_id) {
-      query = query.eq('customer_id', customer_id)
-    }
+    if (customer_id) query = query.eq('customer_id', customer_id)
+    if (from) query = query.gte('transaction_date', from)
+    if (to) query = query.lte('transaction_date', to)
 
     const { data, error } = await query.range(offset, offset + limit - 1)
 
-    if (error) {
-      this.handleSupabaseError(error)
-    }
-
+    if (error) this.handleSupabaseError(error)
     return (data || []) as Transaction[]
   }
 

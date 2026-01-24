@@ -5,7 +5,7 @@
 
 'use client'
 
-import { Box, Typography, Paper, Stack, TextField } from '@mui/material'
+import { Box, Typography, Paper, Stack, TextField, Button } from '@mui/material'
 import { useEffect } from 'react'
 import { useTheme, useMediaQuery } from '@mui/material'
 import StandardPageLayout from '../common/StandardPageLayout'
@@ -17,9 +17,17 @@ import { usePageHeader } from '@/app/lib/contexts/PageHeaderContext'
 import PayrollSummaryCards from './PayrollSummaryCards'
 import PayrollStatusSummary from './PayrollStatusSummary'
 import PayrollTable from './PayrollTable'
+import LoadingState from '../common/LoadingState'
+import ErrorState from '../common/ErrorState'
 import type { Staff, PayrollRecord } from '@/types/payroll'
 
 export interface PayrollPageViewProps {
+    /** 탭 등에 임베드 시 레이아웃·헤더 생략 */
+    embedded?: boolean
+    /** 로드 실패 시 메시지 (embedded 시 ErrorState 표시용) */
+    error?: string | null
+    /** 재시도 핸들러 (embedded + error 시 사용) */
+    onRetry?: () => void
     // 데이터
     staff: Staff[]
     records: PayrollRecord[]
@@ -59,6 +67,9 @@ export interface PayrollPageViewProps {
 }
 
 export default function PayrollPageView({
+    embedded = false,
+    error: errorProp,
+    onRetry,
     staff,
     records,
     loading,
@@ -89,15 +100,15 @@ export default function PayrollPageView({
     const isMobile = useMediaQuery(theme.breakpoints.down('sm'))
     const { setHeaderInfo, clearHeaderInfo } = usePageHeader()
 
-    // 모바일에서 Context에 헤더 정보 설정
+    // 모바일에서 Context에 헤더 정보 설정 (embedded 시 스킵)
     useEffect(() => {
+        if (embedded) return
         if (isMobile) {
             setHeaderInfo({
                 title: '급여 관리',
                 icon: <DollarSign />,
                 description: '직원 급여 자동 계산 및 관리',
                 actions: [
-                    createActionButton('CSV 내보내기', onExport, 'secondary', <Download size={16} />),
                     createActionButton('일괄 계산', onBulkCalculate, 'primary', <Calculator size={16} />, bulkCalculating || selectedStaffIds.length === 0),
                     createActionButton('급여 계산', onCalculate, 'primary'),
                 ],
@@ -111,15 +122,12 @@ export default function PayrollPageView({
                 clearHeaderInfo()
             }
         }
-    }, [isMobile, setHeaderInfo, clearHeaderInfo, onExport, onBulkCalculate, onCalculate, bulkCalculating, selectedStaffIds.length])
+    }, [embedded, isMobile, setHeaderInfo, clearHeaderInfo, onExport, onBulkCalculate, onCalculate, bulkCalculating, selectedStaffIds.length])
 
-    return (
-        <StandardPageLayout
-            loading={loading}
-            maxWidth={{ xs: '100%', md: '1200px' }}
-        >
-            {/* 데스크탑 헤더 */}
-            {!isMobile && (
+    const inner = (
+        <>
+            {/* 데스크탑 헤더 (embedded 시 스킵) */}
+            {!embedded && !isMobile && (
                 <PageHeader
                     title="급여 관리"
                     description="직원 급여 자동 계산 및 관리"
@@ -130,6 +138,23 @@ export default function PayrollPageView({
                         createActionButton('급여 계산', onCalculate, 'primary'),
                     ]}
                 />
+            )}
+
+            {/* embedded 시 액션 버튼 (내보내기·계산, 모바일에서는 CSV 비노출) */}
+            {embedded && (
+                <Stack direction="row" spacing={1} sx={{ mb: 2 }} flexWrap="wrap">
+                    {!isMobile && (
+                        <Button variant="outlined" size="small" startIcon={<Download size={16} />} onClick={onExport}>
+                            CSV 내보내기
+                        </Button>
+                    )}
+                    <Button variant="outlined" size="small" startIcon={<Calculator size={16} />} onClick={onBulkCalculate} disabled={bulkCalculating || selectedStaffIds.length === 0}>
+                        일괄 계산
+                    </Button>
+                    <Button variant="contained" size="small" onClick={onCalculate}>
+                        급여 계산
+                    </Button>
+                </Stack>
             )}
 
             {/* 필터 및 검색 */}
@@ -216,6 +241,17 @@ export default function PayrollPageView({
                 onDetailModalOpen={onDetailModalOpen}
                 onStatusChange={onStatusChange}
             />
+        </>
+    )
+
+    if (embedded) {
+        if (errorProp) return <ErrorState message={errorProp} onRetry={onRetry} />
+        if (loading) return <LoadingState rows={5} variant="card" />
+        return <>{inner}</>
+    }
+    return (
+        <StandardPageLayout loading={loading} maxWidth={{ xs: '100%', md: '1200px' }}>
+            {inner}
         </StandardPageLayout>
     )
 }

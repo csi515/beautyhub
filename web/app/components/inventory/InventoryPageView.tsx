@@ -22,30 +22,30 @@ import {
     Paper,
     IconButton,
     Tooltip,
-    useTheme,
-    useMediaQuery,
     Stack,
     Pagination,
     TableSortLabel,
     Checkbox
 } from '@mui/material'
 import MobileDataCard from '../ui/MobileDataCard'
-import { Package, Edit, History, AlertTriangle, TrendingDown } from 'lucide-react'
+import { Package, Edit, History, AlertTriangle, TrendingDown, Download } from 'lucide-react'
 import StatusBadge from '../common/StatusBadge'
 import PaginationInfo from '../common/PaginationInfo'
 import TableSelectHeader from '../common/TableSelectHeader'
-import { useState, useEffect } from 'react'
 import FilterPanel from './FilterPanel'
 import FilterBottomSheet from '../common/FilterBottomSheet'
 import StandardPageLayout from '../common/StandardPageLayout'
 import PageToolbar from '../common/PageToolbar'
 import BulkActionBar from '../common/BulkActionBar'
 import { useResponsivePaginationSize } from '@/app/lib/hooks/useResponsivePaginationSize'
-import { usePageHeader } from '@/app/lib/contexts/PageHeaderContext'
+import { useMobilePageHeader } from '@/app/lib/hooks/useMobilePageHeader'
+import LoadingState from '../common/LoadingState'
 import type { Product, InventoryAlert, InventoryFilters } from '@/app/lib/hooks/useInventory'
 import type { InventoryStats } from '@/app/lib/services/inventory.service'
 
 export interface InventoryPageViewProps {
+    /** 탭 등에 임베드 시 레이아웃·툴바 생략 */
+    embedded?: boolean
     // 데이터
     products: Product[]
     alerts: InventoryAlert[]
@@ -87,6 +87,7 @@ export interface InventoryPageViewProps {
 }
 
 export default function InventoryPageView({
+    embedded = false,
     products,
     alerts,
     loading,
@@ -115,33 +116,13 @@ export default function InventoryPageView({
     onExport,
     onAcknowledgeAllAlerts,
 }: InventoryPageViewProps) {
-    const theme = useTheme()
-    const isMobile = useMediaQuery(theme.breakpoints.down('sm'))
     const paginationSize = useResponsivePaginationSize()
-    const { setHeaderInfo, clearHeaderInfo } = usePageHeader()
-    const [filterSheetOpen, setFilterSheetOpen] = useState(false)
-    
-    // 활성 필터 개수 계산
     const activeFilterCount = Object.values(filters).filter(v => v !== '').length
-
-    // 모바일에서 Context에 헤더 정보 설정
-    useEffect(() => {
-        if (isMobile) {
-            setHeaderInfo({
-                title: '재고 관리',
-                onFilter: () => setFilterSheetOpen(true),
-                filterBadge: activeFilterCount,
-            })
-        } else {
-            clearHeaderInfo()
-        }
-
-        return () => {
-            if (isMobile) {
-                clearHeaderInfo()
-            }
-        }
-    }, [isMobile, setHeaderInfo, clearHeaderInfo, activeFilterCount])
+    const { isMobile, filterSheetOpen, closeFilterSheet } = useMobilePageHeader({
+        title: '재고 관리',
+        filterBadge: activeFilterCount,
+        disabled: embedded,
+    })
 
     // 필터 콘텐츠
     const filterContent = (
@@ -152,17 +133,10 @@ export default function InventoryPageView({
         />
     )
 
-    return (
-        <StandardPageLayout
-            loading={loading}
-            empty={!loading && products.length === 0}
-            emptyTitle="등록된 제품이 없습니다"
-            emptyDescription="새로운 제품을 등록하고 재고를 관리해보세요."
-            emptyActionLabel="제품 추가"
-            emptyActionOnClick={onCreateProduct}
-            maxWidth="lg"
-        >
-            <PageToolbar
+    const inner = (
+        <>
+            {!embedded && (
+                <PageToolbar
                 search={{
                     value: search,
                     onChange: setSearch,
@@ -180,12 +154,26 @@ export default function InventoryPageView({
                     onClick: onExport,
                 }}
             />
+            )}
+
+            {embedded && (
+                <Stack direction="row" spacing={1} sx={{ mb: 2 }} flexWrap="wrap">
+                    {!isMobile && (
+                        <Button variant="outlined" size="small" startIcon={<Download size={16} />} onClick={onExport}>
+                            CSV 내보내기
+                        </Button>
+                    )}
+                    <Button variant="contained" size="small" startIcon={<Package size={16} />} onClick={onCreateProduct}>
+                        제품 추가
+                    </Button>
+                </Stack>
+            )}
 
             {/* 모바일 필터 Bottom Sheet */}
-            {isMobile && (
+            {!embedded && isMobile && (
                 <FilterBottomSheet
                     open={filterSheetOpen}
-                    onClose={() => setFilterSheetOpen(false)}
+                    onClose={closeFilterSheet}
                     title="필터"
                     description="재고 목록을 필터링하세요"
                     activeFilterCount={activeFilterCount}
@@ -487,20 +475,34 @@ export default function InventoryPageView({
                 actions={[
                     {
                         label: '일괄 조정',
-                        onClick: () => {
-                            // 컨트롤러에서 처리
-                        },
+                        onClick: () => {},
                         variant: 'secondary',
                     },
                     {
                         label: '선택 삭제',
-                        onClick: () => {
-                            // 컨트롤러에서 처리
-                        },
+                        onClick: () => {},
                         variant: 'error',
                     },
                 ]}
             />
+        </>
+    )
+
+    if (embedded) {
+        if (loading) return <LoadingState rows={5} variant="card" />
+        return <>{inner}</>
+    }
+    return (
+        <StandardPageLayout
+            loading={loading}
+            empty={!loading && products.length === 0}
+            emptyTitle="등록된 제품이 없습니다"
+            emptyDescription="새로운 제품을 등록하고 재고를 관리해보세요."
+            emptyActionLabel="제품 추가"
+            emptyActionOnClick={onCreateProduct}
+            maxWidth="lg"
+        >
+            {inner}
         </StandardPageLayout>
     )
 }

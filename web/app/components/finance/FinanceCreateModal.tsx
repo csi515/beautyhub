@@ -1,5 +1,6 @@
 'use client'
 
+import Link from 'next/link'
 import {
   Stack,
   ToggleButtonGroup,
@@ -9,7 +10,9 @@ import {
   InputLabel,
   Select,
   MenuItem,
-  InputAdornment
+  InputAdornment,
+  Alert,
+  Typography
 } from '@mui/material'
 import SwipeableModal, { SwipeableModalHeader, SwipeableModalBody, SwipeableModalFooter } from '../ui/SwipeableModal'
 import Button from '../ui/Button'
@@ -112,7 +115,18 @@ export default function FinanceCreateModal({
             }}
           />
 
-          <FormControl fullWidth>
+          {(form.newType === 'income' ? incomeCategories : expenseCategories).length === 0 && (
+            <Alert severity="info">
+              <Typography variant="body2" component="span">
+                {form.newType === 'income' ? '수입' : '지출'} 카테고리가 없습니다.{' '}
+                <Link href="/settings" onClick={() => onClose()} style={{ fontWeight: 600 }}>
+                  설정
+                </Link>
+                에서 수입/지출 카테고리를 먼저 등록해 주세요.
+              </Typography>
+            </Alert>
+          )}
+          <FormControl fullWidth disabled={(form.newType === 'income' ? incomeCategories : expenseCategories).length === 0}>
             <InputLabel shrink>{form.newType === 'income' ? '수입 항목' : '지출 항목'}</InputLabel>
             <Select
               value={form.selectedCategory}

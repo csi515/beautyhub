@@ -5,7 +5,7 @@ import { useShopName } from '../lib/hooks/useShopName'
 import DashboardInstallPrompt from '../components/dashboard/DashboardInstallPrompt'
 import { Box, Typography, Grid, IconButton, useMediaQuery, useTheme } from '@mui/material'
 import StandardPageLayout from '../components/common/StandardPageLayout'
-import { Settings } from 'lucide-react'
+import { Settings, ChevronDown } from 'lucide-react'
 import WidgetSettingsModal from '../components/dashboard/WidgetSettingsModal'
 import { useDashboardWidgets } from '../lib/hooks/useDashboardWidgets'
 import DashboardMetricsWidget from '../components/dashboard/widgets/DashboardMetricsWidget'
@@ -71,8 +71,6 @@ export default function DashboardContent({ initialData, error }: DashboardConten
     const {
         todayAppointments,
         monthlyProfit,
-        monthlyNewCustomers,
-        monthlyAppointments,
         recentAppointments,
         chartAppointments,
         recentTransactions,
@@ -113,14 +111,11 @@ export default function DashboardContent({ initialData, error }: DashboardConten
                 maxWidth={{ xs: '100%', md: '1200px' }}
             >
             <Box ref={contentRef} sx={{ width: '100%', overflowX: 'hidden' }}>
-                {/* 헤더: StandardPageLayout spacing으로 자동 간격 처리 */}
+                {/* 헤더 */}
                 <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                     <Box>
-                        <Typography variant="h4" fontWeight={800} sx={{ color: 'text.primary', mb: 0.5, fontSize: { xs: '1.25rem', sm: '1.5rem' } }}>
+                        <Typography variant="h4" fontWeight={800} sx={{ color: 'text.primary', fontSize: { xs: '1.25rem', sm: '1.5rem' } }}>
                             {shopName}
-                        </Typography>
-                        <Typography variant="body1" color="text.secondary" sx={{ fontSize: { xs: '1rem', sm: '1rem' } }}>
-                            오늘도 힘차게 비즈니스를 관리해 보세요.
                         </Typography>
                     </Box>
                     <IconButton 
@@ -132,14 +127,36 @@ export default function DashboardContent({ initialData, error }: DashboardConten
                     </IconButton>
                 </Box>
 
-                {/* 위젯들: StandardPageLayout spacing으로 자동 간격 처리 */}
+                {/* 모바일 스크롤 힌트 (헤더–메트릭 사이, scrollProgress 0일 때만) */}
+                {isMobile && scrollProgress === 0 && (
+                    <Box
+                        role="status"
+                        aria-label="아래로 스크롤하여 더 보기"
+                        sx={{
+                            display: { xs: 'flex', md: 'none' },
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            gap: 0.5,
+                            py: 1,
+                            color: 'text.secondary',
+                            fontSize: '0.875rem',
+                            '@keyframes bounce': {
+                                '0%, 100%': { transform: 'translateY(0)' },
+                                '50%': { transform: 'translateY(4px)' },
+                            },
+                            animation: 'bounce 1.5s ease-in-out infinite',
+                        }}
+                    >
+                        <span>아래로 스크롤</span>
+                        <ChevronDown size={18} aria-hidden />
+                    </Box>
+                )}
+
                 <DashboardInstallPrompt />
 
                 <DashboardMetricsWidget
                     todayAppointments={todayAppointments}
                     monthlyProfit={monthlyProfit}
-                    monthlyNewCustomers={monthlyNewCustomers}
-                    monthlyAppointments={monthlyAppointments}
                 />
 
                 <DashboardChartsWidget

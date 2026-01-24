@@ -3,6 +3,7 @@
  * 데이터 필터링, 통계 계산 로직을 담당
  */
 
+import { startOfMonth, endOfMonth, startOfDay, endOfDay, isWithinInterval } from 'date-fns'
 import type { Staff, StaffAttendance } from '@/types/entities'
 import type { StaffStats } from '@/types/staff'
 
@@ -43,6 +44,51 @@ export class StaffService {
    */
   static filterWorkingStaff(staff: Staff[]): Staff[] {
     return staff.filter(r => r.status === 'office')
+  }
+
+  /**
+   * 이번 달 누적 근무일 (실근무 기준, 직원·날짜별 1일로 카운트)
+   */
+  static totalMonthWorkDays(actualAttendance: StaffAttendance[]): number {
+    const now = new Date()
+    const start = startOfMonth(now)
+    const end = endOfMonth(now)
+    const set = new Set<string>()
+    for (const a of actualAttendance) {
+      const d = new Date(a.start_time)
+      if (isWithinInterval(d, { start, end })) {
+        set.add(`${a.staff_id}-${d.toISOString().slice(0, 10)}`)
+      }
+    }
+    return set.size
+  }
+
+  /**
+   * 오늘 스케줄 있는데 실근무 없는 직원 수
+   */
+  static todayAbsentCount(schedules: StaffAttendance[], actualAttendance: StaffAttendance[]): number {
+    const today = new Date()
+    const dayStart = startOfDay(today)
+    const dayEnd = endOfDay(today)
+    const scheduledIds = new Set<string>()
+    for (const s of schedules) {
+      const d = new Date(s.start_time)
+      if (isWithinInterval(d, { start: dayStart, end: dayEnd })) {
+        scheduledIds.add(s.staff_id)
+      }
+    }
+    const actualIds = new Set<string>()
+    for (const a of actualAttendance) {
+      const d = new Date(a.start_time)
+      if (isWithinInterval(d, { start: dayStart, end: dayEnd })) {
+        actualIds.add(a.staff_id)
+      }
+    }
+    let count = 0
+    for (const id of scheduledIds) {
+      if (!actualIds.has(id)) count += 1
+    }
+    return count
   }
 
   /**

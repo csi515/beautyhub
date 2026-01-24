@@ -1,7 +1,7 @@
 'use client'
 
 import React, { useMemo } from 'react'
-import { DataGrid, GridColDef, GridRenderCellParams } from '@mui/x-data-grid'
+import { DataGrid, GridColDef, GridRenderCellParams, type GridRowSelectionModel } from '@mui/x-data-grid'
 import { Box, useMediaQuery, useTheme } from '@mui/material'
 import MobileTable, { MobileTableColumn } from '../common/MobileTable'
 
@@ -21,6 +21,10 @@ interface ResponsiveDataGridProps<T = any> {
     }
   }
   disableRowSelectionOnClick?: boolean
+  /** 다중 선택(체크박스) 사용 시 전달 */
+  checkboxSelection?: boolean
+  rowSelectionModel?: GridRowSelectionModel
+  onRowSelectionModelChange?: (model: GridRowSelectionModel) => void
   sx?: Record<string, unknown>
   height?: number | string
 }
@@ -39,6 +43,9 @@ export default function ResponsiveDataGrid<T = any>({
   pageSizeOptions = [5, 10, 20],
   initialState,
   disableRowSelectionOnClick = true,
+  checkboxSelection,
+  rowSelectionModel,
+  onRowSelectionModelChange,
   sx,
   height = 500,
 }: ResponsiveDataGridProps<T>) {
@@ -125,6 +132,12 @@ export default function ResponsiveDataGrid<T = any>({
         pageSizeOptions={pageSizeOptions}
         {...(initialState && { initialState })}
         disableRowSelectionOnClick={disableRowSelectionOnClick}
+        {...(checkboxSelection && {
+          checkboxSelection: true,
+          rowSelectionModel,
+          onRowSelectionModelChange,
+          disableRowSelectionExcludeModel: true,
+        })}
         sx={{
           border: 'none',
           '& .MuiDataGrid-columnHeaders': {

@@ -15,6 +15,8 @@ export const transactionsApi = {
     if (query?.limit) params.set('limit', String(query.limit))
     if (query?.offset) params.set('offset', String(query.offset))
     if (query?.customer_id) params.set('customer_id', query.customer_id)
+    if (query?.from) params.set('from', query.from)
+    if (query?.to) params.set('to', query.to)
     const queryString = params.toString()
     return apiClient.get<Transaction[]>(`/api/transactions${queryString ? `?${queryString}` : ''}`)
   },

@@ -14,6 +14,7 @@ import StaffTabsContainer from './StaffTabsContainer'
 import StaffAttendanceTab from './StaffAttendanceTab'
 import StaffScheduleTab from './StaffScheduleTab'
 import StaffListTab from './StaffListTab'
+import StaffPayrollTab from './StaffPayrollTab'
 import StandardPageLayout from '../common/StandardPageLayout'
 import { useTheme, useMediaQuery } from '@mui/material'
 import { usePageHeader } from '@/app/lib/contexts/PageHeaderContext'
@@ -35,6 +36,7 @@ export interface StaffPageViewProps {
     setTabIndex: (index: number) => void
     
     // 액션
+    onRetry: () => void
     onExport: (tabIndex: number) => void
     onCheckIn: (staffId: string) => Promise<void>
     onCheckOut: (staffId: string) => Promise<void>
@@ -45,6 +47,8 @@ export interface StaffPageViewProps {
     onEdit: (staff: Staff) => void
     onStatusClick: (staff: Staff) => void
     onCreateStaff: () => void
+    listSelectedIds?: string[]
+    onListSelectedIdsChange?: (ids: string[]) => void
 }
 
 export default function StaffPageView({
@@ -64,9 +68,12 @@ export default function StaffPageView({
     onOpenSchedule,
     onQuickScheduleCreate,
     onBulkScheduleApply,
+    onRetry,
     onEdit,
     onStatusClick,
     onCreateStaff,
+    listSelectedIds = [],
+    onListSelectedIdsChange,
 }: StaffPageViewProps) {
     const theme = useTheme()
     const isMobile = useMediaQuery(theme.breakpoints.down('md'))
@@ -112,7 +119,7 @@ export default function StaffPageView({
                     icon={<Users className="h-5 w-5" />}
                     description="출결 확인부터 상세 일정 구성까지 한 곳에서 관리하세요"
                     actions={[
-                        ...(isMobile ? [] : [createActionButton('CSV 내보내기', () => onExport(tabIndex), 'secondary', <Download size={16} />)]),
+                        ...(isMobile || tabIndex === 3 ? [] : [createActionButton('CSV 내보내기', () => onExport(tabIndex), 'secondary', <Download size={16} />)]),
                         createActionButton(
                             '직원 추가',
                             onCreateStaff,
@@ -135,7 +142,7 @@ export default function StaffPageView({
                     loading={loading}
                     error={error}
                     staffCount={staff.length}
-                    onRetry={() => {}}
+                    onRetry={onRetry}
                     onCreateStaff={onCreateStaff}
                     attendanceTab={
                         <StaffAttendanceTab
@@ -161,8 +168,11 @@ export default function StaffPageView({
                             staff={staff}
                             onEdit={onEdit}
                             onStatusClick={onStatusClick}
+                            selectedIds={listSelectedIds}
+                            onSelectedIdsChange={onListSelectedIdsChange}
                         />
                     }
+                    payrollTab={<StaffPayrollTab />}
                 />
             </Stack>
         </StandardPageLayout>

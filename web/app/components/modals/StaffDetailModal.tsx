@@ -7,6 +7,7 @@ import Textarea from '@/app/components/ui/Textarea'
 import { useAppToast } from '@/app/lib/ui/toast'
 import { staffApi } from '@/app/lib/api/staff'
 import { settingsApi } from '@/app/lib/api/settings'
+import { Calendar, Clock } from 'lucide-react'
 
 type Staff = {
   id?: string;
@@ -21,7 +22,18 @@ type Staff = {
   profile_image_url?: string | null;
 }
 
-export default function StaffDetailModal({ open, onClose, item, onSaved, onDeleted }: { open: boolean; onClose: () => void; item: Staff | null; onSaved: () => void; onDeleted: () => void }) {
+type StaffDetailModalProps = {
+  open: boolean
+  onClose: () => void
+  item: Staff | null
+  onSaved: () => void
+  onDeleted: () => void
+  onViewSchedule?: (staff: Staff) => void
+  onViewAttendance?: (staff: Staff) => void
+  onLeaveRequest?: (staff: Staff) => void
+}
+
+export default function StaffDetailModal({ open, onClose, item, onSaved, onDeleted, onViewSchedule, onViewAttendance, onLeaveRequest }: StaffDetailModalProps) {
   const [form, setForm] = useState<Staff>({
     name: '', phone: '', email: '', role: '', notes: '', active: true,
     status: 'office', skills: '', profile_image_url: ''
@@ -91,6 +103,25 @@ export default function StaffDetailModal({ open, onClose, item, onSaved, onDelet
       onDeleted(); onClose(); toast.success('삭제되었습니다.')
     } catch {
       toast.error('삭제 실패')
+    }
+  }
+
+  const handleOffboard = async () => {
+    if (!form?.id) return
+    if (!confirm('퇴사 처리하시겠습니까? 해당 직원은 비활성(퇴사) 상태로 변경됩니다.')) return
+    try {
+      setLoading(true)
+      setError('')
+      await staffApi.update(form.id, { active: false })
+      onSaved()
+      onClose()
+      toast.success('퇴사 처리되었습니다.')
+    } catch (e: unknown) {
+      const msg = e instanceof Error ? e.message : '퇴사 처리에 실패했습니다.'
+      setError(msg)
+      toast.error('퇴사 처리 실패')
+    } finally {
+      setLoading(false)
     }
   }
 
@@ -226,11 +257,59 @@ export default function StaffDetailModal({ open, onClose, item, onSaved, onDelet
               </div>
             </div>
           </div>
+
+          {(onViewSchedule || onViewAttendance || onLeaveRequest) && form.id && (
+            <div className="space-y-3 pt-2">
+              <h3 className="text-xs font-semibold text-neutral-900 border-b pb-1">빠른 이동</h3>
+              <div className="flex flex-wrap gap-2">
+                {onViewSchedule && (
+                  <Button
+                    variant="secondary"
+                    size="sm"
+                    leftIcon={<Calendar size={16} />}
+                    onClick={() => onViewSchedule(item!)}
+                    sx={{ minHeight: 44 }}
+                  >
+                    주간 스케줄
+                  </Button>
+                )}
+                {onViewAttendance && (
+                  <Button
+                    variant="secondary"
+                    size="sm"
+                    leftIcon={<Clock size={16} />}
+                    onClick={() => onViewAttendance(item!)}
+                    sx={{ minHeight: 44 }}
+                  >
+                    근태 기록
+                  </Button>
+                )}
+                {onLeaveRequest && (
+                  <Button
+                    variant="secondary"
+                    size="sm"
+                    leftIcon={<Calendar size={16} />}
+                    onClick={() => onLeaveRequest(item!)}
+                    sx={{ minHeight: 44 }}
+                  >
+                    휴가 신청
+                  </Button>
+                )}
+              </div>
+            </div>
+          )}
         </div>
       </SwipeableModalBody>
       <SwipeableModalFooter>
         <Button variant="secondary" onClick={onClose} disabled={loading} fullWidth sx={{ minHeight: '44px' }}>취소</Button>
-        {form.id && <Button variant="danger" onClick={removeItem} disabled={loading} fullWidth sx={{ minHeight: '44px' }}>삭제</Button>}
+        {form.id && (
+          <>
+            {form.active !== false && (
+              <Button variant="outline" onClick={handleOffboard} disabled={loading} fullWidth sx={{ minHeight: '44px' }}>퇴사 처리</Button>
+            )}
+            <Button variant="danger" onClick={removeItem} disabled={loading} fullWidth sx={{ minHeight: '44px' }}>삭제</Button>
+          </>
+        )}
         <Button variant="primary" onClick={save} disabled={loading} fullWidth sx={{ minHeight: '44px' }}>저장</Button>
       </SwipeableModalFooter>
     </SwipeableModal>

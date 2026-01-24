@@ -253,6 +253,33 @@ export interface StaffAttendanceCreateInput {
 export interface StaffAttendanceUpdateInput extends Partial<StaffAttendanceCreateInput> { }
 
 /**
+ * 직원 휴가 신청
+ */
+export interface StaffLeaveRequest {
+  id: string
+  owner_id: string
+  staff_id: string
+  start_date: string
+  end_date: string
+  type: 'annual' | 'sick' | 'etc'
+  status: 'pending' | 'approved' | 'rejected'
+  reason?: string | null
+  created_at?: string
+}
+
+export interface StaffLeaveRequestCreateInput {
+  staff_id: string
+  start_date: string
+  end_date: string
+  type?: 'annual' | 'sick' | 'etc'
+  reason?: string | null
+}
+
+export interface StaffLeaveRequestUpdateInput {
+  status?: 'pending' | 'approved' | 'rejected'
+}
+
+/**
  * 사용자 상태 enum
  */
 export type UserStatus = 'PENDING' | 'ACTIVE' | 'INACTIVE'

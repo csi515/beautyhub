@@ -11,9 +11,9 @@ export const GET = withAuth(async (req: NextRequest, { userId, supabase }) => {
   const options: Parameters<typeof repository.findAll>[0] = {
     ...params,
   }
-  if (customerId) {
-    options.customer_id = customerId
-  }
+  if (customerId) options.customer_id = customerId
+  if (params.from) options.from = params.from
+  if (params.to) options.to = params.to
   const data = await repository.findAll(options)
   return createSuccessResponse(data)
 })

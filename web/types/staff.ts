@@ -7,6 +7,10 @@ export interface StaffStats {
   active: number
   atOffice: number
   away: number
+  /** 이번 달 전체 누적 근무일 (직원별 출근일 합계) */
+  totalMonthWorkDays?: number
+  /** 오늘 스케줄 있으나 실근무 없는 직원 수 */
+  todayAbsentCount?: number
 }
 
 export interface StaffPageState {

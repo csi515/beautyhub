@@ -1,14 +1,10 @@
 import { useState, useEffect, useCallback } from 'react'
 import { FinanceState, FinanceDateRange } from '@/types/finance'
-
-function isoMonthRange(d = new Date()) {
-  const start = new Date(d.getFullYear(), d.getMonth(), 1)
-  const end = new Date(d.getFullYear(), d.getMonth() + 1, 1)
-  return { from: start.toISOString().slice(0, 10), to: end.toISOString().slice(0, 10) }
-}
+import { useDateRange } from './useDateRange'
 
 export function useFinanceData() {
-  const [{ from, to }, setRange] = useState<FinanceDateRange>(() => isoMonthRange())
+  const { dateRange, updateRange } = useDateRange('thisMonth')
+  const { from, to } = dateRange
 
   const [state, setState] = useState<FinanceState>({
     expenses: [],
@@ -26,7 +22,7 @@ export function useFinanceData() {
       const { transactionsApi } = await import('@/app/lib/api/transactions')
       const [ex, tr] = await Promise.all([
         expensesApi.list({ from, to }),
-        transactionsApi.list({ limit: 500 }),
+        transactionsApi.list({ from, to, limit: 500 }),
       ])
       setState(prev => ({
         ...prev,
@@ -60,13 +56,8 @@ export function useFinanceData() {
     loadSettings()
   }, [])
 
-  const updateRange = (newRange: Partial<FinanceDateRange>) => {
-    setRange(prev => ({ ...prev, ...newRange }))
-  }
-
   return {
-    // Date range
-    dateRange: { from, to },
+    dateRange: dateRange as FinanceDateRange,
     updateRange,
 
     // State

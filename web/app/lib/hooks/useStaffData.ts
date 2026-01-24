@@ -44,25 +44,24 @@ export function useStaffData() {
     loadAll()
   }, [loadAll])
 
-  // Service 레이어를 사용한 통계 계산 및 필터링
   const { StaffService } = require('../services/staff.service')
-  
-  const stats: StaffStats = useMemo(() => 
-    StaffService.calculateStats(staff),
-    [staff]
-  )
 
-  // 실제 근무 기록만 필터링 (타임라인용)
-  const actualAttendance = useMemo(() =>
-    StaffService.filterActualAttendance(attendance),
+  const actualAttendance = useMemo(
+    () => StaffService.filterActualAttendance(attendance),
     [attendance]
   )
 
-  // 스케줄만 필터링 (스케줄 표용)
-  const schedules = useMemo(() =>
-    StaffService.filterSchedules(attendance),
+  const schedules = useMemo(
+    () => StaffService.filterSchedules(attendance),
     [attendance]
   )
+
+  const stats: StaffStats = useMemo(() => {
+    const base = StaffService.calculateStats(staff)
+    const totalMonthWorkDays = StaffService.totalMonthWorkDays(actualAttendance)
+    const todayAbsentCount = StaffService.todayAbsentCount(schedules, actualAttendance)
+    return { ...base, totalMonthWorkDays, todayAbsentCount }
+  }, [staff, actualAttendance, schedules])
 
   // 근무중인 직원들
   const workingStaff = useMemo(() =>

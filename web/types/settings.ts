@@ -52,6 +52,8 @@ export interface StaffSettings {
     startTime: string // "09:00"
     endTime: string   // "18:00"
   }
+  /** 연차 기본 일수 (연차/휴가 정책) */
+  annualLeaveDays?: number
 }
 
 /**

@@ -68,7 +68,7 @@ export type AppointmentUpdateRequest = AppointmentUpdateInput
 /**
  * 거래 API 요청/응답
  */
-export interface TransactionsListQuery extends PaginationParams {
+export interface TransactionsListQuery extends PaginationParams, DateRangeParams {
   customer_id?: string
 }
 export type TransactionsListResponse = Transaction[]

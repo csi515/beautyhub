@@ -5,7 +5,7 @@
 
 'use client'
 
-import { Box, Typography, Grid, Card, CardContent, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, useMediaQuery, Stack } from '@mui/material'
+import { Box, Typography, Grid, Card, CardContent, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, useMediaQuery, Stack, Button } from '@mui/material'
 import { useTheme } from '@mui/material/styles'
 import { useEffect } from 'react'
 import MobileDataCard from '../ui/MobileDataCard'
@@ -14,9 +14,12 @@ import PageHeader, { createActionButton } from '../common/PageHeader'
 import { usePageHeader } from '@/app/lib/contexts/PageHeaderContext'
 import { TrendingUp, Users, Star, DollarSign, Download } from 'lucide-react'
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts'
+import LoadingState from '../common/LoadingState'
 import type { CustomerLTV, VIPCustomer } from '@/app/lib/services/analytics.service'
 
 export interface AnalyticsPageViewProps {
+    /** 탭 등에 임베드 시 레이아웃·헤더 생략 */
+    embedded?: boolean
     // 데이터
     ltvData: CustomerLTV[]
     vipData: VIPCustomer[]
@@ -37,6 +40,7 @@ export interface AnalyticsPageViewProps {
 }
 
 export default function AnalyticsPageView({
+    embedded = false,
     ltvData,
     vipData,
     loading,
@@ -49,16 +53,15 @@ export default function AnalyticsPageView({
     const isMobile = useMediaQuery(theme.breakpoints.down('sm'))
     const { setHeaderInfo, clearHeaderInfo } = usePageHeader()
 
-    // 모바일에서 Context에 헤더 정보 설정
+    // 모바일에서 Context에 헤더 정보 설정 (embedded 시 스킵)
     useEffect(() => {
+        if (embedded) return
         if (isMobile) {
             setHeaderInfo({
                 title: '고객 분석',
                 icon: <TrendingUp />,
                 description: '고객 생애 가치(LTV) 및 VIP 고객 분석',
-                actions: (
-                    createActionButton('CSV 내보내기', onExport, 'secondary', <Download size={16} />)
-                ),
+                actions: [],
             })
         } else {
             clearHeaderInfo()
@@ -69,19 +72,11 @@ export default function AnalyticsPageView({
                 clearHeaderInfo()
             }
         }
-    }, [isMobile, setHeaderInfo, clearHeaderInfo, onExport])
+    }, [embedded, isMobile, setHeaderInfo, clearHeaderInfo, onExport])
 
-    return (
-        <StandardPageLayout
-            loading={loading}
-            error={error || undefined}
-            empty={!loading && ltvData.length === 0}
-            emptyTitle="데이터가 없습니다"
-            emptyDescription="분석할 고객 데이터가 없습니다."
-            maxWidth={{ xs: '100%', md: '1200px' }}
-        >
-            {/* 데스크탑 헤더 */}
-            {!isMobile && (
+    const inner = (
+        <>
+            {!embedded && !isMobile && (
                 <PageHeader
                     title="고객 분석"
                     description="고객 생애 가치(LTV) 및 VIP 고객 분석"
@@ -90,6 +85,14 @@ export default function AnalyticsPageView({
                         createActionButton('CSV 내보내기', onExport, 'secondary', <Download size={16} />),
                     ]}
                 />
+            )}
+
+            {embedded && !isMobile && (
+                <Stack direction="row" sx={{ mb: 2 }}>
+                    <Button variant="outlined" size="small" startIcon={<Download size={16} />} onClick={onExport}>
+                        CSV 내보내기
+                    </Button>
+                </Stack>
             )}
 
             {/* 통계 카드 */}
@@ -210,6 +213,23 @@ export default function AnalyticsPageView({
                     )}
                 </CardContent>
             </Card>
+        </>
+    )
+
+    if (embedded) {
+        if (loading) return <LoadingState rows={5} variant="card" />
+        return <>{inner}</>
+    }
+    return (
+        <StandardPageLayout
+            loading={loading}
+            error={error || undefined}
+            empty={!loading && ltvData.length === 0}
+            emptyTitle="데이터가 없습니다"
+            emptyDescription="분석할 고객 데이터가 없습니다."
+            maxWidth={{ xs: '100%', md: '1200px' }}
+        >
+            {inner}
         </StandardPageLayout>
     )
 }

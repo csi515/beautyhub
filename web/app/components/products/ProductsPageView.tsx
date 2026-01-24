@@ -5,12 +5,11 @@
 
 'use client'
 
-import { useState, useEffect } from 'react'
 import Stack from '@mui/material/Stack'
 import Typography from '@mui/material/Typography'
 import Pagination from '@mui/material/Pagination'
-import { useTheme, useMediaQuery } from '@mui/material'
-import { Plus } from 'lucide-react'
+import Box from '@mui/material/Box'
+import { Plus, Package, Archive } from 'lucide-react'
 import StandardPageLayout from '../common/StandardPageLayout'
 import PageToolbar from '../common/PageToolbar'
 import ProductGrid from './ProductGrid'
@@ -19,11 +18,15 @@ import FilterBottomSheet from '../common/FilterBottomSheet'
 import MobileFAB from '../common/MobileFAB'
 import PaginationInfo from '../common/PaginationInfo'
 import Button from '../ui/Button'
+import { Tabs, TabsList, TabsTrigger, TabsContent } from '../ui/Tabs'
 import { useResponsivePaginationSize } from '@/app/lib/hooks/useResponsivePaginationSize'
-import { usePageHeader } from '@/app/lib/contexts/PageHeaderContext'
+import { useMobilePageHeader } from '@/app/lib/hooks/useMobilePageHeader'
 import type { Product } from '@/types/entities'
 
 export interface ProductsPageViewProps {
+  tab?: 'products' | 'inventory'
+  onTabChange?: (tab: 'products' | 'inventory') => void
+  inventoryTab?: React.ReactNode
   // 데이터
   products: Product[]
   totalItems: number
@@ -59,6 +62,9 @@ export interface ProductsPageViewProps {
 }
 
 export default function ProductsPageView({
+  tab = 'products',
+  onTabChange,
+  inventoryTab,
   products,
   totalItems,
   totalPages,
@@ -83,39 +89,18 @@ export default function ProductsPageView({
   onResetFilters,
   onExport,
 }: ProductsPageViewProps) {
-  const theme = useTheme()
-  const isMobile = useMediaQuery(theme.breakpoints.down('sm'))
   const paginationSize = useResponsivePaginationSize()
-  const { setHeaderInfo, clearHeaderInfo } = usePageHeader()
-  const [filterSheetOpen, setFilterSheetOpen] = useState(false)
   const hasActiveFilters = statusFilter !== 'all' || minPrice !== '' || maxPrice !== '' || query !== ''
   const hasProducts = products.length > 0
-  
-  // 활성 필터 개수 계산
   const activeFilterCount = [
     statusFilter !== 'all',
     minPrice !== '',
     maxPrice !== '',
   ].filter(Boolean).length
-
-  // 모바일에서 Context에 헤더 정보 설정
-  useEffect(() => {
-    if (isMobile) {
-      setHeaderInfo({
-        title: '제품 관리',
-        onFilter: () => setFilterSheetOpen(true),
-        filterBadge: activeFilterCount,
-      })
-    } else {
-      clearHeaderInfo()
-    }
-
-    return () => {
-      if (isMobile) {
-        clearHeaderInfo()
-      }
-    }
-  }, [isMobile, setHeaderInfo, clearHeaderInfo, activeFilterCount])
+  const { isMobile, filterSheetOpen, closeFilterSheet } = useMobilePageHeader({
+    title: '제품 관리',
+    filterBadge: activeFilterCount,
+  })
 
   // 필터 콘텐츠
   const filterContent = (
@@ -135,17 +120,11 @@ export default function ProductsPageView({
     />
   )
 
-  return (
-    <StandardPageLayout
-      loading={loading}
-      error={error}
-      empty={!loading && !hasProducts && totalItems === 0}
-      emptyTitle="제품이 없습니다"
-      emptyDescription="새로운 제품을 추가하여 시작하세요"
-      emptyActionLabel="제품 추가"
-      emptyActionOnClick={onCreateClick}
-      errorTitle="오류 발생"
-    >
+  const isProductsTab = tab === 'products'
+  const showEmpty = !loading && !hasProducts && totalItems === 0
+
+  const productsContent = (
+    <>
       <PageToolbar
         search={{
           value: query,
@@ -154,22 +133,15 @@ export default function ProductsPageView({
         }}
         filters={!isMobile ? filterContent : undefined}
         actions={isMobile ? undefined : {
-          primary: {
-            label: '상품 등록',
-            onClick: onCreateClick,
-          },
+          primary: { label: '상품 등록', onClick: onCreateClick },
         }}
-        export={{
-          label: 'CSV 내보내기',
-          onClick: onExport,
-        }}
+        export={{ label: 'CSV 내보내기', onClick: onExport }}
       />
 
-      {/* 모바일 필터 Bottom Sheet */}
       {isMobile && (
         <FilterBottomSheet
           open={filterSheetOpen}
-          onClose={() => setFilterSheetOpen(false)}
+          onClose={closeFilterSheet}
           title="필터"
           description="제품 목록을 필터링하세요"
           activeFilterCount={activeFilterCount}
@@ -187,8 +159,6 @@ export default function ProductsPageView({
             onProductClick={onProductClick}
             onCreateClick={onCreateClick}
           />
-
-          {/* 페이지네이션 */}
           <Stack direction={{ xs: 'column', sm: 'row' }} spacing={{ xs: 1, sm: 1.5, md: 2 }} justifyContent="space-between" alignItems="center">
             <PaginationInfo
               totalItems={totalItems}
@@ -210,15 +180,8 @@ export default function ProductsPageView({
               showLastButton={false}
               shape="rounded"
               sx={{
-                '& .MuiPagination-ul': {
-                  flexWrap: 'wrap',
-                  justifyContent: 'center',
-                },
-                '& .MuiPaginationItem-root': {
-                  minWidth: { xs: '44px', sm: '44px' },
-                  minHeight: { xs: '44px', sm: '44px' },
-                  fontSize: { xs: '0.875rem', sm: '0.9375rem' },
-                },
+                '& .MuiPagination-ul': { flexWrap: 'wrap', justifyContent: 'center' },
+                '& .MuiPaginationItem-root': { minWidth: 44, minHeight: 44, fontSize: { xs: '0.875rem', sm: '0.9375rem' } },
               }}
             />
           </Stack>
@@ -227,25 +190,52 @@ export default function ProductsPageView({
 
       {!loading && !hasProducts && totalItems > 0 && (
         <Stack spacing={{ xs: 1, sm: 1.5, md: 2 }} alignItems="center" sx={{ py: 4 }}>
-          <Typography variant="body1" color="text.secondary">
-            검색 결과가 없습니다.
-          </Typography>
-          <Button 
-            variant="primary" 
-            onClick={onCreateClick}
-            sx={{ minHeight: '44px' }}
-          >
-            제품 추가
-          </Button>
+          <Typography variant="body1" color="text.secondary">검색 결과가 없습니다.</Typography>
+          <Button variant="primary" onClick={onCreateClick} sx={{ minHeight: 44 }}>제품 추가</Button>
         </Stack>
       )}
 
-      {/* Mobile FAB */}
-      <MobileFAB
-        icon={<Plus className="h-5 w-5" />}
-        label="제품 추가"
-        onClick={onCreateClick}
-      />
+      {isProductsTab && (
+        <MobileFAB icon={<Plus className="h-5 w-5" />} label="제품 추가" onClick={onCreateClick} />
+      )}
+    </>
+  )
+
+  return (
+    <StandardPageLayout
+      loading={isProductsTab ? loading : false}
+      error={isProductsTab ? error : undefined}
+      empty={isProductsTab && showEmpty}
+      emptyTitle="제품이 없습니다"
+      emptyDescription="새로운 제품을 추가하여 시작하세요"
+      emptyActionLabel="제품 추가"
+      emptyActionOnClick={onCreateClick}
+      errorTitle="오류 발생"
+    >
+      {onTabChange != null && inventoryTab != null ? (
+        <Tabs value={tab} onValueChange={(v) => onTabChange(v as 'products' | 'inventory')}>
+          <Box sx={{ mb: 2 }}>
+            <TabsList>
+              <TabsTrigger value="products">
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                  <Package size={18} />
+                  <Typography variant="body2" fontWeight={500}>제품</Typography>
+                </Box>
+              </TabsTrigger>
+              <TabsTrigger value="inventory">
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                  <Archive size={18} />
+                  <Typography variant="body2" fontWeight={500}>재고</Typography>
+                </Box>
+              </TabsTrigger>
+            </TabsList>
+          </Box>
+          <TabsContent value="products">{productsContent}</TabsContent>
+          <TabsContent value="inventory">{inventoryTab}</TabsContent>
+        </Tabs>
+      ) : (
+        productsContent
+      )}
     </StandardPageLayout>
   )
 }
