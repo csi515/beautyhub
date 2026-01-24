@@ -11,6 +11,7 @@ import ReportSummaryCards from './components/ReportSummaryCards'
 import RevenueDetailsTable from './components/RevenueDetailsTable'
 import ExpenseDetailsTable from './components/ExpenseDetailsTable'
 import { useReportExport } from './hooks/useReportExport'
+import { useExportVisibility } from '@/app/lib/hooks/useExportVisibility'
 
 interface FinancialReportData {
   period: string
@@ -40,6 +41,7 @@ export default function FinanceReportsPage() {
   const [quarter, setQuarter] = useState(Math.ceil((new Date().getMonth() + 1) / 3))
   
   const { handleExportPDF, handleExportCSV } = useReportExport()
+  const { showExport } = useExportVisibility()
 
   useEffect(() => {
     fetchReport()
@@ -116,8 +118,8 @@ export default function FinanceReportsPage() {
         description="월별/분기별 재무 리포트 자동 생성"
         icon={<FileText />}
         actions={[
-          data && createActionButton('PDF 다운로드', () => handleExportPDF(data), 'primary', <Download size={18} />),
-          data && createActionButton('CSV 다운로드', () => handleExportCSV(data), 'secondary', <Download size={18} />),
+          ...(data ? [createActionButton('PDF 다운로드', () => handleExportPDF(data), 'primary', <Download size={18} />)] : []),
+          ...(data && showExport ? [createActionButton('CSV 다운로드', () => handleExportCSV(data), 'secondary', <Download size={18} />)] : []),
         ]}
       />
 

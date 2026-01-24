@@ -23,6 +23,13 @@ import { AppointmentsService } from '../lib/services/appointments.service'
 import Paper from '@mui/material/Paper'
 import ToggleButton from '@mui/material/ToggleButton'
 import ToggleButtonGroup from '@mui/material/ToggleButtonGroup'
+import IconButton from '@mui/material/IconButton'
+import Stack from '@mui/material/Stack'
+import { useTheme, useMediaQuery } from '@mui/material'
+import { Filter, Plus } from 'lucide-react'
+import MobileFAB from '../components/common/MobileFAB'
+import FilterBottomSheet from '../components/common/FilterBottomSheet'
+import { useExportVisibility } from '../lib/hooks/useExportVisibility'
 
 type SelectedAppointment = {
   id: string
@@ -46,11 +53,16 @@ export default function AppointmentsPage() {
   const calendarRef = useRef<any>(null)
   const timelineRef = useRef<MobileTimelineViewRef>(null)
   const [mobileViewMode, setMobileViewMode] = useState<'timeline' | 'calendar'>('calendar')
+  const [filterSheetOpen, setFilterSheetOpen] = useState(false)
   const toast = useAppToast()
+  const theme = useTheme()
+  const isMobile = useMediaQuery(theme.breakpoints.down('md'))
+  const { showExport } = useExportVisibility()
 
   // Search & Filter
   const { query, debouncedQuery, setQuery } = useSearch({ debounceMs: 300 })
   const [statusFilter, setStatusFilter] = useState<string>('all')
+  const activeFilterCount = (query !== '' ? 1 : 0) + (statusFilter !== 'all' ? 1 : 0)
 
   // Appointments data
   const { events, reloadCalendar } = useAppointments()
@@ -81,7 +93,7 @@ export default function AppointmentsPage() {
 
   const updateRangeAndLabel = (date: Date, viewType: CalendarView) => {
     const { start, end } = getDateRange(date, viewType)
-    setRangeLabel(formatRangeLabel(start, end, viewType))
+    setRangeLabel(formatRangeLabel(date, start, end, viewType))
     reloadCalendar(date, viewType)
   }
 
@@ -192,6 +204,9 @@ export default function AppointmentsPage() {
         onNext={handleNext}
         actions={
           <AppointmentSearchFilters
+            variant="toolbar"
+            showExport={showExport}
+            showCreate
             query={query}
             onQueryChange={setQuery}
             statusFilter={statusFilter}
@@ -210,30 +225,65 @@ export default function AppointmentsPage() {
         }
       />
 
-      {/* 모바일 뷰 전환 버튼 */}
-      <Paper sx={{ display: { md: 'none' }, p: { xs: 1, sm: 1.5 }, borderRadius: 3 }}>
-        <ToggleButtonGroup
-          value={mobileViewMode}
-          exclusive
-          onChange={(_, next) => {
-            if (!next) return;
-            setMobileViewMode(next);
-            if (next === 'timeline') {
-              setTimeout(() => timelineRef.current?.scrollToToday(), 100)
-            }
-          }}
-          fullWidth
-          size="small"
-          sx={{
-            '& .MuiToggleButton-root': {
-              minHeight: '44px',
-              fontSize: { xs: '0.875rem', sm: '0.9375rem' },
-            },
+      {/* 모바일: 검색·필터 시트 */}
+      {isMobile && (
+        <FilterBottomSheet
+          open={filterSheetOpen}
+          onClose={() => setFilterSheetOpen(false)}
+          title="검색·필터"
+          description="예약 검색 및 상태 필터"
+          activeFilterCount={activeFilterCount}
+          onReset={() => {
+            setQuery('')
+            setStatusFilter('all')
+            setFilterSheetOpen(false)
           }}
         >
-          <ToggleButton value="timeline">타임라인</ToggleButton>
-          <ToggleButton value="calendar">달력</ToggleButton>
-        </ToggleButtonGroup>
+          <AppointmentSearchFilters
+            variant="sheet"
+            showExport={false}
+            showCreate={false}
+            query={query}
+            onQueryChange={setQuery}
+            statusFilter={statusFilter}
+            onStatusFilterChange={setStatusFilter}
+          />
+        </FilterBottomSheet>
+      )}
+
+      {/* 모바일 뷰 전환 + 필터 트리거 */}
+      <Paper sx={{ display: { md: 'none' }, p: { xs: 1, sm: 1.5 }, borderRadius: 3 }}>
+        <Stack direction="row" spacing={1} alignItems="center" sx={{ width: '100%' }}>
+          <IconButton
+            onClick={() => setFilterSheetOpen(true)}
+            aria-label="검색·필터"
+            sx={{ minWidth: 44, minHeight: 44, flexShrink: 0 }}
+          >
+            <Filter size={20} />
+          </IconButton>
+          <ToggleButtonGroup
+            value={mobileViewMode}
+            exclusive
+            onChange={(_, next) => {
+              if (!next) return
+              setMobileViewMode(next)
+              if (next === 'timeline') {
+                setTimeout(() => timelineRef.current?.scrollToToday(), 100)
+              }
+            }}
+            size="small"
+            sx={{
+              flex: 1,
+              '& .MuiToggleButton-root': {
+                minHeight: '44px',
+                fontSize: { xs: '0.875rem', sm: '0.9375rem' },
+              },
+            }}
+          >
+            <ToggleButton value="timeline">타임라인</ToggleButton>
+            <ToggleButton value="calendar">달력</ToggleButton>
+          </ToggleButtonGroup>
+        </Stack>
       </Paper>
 
       {/* 모바일 타임라인 뷰 */}
@@ -308,6 +358,22 @@ export default function AppointmentsPage() {
               await reloadCalendar(currentDate, view)
             }
           }}
+        />
+      )}
+
+      {isMobile && (
+        <MobileFAB
+          icon={<Plus size={24} />}
+          label="예약 추가"
+          onClick={() =>
+            createModal.openModal({
+              date: new Date().toISOString().slice(0, 10),
+              start: '10:00',
+              end: '11:00',
+              status: 'scheduled',
+              notes: '',
+            })
+          }
         />
       )}
     </StandardPageLayout>

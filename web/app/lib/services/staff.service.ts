@@ -29,6 +29,7 @@ export class StaffService {
    * 실제 근무 기록 필터링
    */
   static filterActualAttendance(attendance: StaffAttendance[]): StaffAttendance[] {
+    if (!Array.isArray(attendance)) return []
     return attendance.filter(a => a.type === 'actual')
   }
 
@@ -36,6 +37,7 @@ export class StaffService {
    * 스케줄 필터링
    */
   static filterSchedules(attendance: StaffAttendance[]): StaffAttendance[] {
+    if (!Array.isArray(attendance)) return []
     return attendance.filter(a => a.type === 'scheduled')
   }
 

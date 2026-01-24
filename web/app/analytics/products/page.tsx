@@ -11,6 +11,7 @@ import LoadingState from '../../components/common/LoadingState'
 import EmptyState from '@/app/components/ui/EmptyState'
 import { exportToCSV } from '@/app/lib/utils/export'
 import { useAppToast } from '@/app/lib/ui/toast'
+import { useExportVisibility } from '@/app/lib/hooks/useExportVisibility'
 
 interface ProductProfitabilityData {
   product_id: string
@@ -49,6 +50,7 @@ export default function ProductProfitabilityPage() {
   const toast = useAppToast()
   const theme = useTheme()
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'))
+  const { showExport } = useExportVisibility()
 
   useEffect(() => {
     fetchData()
@@ -140,7 +142,7 @@ export default function ProductProfitabilityPage() {
         description="제품별 마진율과 회전율 분석"
         icon={<Package />}
         actions={[
-          createActionButton('CSV 내보내기', handleExport, 'secondary'),
+          ...(showExport ? [createActionButton('CSV 내보내기', handleExport, 'secondary')] : []),
           createActionButton(
             '기간 선택',
             () => {},

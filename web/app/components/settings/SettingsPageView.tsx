@@ -33,7 +33,6 @@ export interface SettingsPageViewProps {
     onEditSecuritySettings: () => void
     onEditDisplaySettings: () => void
     onLogout: () => void
-    onDeleteAccount: () => void
     onExportData: () => void
 }
 
@@ -48,7 +47,6 @@ export default function SettingsPageView({
     onEditSecuritySettings,
     onEditDisplaySettings,
     onLogout,
-    onDeleteAccount,
     onExportData,
 }: SettingsPageViewProps) {
     const theme = useTheme()
@@ -113,7 +111,6 @@ export default function SettingsPageView({
 
                     <AccountSettingsSummaryCard
                         onLogout={onLogout}
-                        onDeleteAccount={onDeleteAccount}
                         onExportData={onExportData}
                     />
                 </Stack>

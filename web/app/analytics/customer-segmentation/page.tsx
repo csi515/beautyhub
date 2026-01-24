@@ -11,6 +11,7 @@ import LoadingState from '../../components/common/LoadingState'
 import EmptyState from '@/app/components/ui/EmptyState'
 import { exportToCSV } from '@/app/lib/utils/export'
 import { useAppToast } from '@/app/lib/ui/toast'
+import { useExportVisibility } from '@/app/lib/hooks/useExportVisibility'
 import type { RFMAnalysis } from '@/types/customer'
 
 interface CustomerSegmentationData {
@@ -38,6 +39,7 @@ export default function CustomerSegmentationPage() {
   const toast = useAppToast()
   const theme = useTheme()
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'))
+  const { showExport } = useExportVisibility()
 
   useEffect(() => {
     fetchData()
@@ -155,9 +157,7 @@ export default function CustomerSegmentationPage() {
         title="고객 세그멘테이션 (RFM 분석)"
         description="고객을 행동 패턴에 따라 분류합니다"
         icon={<Users />}
-        actions={[
-          createActionButton('CSV 내보내기', handleExport, 'secondary'),
-        ]}
+        actions={showExport ? [createActionButton('CSV 내보내기', handleExport, 'secondary')] : []}
       />
 
       <Stack spacing={4} sx={{ mt: 4 }}>

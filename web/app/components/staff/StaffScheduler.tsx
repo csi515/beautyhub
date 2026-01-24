@@ -252,8 +252,16 @@ export default function StaffScheduler({ staffList, schedules, onOpenSchedule, o
 
     return (
         <Box>
-            <Stack direction="row" spacing={2} alignItems="center" justifyContent="space-between" mb={2}>
-                <Stack direction="row" spacing={1} alignItems="center">
+            <Stack
+                direction={{ xs: 'column', sm: 'row' }}
+                spacing={2}
+                alignItems={{ xs: 'stretch', sm: 'center' }}
+                justifyContent="space-between"
+                mb={2}
+                flexWrap="wrap"
+                useFlexGap
+            >
+                <Stack direction="row" spacing={1} alignItems="center" flexWrap="wrap">
                     <IconButton onClick={() => setCurrentWeek(addWeeks(currentWeek, -1))} size="small">
                         <ChevronLeft size={20} />
                     </IconButton>
@@ -272,7 +280,7 @@ export default function StaffScheduler({ staffList, schedules, onOpenSchedule, o
                     </Button>
                 </Stack>
 
-                <Stack direction="row" spacing={1}>
+                <Stack direction="row" spacing={1} flexWrap="wrap">
                     <Tooltip title="주간 템플릿 적용">
                         <Button
                             size="small"
@@ -308,7 +316,11 @@ export default function StaffScheduler({ staffList, schedules, onOpenSchedule, o
                 </Stack>
             </Stack>
 
-            <TableContainer component={Paper} variant="outlined" sx={{ borderRadius: 2 }}>
+            <TableContainer
+                component={Paper}
+                variant="outlined"
+                sx={{ borderRadius: 2, overflowX: 'auto', maxWidth: '100%' }}
+            >
                 <Table size="small">
                     <TableHead sx={{ bgcolor: 'grey.50' }}>
                         <TableRow>

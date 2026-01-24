@@ -16,8 +16,6 @@ const PAGE_TITLES: Record<string, string> = {
   '/analytics/products': '제품 분석',
   '/analytics/appointments': '예약 분석',
   '/analytics/customer-segmentation': '고객 세분화',
-  '/finance/budget': '예산',
-  '/finance/forecast': '예측',
   '/finance/reports': '보고서',
   '/inventory/expiry': '유통기한 관리',
   '/settings/audit': '감사 로그',

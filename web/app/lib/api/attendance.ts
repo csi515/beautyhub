@@ -16,7 +16,9 @@ export const attendanceApi = {
 
         const response = await fetch(`/api/attendance?${params.toString()}`)
         if (!response.ok) throw new Error('근태 목록을 불러오지 못했습니다.')
-        return response.json()
+        const json = await response.json() as { success?: boolean; data?: StaffAttendance[] }
+        const list = json?.data ?? json
+        return Array.isArray(list) ? list : []
     },
 
     /**

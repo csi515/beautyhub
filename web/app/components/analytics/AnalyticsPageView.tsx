@@ -12,6 +12,7 @@ import MobileDataCard from '../ui/MobileDataCard'
 import StandardPageLayout from '../common/StandardPageLayout'
 import PageHeader, { createActionButton } from '../common/PageHeader'
 import { usePageHeader } from '@/app/lib/contexts/PageHeaderContext'
+import { useExportVisibility } from '@/app/lib/hooks/useExportVisibility'
 import { TrendingUp, Users, Star, DollarSign, Download } from 'lucide-react'
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts'
 import LoadingState from '../common/LoadingState'
@@ -51,6 +52,7 @@ export default function AnalyticsPageView({
 }: AnalyticsPageViewProps) {
     const theme = useTheme()
     const isMobile = useMediaQuery(theme.breakpoints.down('sm'))
+    const { showExport } = useExportVisibility()
     const { setHeaderInfo, clearHeaderInfo } = usePageHeader()
 
     // 모바일에서 Context에 헤더 정보 설정 (embedded 시 스킵)
@@ -81,13 +83,11 @@ export default function AnalyticsPageView({
                     title="고객 분석"
                     description="고객 생애 가치(LTV) 및 VIP 고객 분석"
                     icon={<TrendingUp />}
-                    actions={[
-                        createActionButton('CSV 내보내기', onExport, 'secondary', <Download size={16} />),
-                    ]}
+                    actions={showExport ? [createActionButton('CSV 내보내기', onExport, 'secondary', <Download size={16} />)] : []}
                 />
             )}
 
-            {embedded && !isMobile && (
+            {embedded && showExport && (
                 <Stack direction="row" sx={{ mb: 2 }}>
                     <Button variant="outlined" size="small" startIcon={<Download size={16} />} onClick={onExport}>
                         CSV 내보내기

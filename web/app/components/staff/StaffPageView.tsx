@@ -18,6 +18,7 @@ import StaffPayrollTab from './StaffPayrollTab'
 import StandardPageLayout from '../common/StandardPageLayout'
 import { useTheme, useMediaQuery } from '@mui/material'
 import { usePageHeader } from '@/app/lib/contexts/PageHeaderContext'
+import { useExportVisibility } from '@/app/lib/hooks/useExportVisibility'
 import type { Staff, StaffAttendance } from '@/types/entities'
 import type { StaffStats } from '@/types/staff'
 
@@ -77,6 +78,7 @@ export default function StaffPageView({
 }: StaffPageViewProps) {
     const theme = useTheme()
     const isMobile = useMediaQuery(theme.breakpoints.down('md'))
+    const { showExport } = useExportVisibility()
     const { setHeaderInfo, clearHeaderInfo } = usePageHeader()
 
     // 모바일에서 Context에 헤더 정보 설정
@@ -119,7 +121,7 @@ export default function StaffPageView({
                     icon={<Users className="h-5 w-5" />}
                     description="출결 확인부터 상세 일정 구성까지 한 곳에서 관리하세요"
                     actions={[
-                        ...(isMobile || tabIndex === 3 ? [] : [createActionButton('CSV 내보내기', () => onExport(tabIndex), 'secondary', <Download size={16} />)]),
+                        ...(showExport && tabIndex !== 3 ? [createActionButton('CSV 내보내기', () => onExport(tabIndex), 'secondary', <Download size={16} />)] : []),
                         createActionButton(
                             '직원 추가',
                             onCreateStaff,

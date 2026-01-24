@@ -79,9 +79,9 @@ export const mapAppointments = (rows: AppointmentRow[], products: Product[]): Ap
 
 export type CalendarView = 'month' | 'week' | 'day'
 
-export const formatRangeLabel = (start: Date, end: Date, viewType: CalendarView): string => {
+export const formatRangeLabel = (date: Date, start: Date, end: Date, viewType: CalendarView): string => {
   if (viewType === 'month') {
-    return format(start, 'yyyy년 M월', { locale: ko })
+    return format(date, 'yyyy년 M월', { locale: ko })
   }
 
   if (viewType === 'week') {

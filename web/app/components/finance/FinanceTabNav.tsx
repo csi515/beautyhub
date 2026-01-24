@@ -3,13 +3,11 @@
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { Box, Typography } from '@mui/material'
-import { Wallet, PiggyBank, FileText, TrendingUp } from 'lucide-react'
+import { Wallet, FileText } from 'lucide-react'
 
 const TABS = [
   { href: '/finance', label: '수입/지출', icon: Wallet },
-  { href: '/finance/budget', label: '예산', icon: PiggyBank },
   { href: '/finance/reports', label: '보고서', icon: FileText },
-  { href: '/finance/forecast', label: '예측', icon: TrendingUp },
 ] as const
 
 export default function FinanceTabNav() {

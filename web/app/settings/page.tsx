@@ -127,26 +127,6 @@ export default function SettingsPage() {
     }
   }
 
-  const handleDeleteAccount = async () => {
-    const confirmText = '계정 삭제 확인'
-    const userInput = prompt(`계정 삭제를 진행하려면 "${confirmText}"을 입력하세요.`)
-
-    if (userInput === confirmText) {
-      if (confirm('정말 계정을 삭제하시겠습니까? 이 작업은 취소할 수 없습니다.')) {
-        try {
-          // TODO: 실제 계정 삭제 API 호출
-          toast.success('계정이 삭제되었습니다.')
-          // 리다이렉트 로직
-          window.location.href = '/'
-        } catch (error) {
-          toast.error('계정 삭제에 실패했습니다.')
-        }
-      }
-    } else if (userInput !== null) {
-      toast.error('확인 문구가 일치하지 않습니다.')
-    }
-  }
-
   const handleExportData = async () => {
     try {
       // TODO: 실제 데이터 익스포트 API 호출
@@ -181,7 +161,6 @@ export default function SettingsPage() {
         onEditSecuritySettings={() => setSecurityModalOpen(true)}
         onEditDisplaySettings={() => setDisplayModalOpen(true)}
         onLogout={handleLogout}
-        onDeleteAccount={handleDeleteAccount}
         onExportData={handleExportData}
       />
 

@@ -4,6 +4,7 @@ import { useState } from 'react'
 import { Search, Download, Plus, Filter } from 'lucide-react'
 import { Paper, Stack, TextField, FormControl, InputLabel, Select, MenuItem, Chip, Box, Typography, useMediaQuery, useTheme } from '@mui/material'
 import Button from '../ui/Button'
+import { useExportVisibility } from '@/app/lib/hooks/useExportVisibility'
 import { BottomSheet } from '../ui/BottomSheet'
 import { type CustomerFilters } from '@/types/customer'
 
@@ -32,6 +33,7 @@ export default function CustomerFilters({
 }: CustomerFiltersProps) {
   const theme = useTheme()
   const isMobile = useMediaQuery(theme.breakpoints.down('md'))
+  const { showExport } = useExportVisibility()
   const [filterSheetOpen, setFilterSheetOpen] = useState(false)
 
   // 활성 필터 개수 계산
@@ -178,14 +180,16 @@ export default function CustomerFilters({
                   필터 {activeFilterCount > 0 && `(${activeFilterCount})`}
                 </Button>
               )}
-              <Button
-                variant="secondary"
-                leftIcon={<Download className="h-4 w-4" />}
-                onClick={onExport}
-                sx={{ whiteSpace: 'nowrap', display: { xs: 'none', md: 'inline-flex' } }}
-              >
-                CSV 내보내기
-              </Button>
+              {showExport && (
+                <Button
+                  variant="secondary"
+                  leftIcon={<Download className="h-4 w-4" />}
+                  onClick={onExport}
+                  sx={{ whiteSpace: 'nowrap' }}
+                >
+                  CSV 내보내기
+                </Button>
+              )}
               <Button
                 variant="primary"
                 leftIcon={<Plus className="h-4 w-4" />}

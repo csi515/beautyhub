@@ -11,6 +11,7 @@ import {
   ToggleButton
 } from '@mui/material'
 import Button from '../ui/Button'
+import { useExportVisibility } from '@/app/lib/hooks/useExportVisibility'
 
 interface FinanceFiltersProps {
   dateRange: { from: string; to: string }
@@ -33,6 +34,7 @@ export default function FinanceFilters({
   onCreateNew,
   onExportExcel
 }: FinanceFiltersProps) {
+  const { showExport } = useExportVisibility()
   return (
     <Paper sx={{ p: 2, borderRadius: 3 }} elevation={0} variant="outlined">
       <Stack spacing={2}>
@@ -177,14 +179,16 @@ export default function FinanceFilters({
               <Box sx={{ flexGrow: 1 }} />
 
               <Stack direction="row" spacing={1} sx={{ width: { xs: '100%', sm: 'auto' }, display: { xs: 'none', md: 'flex' } }}>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  leftIcon={<Download className="h-4 w-4" />}
-                  onClick={onExportExcel}
-                >
-                  엑셀
-                </Button>
+                {showExport && (
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    leftIcon={<Download className="h-4 w-4" />}
+                    onClick={onExportExcel}
+                  >
+                    엑셀
+                  </Button>
+                )}
                 <Button
                   variant="primary"
                   size="sm"

@@ -39,6 +39,7 @@ import PageToolbar from '../common/PageToolbar'
 import BulkActionBar from '../common/BulkActionBar'
 import { useResponsivePaginationSize } from '@/app/lib/hooks/useResponsivePaginationSize'
 import { useMobilePageHeader } from '@/app/lib/hooks/useMobilePageHeader'
+import { useExportVisibility } from '@/app/lib/hooks/useExportVisibility'
 import LoadingState from '../common/LoadingState'
 import type { Product, InventoryAlert, InventoryFilters } from '@/app/lib/hooks/useInventory'
 import type { InventoryStats } from '@/app/lib/services/inventory.service'
@@ -123,6 +124,7 @@ export default function InventoryPageView({
         filterBadge: activeFilterCount,
         disabled: embedded,
     })
+    const { showExport } = useExportVisibility()
 
     // 필터 콘텐츠
     const filterContent = (
@@ -158,7 +160,7 @@ export default function InventoryPageView({
 
             {embedded && (
                 <Stack direction="row" spacing={1} sx={{ mb: 2 }} flexWrap="wrap">
-                    {!isMobile && (
+                    {showExport && (
                         <Button variant="outlined" size="small" startIcon={<Download size={16} />} onClick={onExport}>
                             CSV 내보내기
                         </Button>

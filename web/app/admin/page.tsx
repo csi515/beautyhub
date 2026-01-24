@@ -4,6 +4,8 @@ import { createSupabaseServerAdmin } from '@/lib/supabase/server-admin'
 import { getServerEnv } from '@/app/lib/env'
 import AdminUsersList from './AdminUsersList'
 
+export const dynamic = 'force-dynamic'
+
 type PendingUser = {
   id: string
   email: string

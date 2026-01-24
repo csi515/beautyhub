@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useMemo } from 'react'
-import { Card, Typography, Box, TextField, Chip } from '@mui/material'
+import { Card, Typography, Box, TextField, Chip, Stack, useTheme, useMediaQuery } from '@mui/material'
 import { History, ChevronDown, ChevronUp } from 'lucide-react'
 import Button from '@/app/components/ui/Button'
 import { DataTable } from '@/app/components/ui/DataTable'
@@ -43,6 +43,8 @@ export default function LedgerHistorySection({
 }: LedgerHistorySectionProps) {
   const [isHistoryExpanded, setIsHistoryExpanded] = useState(false)
   const [historyFilter, setHistoryFilter] = useState<'all' | 'points' | 'products'>('all')
+  const theme = useTheme()
+  const isMobile = useMediaQuery(theme.breakpoints.down('sm'))
 
   // 통합 변동 내역
   const combinedLedger: LedgerEntry[] = useMemo(() => {
@@ -100,6 +102,75 @@ export default function LedgerHistorySection({
             ))}
           </Box>
 
+          {isMobile ? (
+            filteredLedger.length === 0 ? (
+              <Typography variant="body2" color="text.secondary" sx={{ py: 2 }}>
+                내역이 없습니다.
+              </Typography>
+            ) : (
+              <Stack spacing={1}>
+                {filteredLedger.map((row, i) => {
+                  const dateStr = row.created_at
+                    ? new Date(row.created_at).toLocaleString('ko-KR', {
+                        month: '2-digit',
+                        day: '2-digit',
+                        hour: '2-digit',
+                        minute: '2-digit',
+                      })
+                    : '-'
+                  const detail =
+                    row.type === 'products' && row.product_id
+                      ? products.find((p) => p.id === row.product_id)?.name || '-'
+                      : '-'
+                  return (
+                    <Box
+                      key={i}
+                      sx={{
+                        display: 'flex',
+                        flexDirection: 'column',
+                        gap: 0.5,
+                        py: 1.5,
+                        px: 2,
+                        borderRadius: 2,
+                        bgcolor: 'action.hover',
+                      }}
+                    >
+                      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 0.5 }}>
+                        <Typography variant="caption" color="text.secondary">
+                          {dateStr}
+                        </Typography>
+                        <Chip
+                          label={row.type === 'points' ? '포인트' : '상품'}
+                          size="small"
+                          color={row.type === 'points' ? 'info' : 'success'}
+                          variant="filled"
+                          sx={{ fontWeight: 600, fontSize: '0.7rem' }}
+                        />
+                      </Box>
+                      {detail !== '-' && (
+                        <Typography variant="body2" noWrap>
+                          {detail}
+                        </Typography>
+                      )}
+                      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap' }}>
+                        <Typography variant="caption" color="text.secondary" noWrap sx={{ flex: 1, minWidth: 0, mr: 1 }}>
+                          {row.reason || '-'}
+                        </Typography>
+                        <Typography
+                          variant="body2"
+                          fontWeight={700}
+                          color={(row.delta || 0) > 0 ? 'primary.main' : 'error.main'}
+                        >
+                          {(row.delta || 0) > 0 ? '+' : ''}
+                          {(row.delta || 0).toLocaleString()}
+                        </Typography>
+                      </Box>
+                    </Box>
+                  )
+                })}
+              </Stack>
+            )
+          ) : (
           <DataTable
             columns={[
               {
@@ -203,6 +274,7 @@ export default function LedgerHistorySection({
             data={filteredLedger as unknown as Record<string, any>[]}
             emptyMessage="내역이 없습니다."
           />
+          )}
         </Box>
       )}
     </Card>

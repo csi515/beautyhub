@@ -14,6 +14,7 @@ import PageHeader, { createActionButton } from '../common/PageHeader'
 import InputAdornment from '@mui/material/InputAdornment'
 import { Chip } from '@mui/material'
 import { usePageHeader } from '@/app/lib/contexts/PageHeaderContext'
+import { useExportVisibility } from '@/app/lib/hooks/useExportVisibility'
 import PayrollSummaryCards from './PayrollSummaryCards'
 import PayrollStatusSummary from './PayrollStatusSummary'
 import PayrollTable from './PayrollTable'
@@ -98,6 +99,7 @@ export default function PayrollPageView({
 }: PayrollPageViewProps) {
     const theme = useTheme()
     const isMobile = useMediaQuery(theme.breakpoints.down('sm'))
+    const { showExport } = useExportVisibility()
     const { setHeaderInfo, clearHeaderInfo } = usePageHeader()
 
     // 모바일에서 Context에 헤더 정보 설정 (embedded 시 스킵)
@@ -133,7 +135,7 @@ export default function PayrollPageView({
                     description="직원 급여 자동 계산 및 관리"
                     icon={<DollarSign />}
                     actions={[
-                        createActionButton('CSV 내보내기', onExport, 'secondary', <Download size={16} />),
+                        ...(showExport ? [createActionButton('CSV 내보내기', onExport, 'secondary', <Download size={16} />)] : []),
                         createActionButton('일괄 계산', onBulkCalculate, 'primary', <Calculator size={16} />, bulkCalculating || selectedStaffIds.length === 0),
                         createActionButton('급여 계산', onCalculate, 'primary'),
                     ]}
@@ -143,7 +145,7 @@ export default function PayrollPageView({
             {/* embedded 시 액션 버튼 (내보내기·계산, 모바일에서는 CSV 비노출) */}
             {embedded && (
                 <Stack direction="row" spacing={1} sx={{ mb: 2 }} flexWrap="wrap">
-                    {!isMobile && (
+                    {showExport && (
                         <Button variant="outlined" size="small" startIcon={<Download size={16} />} onClick={onExport}>
                             CSV 내보내기
                         </Button>
