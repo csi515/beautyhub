@@ -1,8 +1,9 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import Modal, { ModalBody, ModalFooter, ModalHeader } from '../ui/Modal'
-import Button from '../ui/Button'
+import DetailModal from '@/app/components/common/DetailModal'
+import DetailForm, { type DetailFormField } from '@/app/components/common/DetailForm'
+import Select from '@/app/components/ui/Select'
 import { useAppToast } from '@/app/lib/ui/toast'
 import { customersApi } from '@/app/lib/api/customers'
 import { transactionsApi } from '@/app/lib/api/transactions'
@@ -20,6 +21,7 @@ export default function TransactionDetailModal({ open, onClose, item, onSaved, o
   useEffect(() => {
     setForm(item ? { ...item, amount: item.amount } : null)
   }, [item])
+
   useEffect(() => {
     if (!open) return
     const load = async () => {
@@ -48,7 +50,6 @@ export default function TransactionDetailModal({ open, onClose, item, onSaved, o
         transaction_date: form.transaction_date || '',
         customer_id: form.customer_id || null,
       }
-      // notes는 값이 있을 때만 포함
       if (form.notes && form.notes.trim() !== '') {
         payload.notes = form.notes.trim()
       }
@@ -60,9 +61,9 @@ export default function TransactionDetailModal({ open, onClose, item, onSaved, o
       toast.error('저장 실패', errorMessage)
     } finally { setLoading(false) }
   }
+
   const removeItem = async () => {
     if (!form?.id) return
-    if (!confirm('삭제하시겠습니까?')) return
     try {
       await transactionsApi.delete(form.id)
       onDeleted(); onClose(); toast.success('삭제되었습니다.')
@@ -72,59 +73,68 @@ export default function TransactionDetailModal({ open, onClose, item, onSaved, o
   }
 
   if (!open || !form) return null
+
+  const customerOptions = customers.map(c => ({ value: String(c.id), label: c.name }))
+
+  const formFields: DetailFormField[][] = [
+    [
+      {
+        name: 'transaction_date',
+        label: '거래 일자',
+        type: 'date',
+        required: true,
+        value: (form.transaction_date || '').slice(0, 10),
+        onChange: (v) => setForm(f => f && ({ ...f, transaction_date: String(v) })),
+        gridCols: 1,
+      },
+      {
+        name: 'amount',
+        label: '금액',
+        type: 'number',
+        required: true,
+        value: form.amount ?? '',
+        onChange: (v) => setForm(f => f && ({ ...f, amount: v === '' ? '' : Number(v) })),
+        placeholder: '예: 12,000',
+        gridCols: 1,
+      },
+    ],
+    [
+      {
+        name: 'customer_id',
+        label: '고객(선택)',
+        type: 'select',
+        value: form.customer_id || '',
+        onChange: (v) => setForm(f => f && ({ ...f, customer_id: String(v) || null })),
+        options: [{ value: '', label: '선택 안 함' }, ...customerOptions],
+        gridCols: 2,
+      },
+      {
+        name: 'notes',
+        label: '메모(선택)',
+        type: 'text',
+        value: form.notes || '',
+        onChange: (v) => setForm(f => f && ({ ...f, notes: String(v) })),
+        placeholder: '추가 설명을 입력하세요',
+        gridCols: 2,
+      },
+    ],
+  ]
+
   return (
-    <Modal open={open} onClose={onClose} size="lg">
-      <ModalHeader title="거래 상세" description="거래 일자와 금액을 확인·수정합니다. 일자와 금액을 정확히 입력해주세요." onClose={onClose} />
-      <ModalBody>
-        <div className="grid gap-3 md:grid-cols-[200px,1fr]">
-          <div className="space-y-2">
-            {error && <p className="text-xs text-rose-600">{error}</p>}
-          </div>
-          <div className="space-y-2">
-            <div className="space-y-2">
-              <div className="grid grid-cols-2 gap-1.5 sm:gap-2">
-                <div className="min-w-0">
-                  <label className="block text-xs font-medium text-neutral-700 mb-0.5">거래 일자 <span className="text-rose-600">*</span></label>
-                  <input className="h-9 w-full min-w-0 rounded-lg border border-neutral-300 px-1.5 sm:px-2.5 text-xs sm:text-sm outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-300" type="date" value={(form.transaction_date || '').slice(0, 10)} onChange={e => setForm(f => f && ({ ...f, transaction_date: e.target.value }))} />
-                </div>
-                <div className="min-w-0">
-                  <label className="block text-xs font-medium text-neutral-700 mb-0.5">금액 <span className="text-rose-600">*</span></label>
-                  <input
-                    className="h-9 w-full min-w-0 rounded-lg border border-neutral-300 px-1.5 sm:px-2.5 text-xs sm:text-sm outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-300 text-right placeholder:text-neutral-400"
-                    type="number"
-                    placeholder="예: 12,000"
-                    autoComplete="off"
-                    value={form.amount === null || form.amount === undefined || form.amount === '' ? '' : form.amount}
-                    onChange={e => {
-                      const val = e.target.value
-                      setForm(f => f && ({ ...f, amount: val === '' ? '' : (isNaN(Number(val)) ? '' : Number(val)) }))
-                    }}
-                    onFocus={e => e.target.select()}
-                  />
-                </div>
-                <div className="col-span-2">
-                  <label className="block text-xs font-medium text-neutral-700 mb-0.5">고객(선택)</label>
-                  <select className="h-9 w-full rounded-lg border border-neutral-300 px-2.5 text-sm outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-300" value={form.customer_id || ''} onChange={e => setForm(f => f && ({ ...f, customer_id: e.target.value || null }))}>
-                    <option value="">선택 안 함</option>
-                    {customers.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
-                  </select>
-                </div>
-                <div className="col-span-2">
-                  <label className="block text-xs font-medium text-neutral-700 mb-0.5">메모(선택)</label>
-                  <input className="h-9 w-full rounded-lg border border-neutral-300 px-2.5 text-sm outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-300 placeholder:text-neutral-400" placeholder="추가 설명을 입력하세요" value={form.notes || ''} onChange={e => setForm(f => f && ({ ...f, notes: e.target.value }))} />
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </ModalBody>
-      <ModalFooter>
-        <Button variant="secondary" onClick={onClose} disabled={loading} className="w-full md:w-auto">취소</Button>
-        <Button variant="danger" onClick={removeItem} disabled={loading} className="w-full md:w-auto">삭제</Button>
-        <Button variant="primary" onClick={save} disabled={loading} className="w-full md:w-auto">저장</Button>
-      </ModalFooter>
-    </Modal>
+    <DetailModal
+      open={open}
+      onClose={onClose}
+      item={form}
+      title="거래 상세"
+      description="거래 일자와 금액을 확인·수정합니다. 일자와 금액을 정확히 입력해주세요."
+      loading={loading}
+      error={error}
+      onSave={save}
+      onDelete={removeItem}
+      confirmDeleteMessage="정말 이 거래를 삭제하시겠습니까?"
+      size="lg"
+    >
+      <DetailForm fields={formFields} />
+    </DetailModal>
   )
 }
-
-

@@ -31,6 +31,8 @@ export interface BookingSettings {
   maxBookingHoursPerDay: number // 하루 최대 예약 가능 시간
   availableDays: string[] // 예약 가능 요일 (['monday', 'tuesday', ...])
   reminderTimings: number[] // 리마인드 타이밍 (시간 단위, 예: [1, 3, 24])
+  inactiveCustomerDays: number // 미방문 고객 기준 기간 (일 단위, 기본값: 90)
+  reminderEnabled: boolean // 리마인더 활성화 여부
 }
 
 /**
@@ -147,6 +149,8 @@ export const DEFAULT_SETTINGS: AppSettings = {
     maxBookingHoursPerDay: 8,
     availableDays: ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'],
     reminderTimings: [24, 3, 1],
+    inactiveCustomerDays: 90,
+    reminderEnabled: true,
   },
   financialSettings: {
     incomeCategories: [],

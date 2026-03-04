@@ -36,3 +36,6 @@ next-env.d.ts
 
 # vitest
 .vitest/
+
+# storybook
+storybook-static/

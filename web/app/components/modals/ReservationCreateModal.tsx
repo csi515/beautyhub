@@ -1,15 +1,17 @@
 'use client'
 
-import { useEffect, useState } from 'react'
-import Modal, { ModalBody, ModalFooter, ModalHeader } from '../ui/Modal'
-import Button from '../ui/Button'
+import { useEffect, useState, useMemo } from 'react'
+import Modal, { ModalBody, ModalFooter, ModalHeader } from '@/app/components/ui/Modal'
+import Button from '@/app/components/ui/Button'
 import { useAppToast } from '@/app/lib/ui/toast'
-import StaffAutoComplete from '../StaffAutoComplete'
-import Textarea from '../ui/Textarea'
-import { useCustomerAndProductLists } from '../hooks/useCustomerAndProductLists'
+import StaffAutoComplete from '@/app/components/features/staff/StaffAutoComplete'
+import Textarea from '@/app/components/ui/Textarea'
+import Select from '@/app/components/ui/Select'
+import { useCustomerAndProductLists } from '@/app/lib/hooks/components/useCustomerAndProductLists'
 import { appointmentsApi } from '@/app/lib/api/appointments'
 import { customerProductsApi } from '@/app/lib/api/customer-products'
-import type { AppointmentCreateInput, Customer } from '@/types/entities'
+import { useAppointmentTemplates } from '@/app/lib/hooks/useAppointmentTemplates'
+import type { AppointmentCreateInput, Customer, Product, AppointmentTemplate } from '@/types/entities'
 
 type Draft = {
   date: string
@@ -26,13 +28,88 @@ export default function ReservationCreateModal({ open, onClose, draft, onSaved }
   const [form, setForm] = useState<Draft>(draft)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
+  const [conflictWarning, setConflictWarning] = useState<string | null>(null)
   const toast = useAppToast()
   const { customers, products } = useCustomerAndProductLists(open)
+  const { data: templates = [] } = useAppointmentTemplates()
   const [customerQuery, setCustomerQuery] = useState('')
   const [showSuggest, setShowSuggest] = useState(false)
   const [holdingsByProduct, setHoldingsByProduct] = useState<Record<string, number>>({})
   const [autoCreateTransaction, setAutoCreateTransaction] = useState(false)
   const [transactionAmount, setTransactionAmount] = useState<string>('')
+  const [selectedTemplateId, setSelectedTemplateId] = useState<string>('')
+
+  // 선택된 서비스의 소요 시간 계산
+  const selectedProduct = useMemo(() => {
+    if (!form.service_id) return null
+    return products.find((p: Product) => p.id === form.service_id) || null
+  }, [form.service_id, products])
+
+  const durationMinutes = selectedProduct?.duration_minutes || 60
+  const endTime = useMemo(() => {
+    if (!form.date || !form.start) return ''
+    const [y, m, d] = form.date.split('-').map(Number)
+    const [hh, mm] = form.start.split(':').map(Number)
+    const startDate = new Date(y || 2024, (m || 1) - 1, d || 1, hh || 0, mm || 0, 0)
+    const endDate = new Date(startDate.getTime() + durationMinutes * 60000)
+    const endHours = String(endDate.getHours()).padStart(2, '0')
+    const endMins = String(endDate.getMinutes()).padStart(2, '0')
+    return `${endHours}:${endMins}`
+  }, [form.date, form.start, durationMinutes])
+
+  // 템플릿 선택 시 폼 자동 채우기
+  useEffect(() => {
+    if (!selectedTemplateId || !open) return
+    const template = templates.find((t: AppointmentTemplate) => t.id === selectedTemplateId)
+    if (template) {
+      setForm((f) => ({
+        ...f,
+        service_id: template.service_id || f.service_id,
+        notes: template.default_notes || f.notes,
+      }))
+    }
+  }, [selectedTemplateId, templates, open])
+
+  // 중복 검사
+  useEffect(() => {
+    const checkConflict = async () => {
+      if (!form.date || !form.start || !form.staff_id || !open) {
+        setConflictWarning(null)
+        return
+      }
+
+      try {
+        const [y, m, d] = form.date.split('-').map(Number)
+        const [hh, mm] = form.start.split(':').map(Number)
+        const appointmentDate = new Date(y || 2024, (m || 1) - 1, d || 1, hh || 0, mm || 0, 0).toISOString()
+
+        const result = await appointmentsApi.checkConflict({
+          appointment_date: appointmentDate,
+          staff_id: form.staff_id,
+          duration_minutes: durationMinutes,
+        })
+
+        if (result.hasConflict && result.conflictingAppointments.length > 0) {
+          const conflictTimes = result.conflictingAppointments
+            .map((a) => {
+              const d = new Date(a.appointment_date)
+              return `${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`
+            })
+            .join(', ')
+          setConflictWarning(`해당 시간대에 이미 예약이 있습니다: ${conflictTimes}`)
+        } else {
+          setConflictWarning(null)
+        }
+      } catch (error) {
+        // 중복 검사 실패는 경고만 표시
+        console.error('중복 검사 실패:', error)
+      }
+    }
+
+    // 디바운스: 500ms 후에 검사
+    const timeoutId = setTimeout(checkConflict, 500)
+    return () => clearTimeout(timeoutId)
+  }, [form.date, form.start, form.staff_id, durationMinutes, open])
 
   // Reset form to fresh draft on open
   useEffect(() => {
@@ -40,6 +117,8 @@ export default function ReservationCreateModal({ open, onClose, draft, onSaved }
       setForm(draft)
       setCustomerQuery('')
       setShowSuggest(false)
+      setSelectedTemplateId('')
+      setConflictWarning(null)
     }
   }, [open, draft])
 
@@ -66,6 +145,26 @@ export default function ReservationCreateModal({ open, onClose, draft, onSaved }
     try {
       setLoading(true); setError('')
       if (!form.date || !form.start) { setError('날짜와 시작 시간은 필수입니다.'); setLoading(false); return }
+
+      // 중복 검사 재확인
+      if (form.staff_id) {
+        const [y, m, d] = form.date.split('-').map(Number)
+        const [hh, mm] = form.start.split(':').map(Number)
+        const appointmentDate = new Date(y || 2024, (m || 1) - 1, d || 1, hh || 0, mm || 0, 0).toISOString()
+
+        const conflictResult = await appointmentsApi.checkConflict({
+          appointment_date: appointmentDate,
+          staff_id: form.staff_id,
+          duration_minutes: durationMinutes,
+        })
+
+        if (conflictResult.hasConflict) {
+          setError('해당 시간대에 이미 예약이 있습니다. 다른 시간을 선택해주세요.')
+          setLoading(false)
+          return
+        }
+      }
+
       // 로컬 날짜/시간을 UTC ISO 문자열로 변환하여 TZ 오차 방지
       const [y, m, d] = form.date.split('-').map(Number)
       const [hh, mm] = form.start.split(':').map(Number)
@@ -138,9 +237,32 @@ export default function ReservationCreateModal({ open, onClose, draft, onSaved }
         <div className="grid gap-4 md:grid-cols-[280px,1fr]">
           <div className="space-y-3">
             {error && <p className="text-sm text-rose-600">{error}</p>}
+            {conflictWarning && (
+              <div className="p-2 bg-amber-50 border border-amber-200 rounded-lg">
+                <p className="text-sm text-amber-800">{conflictWarning}</p>
+              </div>
+            )}
           </div>
           <div className="space-y-3">
             <div className="space-y-3">
+              {/* 템플릿 선택 */}
+              {templates.length > 0 && (
+                <div className="col-span-2">
+                  <Select
+                    label="템플릿 선택 (선택)"
+                    value={selectedTemplateId}
+                    onChange={(e) => setSelectedTemplateId(e.target.value)}
+                  >
+                    <option value="">템플릿 선택 안 함</option>
+                    {templates.map((template: AppointmentTemplate) => (
+                      <option key={template.id} value={template.id}>
+                        {template.name}
+                      </option>
+                    ))}
+                  </Select>
+                </div>
+              )}
+
               <div className="grid grid-cols-2 gap-2 sm:gap-3">
                 <div className="min-w-0">
                   <label className="mb-1 block text-sm font-medium text-neutral-700">
@@ -168,6 +290,20 @@ export default function ReservationCreateModal({ open, onClose, draft, onSaved }
                     }
                   />
                 </div>
+                {form.date && form.start && endTime && (
+                  <div className="col-span-2">
+                    <div className="p-2 bg-blue-50 border border-blue-200 rounded-lg">
+                      <div className="text-sm text-blue-800">
+                        <span className="font-medium">예상 종료 시간:</span> {endTime}
+                        {durationMinutes && (
+                          <span className="ml-2 text-blue-600">
+                            (소요 시간: {durationMinutes}분)
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                )}
                 <div className="col-span-2">
                   <label className="mb-1 block text-sm font-medium text-neutral-700">
                     고객
@@ -288,12 +424,19 @@ export default function ReservationCreateModal({ open, onClose, draft, onSaved }
                     ))}
                   </select>
                   {form.service_id && (
-                    <div className="mt-1 text-xs text-neutral-500">
-                      보유중:{' '}
-                      {Number(
-                        holdingsByProduct[String(form.service_id)] || 0,
+                    <div className="mt-1 space-y-1">
+                      <div className="text-xs text-neutral-500">
+                        보유중:{' '}
+                        {Number(
+                          holdingsByProduct[String(form.service_id)] || 0,
+                        )}
+                        개
+                      </div>
+                      {selectedProduct?.duration_minutes && (
+                        <div className="text-xs text-blue-600 font-medium">
+                          소요 시간: {selectedProduct.duration_minutes}분
+                        </div>
                       )}
-                      개
                     </div>
                   )}
                 </div>

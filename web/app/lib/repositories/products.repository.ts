@@ -31,6 +31,13 @@ export class ProductsRepository extends BaseRepository<Product> {
       active: input.active !== false,
     }
 
+    if (input.duration_minutes !== undefined) {
+      const duration = Number(input.duration_minutes)
+      if (!Number.isNaN(duration) && duration > 0) {
+        payload['duration_minutes'] = duration
+      }
+    }
+
     // description? 媛믪씠 ?덉쓣 ?뚮쭔 ?ы븿 (?ㅽ궎留덉뿉 ?놁쓣 ???덉쓬)
     const descriptionValue = input.description
     if (descriptionValue !== undefined && descriptionValue !== null && descriptionValue !== '' && String(descriptionValue).trim() !== '') {
@@ -74,6 +81,15 @@ export class ProductsRepository extends BaseRepository<Product> {
       delete payload['description']
     }
     if (input.active !== undefined) payload.active = input.active
+
+    if (input.duration_minutes !== undefined) {
+      const duration = Number(input.duration_minutes)
+      if (!Number.isNaN(duration) && duration > 0) {
+        payload.duration_minutes = duration
+      } else if (duration === null || duration === undefined) {
+        payload.duration_minutes = null
+      }
+    }
 
     return this.update(id, payload)
   }

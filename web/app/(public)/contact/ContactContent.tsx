@@ -2,7 +2,7 @@
 
 import { Box, Container, Typography, Paper, Stack } from '@mui/material'
 import { MessageCircle, Mail, Clock } from 'lucide-react'
-import ContactForm from '@/app/components/contact/ContactForm'
+import ContactForm from '@/app/components/features/contact/ContactForm'
 
 export default function ContactContent() {
     return (

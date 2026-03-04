@@ -1,56 +1,9 @@
+/**
+ * @deprecated 이 파일은 더 이상 사용되지 않습니다.
+ * 대신 components/common/SearchBar를 사용하세요.
+ * 
+ * MUI TextField 기반의 공통 SearchBar 컴포넌트가 권장됩니다.
+ */
 'use client'
 
-import { useState, useEffect } from 'react'
-import Input from './Input'
-import { useDebounce } from '@/app/lib/hooks/useDebounce'
-import { Search } from 'lucide-react'
-
-type Props = Omit<React.ComponentProps<typeof Input>, 'onChange' | 'value'> & {
-  value?: string
-  onChange?: (value: string) => void
-  onSearch?: (value: string) => void
-  debounceMs?: number
-}
-
-export default function SearchInput({
-  value: controlledValue,
-  onChange,
-  onSearch,
-  debounceMs = 300,
-  placeholder = '검색...',
-  className,
-  ...rest
-}: Props) {
-  const [localValue, setLocalValue] = useState(controlledValue || '')
-  const debouncedValue = useDebounce(localValue, debounceMs)
-
-  // Controlled component 처리
-  useEffect(() => {
-    if (controlledValue !== undefined) {
-      setLocalValue(controlledValue)
-    }
-  }, [controlledValue])
-
-  // Debounced value 변경 시 onSearch 호출
-  useEffect(() => {
-    if (onSearch) {
-      onSearch(debouncedValue)
-    }
-  }, [debouncedValue, onSearch])
-
-  return (
-    <Input
-      {...rest}
-      type="search"
-      value={localValue}
-      onChange={(e) => {
-        const newValue = e.target.value
-        setLocalValue(newValue)
-        onChange?.(newValue)
-      }}
-      placeholder={placeholder}
-      {...(className ? { className } : {})}
-      leftIcon={<Search className="h-4 w-4 text-neutral-400" />}
-    />
-  )
-}
+export { default } from '../common/SearchBar'

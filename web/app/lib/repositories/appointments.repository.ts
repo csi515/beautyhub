@@ -1,4 +1,4 @@
-﻿import { SupabaseClient } from '@supabase/supabase-js'
+import { SupabaseClient } from '@supabase/supabase-js'
 /**
  * ?덉빟 Repository
  */
@@ -18,7 +18,7 @@ export class AppointmentsRepository extends BaseRepository<Appointment> {
   /**
    * ?좎쭨 踰붿쐞濡??덉빟 議고쉶
    */
-  override async findAll(options: QueryOptions & { from?: string; to?: string } = {}): Promise<Appointment[]> {
+  override async findAll(options: QueryOptions & { from?: string; to?: string; customer_id?: string } = {}): Promise<Appointment[]> {
     if (this.userId === 'demo-user') {
       const { MOCK_APPOINTMENTS } = await import('@/app/lib/mock-data')
       return MOCK_APPOINTMENTS as unknown as Appointment[]
@@ -29,6 +29,7 @@ export class AppointmentsRepository extends BaseRepository<Appointment> {
       offset = 0,
       from,
       to,
+      customer_id,
       orderBy = 'appointment_date',
       ascending = true,
     } = options
@@ -44,6 +45,9 @@ export class AppointmentsRepository extends BaseRepository<Appointment> {
     }
     if (to) {
       query = query.lt('appointment_date', to)
+    }
+    if (customer_id) {
+      query = query.eq('customer_id', customer_id)
     }
 
     const { data, error } = await query.range(offset, offset + limit - 1)
@@ -92,7 +96,81 @@ export class AppointmentsRepository extends BaseRepository<Appointment> {
       delete payload['total_price']
     }
 
+    // no_show 필드 추가
+    if ('no_show' in input && input.no_show !== undefined) {
+      payload['no_show'] = Boolean(input.no_show)
+    }
+
     return this.create(payload as unknown as Appointment)
+  }
+
+  /**
+   * 예약 중복 검사 (같은 직원, 겹치는 시간대)
+   */
+  async checkConflict(
+    appointmentDate: string,
+    staffId: string | null | undefined,
+    durationMinutes: number = 60,
+    excludeAppointmentId?: string
+  ): Promise<{ hasConflict: boolean; conflictingAppointments: Appointment[] }> {
+    if (!staffId) {
+      return { hasConflict: false, conflictingAppointments: [] }
+    }
+
+    const appointmentStart = new Date(appointmentDate)
+    const appointmentEnd = new Date(appointmentStart.getTime() + durationMinutes * 60000)
+
+    let query = this.supabase
+      .from(this.tableName)
+      .select('*')
+      .eq('owner_id', this.userId)
+      .eq('staff_id', staffId)
+      .in('status', ['scheduled', 'pending'])
+
+    if (excludeAppointmentId) {
+      query = query.neq('id', excludeAppointmentId)
+    }
+
+    const { data, error } = await query
+
+    if (error) {
+      this.handleSupabaseError(error)
+    }
+
+    const appointments = (data || []) as Appointment[]
+    const conflicting: Appointment[] = []
+
+    // 각 예약의 서비스 정보와 소요 시간 조회
+    for (const appointment of appointments) {
+      let existingDuration = 60
+      if (appointment.service_id) {
+        const { data: product } = await this.supabase
+          .from('products')
+          .select('duration_minutes')
+          .eq('id', appointment.service_id)
+          .single()
+        if (product && product.duration_minutes) {
+          existingDuration = product.duration_minutes
+        }
+      }
+
+      const existingStart = new Date(appointment.appointment_date)
+      const existingEnd = new Date(existingStart.getTime() + existingDuration * 60000)
+
+      // 시간대가 겹치는지 확인
+      if (
+        (appointmentStart >= existingStart && appointmentStart < existingEnd) ||
+        (appointmentEnd > existingStart && appointmentEnd <= existingEnd) ||
+        (appointmentStart <= existingStart && appointmentEnd >= existingEnd)
+      ) {
+        conflicting.push(appointment)
+      }
+    }
+
+    return {
+      hasConflict: conflicting.length > 0,
+      conflictingAppointments: conflicting,
+    }
   }
 
   /**
@@ -132,7 +210,19 @@ export class AppointmentsRepository extends BaseRepository<Appointment> {
       payload['total_price'] = Number(input.total_price)
     }
 
+    // no_show 필드 업데이트
+    if ('no_show' in input && input.no_show !== undefined) {
+      payload['no_show'] = Boolean(input.no_show)
+    }
+
     return this.update(id, payload)
+  }
+
+  /**
+   * 노쇼 처리
+   */
+  async markAsNoShow(id: string): Promise<Appointment> {
+    return this.update(id, { no_show: true } as Partial<Appointment>)
   }
 }
 

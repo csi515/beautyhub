@@ -1,14 +1,13 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import Modal, { ModalBody, ModalFooter, ModalHeader } from '../ui/Modal'
-import Button from '../ui/Button'
-import Textarea from '../ui/Textarea'
+import DetailModal from '@/app/components/common/DetailModal'
+import DetailForm, { type DetailFormField } from '@/app/components/common/DetailForm'
 import { useAppToast } from '@/app/lib/ui/toast'
 import { productsApi } from '@/app/lib/api/products'
 import { Info } from 'lucide-react'
-import { Alert, Tooltip } from '@mui/material'
-import ConfirmDialog from '../ui/ConfirmDialog'
+import { Tooltip } from '@mui/material'
+import Textarea from '@/app/components/ui/Textarea'
 import type { Product as ProductEntity, ProductUpdateInput } from '@/types/entities'
 
 type ProductForm = Omit<ProductEntity, 'price' | 'stock_count' | 'safety_stock'> & { price?: number | string; stock_count?: number | string; safety_stock?: number | string }
@@ -17,7 +16,6 @@ export default function ProductDetailModal({ open, onClose, item, onSaved, onDel
   const [form, setForm] = useState<ProductForm | null>(item)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
-  const [confirmOpen, setConfirmOpen] = useState(false)
   const toast = useAppToast()
 
   useEffect(() => { setForm(item) }, [item])
@@ -39,7 +37,6 @@ export default function ProductDetailModal({ open, onClose, item, onSaved, onDel
         stock_count: form.stock_count === '' ? 0 : Number(form.stock_count),
         safety_stock: form.safety_stock === '' ? 0 : Number(form.safety_stock)
       }
-      // description은 값이 있을 때만 포함
       if (form.description && form.description.trim() !== '') {
         body.description = form.description.trim()
       }
@@ -51,6 +48,7 @@ export default function ProductDetailModal({ open, onClose, item, onSaved, onDel
       toast.error('저장 실패', errorMessage)
     } finally { setLoading(false) }
   }
+
   const removeItem = async () => {
     if (!form?.id) return
     try {
@@ -62,103 +60,86 @@ export default function ProductDetailModal({ open, onClose, item, onSaved, onDel
   }
 
   if (!open || !form) return null
-  return (
-    <Modal open={open} onClose={onClose} size="lg">
-      <ModalHeader title="제품 상세" description="제품의 기본 정보를 수정합니다. 이름과 가격은 필수입니다." onClose={onClose} />
-      <ModalBody>
-        <div className="space-y-3">
-          {error && (
-            <Alert severity="error" sx={{ borderRadius: 2 }}>
-              {error}
-            </Alert>
-          )}
-          <div className="space-y-2">
-            <div className="space-y-2">
-              <div className="grid gap-2 md:grid-cols-3">
-                <div className="md:col-span-2">
-                  <label className="block text-xs font-medium text-neutral-700 mb-0.5">이름 <span className="text-rose-600">*</span></label>
-                  <input
-                    className="h-9 w-full rounded-lg border border-neutral-300 px-2.5 text-sm outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-300 placeholder:text-neutral-400"
-                    placeholder="예) 로션 기획세트"
-                    value={form.name}
-                    onChange={e => setForm(f => f && ({ ...f, name: e.target.value }))}
-                  />
-                </div>
-                <div>
-                  <label className="block text-xs font-medium text-neutral-700 mb-0.5">가격 <span className="text-rose-600">*</span></label>
-                  <input
-                    className="h-9 w-full rounded-lg border border-neutral-300 px-2.5 text-sm outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-300 text-right placeholder:text-neutral-400"
-                    type="number"
-                    min="0"
-                    placeholder="예: 12,000"
-                    autoComplete="off"
-                    value={form.price === null || form.price === undefined || form.price === '' ? '' : form.price}
-                    onChange={e => {
-                      const val = e.target.value
-                      setForm(f => f && ({ ...f, price: val === '' ? '' : (isNaN(Number(val)) ? '' : Number(val)) }))
-                    }}
-                    onFocus={e => e.target.select()}
-                  />
-                  <p className="mt-0.5 text-xs text-neutral-400">부가세 포함 여부는 별도 표시 기준을 따릅니다.</p>
-                </div>
-                <div>
-                  <label className="block text-xs font-medium text-neutral-700 mb-0.5">현재 재고</label>
-                  <input
-                    className="h-9 w-full rounded-lg border border-neutral-300 px-2.5 text-sm outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-300 text-right placeholder:text-neutral-400"
-                    type="number"
-                    min="0"
-                    value={form.stock_count ?? 0}
-                    onChange={e => setForm(f => f && ({ ...f, stock_count: e.target.value === '' ? '' : Number(e.target.value) }))}
-                  />
-                </div>
-                <div>
-                  <label className="flex items-center gap-1 text-xs font-medium text-neutral-700 mb-0.5">
-                    안전 재고
-                    <Tooltip title="이 수량 이하로 떨어지면 재고 부족 알림" arrow>
-                      <Info size={14} className="text-neutral-400 cursor-help" />
-                    </Tooltip>
-                  </label>
-                  <input
-                    className="h-9 w-full rounded-lg border border-neutral-300 px-2.5 text-sm outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-300 text-right placeholder:text-neutral-400"
-                    type="number"
-                    min="0"
-                    value={form.safety_stock ?? 5}
-                    onChange={e => setForm(f => f && ({ ...f, safety_stock: e.target.value === '' ? '' : Number(e.target.value) }))}
-                  />
-                </div>
-              </div>
-              <div>
-                <Textarea
-                  label="설명(선택)"
-                  placeholder="간단한 특징, 용량, 구성 등을 입력하세요"
-                  value={form.description || ''}
-                  onChange={e => setForm(f => f && ({ ...f, description: e.target.value }))}
-                />
-              </div>
-              <label className="inline-flex items-center gap-1.5 text-xs">
-                <input type="checkbox" checked={form.active !== false} onChange={e => setForm(f => f && ({ ...f, active: e.target.checked }))} />
-                <span>활성</span>
-              </label>
-            </div>
-          </div>
-        </div>
-      </ModalBody>
-      <ModalFooter>
-        <Button variant="secondary" onClick={onClose} disabled={loading} className="w-full md:w-auto">취소</Button>
-        <Button variant="danger" onClick={() => setConfirmOpen(true)} disabled={loading} className="w-full md:w-auto">삭제</Button>
-        <Button variant="primary" onClick={save} disabled={loading} className="w-full md:w-auto">저장</Button>
-      </ModalFooter>
 
-      <ConfirmDialog
-        open={confirmOpen}
-        onClose={() => setConfirmOpen(false)}
-        onConfirm={removeItem}
-        title="제품 삭제"
-        description="정말 이 제품을 삭제하시겠어요? 이 작업은 되돌릴 수 없습니다."
-        confirmText="삭제"
-        cancelText="취소"
-        variant="danger"
-      />
-    </Modal>
+  const formFields: DetailFormField[][] = [
+    [
+      {
+        name: 'name',
+        label: '이름',
+        type: 'text',
+        required: true,
+        value: form.name,
+        onChange: (v) => setForm(f => f && ({ ...f, name: String(v) })),
+        placeholder: '예) 로션 기획세트',
+        gridCols: 2,
+      },
+      {
+        name: 'price',
+        label: '가격',
+        type: 'number',
+        required: true,
+        value: form.price ?? '',
+        onChange: (v) => setForm(f => f && ({ ...f, price: v === '' ? '' : Number(v) })),
+        placeholder: '예: 12,000',
+        helperText: '부가세 포함 여부는 별도 표시 기준을 따릅니다.',
+        gridCols: 1,
+      },
+      {
+        name: 'stock_count',
+        label: '현재 재고',
+        type: 'number',
+        value: form.stock_count ?? 0,
+        onChange: (v) => setForm(f => f && ({ ...f, stock_count: v === '' ? '' : Number(v) })),
+        gridCols: 1,
+      },
+      {
+        name: 'safety_stock',
+        label: '안전 재고',
+        type: 'number',
+        value: form.safety_stock ?? 5,
+        onChange: (v) => setForm(f => f && ({ ...f, safety_stock: v === '' ? '' : Number(v) })),
+        tooltip: '이 수량 이하로 떨어지면 재고 부족 알림',
+        gridCols: 1,
+      },
+    ],
+  ]
+
+  return (
+    <DetailModal
+      open={open}
+      onClose={onClose}
+      item={form}
+      title="제품 상세"
+      description="제품의 기본 정보를 수정합니다. 이름과 가격은 필수입니다."
+      loading={loading}
+      error={error}
+      onSave={save}
+      onDelete={removeItem}
+      confirmDeleteMessage="정말 이 제품을 삭제하시겠어요? 이 작업은 되돌릴 수 없습니다."
+      size="lg"
+    >
+      <div className="space-y-3">
+        <DetailForm fields={formFields} />
+        <div>
+          <Textarea
+            label="설명(선택)"
+            placeholder="간단한 특징, 용량, 구성 등을 입력하세요"
+            value={form.description || ''}
+            onChange={(e) => setForm(f => f && ({ ...f, description: e.target.value }))}
+          />
+        </div>
+        <div>
+          <label className="inline-flex items-center gap-1.5 text-xs">
+            <input
+              type="checkbox"
+              checked={form.active !== false}
+              onChange={(e) => setForm(f => f && ({ ...f, active: e.target.checked }))}
+              className="rounded border-neutral-300"
+            />
+            <span>활성</span>
+          </label>
+        </div>
+      </div>
+    </DetailModal>
   )
 }

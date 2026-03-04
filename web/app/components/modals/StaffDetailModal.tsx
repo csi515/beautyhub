@@ -1,31 +1,39 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { Modal, ModalBody, ModalFooter, ModalHeader } from '@/app/components/ui/Modal'
-import Button from '@/app/components/ui/Button'
-import Textarea from '@/app/components/ui/Textarea'
+import DetailModal from '@/app/components/common/DetailModal'
+import DetailForm, { type DetailFormField } from '@/app/components/common/DetailForm'
 import { useAppToast } from '@/app/lib/ui/toast'
 import { staffApi } from '@/app/lib/api/staff'
 import { settingsApi } from '@/app/lib/api/settings'
 
 type Staff = {
-  id?: string;
-  name: string;
-  phone?: string | null;
-  email?: string | null;
-  role?: string | null;
-  notes?: string | null;
-  active?: boolean;
-  status?: string | null;
-  skills?: string | null;
-  profile_image_url?: string | null;
+  id?: string
+  name: string
+  phone?: string | null
+  email?: string | null
+  role?: string | null
+  notes?: string | null
+  active?: boolean
+  status?: string | null
+  skills?: string | null
+  profile_image_url?: string | null
 }
 
-export default function StaffDetailModal({ open, onClose, item, onSaved, onDeleted }: { open: boolean; onClose: () => void; item: Staff | null; onSaved: () => void; onDeleted: () => void }) {
-  const [form, setForm] = useState<Staff>({
-    name: '', phone: '', email: '', role: '', notes: '', active: true,
-    status: 'office', skills: '', profile_image_url: ''
-  })
+export default function StaffDetailModal({
+  open,
+  onClose,
+  item,
+  onSaved,
+  onDeleted,
+}: {
+  open: boolean
+  onClose: () => void
+  item: Staff | null
+  onSaved: () => void
+  onDeleted: () => void
+}) {
+  const [form, setForm] = useState<Staff | null>(item)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
   const [positions, setPositions] = useState<string[]>([])
@@ -46,15 +54,26 @@ export default function StaffDetailModal({ open, onClose, item, onSaved, onDelet
   }, [])
 
   useEffect(() => {
-    setForm(item || {
-      name: '', phone: '', email: '', role: '', notes: '', active: true,
-      status: 'office', skills: '', profile_image_url: ''
-    })
+    setForm(
+      item || {
+        name: '',
+        phone: '',
+        email: '',
+        role: '',
+        notes: '',
+        active: true,
+        status: 'office',
+        skills: '',
+        profile_image_url: '',
+      }
+    )
   }, [item])
 
   const save = async () => {
+    if (!form) return
     try {
-      setLoading(true); setError('')
+      setLoading(true)
+      setError('')
       const body = {
         name: (form.name || '').trim(),
         phone: form.phone?.trim() ? form.phone.trim() : null,
@@ -64,16 +83,19 @@ export default function StaffDetailModal({ open, onClose, item, onSaved, onDelet
         notes: form.notes?.trim() || null,
         status: form.status || 'office',
         skills: form.skills?.trim() || null,
-        profile_image_url: form.profile_image_url?.trim() || null
+        profile_image_url: form.profile_image_url?.trim() || null,
       }
 
       if (!body.name) throw new Error('이름은 필수입니다.')
+
       if (form.id) {
         await staffApi.update(form.id, body)
       } else {
         await staffApi.create(body)
       }
-      onSaved(); onClose(); toast.success('직원이 저장되었습니다.')
+      onSaved()
+      onClose()
+      toast.success('직원이 저장되었습니다.')
     } catch (e: unknown) {
       const errorMessage = e instanceof Error ? e.message : '에러가 발생했습니다.'
       setError(errorMessage)
@@ -85,154 +107,122 @@ export default function StaffDetailModal({ open, onClose, item, onSaved, onDelet
 
   const removeItem = async () => {
     if (!form?.id) return
-    if (!confirm('삭제하시겠습니까?')) return
     try {
       await staffApi.delete(form.id)
-      onDeleted(); onClose(); toast.success('삭제되었습니다.')
+      onDeleted()
+      onClose()
+      toast.success('삭제되었습니다.')
     } catch {
       toast.error('삭제 실패')
     }
   }
 
-  if (!open) return null
+  if (!open || !form) return null
+
+  const isNew = !form.id
+
+  const fields: DetailFormField[][] = [
+    [
+      {
+        name: 'name',
+        label: '이름',
+        type: 'text',
+        required: true,
+        value: form.name,
+        onChange: (v) => setForm((f) => (f ? { ...f, name: String(v) } : null)),
+        placeholder: '직원 이름을 입력하세요',
+        gridCols: 1,
+      },
+      {
+        name: 'role',
+        label: '직책',
+        type: 'select',
+        value: form.role || '',
+        onChange: (v) => setForm((f) => (f ? { ...f, role: String(v) } : null)),
+        options: positions.map((pos) => ({ value: pos, label: pos })),
+        gridCols: 1,
+      },
+    ],
+    [
+      {
+        name: 'email',
+        label: '이메일(선택)',
+        type: 'text',
+        value: form.email || '',
+        onChange: (v) => setForm((f) => (f ? { ...f, email: String(v) } : null)),
+        placeholder: '예: staff@example.com',
+        gridCols: 1,
+      },
+      {
+        name: 'phone',
+        label: '휴대폰(선택)',
+        type: 'text',
+        value: form.phone || '',
+        onChange: (v) => setForm((f) => (f ? { ...f, phone: String(v) } : null)),
+        placeholder: '예: 010-1234-5678',
+        gridCols: 1,
+      },
+    ],
+    [
+      {
+        name: 'profile_image_url',
+        label: '프로필 이미지 URL(선택)',
+        type: 'text',
+        value: form.profile_image_url || '',
+        onChange: (v) => setForm((f) => (f ? { ...f, profile_image_url: String(v) } : null)),
+        placeholder: 'https://...',
+        gridCols: 1,
+      },
+      {
+        name: 'skills',
+        label: '보유 기술(선택)',
+        type: 'text',
+        value: form.skills || '',
+        onChange: (v) => setForm((f) => (f ? { ...f, skills: String(v) } : null)),
+        placeholder: '예: 경락, 아로마, 필링',
+        gridCols: 1,
+      },
+    ],
+    [
+      {
+        name: 'active',
+        label: '시스템 접근 권한 활성',
+        type: 'checkbox',
+        value: form.active !== false,
+        onChange: (v) => setForm((f) => (f ? { ...f, active: Boolean(v) } : null)),
+        gridCols: 12,
+      },
+    ],
+    [
+      {
+        name: 'notes',
+        label: '상세 메모(선택)',
+        type: 'textarea',
+        value: form.notes || '',
+        onChange: (v) => setForm((f) => (f ? { ...f, notes: String(v) } : null)),
+        placeholder: '직원에 대한 특이사항이나 메모를 입력하세요',
+        rows: 4,
+        gridCols: 12,
+      },
+    ],
+  ]
+
   return (
-    <Modal open={open} onClose={onClose} size="lg">
-      <ModalHeader title="직원 상세" description="직원 정보를 관리합니다. 이름은 필수입니다." onClose={onClose} />
-      <ModalBody>
-        <div className="space-y-4">
-          {error && (
-            <div className="p-2 rounded-md bg-rose-50 border border-rose-200" role="alert">
-              <p className="text-xs text-rose-600">{error}</p>
-            </div>
-          )}
-
-          {/* 기본정보 섹션 */}
-          <div className="space-y-3">
-            <h3 className="text-xs font-semibold text-neutral-900 border-b pb-1">기본정보</h3>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
-                <label htmlFor="staff-name" className="block text-xs font-medium text-neutral-700 mb-1">
-                  이름 <span className="text-rose-600">*</span>
-                </label>
-                <input
-                  id="staff-name"
-                  className="border border-gray-300 rounded-lg px-2.5 py-1.5 h-9 w-full text-sm focus:outline-none focus:ring-2 focus:ring-indigo-200 focus:border-indigo-500 transition-all"
-                  value={form.name}
-                  onChange={e => setForm({ ...form, name: e.target.value })}
-                  required
-                />
-              </div>
-              <div>
-                <label htmlFor="staff-role" className="block text-xs font-medium text-neutral-700 mb-1">
-                  직책
-                </label>
-                <select
-                  id="staff-role"
-                  className="border border-gray-300 rounded-lg px-2.5 py-1.5 h-9 w-full text-sm focus:outline-none focus:ring-2 focus:ring-indigo-200 focus:border-indigo-500 transition-all bg-white"
-                  value={form.role || ''}
-                  onChange={e => setForm({ ...form, role: e.target.value })}
-                >
-                  <option value="">선택</option>
-                  {positions.map((position) => (
-                    <option key={position} value={position}>
-                      {position}
-                    </option>
-                  ))}
-                </select>
-              </div>
-              <div>
-                <label htmlFor="staff-profile" className="block text-xs font-medium text-neutral-700 mb-1">
-                  프로필 이미지 URL(선택)
-                </label>
-                <input
-                  id="staff-profile"
-                  className="border border-gray-300 rounded-lg px-2.5 py-1.5 h-9 w-full text-sm focus:outline-none focus:ring-2 focus:ring-indigo-200 focus:border-indigo-500 transition-all"
-                  value={form.profile_image_url || ''}
-                  onChange={e => setForm({ ...form, profile_image_url: e.target.value })}
-                  placeholder="https://..."
-                />
-              </div>
-              <div>
-                <label htmlFor="staff-skills" className="block text-xs font-medium text-neutral-700 mb-1">
-                  보유 기술(선택)
-                </label>
-                <input
-                  id="staff-skills"
-                  className="border border-gray-300 rounded-lg px-2.5 py-1.5 h-9 w-full text-sm focus:outline-none focus:ring-2 focus:ring-indigo-200 focus:border-indigo-500 transition-all"
-                  value={form.skills || ''}
-                  onChange={e => setForm({ ...form, skills: e.target.value })}
-                  placeholder="예: 경락, 아로마, 필링"
-                />
-              </div>
-            </div>
-          </div>
-
-          {/* 연락처 섹션 */}
-          <div className="space-y-3 pt-2">
-            <h3 className="text-xs font-semibold text-neutral-900 border-b pb-1">연락처</h3>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
-                <label htmlFor="staff-email" className="block text-xs font-medium text-neutral-700 mb-1">
-                  이메일(선택)
-                </label>
-                <input
-                  id="staff-email"
-                  type="email"
-                  className="border border-gray-300 rounded-lg px-2.5 py-1.5 h-9 w-full text-sm focus:outline-none focus:ring-2 focus:ring-indigo-200 focus:border-indigo-500 transition-all"
-                  value={form.email || ''}
-                  onChange={e => setForm({ ...form, email: e.target.value })}
-                  placeholder="예: staff@example.com"
-                />
-              </div>
-              <div>
-                <label htmlFor="staff-phone" className="block text-xs font-medium text-neutral-700 mb-1">
-                  휴대폰(선택)
-                </label>
-                <input
-                  id="staff-phone"
-                  type="tel"
-                  className="border border-gray-300 rounded-lg px-2.5 py-1.5 h-9 w-full text-sm focus:outline-none focus:ring-2 focus:ring-indigo-200 focus:border-indigo-500 transition-all"
-                  value={form.phone || ''}
-                  onChange={e => setForm({ ...form, phone: e.target.value })}
-                  placeholder="예: 010-1234-5678"
-                />
-              </div>
-            </div>
-          </div>
-
-          {/* 권한/소속 및 메모 */}
-          <div className="space-y-3 pt-2">
-            <h3 className="text-xs font-semibold text-neutral-900 border-b pb-1">권한 및 메모</h3>
-            <div className="space-y-3">
-              <div className="flex items-center">
-                <label htmlFor="staff-active" className="inline-flex items-center gap-1.5 text-xs font-medium text-neutral-700 cursor-pointer">
-                  <input
-                    id="staff-active"
-                    type="checkbox"
-                    className="w-3.5 h-3.5 rounded border-gray-300 text-indigo-600 focus:ring-2 focus:ring-indigo-200"
-                    checked={form.active !== false}
-                    onChange={e => setForm({ ...form, active: e.target.checked })}
-                  />
-                  <span>시스템 접근 권한 활성</span>
-                </label>
-              </div>
-              <div>
-                <Textarea
-                  label="상세 메모(선택)"
-                  value={form.notes || ''}
-                  onChange={e => setForm({ ...form, notes: e.target.value })}
-                  placeholder="직원에 대한 특이사항이나 메모를 입력하세요"
-                />
-              </div>
-            </div>
-          </div>
-        </div>
-      </ModalBody>
-      <ModalFooter>
-        <Button variant="secondary" onClick={onClose} disabled={loading} className="w-full md:w-auto">취소</Button>
-        {form.id && <Button variant="danger" onClick={removeItem} disabled={loading} className="w-full md:w-auto">삭제</Button>}
-        <Button variant="primary" onClick={save} disabled={loading} className="w-full md:w-auto">저장</Button>
-      </ModalFooter>
-    </Modal>
+    <DetailModal
+      open={open}
+      onClose={onClose}
+      item={form}
+      title={isNew ? '직원 추가' : '직원 상세'}
+      description="직원 정보를 관리합니다. 이름은 필수입니다."
+      loading={loading}
+      error={error}
+      onSave={save}
+      onDelete={removeItem}
+      confirmDeleteMessage="이 직원을 삭제하시겠습니까?"
+      showDelete={!isNew}
+      size="lg"
+    >
+      <DetailForm fields={fields} />
+    </DetailModal>
   )
 }

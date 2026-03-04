@@ -59,7 +59,8 @@ export default function SignupPage() {
         }
       })
       if (error) { setError(error.message); setBusy(false); return }
-      setInfo('회원가입이 완료되었습니다. 관리자 승인 후 로그인하여 서비스를 이용하세요.')
+      setInfo('가입이 완료되었습니다! 잠시 후 로그인 페이지로 이동합니다...')
+      setTimeout(() => router.push('/login'), 2000)
     } catch (e: unknown) {
       const errorMessage = e instanceof Error ? e.message : '회원가입 중 오류가 발생했습니다.'
       setError(errorMessage)

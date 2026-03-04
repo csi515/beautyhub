@@ -77,7 +77,7 @@ export function useUpdateCustomer() {
  */
 export function useDeleteCustomer() {
   const queryClient = useQueryClient()
-  
+
   return useAppMutation<{ ok: boolean }, string>({
     mutationFn: (id) => customersApi.delete(id),
     onSuccess: (_, id) => {
@@ -87,3 +87,12 @@ export function useDeleteCustomer() {
   })
 }
 
+/**
+ * 장기 미방문 고객 조회
+ */
+export function useInactiveCustomers(days: number = 90) {
+  return useAppQuery<Array<Customer & { last_visit_date?: string | null; days_since_last_visit?: number }>>({
+    queryKey: queryKeys.inactiveCustomers.list(days),
+    queryFn: () => customersApi.inactive(days),
+  })
+}

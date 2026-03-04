@@ -9,6 +9,9 @@ import Tabs, { TabsContent, TabsList, TabsTrigger } from '../ui/Tabs'
 import CustomerSummaryBar from './customer-detail/CustomerSummaryBar'
 import CustomerOverviewTab from './customer-detail/CustomerOverviewTab'
 import CustomerTransactionsTab from './customer-detail/CustomerTransactionsTab'
+import CustomerConsultationNotesTab from './customer-detail/CustomerConsultationNotesTab'
+import CustomerPhotosTab from './customer-detail/CustomerPhotosTab'
+import CustomerVisitsTab from './customer-detail/CustomerVisitsTab'
 import type { Customer } from '@/types/entities'
 import { useCustomerDetail } from './customer-detail/useCustomerDetail'
 
@@ -25,7 +28,7 @@ export default function CustomerDetailModal({
   onSaved: () => void
   onDeleted: () => void
 }) {
-  const [activeTab, setActiveTab] = useState<'overview' | 'transactions'>('overview')
+  const [activeTab, setActiveTab] = useState<'overview' | 'transactions' | 'visits' | 'consultation' | 'photos'>('overview')
 
   const {
     form, setForm,
@@ -151,13 +154,22 @@ export default function CustomerDetailModal({
             </Box>
           ) : (
             // 기존 고객: 탭 표시
-            <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as 'overview' | 'transactions')}>
+            <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as 'overview' | 'transactions' | 'visits' | 'consultation' | 'photos')}>
               <TabsList>
                 <TabsTrigger value="overview">
                   기본 정보
                 </TabsTrigger>
                 <TabsTrigger value="transactions">
                   포인트 & 보유상품
+                </TabsTrigger>
+                <TabsTrigger value="visits">
+                  방문 이력
+                </TabsTrigger>
+                <TabsTrigger value="consultation">
+                  상담 일지
+                </TabsTrigger>
+                <TabsTrigger value="photos">
+                  사진
                 </TabsTrigger>
               </TabsList>
 
@@ -237,6 +249,18 @@ export default function CustomerDetailModal({
                   onDelete={(id: string) => handleDeleteHolding(id)}
                   onUpdateLedgerNote={handleUpdateLedgerNote}
                 />
+              </TabsContent>
+
+              <TabsContent value="visits">
+                <CustomerVisitsTab customerId={form?.id || ''} />
+              </TabsContent>
+
+              <TabsContent value="consultation">
+                <CustomerConsultationNotesTab customerId={form?.id || ''} />
+              </TabsContent>
+
+              <TabsContent value="photos">
+                <CustomerPhotosTab customerId={form?.id || ''} />
               </TabsContent>
             </Tabs>
           )}

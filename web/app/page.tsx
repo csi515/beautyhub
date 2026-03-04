@@ -2,8 +2,8 @@ import { Metadata } from 'next'
 import { Box, Container, Typography, Button, Grid, Card, CardContent, Stack } from '@mui/material'
 import { CheckCircle, Calendar, Users, DollarSign, Package, TrendingUp } from 'lucide-react'
 import Link from 'next/link'
-import PublicHeader from './components/PublicHeader'
-import PublicFooter from './components/PublicFooter'
+import PublicHeader from './components/layout/PublicHeader'
+import PublicFooter from './components/layout/PublicFooter'
 
 export const metadata: Metadata = {
   title: 'BeautyHub - 피부관리샵 전용 고객 관리 시스템',

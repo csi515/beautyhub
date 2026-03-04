@@ -41,6 +41,8 @@ export async function POST() {
 			name: (user.user_metadata as Record<string, unknown>)['name'] ?? null,
 			phone: (user.user_metadata as Record<string, unknown>)['phone'] ?? null,
 			birthdate: (user.user_metadata as Record<string, unknown>)['birthdate'] ?? null,
+			approved: true,
+			role: 'user',
 		}
 		const { error } = await admin.from('users').insert(payload)
 		if (error) return NextResponse.json({ error: error.message }, { status: 400 })

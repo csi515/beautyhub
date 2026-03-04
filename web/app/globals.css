@@ -1303,3 +1303,12 @@ a:hover {
 table.table tbody tr:hover {
   background-color: #f8fafc;
 }
+
+@media (pointer: coarse) {
+  button:not([data-no-min-touch]),
+  a:not([data-no-min-touch]),
+  [role="button"]:not([data-no-min-touch]) {
+    min-height: 44px;
+    min-width: 44px;
+  }
+}

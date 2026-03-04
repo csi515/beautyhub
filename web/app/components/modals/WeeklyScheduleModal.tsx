@@ -14,11 +14,11 @@ import {
     InputLabel
 } from '@mui/material'
 import { Save, Calendar, Repeat } from 'lucide-react'
-import Modal, { ModalBody, ModalFooter, ModalHeader } from '../ui/Modal'
-import Button from '../ui/Button'
-import Input from '../ui/Input'
-import { useAppToast } from '../../lib/ui/toast'
-import { settingsApi } from '../../lib/api/settings'
+import Modal, { ModalBody, ModalFooter, ModalHeader } from '@/app/components/ui/Modal'
+import Button from '@/app/components/ui/Button'
+import Input from '@/app/components/ui/Input'
+import { useAppToast } from '@/app/lib/ui/toast'
+import { settingsApi } from '@/app/lib/api/settings'
 import { Staff } from '@/types/entities'
 import { BusinessProfile } from '@/types/settings'
 

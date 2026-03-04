@@ -3,10 +3,10 @@
 import { useState } from 'react'
 import { Card, Grid, Typography, Box } from '@mui/material'
 import { User, Phone, MapPin, Mail, FileText, Trash2 } from 'lucide-react'
-import Input from '../../ui/Input'
-import Textarea from '../../ui/Textarea'
-import Button from '../../ui/Button'
-import ConfirmDialog from '../../ui/ConfirmDialog'
+import Input from '@/app/components/ui/Input'
+import Textarea from '@/app/components/ui/Textarea'
+import Button from '@/app/components/ui/Button'
+import ConfirmDialog from '@/app/components/ui/ConfirmDialog'
 import type { Customer } from '@/types/entities'
 
 type CustomerForm = Pick<Customer, 'id' | 'name' | 'phone' | 'email' | 'address' | 'skin_type' | 'allergy_info' | 'memo'>

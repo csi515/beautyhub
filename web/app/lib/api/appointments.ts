@@ -47,5 +47,19 @@ export const appointmentsApi = {
   delete: (id: string): Promise<{ ok: boolean }> => {
     return apiClient.delete<{ ok: boolean }>(`/api/appointments/${id}`)
   },
+
+  /**
+   * 예약 중복 검사
+   */
+  checkConflict: (data: { appointment_date: string; staff_id: string; duration_minutes?: number; exclude_appointment_id?: string }): Promise<{ hasConflict: boolean; conflictingAppointments: Appointment[] }> => {
+    return apiClient.post<{ hasConflict: boolean; conflictingAppointments: Appointment[] }>('/api/appointments/check-conflict', data)
+  },
+
+  /**
+   * 노쇼 처리
+   */
+  markAsNoShow: (id: string): Promise<Appointment> => {
+    return apiClient.patch<Appointment>(`/api/appointments/${id}/no-show`, {})
+  },
 }
 

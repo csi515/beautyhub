@@ -7,7 +7,7 @@ import { ReactQueryDevtools } from '@tanstack/react-query-devtools'
 import { useState } from 'react'
 import theme from './lib/theme/mui-theme'
 import { ToastProvider } from './components/ui/Toast'
-import AppProgressBar from './components/ProgressBar'
+import AppProgressBar from './components/common/ProgressBar'
 
 export default function Providers({ children }: { children: React.ReactNode }) {
   const [queryClient] = useState(

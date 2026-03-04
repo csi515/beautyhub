@@ -50,6 +50,7 @@ export interface Product {
   active?: boolean
   stock_count?: number
   safety_stock?: number
+  duration_minutes?: number
   created_at?: string
   updated_at?: string
 }
@@ -64,6 +65,7 @@ export interface ProductCreateInput {
   active?: boolean
   stock_count?: number
   safety_stock?: number
+  duration_minutes?: number
 }
 
 export interface ProductUpdateInput extends Partial<ProductCreateInput> { }
@@ -119,6 +121,7 @@ export interface Appointment {
   status?: string
   total_price?: number | null
   notes?: string | null
+  no_show?: boolean
   created_at?: string
   updated_at?: string
 }
@@ -413,3 +416,97 @@ export interface PayrollRecordCreateInput {
 
 export interface PayrollRecordUpdateInput extends Partial<PayrollRecordCreateInput> { }
 
+/**
+ * 고객 상담 일지 엔티티
+ */
+export interface ConsultationNote {
+  id: string
+  owner_id: string
+  customer_id: string
+  appointment_id?: string | null
+  note_date: string
+  content: string
+  created_at?: string
+  updated_at?: string
+}
+
+/**
+ * 고객 상담 일지 생성/수정 DTO
+ */
+export interface ConsultationNoteCreateInput {
+  customer_id: string
+  appointment_id?: string | null
+  note_date?: string
+  content: string
+}
+
+export interface ConsultationNoteUpdateInput extends Partial<ConsultationNoteCreateInput> { }
+
+/**
+ * 고객 사진 엔티티
+ */
+export interface CustomerPhoto {
+  id: string
+  owner_id: string
+  customer_id: string
+  appointment_id?: string | null
+  photo_url: string
+  photo_type: 'before' | 'after' | 'general'
+  notes?: string | null
+  taken_at?: string | null
+  created_at?: string
+}
+
+/**
+ * 고객 사진 생성/수정 DTO
+ */
+export interface CustomerPhotoCreateInput {
+  customer_id: string
+  appointment_id?: string | null
+  photo_url: string
+  photo_type: 'before' | 'after' | 'general'
+  notes?: string | null
+  taken_at?: string | null
+}
+
+export interface CustomerPhotoUpdateInput extends Partial<CustomerPhotoCreateInput> { }
+
+/**
+ * 예약 리마인더 엔티티
+ */
+export interface AppointmentReminder {
+  id: string
+  owner_id: string
+  appointment_id: string
+  reminder_type: '1_day_before' | '3_hours_before' | 'on_day'
+  sent_at?: string | null
+  created_at?: string
+}
+
+/**
+ * 예약 템플릿 엔티티
+ */
+export interface AppointmentTemplate {
+  id: string
+  owner_id: string
+  name: string
+  service_id?: string | null
+  duration_minutes?: number | null
+  default_price?: number | null
+  default_notes?: string | null
+  created_at?: string
+  updated_at?: string
+}
+
+/**
+ * 예약 템플릿 생성/수정 DTO
+ */
+export interface AppointmentTemplateCreateInput {
+  name: string
+  service_id?: string | null
+  duration_minutes?: number | null
+  default_price?: number | null
+  default_notes?: string | null
+}
+
+export interface AppointmentTemplateUpdateInput extends Partial<AppointmentTemplateCreateInput> { }

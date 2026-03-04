@@ -2,7 +2,7 @@
 
 import { useEffect, useState, useMemo, lazy, Suspense, useCallback } from 'react'
 import { Plus, Search, Download } from 'lucide-react'
-import EmptyState from '../components/EmptyState'
+import EmptyState from '../components/ui/EmptyState'
 import { Skeleton } from '../components/ui/Skeleton'
 import { useAppToast } from '../lib/ui/toast'
 import Button from '../components/ui/Button'
@@ -13,15 +13,13 @@ import { usePagination } from '../lib/hooks/usePagination'
 import { useForm } from '../lib/hooks/useForm'
 import { exportToCSV, prepareProductDataForExport } from '../lib/utils/export'
 
+// MUI 레이아웃 유틸리티 (허용)
+import Box from '@mui/material/Box'
 import Stack from '@mui/material/Stack'
-import Paper from '@mui/material/Paper'
 import Typography from '@mui/material/Typography'
 import TextField from '@mui/material/TextField'
 import InputAdornment from '@mui/material/InputAdornment'
 import Grid from '@mui/material/Grid'
-import Card from '@mui/material/Card'
-import CardContent from '@mui/material/CardContent'
-import CardActions from '@mui/material/CardActions'
 import FormControlLabel from '@mui/material/FormControlLabel'
 import Checkbox from '@mui/material/Checkbox'
 import Chip from '@mui/material/Chip'
@@ -29,11 +27,11 @@ import Select from '@mui/material/Select'
 import MenuItem from '@mui/material/MenuItem'
 import Pagination from '@mui/material/Pagination'
 import FormControl from '@mui/material/FormControl'
-import Alert from '@mui/material/Alert'
-import AlertTitle from '@mui/material/AlertTitle'
-import Fab from '@mui/material/Fab'
 import useMediaQuery from '@mui/material/useMediaQuery'
-import { useTheme } from '@mui/material/styles';
+import { useTheme } from '@mui/material/styles'
+// 공통 컴포넌트
+import Card from '../components/ui/Card'
+import ErrorState from '../components/common/ErrorState'
 
 const ProductDetailModal = lazy(() => import('../components/modals/ProductDetailModal'))
 
@@ -187,7 +185,7 @@ export default function ProductsPage() {
 
   return (
     <Stack spacing={3}>
-      <Paper sx={{ p: 2, borderRadius: 3 }} elevation={0} variant="outlined">
+      <Card sx={{ p: 2 }}>
         <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2} alignItems="center">
           <TextField
             placeholder="상품명 또는 설명으로 검색"
@@ -233,10 +231,10 @@ export default function ProductsPage() {
             상품 등록
           </Button>
         </Stack>
-      </Paper>
+      </Card>
 
       {/* 필터 패널 */}
-      <Paper elevation={0} variant="outlined" sx={{ p: 2, borderRadius: 2 }}>
+      <Card sx={{ p: 2 }}>
         <Stack spacing={2}>
           <Typography variant="subtitle2" fontWeight={600}>필터</Typography>
           <Grid container spacing={{ xs: 0.75, sm: 1.5, md: 2 }} alignItems="center">
@@ -290,13 +288,14 @@ export default function ProductsPage() {
             </Grid>
           </Grid>
         </Stack>
-      </Paper>
+      </Card>
 
       {error && (
-        <Alert severity="error" variant="filled" sx={{ borderRadius: 2 }}>
-          <AlertTitle>오류 발생</AlertTitle>
-          {error}
-        </Alert>
+        <ErrorState
+          message={error}
+          onRetry={() => setError('')}
+          retryLabel="닫기"
+        />
       )}
 
       <Grid container spacing={{ xs: 0.75, sm: 1.5, md: 2 }}>
@@ -307,9 +306,9 @@ export default function ProductsPage() {
         ))}
         {!loading && paginatedProducts.map((p) => (
           <Grid item xs={12} sm={6} md={4} lg={3} key={String(p.id)}>
-            <Card variant="outlined" sx={{ height: '100%', display: 'flex', flexDirection: 'column', borderRadius: 2, '&:hover': { boxShadow: { xs: 'none', md: 2 } } }}>
-              <CardContent sx={{ flexGrow: 1, p: 1.5, pb: 0 }}>
-                <Stack direction="row" justifyContent="space-between" alignItems="flex-start" mb={1}>
+            <Card hover sx={{ height: '100%', display: 'flex', flexDirection: 'column', p: 1.5 }}>
+              <Stack spacing={1} sx={{ flexGrow: 1 }}>
+                <Stack direction="row" justifyContent="space-between" alignItems="flex-start">
                   <Chip
                     label={p.active ? '활성' : '비활성'}
                     size="small"
@@ -318,24 +317,23 @@ export default function ProductsPage() {
                     sx={{ height: 20, fontSize: '0.625rem' }}
                   />
                 </Stack>
-                <Typography variant="subtitle2" component="h3" fontWeight="bold" noWrap title={p.name} mb={0.5}>
+                <Typography variant="subtitle2" component="h3" fontWeight="bold" noWrap title={p.name}>
                   {p.name}
                 </Typography>
                 <Typography variant="body2" color="primary.main" fontWeight="bold">
                   ₩{Number(p.price || 0).toLocaleString()}
                 </Typography>
-              </CardContent>
-              <CardActions sx={{ p: 1 }}>
+              </Stack>
+              <Stack direction="row" spacing={1} sx={{ mt: 1, pt: 1 }}>
                 <Button
                   size="sm"
                   variant="secondary"
                   onClick={() => { setSelected(p); setDetailOpen(true) }}
                   fullWidth
-                  sx={{ fontSize: '0.75rem', py: 0.5 }}
                 >
                   상세보기
                 </Button>
-              </CardActions>
+              </Stack>
             </Card>
           </Grid>
         ))}
@@ -471,19 +469,35 @@ export default function ProductsPage() {
       )}
 
       {/* Mobile FAB */}
-      <Fab
-        color="primary"
-        aria-label="제품 추가"
+      <Box
         sx={{
           position: 'fixed',
-          bottom: { xs: 72, md: 16 },
-          right: 16,
-          display: { xs: 'flex', md: 'none' },
+          bottom: { xs: 80, md: 24 },
+          right: { xs: 16, md: 24 },
+          zIndex: 1000,
+          display: { xs: 'block', md: 'none' }
         }}
-        onClick={openCreate}
       >
-        <Plus className="h-5 w-5" />
-      </Fab>
+        <Button
+          variant="primary"
+          size="lg"
+          onClick={openCreate}
+          aria-label="제품 추가"
+          sx={{
+            borderRadius: '50%',
+            width: 56,
+            height: 56,
+            minWidth: 56,
+            padding: 0,
+            boxShadow: 4,
+            '& .lucide': {
+              margin: 0
+            }
+          }}
+        >
+          <Plus size={24} />
+        </Button>
+      </Box>
     </Stack>
   )
 }

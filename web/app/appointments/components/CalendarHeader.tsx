@@ -1,0 +1,133 @@
+'use client'
+
+import { Box, Stack, Typography, IconButton, ToggleButtonGroup, ToggleButton, TextField, InputAdornment, Select, MenuItem, FormControl } from '@mui/material'
+import { useTheme } from '@mui/material'
+import { ChevronLeft, ChevronRight, Calendar as CalendarIcon, Search, Download, Plus } from 'lucide-react'
+import Card from '../../components/ui/Card'
+import Button from '../../components/ui/Button'
+import type { CalendarView } from '../types'
+
+interface CalendarHeaderProps {
+    view: CalendarView
+    rangeLabel: string
+    onChangeView: (view: CalendarView) => void
+    onToday: () => void
+    onPrev: () => void
+    onNext: () => void
+    query: string
+    onQueryChange: (query: string) => void
+    statusFilter: string
+    onStatusFilterChange: (status: string) => void
+    onExport: () => void
+    onCreateNew: () => void
+}
+
+export default function CalendarHeader({
+    view,
+    rangeLabel,
+    onChangeView,
+    onToday,
+    onPrev,
+    onNext,
+    query,
+    onQueryChange,
+    statusFilter,
+    onStatusFilterChange,
+    onExport,
+    onCreateNew,
+}: CalendarHeaderProps) {
+    const theme = useTheme()
+
+    return (
+        <Card sx={{ p: 2 }}>
+            <Stack direction={{ xs: 'column', md: 'row' }} spacing={2} justifyContent="space-between" alignItems={{ xs: 'stretch', md: 'center' }}>
+                {/* 날짜 표시 & 모바일 네비게이션 */}
+                <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                    <Stack direction="row" spacing={1} alignItems="center">
+                        <CalendarIcon size={20} color={theme.palette.primary.main} />
+                        <Typography variant="h6" fontWeight="bold">
+                            {rangeLabel || '로딩 중...'}
+                        </Typography>
+                    </Stack>
+
+                    {/* 모바일 네비게이션 */}
+                    <Stack direction="row" spacing={0.5} sx={{ display: { xs: 'flex', md: 'none' } }}>
+                        <IconButton onClick={onPrev} size="small" sx={{ border: 1, borderColor: 'divider', borderRadius: 2 }}>
+                            <ChevronLeft size={16} />
+                        </IconButton>
+                        <Button variant="outline" size="sm" onClick={onToday} style={{ height: 32 }}>오늘</Button>
+                        <IconButton onClick={onNext} size="small" sx={{ border: 1, borderColor: 'divider', borderRadius: 2 }}>
+                            <ChevronRight size={16} />
+                        </IconButton>
+                    </Stack>
+                </Box>
+
+                {/* 데스크톱 컨트롤 */}
+                <Stack direction="row" spacing={2} sx={{ display: { xs: 'none', md: 'flex' } }} alignItems="center">
+                    <Stack direction="row" spacing={1} alignItems="center">
+                        <TextField
+                            placeholder="예약 검색"
+                            size="small"
+                            value={query}
+                            onChange={e => onQueryChange(e.target.value)}
+                            sx={{ width: 200 }}
+                            InputProps={{
+                                startAdornment: <InputAdornment position="start"><Search size={16} /></InputAdornment>
+                            }}
+                        />
+                        <FormControl size="small" sx={{ width: 120 }}>
+                            <Select
+                                value={statusFilter}
+                                onChange={e => onStatusFilterChange(e.target.value)}
+                                displayEmpty
+                            >
+                                <MenuItem value="all">전체 상태</MenuItem>
+                                <MenuItem value="scheduled">예약됨</MenuItem>
+                                <MenuItem value="completed">완료</MenuItem>
+                                <MenuItem value="cancelled">취소</MenuItem>
+                            </Select>
+                        </FormControl>
+                        <Button
+                            variant="secondary"
+                            leftIcon={<Download size={16} />}
+                            onClick={onExport}
+                            sx={{ whiteSpace: 'nowrap' }}
+                        >
+                            내보내기
+                        </Button>
+                        <Button
+                            variant="primary"
+                            size="md"
+                            leftIcon={<Plus size={16} />}
+                            onClick={onCreateNew}
+                        >
+                            예약 추가
+                        </Button>
+                    </Stack>
+
+                    <ToggleButtonGroup
+                        value={view}
+                        exclusive
+                        onChange={(_, nextView) => nextView && onChangeView(nextView)}
+                        size="small"
+                        aria-label="달력 보기 모드"
+                    >
+                        <ToggleButton value="month">월</ToggleButton>
+                        <ToggleButton value="week">주</ToggleButton>
+                        <ToggleButton value="day">일</ToggleButton>
+                    </ToggleButtonGroup>
+
+                    <Stack direction="row" spacing={0.5}>
+                        <IconButton onClick={onPrev} sx={{ border: 1, borderColor: 'divider', borderRadius: 2 }}>
+                            <ChevronLeft size={18} />
+                        </IconButton>
+                        <Button variant="outline" onClick={onToday} sx={{ height: 36, borderColor: theme.palette.divider }}>오늘</Button>
+                        <IconButton onClick={onNext} sx={{ border: 1, borderColor: 'divider', borderRadius: 2 }}>
+                            <ChevronRight size={18} />
+                        </IconButton>
+                    </Stack>
+                </Stack>
+            </Stack>
+        </Card>
+    )
+}

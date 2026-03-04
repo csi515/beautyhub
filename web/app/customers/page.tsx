@@ -5,18 +5,18 @@ import { useState, lazy, Suspense } from 'react'
 import { useAppToast } from '../lib/ui/toast'
 import { exportToCSV, prepareCustomerDataForExport } from '../lib/utils/export'
 
-// MUI Imports
+// MUI 레이아웃 유틸리티 (허용)
 import Box from '@mui/material/Box'
 import Stack from '@mui/material/Stack'
-import Alert from '@mui/material/Alert'
-import AlertTitle from '@mui/material/AlertTitle'
-import Fab from '@mui/material/Fab'
+// 공통 컴포넌트
+import ErrorState from '../components/common/ErrorState'
+import Button from '../components/ui/Button'
 
 // Components
-import CustomerFilters from '../components/customers/CustomerFilters'
-import CustomerTable from '../components/customers/CustomerTable'
-import CustomerCards from '../components/customers/CustomerCards'
-import CustomerPagination from '../components/customers/CustomerPagination'
+import CustomerFilters from '../components/features/customers/CustomerFilters'
+import CustomerTable from '../components/features/customers/CustomerTable'
+import CustomerCards from '../components/features/customers/CustomerCards'
+import CustomerPagination from '../components/features/customers/CustomerPagination'
 
 // Hooks
 import { useCustomers } from '../lib/hooks/useCustomers'
@@ -113,10 +113,11 @@ export default function CustomersPage() {
       />
 
       {error && (
-        <Alert severity="error" variant="filled" sx={{ borderRadius: 2 }}>
-          <AlertTitle>오류 발생</AlertTitle>
-          {error}
-        </Alert>
+        <ErrorState
+          message={error}
+          onRetry={() => {}}
+          retryLabel="닫기"
+        />
       )}
 
       {/* 모바일 카드 뷰 */}
@@ -182,22 +183,35 @@ export default function CustomersPage() {
       )}
 
       {/* Mobile FAB */}
-      <Fab
-        color="primary"
-        aria-label="새 고객 추가"
+      <Box
         sx={{
           position: 'fixed',
-          bottom: { xs: 72, md: 16 },
-          right: 16,
-          display: { xs: 'flex', md: 'none' },
-        }}
-        onClick={() => {
-          setSelected({ id: '', owner_id: '', name: '', phone: '', email: '', address: '' } as Customer)
-          setDetailOpen(true)
+          bottom: { xs: 80, md: 24 },
+          right: { xs: 16, md: 24 },
+          zIndex: 1000,
+          display: { xs: 'block', md: 'none' }
         }}
       >
-        <Plus className="h-5 w-5" />
-      </Fab>
+        <Button
+          variant="primary"
+          size="lg"
+          onClick={() => {
+            setSelected({ id: '', owner_id: '', name: '', phone: '', email: '', address: '' } as Customer)
+            setDetailOpen(true)
+          }}
+          aria-label="새 고객 추가"
+          sx={{
+            borderRadius: '50%',
+            width: 56,
+            height: 56,
+            minWidth: 56,
+            padding: 0,
+            boxShadow: 4
+          }}
+        >
+          <Plus size={24} />
+        </Button>
+      </Box>
     </Stack>
     </Box>
   )

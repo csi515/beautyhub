@@ -1,5 +1,5 @@
 import { notFound } from 'next/navigation'
-import PageHeader from '@/app/components/PageHeader'
+import PageHeader from '@/app/components/common/PageHeader'
 import ProjectDetail from '@/app/components/projects/ProjectDetail'
 import { getProjectById } from '@/app/lib/mock/projects'
 

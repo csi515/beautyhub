@@ -1,9 +1,9 @@
 import './globals.css'
-import AppShell from './components/AppShell'
+import AppShell from './components/layout/AppShell'
 import Providers from './providers'
-import ServiceWorkerRegistration from './components/ServiceWorkerRegistration'
-import InstallPrompt from './components/InstallPrompt'
-import { SnackbarProvider } from './components/GlobalSnackbar'
+import ServiceWorkerRegistration from './components/providers/ServiceWorkerRegistration'
+import InstallPrompt from './components/ui/InstallPrompt'
+import { SnackbarProvider } from './components/common/GlobalSnackbar'
 import { Inter } from 'next/font/google'
 
 const pretendard = Inter({

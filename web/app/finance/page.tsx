@@ -5,21 +5,21 @@ import { Plus } from 'lucide-react'
 import { Box, Stack, Fab, Typography } from '@mui/material'
 
 // Components
-import FinanceHeader from '../components/finance/FinanceHeader'
-import FinanceSummaryCards from '../components/finance/FinanceSummaryCards'
-import FinanceFilters from '../components/finance/FinanceFilters'
-import FinanceMobileCards from '../components/finance/FinanceMobileCards'
-import FinanceDesktopTable from '../components/finance/FinanceDesktopTable'
-import FinanceCreateModal from '../components/finance/FinanceCreateModal'
+import FinanceHeader from '@/app/components/features/finance/FinanceHeader'
+import FinanceSummaryCards from '@/app/components/features/finance/FinanceSummaryCards'
+import FinanceFilters from '@/app/components/features/finance/FinanceFilters'
+import FinanceMobileCards from '@/app/components/features/finance/FinanceMobileCards'
+import FinanceDesktopTable from '@/app/components/features/finance/FinanceDesktopTable'
+import FinanceCreateModal from '@/app/components/features/finance/FinanceCreateModal'
 
 // Modals
-const ExpenseDetailModal = lazy(() => import('../components/modals/ExpenseDetailModal'))
-const TransactionDetailModal = lazy(() => import('../components/modals/TransactionDetailModal'))
+const ExpenseDetailModal = lazy(() => import('@/app/components/modals/ExpenseDetailModal'))
+const TransactionDetailModal = lazy(() => import('@/app/components/modals/TransactionDetailModal'))
 
 // Hooks
-import { useFinanceData } from '../lib/hooks/useFinanceData'
-import { useFinanceFilters } from '../lib/hooks/useFinanceFilters'
-import { useFinanceActions } from '../lib/hooks/useFinanceActions'
+import { useFinanceData } from '@/app/lib/hooks/useFinanceData'
+import { useFinanceFilters } from '@/app/lib/hooks/useFinanceFilters'
+import { useFinanceActions } from '@/app/lib/hooks/useFinanceActions'
 import { FinanceModalState, FinanceCombinedRow } from '@/types/finance'
 
 export default function FinancePage() {

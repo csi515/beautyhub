@@ -4,14 +4,14 @@ import { useEffect, useState } from 'react'
 
 import { Box, Container, Typography, Grid, Card, CardContent, Alert, Chip, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, useMediaQuery, Stack } from '@mui/material';
 import { useTheme } from '@mui/material/styles';
-import MobileDataCard from '../components/ui/MobileDataCard'
-import { CardSkeleton } from '../components/ui/SkeletonLoader'
-import EmptyState from '../components/ui/EmptyState'
+import MobileDataCard from '@/app/components/ui/MobileDataCard'
+import { CardSkeleton } from '@/app/components/ui/SkeletonLoader'
+import EmptyState from '@/app/components/ui/EmptyState'
 import { TrendingUp, Users, Star, DollarSign, BarChart2, Download } from 'lucide-react'
-import PageHeader, { createActionButton } from '../components/common/PageHeader'
+import PageHeader, { createActionButton } from '@/app/components/common/PageHeader'
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts'
-import { useAppToast } from '../lib/ui/toast'
-import { exportToCSV } from '../lib/utils/export'
+import { useAppToast } from '@/app/lib/ui/toast'
+import { exportToCSV } from '@/app/lib/utils/export'
 
 interface CustomerLTV {
     customer_id: string

@@ -6,24 +6,24 @@ import { settingsApi } from '@/app/lib/api/settings'
 import { DEFAULT_SETTINGS, type SystemSettings, type UserProfile, type SecuritySettings, type DisplaySettings } from '@/types/settings'
 import SettingsSkeleton from '@/app/components/skeletons/SettingsSkeleton'
 
-// MUI Imports
-import Container from '@mui/material/Container'
+// MUI Imports (레이아웃 유틸리티만 허용)
 import Stack from '@mui/material/Stack'
 import Typography from '@mui/material/Typography'
 import Box from '@mui/material/Box'
+import PageContainer from '../components/layout/PageContainer'
 
 // Summary Cards
-import UserProfileSummaryCard from '@/app/components/settings/cards/UserProfileSummaryCard'
-import SystemSettingsSummaryCard from '@/app/components/settings/cards/SystemSettingsSummaryCard'
-import SecuritySettingsSummaryCard from '@/app/components/settings/cards/SecuritySettingsSummaryCard'
-import DisplaySettingsSummaryCard from '@/app/components/settings/cards/DisplaySettingsSummaryCard'
-import AccountSettingsSummaryCard from '@/app/components/settings/cards/AccountSettingsSummaryCard'
+import UserProfileSummaryCard from '@/app/components/features/settings/cards/UserProfileSummaryCard'
+import SystemSettingsSummaryCard from '@/app/components/features/settings/cards/SystemSettingsSummaryCard'
+import SecuritySettingsSummaryCard from '@/app/components/features/settings/cards/SecuritySettingsSummaryCard'
+import DisplaySettingsSummaryCard from '@/app/components/features/settings/cards/DisplaySettingsSummaryCard'
+import AccountSettingsSummaryCard from '@/app/components/features/settings/cards/AccountSettingsSummaryCard'
 
 // Modals
-import UserProfileModal from '@/app/components/settings/modals/UserProfileModal'
-import SystemSettingsModal from '@/app/components/settings/modals/SystemSettingsModal'
-import SecuritySettingsModal from '@/app/components/settings/modals/SecuritySettingsModal'
-import DisplaySettingsModal from '@/app/components/settings/modals/DisplaySettingsModal'
+import UserProfileModal from '@/app/components/features/settings/modals/UserProfileModal'
+import SystemSettingsModal from '@/app/components/features/settings/modals/SystemSettingsModal'
+import SecuritySettingsModal from '@/app/components/features/settings/modals/SecuritySettingsModal'
+import DisplaySettingsModal from '@/app/components/features/settings/modals/DisplaySettingsModal'
 
 export default function SettingsPage() {
   const [systemSettings, setSystemSettings] = useState<SystemSettings>(DEFAULT_SETTINGS.systemSettings)
@@ -180,14 +180,14 @@ export default function SettingsPage() {
 
   if (loading) {
     return (
-      <Container maxWidth={false} sx={{ py: 4, pb: 12, px: { xs: 1.5, sm: 2, md: 3 }, maxWidth: { xs: '100%', md: '1200px' }, width: '100%' }}>
+      <PageContainer maxWidth={false}>
         <SettingsSkeleton />
-      </Container>
+      </PageContainer>
     )
   }
 
   return (
-    <Container maxWidth={false} sx={{ py: 4, pb: 12, px: { xs: 1.5, sm: 2, md: 3 }, maxWidth: { xs: '100%', md: '1200px' }, width: '100%' }}>
+    <PageContainer maxWidth={false}>
       <Stack spacing={4}>
         {/* 헤더 */}
         <Box>
@@ -257,6 +257,6 @@ export default function SettingsPage() {
         onClose={() => setDisplayModalOpen(false)}
         onSave={handleSaveDisplaySettings}
       />
-    </Container>
+    </PageContainer>
   )
 }

@@ -1,10 +1,10 @@
 import { useState, useEffect } from 'react'
 import { Box, Grid, Typography } from '@mui/material'
 import { Save, Percent } from 'lucide-react'
-import Modal, { ModalBody, ModalFooter, ModalHeader } from '../ui/Modal'
-import Button from '../ui/Button'
-import Input from '../ui/Input'
-import { useAppToast } from '../../lib/ui/toast'
+import Modal, { ModalBody, ModalFooter, ModalHeader } from '@/app/components/ui/Modal'
+import Button from '@/app/components/ui/Button'
+import Input from '@/app/components/ui/Input'
+import { useAppToast } from '@/app/lib/ui/toast'
 
 interface PayrollSettingsModalProps {
     open: boolean

@@ -1,6 +1,8 @@
 'use client'
 
-import { Box, Grid, Skeleton, Stack, Card } from '@mui/material'
+import { Box, Grid, Stack } from '@mui/material'
+import Card from '../ui/Card'
+import { Skeleton } from '../ui/Skeleton'
 
 export default function DashboardSkeleton() {
     return (
@@ -15,7 +17,7 @@ export default function DashboardSkeleton() {
             <Grid container spacing={{ xs: 0.75, sm: 1.5, md: 2.5, lg: 3 }}>
                 {[1, 2, 3, 4].map((i) => (
                     <Grid item xs={12} sm={6} md={3} key={i}>
-                        <Card sx={{ p: 3, height: '100%' }}>
+                        <Card sx={{ p: 3, height: '100%', minHeight: '120px' }}>
                             <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 2 }}>
                                 <Skeleton variant="circular" width={40} height={40} />
                                 <Skeleton variant="rounded" width={60} height={24} />
@@ -30,13 +32,13 @@ export default function DashboardSkeleton() {
             {/* Charts Skeleton */}
             <Grid container spacing={{ xs: 0.75, sm: 1.5, md: 2.5, lg: 3 }}>
                 <Grid item xs={12} lg={8}>
-                    <Card sx={{ p: { xs: 1, sm: 2, md: 3 }, height: { xs: 220, sm: 260, md: 300 } }}>
+                    <Card sx={{ p: { xs: 1, sm: 2, md: 3 }, height: { xs: 220, sm: 260, md: 300 }, minHeight: '220px' }}>
                         <Skeleton variant="text" width={150} height={32} sx={{ mb: 2 }} />
                         <Skeleton variant="rectangular" width="100%" height="calc(100% - 48px)" sx={{ borderRadius: 2 }} />
                     </Card>
                 </Grid>
                 <Grid item xs={12} lg={4}>
-                    <Card sx={{ p: { xs: 1, sm: 2, md: 3 }, height: { xs: 220, sm: 260, md: 300 } }}>
+                    <Card sx={{ p: { xs: 1, sm: 2, md: 3 }, height: { xs: 220, sm: 260, md: 300 }, minHeight: '220px' }}>
                         <Skeleton variant="text" width={150} height={32} sx={{ mb: 2 }} />
                         <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: 'calc(100% - 48px)' }}>
                             <Skeleton 
@@ -54,7 +56,7 @@ export default function DashboardSkeleton() {
             {/* Lists Skeleton */}
             <Grid container spacing={{ xs: 0.75, sm: 1.5, md: 2.5, lg: 3 }}>
                 <Grid item xs={12} lg={8}>
-                    <Card sx={{ p: { xs: 1.5, sm: 2, md: 3 }, height: '100%', display: 'flex', flexDirection: 'column' }}>
+                    <Card sx={{ p: { xs: 1.5, sm: 2, md: 3 }, height: '100%', display: 'flex', flexDirection: 'column', minHeight: '300px' }}>
                         <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 2, flexWrap: { xs: 'wrap', sm: 'nowrap' }, gap: { xs: 1, sm: 0 } }}>
                             <Skeleton variant="text" width={120} height={32} />
                             <Skeleton variant="text" width={60} height={24} />
@@ -69,7 +71,7 @@ export default function DashboardSkeleton() {
                     </Card>
                 </Grid>
                 <Grid item xs={12} lg={4}>
-                    <Card sx={{ p: { xs: 1.5, sm: 2, md: 3 }, height: '100%' }}>
+                    <Card sx={{ p: { xs: 1.5, sm: 2, md: 3 }, height: '100%', minHeight: '300px' }}>
                         <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 2, flexWrap: { xs: 'wrap', sm: 'nowrap' }, gap: { xs: 1, sm: 0 } }}>
                             <Skeleton variant="text" width={100} height={32} />
                             <Skeleton variant="text" width={60} height={24} />

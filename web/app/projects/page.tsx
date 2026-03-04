@@ -1,6 +1,6 @@
 import ProjectList from '@/app/components/projects/ProjectList'
 import { listProjects } from '@/app/lib/mock/projects'
-import PageHeader from '@/app/components/PageHeader'
+import PageHeader from '@/app/components/common/PageHeader'
 
 export default function ProjectsPage() {
   const projects = listProjects()

@@ -14,7 +14,12 @@ function monthBounds() {
   const now = new Date()
   const monthStart = new Date(now.getFullYear(), now.getMonth(), 1)
   const nextMonth = new Date(now.getFullYear(), now.getMonth() + 1, 1)
-  return { monthStart: monthStart.toISOString(), monthEnd: nextMonth.toISOString() }
+  const prevMonthStart = new Date(now.getFullYear(), now.getMonth() - 1, 1)
+  return {
+    monthStart: monthStart.toISOString(),
+    monthEnd: nextMonth.toISOString(),
+    prevMonthStart: prevMonthStart.toISOString(),
+  }
 }
 
 async function getDashboardData({ start, end, userId, accessToken }: { start: string; end: string; userId: string; accessToken?: string | undefined }) {
@@ -38,13 +43,14 @@ async function getDashboardData({ start, end, userId, accessToken }: { start: st
     }
   })
 
-  const { monthStart, monthEnd } = monthBounds()
+  const { monthStart, monthEnd, prevMonthStart } = monthBounds()
   const fromDate = monthStart.slice(0, 10)
   const toDate = monthEnd.slice(0, 10)
+  const prevFromDate = prevMonthStart.slice(0, 10)
 
   try {
     // Combined fetch
-    const [apRes, , , cuMonth, apRecent, trRecent, exRecent, exMonth, trMonth, productsRes, apMonthRes, apStatsRes] = await Promise.all([
+    const [apRes, , , cuMonth, apRecent, trRecent, exRecent, exMonth, trMonth, productsRes, apMonthRes, apStatsRes, prevTrMonth, prevApMonth, prevCuMonth] = await Promise.all([
       supabase
         .from('appointments')
         .select('id, appointment_date')
@@ -111,7 +117,13 @@ async function getDashboardData({ start, end, userId, accessToken }: { start: st
         .select('id, service_id')
         .eq('owner_id', userId)
         .order('appointment_date', { ascending: false })
-        .limit(100)
+        .limit(100),
+      // Previous Month Transactions (for delta)
+      supabase.from('transactions').select('id, amount, transaction_date').eq('owner_id', userId).gte('transaction_date', prevFromDate).lt('transaction_date', fromDate),
+      // Previous Month Appointments Count (for delta)
+      supabase.from('appointments').select('id', { count: 'exact', head: true }).eq('owner_id', userId).gte('appointment_date', prevMonthStart).lt('appointment_date', monthStart),
+      // Previous Month New Customers (for delta)
+      supabase.from('customers').select('id', { count: 'exact', head: true }).eq('owner_id', userId).gte('created_at', prevMonthStart).lt('created_at', monthStart),
     ])
 
     const todayAppointments = Array.isArray(apRes.data) ? apRes.data.length : 0
@@ -132,6 +144,14 @@ async function getDashboardData({ start, end, userId, accessToken }: { start: st
       : 0
 
     const monthlyProfit = Number(monthlyIncome || 0) - Number(monthlyExpense || 0)
+
+    // 전월 수치 계산 (delta용)
+    const prevMonthlyIncome = Array.isArray(prevTrMonth?.data)
+      ? (prevTrMonth.data as any[]).reduce((s: number, t) => s + Number(t.amount || 0), 0)
+      : 0
+    const prevMonthlyProfit = prevMonthlyIncome
+    const prevMonthlyAppointments = prevApMonth?.count || 0
+    const prevMonthlyNewCustomers = prevCuMonth?.count || 0
 
     const monthlyNewCustomers = Array.isArray(cuMonth.data) ? cuMonth.data.length : 0
 
@@ -196,6 +216,9 @@ async function getDashboardData({ start, end, userId, accessToken }: { start: st
       monthlyProfit,
       monthlyNewCustomers,
       monthlyAppointments,
+      prevMonthlyProfit,
+      prevMonthlyAppointments,
+      prevMonthlyNewCustomers,
       recentAppointments: apRecentData.map((a: any) => ({
         id: a.id,
         appointment_date: a.appointment_date,
@@ -222,6 +245,9 @@ async function getDashboardData({ start, end, userId, accessToken }: { start: st
       monthlyProfit: 0,
       monthlyNewCustomers: 0,
       monthlyAppointments: 0,
+      prevMonthlyProfit: 0,
+      prevMonthlyAppointments: 0,
+      prevMonthlyNewCustomers: 0,
       recentAppointments: [],
       chartAppointments: [],
       recentTransactions: [],

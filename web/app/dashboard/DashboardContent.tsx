@@ -4,16 +4,18 @@ import { useMemo, useEffect, useState } from 'react'
 import { useShopName } from '../lib/hooks/useShopName'
 import Card from '../components/ui/Card'
 import Button from '../components/ui/Button'
-import MetricCard from '../components/MetricCard'
-import DashboardInstallPrompt from '../components/dashboard/DashboardInstallPrompt'
+import MetricCard from '../components/features/dashboard/MetricCard'
+import DashboardInstallPrompt from '../components/features/dashboard/DashboardInstallPrompt'
 import Link from 'next/link'
-import RecentTransactionsTable, { Transaction } from '../components/dashboard/RecentTransactionsTable'
-import { Box, Grid, Typography, Stack, List, ListItem, ListItemText, Container } from '@mui/material'
-import RevenueChart from '../components/dashboard/RevenueChart'
-import TopServicesChart from '../components/dashboard/TopServicesChart'
+import RecentTransactionsTable, { Transaction } from '../components/features/dashboard/RecentTransactionsTable'
+import { Box, Grid, Typography, Stack, List, ListItem, ListItemText } from '@mui/material'
+import PageContainer from '../components/layout/PageContainer'
+import RevenueChart from '../components/features/dashboard/RevenueChart'
+import TopServicesChart from '../components/features/dashboard/TopServicesChart'
 import DashboardSkeleton from '../components/skeletons/DashboardSkeleton'
 import ErrorState from '../components/common/ErrorState'
-import { PackageOpen, CalendarX } from 'lucide-react'
+import DashboardAlerts from '../components/features/dashboard/DashboardAlerts'
+import { PackageOpen, CalendarX, CheckCircle, Circle, ChevronRight } from 'lucide-react'
 
 type RecentAppointment = {
     id: string
@@ -67,22 +69,14 @@ export default function DashboardContent({ initialData, error }: DashboardConten
     if (error) {
         const errorMessage = error instanceof Error ? error.message : (typeof error === 'string' ? error : '데이터를 불러오는 중 오류가 발생했습니다.')
         return (
-            <Container 
-                maxWidth={false}
-                sx={{ 
-                    py: { xs: 2, sm: 3, md: 4 }, 
-                    px: { xs: 1.5, sm: 2, md: 3 },
-                    width: '100%',
-                    maxWidth: { xs: '100%', md: '1200px' },
-                }}
-            >
+            <PageContainer maxWidth={false}>
                 <ErrorState
                     title="대시보드 데이터를 불러올 수 없습니다"
                     message={errorMessage}
                     onRetry={() => window.location.reload()}
                     retryLabel="새로고침"
                 />
-            </Container>
+            </PageContainer>
         )
     }
 
@@ -95,10 +89,13 @@ export default function DashboardContent({ initialData, error }: DashboardConten
         monthlyProfit,
         monthlyNewCustomers,
         monthlyAppointments,
+        prevMonthlyProfit,
+        prevMonthlyAppointments,
+        prevMonthlyNewCustomers,
         recentAppointments,
-        chartAppointments, // New
+        chartAppointments,
         recentTransactions,
-        monthlyRevenueData, // New
+        monthlyRevenueData,
         activeProducts
     } = initialData
 
@@ -122,6 +119,19 @@ export default function DashboardContent({ initialData, error }: DashboardConten
         () => `₩${Number(monthlyProfit || 0).toLocaleString()}`,
         [monthlyProfit]
     )
+
+    const calcDelta = (current: number, prev: number) => {
+        if (!prev || prev === 0) return undefined
+        const pct = ((current - prev) / prev * 100)
+        return {
+            value: `${pct >= 0 ? '+' : ''}${pct.toFixed(1)}%`,
+            tone: (pct >= 0 ? 'up' : 'down') as 'up' | 'down',
+        }
+    }
+
+    const profitDelta = useMemo(() => calcDelta(Number(monthlyProfit || 0), Number(prevMonthlyProfit || 0)), [monthlyProfit, prevMonthlyProfit])
+    const appointmentsDelta = useMemo(() => calcDelta(Number(monthlyAppointments || 0), Number(prevMonthlyAppointments || 0)), [monthlyAppointments, prevMonthlyAppointments])
+    const newCustomersDelta = useMemo(() => calcDelta(Number(monthlyNewCustomers || 0), Number(prevMonthlyNewCustomers || 0)), [monthlyNewCustomers, prevMonthlyNewCustomers])
 
     return (
         <>
@@ -148,17 +158,7 @@ export default function DashboardContent({ initialData, error }: DashboardConten
                     },
                 }}
             />
-            <Container 
-                maxWidth={false}
-                sx={{ 
-                    py: { xs: 2, sm: 3, md: 4 }, 
-                    px: { xs: 1.5, sm: 2, md: 3 },
-                    width: '100%',
-                    maxWidth: { xs: '100%', md: '1200px' },
-                    overflowX: 'hidden',
-                    position: 'relative'
-                }}
-            >
+            <PageContainer maxWidth={false}>
             <Stack spacing={{ xs: 2, sm: 2.5, md: 3 }} sx={{ width: '100%', overflowX: 'hidden' }}>
                 <Box>
                     <Typography variant="h4" fontWeight={800} sx={{ color: 'text.primary', mb: 0.5, fontSize: { xs: '1.25rem', sm: '1.5rem' } }}>
@@ -170,6 +170,63 @@ export default function DashboardContent({ initialData, error }: DashboardConten
                 </Box>
 
                 <DashboardInstallPrompt />
+
+                {/* Alerts Section */}
+                <DashboardAlerts />
+
+                {/* 신규 사용자 온보딩 가이드 */}
+                {activeProducts.length === 0 && monthlyAppointments === 0 && (
+                    <Card sx={{ p: 3, border: '1.5px solid', borderColor: 'primary.200', bgcolor: 'primary.50' }}>
+                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, mb: 2.5 }}>
+                            <Typography variant="subtitle1" fontWeight={700} sx={{ color: 'primary.700' }}>
+                                시작 가이드
+                            </Typography>
+                            <Typography variant="caption" sx={{ color: 'primary.500', bgcolor: 'primary.100', px: 1, py: 0.25, borderRadius: 1 }}>
+                                3단계
+                            </Typography>
+                        </Box>
+                        <Stack spacing={1.5}>
+                            {[
+                                { label: '상품/서비스 등록', desc: '판매할 서비스나 상품을 먼저 등록하세요', href: '/products', done: activeProducts.length > 0 },
+                                { label: '직원 등록', desc: '담당 직원을 등록하면 예약 배정이 가능해요', href: '/staff', done: false },
+                                { label: '첫 예약 잡기', desc: '고객의 첫 예약을 등록해보세요', href: '/appointments', done: monthlyAppointments > 0 },
+                            ].map((step) => (
+                                <Box
+                                    key={step.href}
+                                    component={Link}
+                                    href={step.href}
+                                    sx={{
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        gap: 2,
+                                        p: 1.5,
+                                        borderRadius: 2,
+                                        bgcolor: step.done ? 'success.50' : 'background.paper',
+                                        border: '1px solid',
+                                        borderColor: step.done ? 'success.200' : 'divider',
+                                        textDecoration: 'none',
+                                        color: 'inherit',
+                                        minHeight: '56px',
+                                        transition: 'all 0.15s ease',
+                                        '&:hover': { borderColor: 'primary.400', bgcolor: step.done ? 'success.50' : 'primary.50' },
+                                    }}
+                                >
+                                    {step.done
+                                        ? <CheckCircle size={20} className="text-emerald-500" style={{ flexShrink: 0 }} />
+                                        : <Circle size={20} style={{ color: '#94a3b8', flexShrink: 0 }} />
+                                    }
+                                    <Box sx={{ flex: 1 }}>
+                                        <Typography variant="body2" fontWeight={600} sx={{ color: step.done ? 'success.700' : 'text.primary' }}>
+                                            {step.label}
+                                        </Typography>
+                                        <Typography variant="caption" color="text.secondary">{step.desc}</Typography>
+                                    </Box>
+                                    {!step.done && <ChevronRight size={16} style={{ color: '#94a3b8', flexShrink: 0 }} />}
+                                </Box>
+                            ))}
+                        </Stack>
+                    </Card>
+                )}
 
                 {/* Metrics */}
                 <Grid container spacing={{ xs: 0.75, sm: 1.5, md: 2.5, lg: 3 }} sx={{ width: '100%', margin: 0 }}>
@@ -187,6 +244,7 @@ export default function DashboardContent({ initialData, error }: DashboardConten
                             value={formattedMonthlyProfit}
                             hint="이번 달 기준"
                             colorIndex={1}
+                            {...(profitDelta ? { delta: profitDelta } : {})}
                         />
                     </Grid>
                     <Grid item xs={12} sm={6} md={3}>
@@ -195,6 +253,7 @@ export default function DashboardContent({ initialData, error }: DashboardConten
                             value={monthlyNewCustomers}
                             hint="이번 달 기준"
                             colorIndex={2}
+                            {...(newCustomersDelta ? { delta: newCustomersDelta } : {})}
                         />
                     </Grid>
                     <Grid item xs={12} sm={6} md={3}>
@@ -203,6 +262,7 @@ export default function DashboardContent({ initialData, error }: DashboardConten
                             value={monthlyAppointments}
                             hint="이번 달 기준"
                             colorIndex={3}
+                            {...(appointmentsDelta ? { delta: appointmentsDelta } : {})}
                         />
                     </Grid>
                 </Grid>
@@ -486,7 +546,7 @@ export default function DashboardContent({ initialData, error }: DashboardConten
                     </Grid>
                 </Grid>
             </Stack>
-        </Container>
+        </PageContainer>
         </>
     )
 }

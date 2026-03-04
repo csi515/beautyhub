@@ -91,5 +91,29 @@ export const queryKeys = {
     all: ['settings'] as const,
     detail: () => [...queryKeys.settings.all, 'detail'] as const,
   },
+  consultationNotes: {
+    all: ['consultationNotes'] as const,
+    lists: () => [...queryKeys.consultationNotes.all, 'list'] as const,
+    list: (customerId: string, filters?: { limit?: number; offset?: number }) => [...queryKeys.consultationNotes.lists(), customerId, filters] as const,
+  },
+  customerPhotos: {
+    all: ['customerPhotos'] as const,
+    lists: () => [...queryKeys.customerPhotos.all, 'list'] as const,
+    list: (customerId: string, filters?: { photo_type?: string }) => [...queryKeys.customerPhotos.lists(), customerId, filters] as const,
+  },
+  appointmentReminders: {
+    all: ['appointmentReminders'] as const,
+    lists: () => [...queryKeys.appointmentReminders.all, 'list'] as const,
+    list: (filters?: { upcoming?: boolean; appointment_id?: string }) => [...queryKeys.appointmentReminders.lists(), filters] as const,
+  },
+  appointmentTemplates: {
+    all: ['appointmentTemplates'] as const,
+    lists: () => [...queryKeys.appointmentTemplates.all, 'list'] as const,
+    list: (filters?: { search?: string }) => [...queryKeys.appointmentTemplates.lists(), filters] as const,
+  },
+  inactiveCustomers: {
+    all: ['inactiveCustomers'] as const,
+    list: (days?: number) => [...queryKeys.inactiveCustomers.all, days] as const,
+  },
 } as const
 

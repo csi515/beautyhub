@@ -2,7 +2,7 @@
 
 import { ReactNode } from 'react'
 import { Plus } from 'lucide-react'
-import Button from '../ui/Button'
+import Button from '@/app/components/ui/Button'
 
 type PageHeaderProps = {
   title?: string

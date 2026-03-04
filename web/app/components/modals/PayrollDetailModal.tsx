@@ -3,11 +3,11 @@
 import { useState, useEffect } from 'react'
 import { Box, Grid, Typography, Divider } from '@mui/material'
 import { Edit, Save, User, Calendar } from 'lucide-react'
-import Modal, { ModalBody, ModalFooter, ModalHeader } from '../ui/Modal'
-import Button from '../ui/Button'
-import Input from '../ui/Input'
-import Textarea from '../ui/Textarea'
-import { useAppToast } from '../../lib/ui/toast'
+import Modal, { ModalBody, ModalFooter, ModalHeader } from '@/app/components/ui/Modal'
+import Button from '@/app/components/ui/Button'
+import Input from '@/app/components/ui/Input'
+import Textarea from '@/app/components/ui/Textarea'
+import { useAppToast } from '@/app/lib/ui/toast'
 import type { PayrollRecord } from '@/types/entities'
 
 interface PayrollDetailModalProps {

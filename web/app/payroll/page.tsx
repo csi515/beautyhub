@@ -2,27 +2,27 @@
 
 import { useState } from 'react'
 import { Box, Container, Typography, Paper, Stack, TextField } from '@mui/material'
-import { TableSkeleton, CardSkeleton } from '../components/ui/SkeletonLoader'
+import { TableSkeleton, CardSkeleton } from '@/app/components/ui/SkeletonLoader'
 import { DollarSign, Download, Calculator, Search } from 'lucide-react'
-import PageHeader, { createActionButton } from '../components/common/PageHeader'
-import { useAppToast } from '../lib/ui/toast'
+import PageHeader, { createActionButton } from '@/app/components/common/PageHeader'
+import { useAppToast } from '@/app/lib/ui/toast'
 import InputAdornment from '@mui/material/InputAdornment'
 import { Chip } from '@mui/material'
 
 // Components
-import PayrollSummaryCards from '../components/payroll/PayrollSummaryCards'
-import PayrollStatusSummary from '../components/payroll/PayrollStatusSummary'
-import PayrollTable from '../components/payroll/PayrollTable'
-import PayrollCalculationModal from '../components/payroll/PayrollCalculationModal'
-import PayrollSettingsModal from '../components/modals/PayrollSettingsModal'
-import PayrollDetailModal from '../components/modals/PayrollDetailModal'
+import PayrollSummaryCards from '@/app/components/features/payroll/PayrollSummaryCards'
+import PayrollStatusSummary from '@/app/components/features/payroll/PayrollStatusSummary'
+import PayrollTable from '@/app/components/features/payroll/PayrollTable'
+import PayrollCalculationModal from '@/app/components/features/payroll/PayrollCalculationModal'
+import PayrollSettingsModal from '@/app/components/modals/PayrollSettingsModal'
+import PayrollDetailModal from '@/app/components/modals/PayrollDetailModal'
 
 // Hooks
-import { usePayroll } from '../lib/hooks/usePayroll'
-import { usePayrollFilters } from '../lib/hooks/usePayrollFilters'
+import { usePayroll } from '@/app/lib/hooks/usePayroll'
+import { usePayrollFilters } from '@/app/lib/hooks/usePayrollFilters'
 
 // Utils
-import { exportToCSV, preparePayrollDataForExport } from '../lib/utils/export'
+import { exportToCSV, preparePayrollDataForExport } from '@/app/lib/utils/export'
 
 // Types
 import { type PayrollCalculationResult } from '@/types/payroll'

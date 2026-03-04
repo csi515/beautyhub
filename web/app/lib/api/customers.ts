@@ -46,5 +46,12 @@ export const customersApi = {
   delete: (id: string): Promise<{ ok: boolean }> => {
     return apiClient.delete<{ ok: boolean }>(`/api/customers/${id}`)
   },
+
+  /**
+   * 장기 미방문 고객 조회
+   */
+  inactive: (days: number = 90): Promise<Array<Customer & { last_visit_date?: string | null; days_since_last_visit?: number }>> => {
+    return apiClient.get<Array<Customer & { last_visit_date?: string | null; days_since_last_visit?: number }>>(`/api/customers/inactive?days=${days}`)
+  },
 }
 

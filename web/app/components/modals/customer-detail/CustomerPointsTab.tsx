@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import { ChevronDown, ChevronUp } from 'lucide-react'
-import Button from '../../ui/Button'
+import Button from '@/app/components/ui/Button'
 
 type LedgerEntry = {
   created_at: string
