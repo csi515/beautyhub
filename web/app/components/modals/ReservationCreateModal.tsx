@@ -64,7 +64,7 @@ export default function ReservationCreateModal({ open, onClose, draft, onSaved }
     if (template) {
       setForm((f) => ({
         ...f,
-        service_id: template.service_id || f.service_id,
+        ...(template.service_id ? { service_id: template.service_id } : {}),
         notes: template.default_notes || f.notes,
       }))
     }

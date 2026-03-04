@@ -5,8 +5,6 @@ import DetailModal from '@/app/components/common/DetailModal'
 import DetailForm, { type DetailFormField } from '@/app/components/common/DetailForm'
 import { useAppToast } from '@/app/lib/ui/toast'
 import { productsApi } from '@/app/lib/api/products'
-import { Info } from 'lucide-react'
-import { Tooltip } from '@mui/material'
 import Textarea from '@/app/components/ui/Textarea'
 import type { Product as ProductEntity, ProductUpdateInput } from '@/types/entities'
 

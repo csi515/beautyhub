@@ -1,7 +1,7 @@
 'use client'
 
 import React, { Component, ErrorInfo, ReactNode } from 'react'
-import Button from './ui/Button'
+import Button from '../ui/Button'
 
 interface Props {
   children: ReactNode
@@ -36,7 +36,7 @@ export class ErrorBoundary extends Component<Props, State> {
     // 로깅 유틸리티 사용 (동적 import로 변경하여 Vercel 빌드 최적화)
     if (typeof window !== 'undefined') {
       try {
-        const { logger } = await import('../lib/utils/logger')
+        const { logger } = await import('@/app/lib/utils/logger')
         logger.error('ErrorBoundary caught an error', error, 'ErrorBoundary')
         logger.error('Error info', errorInfo, 'ErrorBoundary')
       } catch (importError) {

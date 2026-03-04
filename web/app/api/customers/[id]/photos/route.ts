@@ -28,7 +28,7 @@ export async function GET(
 
     const repository = new CustomerPhotosRepository(userId, supabase)
     const photos = await repository.findByCustomerId(customerId, {
-      photo_type: photo_type || undefined,
+      ...(photo_type ? { photo_type } : {}),
       limit,
       offset,
     })
@@ -86,7 +86,7 @@ export async function POST(
     const fileName = `${customerId}/${Date.now()}.${fileExt}`
     const filePath = `customer-photos/${fileName}`
 
-    const { data: uploadData, error: uploadError } = await supabase.storage
+    const { error: uploadError } = await supabase.storage
       .from('customer-photos')
       .upload(filePath, file, {
         cacheControl: '3600',

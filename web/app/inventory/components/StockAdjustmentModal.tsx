@@ -12,7 +12,7 @@ import {
     Select,
     MenuItem,
 } from '@mui/material'
-import Button from '../../components/ui/Button'
+import { Button } from '@mui/material'
 import type { Product } from '../hooks/useInventoryData'
 
 interface StockAdjustmentModalProps {
@@ -82,8 +82,8 @@ export default function StockAdjustmentModal({
                 </Box>
             </DialogContent>
             <DialogActions>
-                <Button onClick={onClose}>취소</Button>
-                <Button onClick={onSave} variant="contained">
+                <Button onClick={onClose} variant="outlined">취소</Button>
+                <Button onClick={onSave} variant="contained" color="primary">
                     저장
                 </Button>
             </DialogActions>

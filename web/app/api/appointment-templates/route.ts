@@ -26,7 +26,7 @@ export async function GET(request: NextRequest) {
     const templates = await repository.findAll({
       limit,
       offset,
-      search,
+      ...(search !== undefined ? { search } : {}),
       orderBy: 'created_at',
       ascending: false,
     })

@@ -47,7 +47,7 @@ export async function PATCH(
  * 고객 상담 일지 삭제
  */
 export async function DELETE(
-  request: NextRequest,
+  _request: NextRequest,
   { params }: { params: { id: string; noteId: string } }
 ) {
   try {

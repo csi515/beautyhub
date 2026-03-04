@@ -1,4 +1,4 @@
-﻿import { SupabaseClient } from '@supabase/supabase-js'
+import { SupabaseClient } from '@supabase/supabase-js'
 /**
  * 怨좉컼 Repository
  */
@@ -47,6 +47,34 @@ export class CustomersRepository extends BaseRepository<Customer> {
 
   /**
    * 怨좉컼 ?낅뜲?댄듃
+   */
+  /**
+   * 장기 미방문 고객 조회
+   */
+  async findInactiveCustomers(days: number): Promise<Customer[]> {
+    const cutoffDate = new Date()
+    cutoffDate.setDate(cutoffDate.getDate() - days)
+    const cutoff = cutoffDate.toISOString()
+
+    // 최근 방문 고객 ID 조회
+    const { data: recentAppts } = await this.supabase
+      .from('appointments')
+      .select('customer_id')
+      .eq('owner_id', this.userId)
+      .gte('appointment_date', cutoff)
+      .not('customer_id', 'is', null)
+
+    const recentCustomerIds = new Set(
+      (recentAppts ?? []).map((a: Record<string, unknown>) => a['customer_id'] as string)
+    )
+
+    // 전체 고객 조회 후 최근 방문 고객 제외
+    const allCustomers = await this.findAll({ limit: 2000 })
+    return allCustomers.filter(c => !recentCustomerIds.has(c.id))
+  }
+
+  /**
+   * 고객 업데이트
    */
   async updateCustomer(id: string, input: CustomerUpdateInput): Promise<Customer> {
     const payload: Partial<Customer> = {}

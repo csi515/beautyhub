@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react'
 import { Modal, ModalBody, ModalFooter } from '@/app/components/ui/Modal'
 import Button from '@/app/components/ui/Button'
 import { type FinancialSettings } from '@/types/settings'
-import FinancialSettingsSection from '@/app/components/settings/FinancialSettingsSection'
+import FinancialSettingsSection from '../FinancialSettingsSection'
 
 type Props = {
     open: boolean

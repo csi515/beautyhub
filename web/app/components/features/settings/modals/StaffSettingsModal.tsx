@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react'
 import { Modal, ModalBody, ModalFooter } from '@/app/components/ui/Modal'
 import Button from '@/app/components/ui/Button'
 import { type StaffSettings } from '@/types/settings'
-import StaffSettingsSection from '@/app/components/settings/StaffSettingsSection'
+import StaffSettingsSection from '../StaffSettingsSection'
 
 type Props = {
     open: boolean

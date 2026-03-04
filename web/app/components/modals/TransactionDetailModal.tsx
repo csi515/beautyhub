@@ -3,7 +3,6 @@
 import { useEffect, useState } from 'react'
 import DetailModal from '@/app/components/common/DetailModal'
 import DetailForm, { type DetailFormField } from '@/app/components/common/DetailForm'
-import Select from '@/app/components/ui/Select'
 import { useAppToast } from '@/app/lib/ui/toast'
 import { customersApi } from '@/app/lib/api/customers'
 import { transactionsApi } from '@/app/lib/api/transactions'

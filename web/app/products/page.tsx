@@ -342,7 +342,7 @@ export default function ProductsPage() {
             <EmptyState
               title={products.length === 0 ? "제품이 없습니다." : "검색 결과가 없습니다."}
               actionLabel="제품 추가"
-              actionOnClick={openCreate}
+              onAction={openCreate}
             />
           </Grid>
         )}

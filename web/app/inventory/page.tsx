@@ -13,11 +13,10 @@ import EmptyState from '@/app/components/ui/EmptyState'
 import PageHeader, { createActionButton } from '@/app/components/common/PageHeader'
 import SearchBar from '@/app/components/common/SearchBar'
 import FilterPanel from '@/app/components/common/FilterPanel'
-import type { FilterField } from '@/app/components/common/FilterPanel'
-
 import InventoryHistoryModal from '@/app/components/features/inventory/InventoryHistoryModal'
 
 export interface InventoryFilters {
+    [key: string]: string
     status: string
     minPrice: string
     maxPrice: string

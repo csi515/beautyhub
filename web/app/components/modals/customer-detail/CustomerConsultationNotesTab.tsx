@@ -41,6 +41,7 @@ export default function CustomerConsultationNotesTab({ customerId }: CustomerCon
 
     try {
       await createMutation.mutateAsync({
+        customer_id: customerId,
         note_date: noteDate,
         content: noteContent.trim(),
       })

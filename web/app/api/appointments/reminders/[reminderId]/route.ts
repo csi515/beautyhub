@@ -8,7 +8,7 @@ import { AppointmentRemindersRepository } from '@/app/lib/repositories/appointme
  * 리마인더 확인 처리
  */
 export async function PATCH(
-  request: NextRequest,
+  _request: NextRequest,
   { params }: { params: { reminderId: string } }
 ) {
   try {

@@ -55,10 +55,11 @@ export class ConsultationNotesRepository extends BaseRepository<ConsultationNote
       throw new Error('content required')
     }
 
+    const noteDate: string = input.note_date ?? new Date().toISOString().substring(0, 10)
     const payload: Partial<ConsultationNote> = {
       customer_id: input.customer_id,
-      appointment_id: input.appointment_id || null,
-      note_date: input.note_date || new Date().toISOString().split('T')[0],
+      appointment_id: input.appointment_id ?? null,
+      note_date: noteDate,
       content,
     }
 

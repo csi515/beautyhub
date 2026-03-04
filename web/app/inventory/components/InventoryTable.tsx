@@ -19,7 +19,7 @@ import {
     Pagination,
 } from '@mui/material'
 import { Package, AlertTriangle, Edit, TrendingDown, History } from 'lucide-react'
-import Button from '../../components/ui/Button'
+import { Button } from '@mui/material'
 import MobileDataCard from '../../components/ui/MobileDataCard'
 import type { Product } from '../hooks/useInventoryData'
 
@@ -83,6 +83,7 @@ export default function InventoryTable({
                                         variant="outlined"
                                         color="error"
                                         onClick={() => onQuickAdjust(product, -1)}
+                                        sx={{ minHeight: 32 }}
                                     >
                                         출고
                                     </Button>
@@ -91,6 +92,7 @@ export default function InventoryTable({
                                         variant="outlined"
                                         color="success"
                                         onClick={() => onQuickAdjust(product, 1)}
+                                        sx={{ minHeight: 32 }}
                                     >
                                         입고
                                     </Button>
@@ -99,6 +101,7 @@ export default function InventoryTable({
                                         variant="outlined"
                                         onClick={() => onOpenStockModal(product)}
                                         startIcon={<Edit size={16} />}
+                                        sx={{ minHeight: 32 }}
                                     >
                                         조정
                                     </Button>

@@ -1,5 +1,4 @@
 import { useState, useEffect, useCallback } from 'react'
-import { Expense, Transaction } from '@/types/entities'
 import { FinanceState, FinanceDateRange } from '@/types/finance'
 
 function isoMonthRange(d = new Date()) {

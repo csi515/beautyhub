@@ -1,4 +1,4 @@
-﻿import { SupabaseClient } from '@supabase/supabase-js'
+import { SupabaseClient } from '@supabase/supabase-js'
 /**
  * ?곹뭹 Repository
  */
@@ -86,8 +86,6 @@ export class ProductsRepository extends BaseRepository<Product> {
       const duration = Number(input.duration_minutes)
       if (!Number.isNaN(duration) && duration > 0) {
         payload.duration_minutes = duration
-      } else if (duration === null || duration === undefined) {
-        payload.duration_minutes = null
       }
     }
 

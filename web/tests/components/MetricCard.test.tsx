@@ -4,7 +4,7 @@
 
 import { describe, it, expect } from 'vitest'
 import { render, screen } from '@testing-library/react'
-import MetricCard from '@/app/components/MetricCard'
+import MetricCard from '@/app/components/features/dashboard/MetricCard'
 
 describe('MetricCard', () => {
   it('기본 렌더링', () => {

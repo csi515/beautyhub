@@ -8,7 +8,7 @@ import { AppointmentsRepository } from '@/app/lib/repositories/appointments.repo
  * 노쇼 처리
  */
 export async function PATCH(
-  request: NextRequest,
+  _request: NextRequest,
   { params }: { params: { id: string } }
 ) {
   try {

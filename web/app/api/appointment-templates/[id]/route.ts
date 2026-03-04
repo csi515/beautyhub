@@ -49,7 +49,7 @@ export async function PATCH(
  * 예약 템플릿 삭제
  */
 export async function DELETE(
-  request: NextRequest,
+  _request: NextRequest,
   { params }: { params: { id: string } }
 ) {
   try {

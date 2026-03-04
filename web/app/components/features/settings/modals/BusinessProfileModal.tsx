@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react'
 import { Modal, ModalBody, ModalFooter } from '@/app/components/ui/Modal'
 import Button from '@/app/components/ui/Button'
 import { type BusinessProfile } from '@/types/settings'
-import BusinessProfileSection from '@/app/components/settings/BusinessProfileSection'
+import BusinessProfileSection from '../BusinessProfileSection'
 
 type Props = {
     open: boolean

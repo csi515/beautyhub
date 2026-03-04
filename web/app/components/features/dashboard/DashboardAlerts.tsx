@@ -3,7 +3,7 @@
 import { useMemo } from 'react'
 import Card from '@/app/components/ui/Card'
 import { Box, Typography, Stack, Chip, Button as MuiButton, Divider } from '@mui/material'
-import { Bell, Clock, UserX, AlertCircle } from 'lucide-react'
+import { Bell, Clock, UserX } from 'lucide-react'
 import Link from 'next/link'
 import { format } from 'date-fns'
 import { ko } from 'date-fns/locale'
@@ -121,9 +121,9 @@ export default function DashboardAlerts() {
             </Stack>
             <Box sx={{ mt: 1.5 }}>
               <Link href="/appointments" style={{ textDecoration: 'none', display: 'block' }}>
-                <Button variant="outline" size="sm" fullWidth>
+                <MuiButton variant="outlined" fullWidth size="small">
                   예약 관리로 이동
-                </Button>
+                </MuiButton>
               </Link>
             </Box>
           </Box>
@@ -178,9 +178,9 @@ export default function DashboardAlerts() {
               </Stack>
               <Box sx={{ mt: 1.5 }}>
                 <Link href="/customers" style={{ textDecoration: 'none', display: 'block' }}>
-                  <Button variant="outline" size="sm" fullWidth>
+                  <MuiButton variant="outlined" fullWidth size="small">
                     고객 관리로 이동
-                  </Button>
+                  </MuiButton>
                 </Link>
               </Box>
             </Box>

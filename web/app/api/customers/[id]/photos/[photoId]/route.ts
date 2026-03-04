@@ -8,7 +8,7 @@ import { CustomerPhotosRepository } from '@/app/lib/repositories/customer-photos
  * 고객 사진 삭제
  */
 export async function DELETE(
-  request: NextRequest,
+  _request: NextRequest,
   { params }: { params: { id: string; photoId: string } }
 ) {
   try {
