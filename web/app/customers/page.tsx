@@ -2,6 +2,7 @@
 
 import { Plus } from 'lucide-react'
 import { useState, lazy, Suspense } from 'react'
+import { Users, Download } from 'lucide-react'
 import { useAppToast } from '../lib/ui/toast'
 import { exportToCSV, prepareCustomerDataForExport } from '../lib/utils/export'
 
@@ -11,6 +12,8 @@ import Stack from '@mui/material/Stack'
 // 공통 컴포넌트
 import ErrorState from '../components/common/ErrorState'
 import Button from '../components/ui/Button'
+import PageContainer from '../components/layout/PageContainer'
+import PageHeader, { createActionButton } from '../components/common/PageHeader'
 
 // Components
 import CustomerFilters from '../components/features/customers/CustomerFilters'
@@ -94,8 +97,20 @@ export default function CustomersPage() {
 
 
   return (
-    <Box sx={{ px: { xs: 1.5, sm: 2, md: 3 }, py: 4, maxWidth: { xs: '100%', md: '1200px' }, mx: 'auto', width: '100%' }}>
+    <PageContainer maxWidth="lg">
       <Stack spacing={3}>
+      <PageHeader
+        title="고객 관리"
+        icon={<Users className="h-5 w-5" />}
+        description="고객 정보를 검색하고 상태/포인트 기준으로 관리하세요."
+        actions={[
+          createActionButton('CSV 내보내기', handleExport, 'secondary', <Download size={16} />),
+          createActionButton('고객 추가', () => {
+            setSelected({ id: '', owner_id: '', name: '', phone: '', email: '', address: '' } as Customer)
+            setDetailOpen(true)
+          }),
+        ]}
+      />
       {/* 필터 및 검색 */}
       <CustomerFilters
         query={query}
@@ -213,6 +228,6 @@ export default function CustomersPage() {
         </Button>
       </Box>
     </Stack>
-    </Box>
+    </PageContainer>
   )
 }

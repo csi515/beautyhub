@@ -18,6 +18,8 @@ import {
     Box
 } from '@mui/material'
 import { format } from 'date-fns'
+import ConfirmDialog from '@/app/components/ui/ConfirmDialog'
+import { useAppToast } from '@/app/lib/ui/toast'
 
 interface AttendanceRecordModalProps {
     open: boolean
@@ -50,6 +52,9 @@ export default function AttendanceRecordModal({
         memo: ''
     })
     const [loading, setLoading] = useState(false)
+    const [confirmDeleteOpen, setConfirmDeleteOpen] = useState(false)
+    const [formError, setFormError] = useState('')
+    const toast = useAppToast()
 
     useEffect(() => {
         if (record) {
@@ -80,17 +85,19 @@ export default function AttendanceRecordModal({
 
     const handleSave = async () => {
         if (!form.staff_id) {
-            alert('직원을 선택해주세요.')
+            setFormError('직원을 선택해주세요.')
             return
         }
 
         try {
             setLoading(true)
+            setFormError('')
             await onSave(form)
             onClose()
         } catch (error) {
-            console.error('저장 실패:', error)
-            alert('저장에 실패했습니다.')
+            const message = error instanceof Error ? error.message : '저장에 실패했습니다.'
+            setFormError(message)
+            toast.error('저장에 실패했습니다.')
         } finally {
             setLoading(false)
         }
@@ -98,15 +105,15 @@ export default function AttendanceRecordModal({
 
     const handleDelete = async () => {
         if (!record?.id) return
-        if (!confirm('이 기록을 삭제하시겠습니까?')) return
 
         try {
             setLoading(true)
             await onDelete?.(record.id)
             onClose()
         } catch (error) {
-            console.error('삭제 실패:', error)
-            alert('삭제에 실패했습니다.')
+            const message = error instanceof Error ? error.message : '삭제에 실패했습니다.'
+            setFormError(message)
+            toast.error('삭제에 실패했습니다.')
         } finally {
             setLoading(false)
         }
@@ -130,7 +137,12 @@ export default function AttendanceRecordModal({
                         <Select
                             value={form.staff_id}
                             label="직원"
-                            onChange={e => setForm({ ...form, staff_id: e.target.value })}
+                            onChange={e => {
+                                setForm({ ...form, staff_id: e.target.value })
+                                if (formError) {
+                                    setFormError('')
+                                }
+                            }}
                             disabled={!!record}
                         >
                             {staffList.filter(s => s.active !== false).map(staff => (
@@ -140,6 +152,11 @@ export default function AttendanceRecordModal({
                             ))}
                         </Select>
                     </FormControl>
+                    {formError && (
+                        <Typography variant="body2" color="error.main">
+                            {formError}
+                        </Typography>
+                    )}
 
                     <FormControl fullWidth>
                         <InputLabel>유형</InputLabel>
@@ -204,7 +221,7 @@ export default function AttendanceRecordModal({
             <DialogActions sx={{ p: 2, gap: 1 }}>
                 {record && onDelete && (
                     <Button
-                        onClick={handleDelete}
+                        onClick={() => setConfirmDeleteOpen(true)}
                         disabled={loading}
                         color="error"
                         sx={{ mr: 'auto' }}
@@ -223,6 +240,15 @@ export default function AttendanceRecordModal({
                     저장
                 </Button>
             </DialogActions>
+            <ConfirmDialog
+                open={confirmDeleteOpen}
+                onClose={() => setConfirmDeleteOpen(false)}
+                onConfirm={handleDelete}
+                title="근태 기록 삭제"
+                description="이 기록을 삭제하시겠습니까? 삭제 후 복구할 수 없습니다."
+                confirmText="삭제"
+                variant="danger"
+            />
         </Dialog>
     )
 }

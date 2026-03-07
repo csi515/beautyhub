@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import { Box, Grid, Typography } from '@mui/material'
 import { Save, Percent } from 'lucide-react'
-import Modal, { ModalBody, ModalFooter, ModalHeader } from '@/app/components/ui/Modal'
+import Modal, { ModalBody, ModalFooter, ModalHeader } from '@/app/components/ui/AdaptiveModal'
 import Button from '@/app/components/ui/Button'
 import Input from '@/app/components/ui/Input'
 import { useAppToast } from '@/app/lib/ui/toast'

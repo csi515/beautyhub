@@ -42,6 +42,7 @@ type Item = {
   href: string
   label: string
   icon: React.ElementType
+  disabled?: boolean
 }
 
 const items: Item[] = [
@@ -51,7 +52,7 @@ const items: Item[] = [
   { href: '/inventory', label: '재고', icon: Warehouse },
   { href: '/customers', label: '고객', icon: Users },
   { href: '/analytics', label: '고객분석', icon: TrendingUp },
-  { href: '/staff', label: '직원', icon: UserCheck },
+  { href: '/staff', label: '직원', icon: UserCheck, disabled: true },
   { href: '/payroll', label: '급여', icon: Receipt },
   { href: '/finance', label: '재무', icon: DollarSign },
   { href: '/settings', label: '설정', icon: Settings },
@@ -151,67 +152,82 @@ export default function Sidebar({
         }}
       >
         {items.map((item) => {
-          const active = item.href === '/'
+          const active = !item.disabled && (item.href === '/'
             ? pathname === '/'
-            : pathname?.startsWith(item.href)
+            : pathname?.startsWith(item.href))
           const Icon = item.icon
 
           return (
             <ListItem key={item.href} disablePadding sx={{ mb: 0.5 }}>
-              <Tooltip title={collapsed ? item.label : ''} placement="right" arrow>
-                {/* @ts-expect-error - Next.js Link component type mismatch with MUI */}
-                <ListItemButton
-                  component={Link}
-                  href={item.href}
-                  onClick={onNavigate}
-                  selected={active}
-                  sx={{
-                    minHeight: 44,
-                    justifyContent: collapsed ? 'center' : 'initial',
-                    borderRadius: 2,
-                    px: 1.5,
-                    color: active ? 'primary.main' : 'text.primary',
-                    bgcolor: active ? alpha(theme.palette.primary.main, 0.08) : 'transparent',
-                    '&:hover': {
-                      bgcolor: active
-                        ? alpha(theme.palette.primary.main, 0.12)
-                        : alpha(theme.palette.text.primary, 0.04),
-                    },
-                  }}
-                >
-                  <ListItemIcon
+              <Tooltip
+                title={item.disabled ? (collapsed ? `${item.label} (준비 중)` : '준비 중') : (collapsed ? item.label : '')}
+                placement="right"
+                arrow
+              >
+                <span style={{ width: '100%' }}>
+                  {/* @ts-expect-error - Next.js Link component type mismatch with MUI */}
+                  <ListItemButton
+                    component={item.disabled ? 'div' : Link}
+                    href={item.disabled ? undefined : item.href}
+                    onClick={item.disabled ? undefined : onNavigate}
+                    selected={active}
+                    disabled={item.disabled}
                     sx={{
-                      minWidth: 0,
-                      mr: collapsed ? 0 : 2,
-                      justifyContent: 'center',
-                      color: active ? 'primary.main' : 'text.secondary',
+                      minHeight: 44,
+                      justifyContent: collapsed ? 'center' : 'initial',
+                      borderRadius: 2,
+                      px: 1.5,
+                      color: active ? 'primary.main' : 'text.primary',
+                      bgcolor: active ? alpha(theme.palette.primary.main, 0.08) : 'transparent',
+                      opacity: item.disabled ? 0.4 : 1,
+                      cursor: item.disabled ? 'not-allowed' : 'pointer',
+                      '&:hover': {
+                        bgcolor: item.disabled
+                          ? 'transparent'
+                          : active
+                            ? alpha(theme.palette.primary.main, 0.12)
+                            : alpha(theme.palette.text.primary, 0.04),
+                      },
+                      '&.Mui-disabled': {
+                        opacity: 0.4,
+                        pointerEvents: 'none',
+                      },
                     }}
                   >
-                    <Icon size={20} />
-                  </ListItemIcon>
-                  {!collapsed && (
-                    <ListItemText
-                      primary={item.label}
-                      primaryTypographyProps={{
-                        variant: 'body2',
-                        fontWeight: active ? 600 : 400
-                      }}
-                    />
-                  )}
-                  {active && !collapsed && (
-                    <Box
+                    <ListItemIcon
                       sx={{
-                        width: 4,
-                        height: 32,
-                        bgcolor: 'primary.main',
-                        position: 'absolute',
-                        right: 0,
-                        borderTopLeftRadius: 4,
-                        borderBottomLeftRadius: 4
+                        minWidth: 0,
+                        mr: collapsed ? 0 : 2,
+                        justifyContent: 'center',
+                        color: active ? 'primary.main' : 'text.secondary',
                       }}
-                    />
-                  )}
-                </ListItemButton>
+                    >
+                      <Icon size={20} />
+                    </ListItemIcon>
+                    {!collapsed && (
+                      <ListItemText
+                        primary={item.label}
+                        primaryTypographyProps={{
+                          variant: 'body2',
+                          fontWeight: active ? 600 : 400
+                        }}
+                      />
+                    )}
+                    {active && !collapsed && (
+                      <Box
+                        sx={{
+                          width: 4,
+                          height: 32,
+                          bgcolor: 'primary.main',
+                          position: 'absolute',
+                          right: 0,
+                          borderTopLeftRadius: 4,
+                          borderBottomLeftRadius: 4
+                        }}
+                      />
+                    )}
+                  </ListItemButton>
+                </span>
               </Tooltip>
             </ListItem>
           )

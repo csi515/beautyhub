@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useState } from 'react'
+import { Settings } from 'lucide-react'
 import { useAppToast } from '@/app/lib/ui/toast'
 import { settingsApi } from '@/app/lib/api/settings'
 import { DEFAULT_SETTINGS, type SystemSettings, type UserProfile, type SecuritySettings, type DisplaySettings } from '@/types/settings'
@@ -8,9 +9,8 @@ import SettingsSkeleton from '@/app/components/skeletons/SettingsSkeleton'
 
 // MUI Imports (레이아웃 유틸리티만 허용)
 import Stack from '@mui/material/Stack'
-import Typography from '@mui/material/Typography'
-import Box from '@mui/material/Box'
 import PageContainer from '../components/layout/PageContainer'
+import PageHeader from '../components/common/PageHeader'
 
 // Summary Cards
 import UserProfileSummaryCard from '@/app/components/features/settings/cards/UserProfileSummaryCard'
@@ -24,6 +24,7 @@ import UserProfileModal from '@/app/components/features/settings/modals/UserProf
 import SystemSettingsModal from '@/app/components/features/settings/modals/SystemSettingsModal'
 import SecuritySettingsModal from '@/app/components/features/settings/modals/SecuritySettingsModal'
 import DisplaySettingsModal from '@/app/components/features/settings/modals/DisplaySettingsModal'
+import ConfirmDialog from '@/app/components/ui/ConfirmDialog'
 
 export default function SettingsPage() {
   const [systemSettings, setSystemSettings] = useState<SystemSettings>(DEFAULT_SETTINGS.systemSettings)
@@ -54,6 +55,8 @@ export default function SettingsPage() {
   const [systemModalOpen, setSystemModalOpen] = useState(false)
   const [securityModalOpen, setSecurityModalOpen] = useState(false)
   const [displayModalOpen, setDisplayModalOpen] = useState(false)
+  const [logoutConfirmOpen, setLogoutConfirmOpen] = useState(false)
+  const [deleteAccountConfirmOpen, setDeleteAccountConfirmOpen] = useState(false)
 
   const toast = useAppToast()
 
@@ -125,33 +128,32 @@ export default function SettingsPage() {
 
   // 계정 관리 핸들러들
   const handleLogout = async () => {
-    if (confirm('정말 로그아웃하시겠습니까?')) {
-      try {
-        // TODO: 실제 로그아웃 API 호출
-        toast.success('로그아웃되었습니다.')
-        // 리다이렉트 로직
-        window.location.href = '/login'
-      } catch (error) {
-        toast.error('로그아웃에 실패했습니다.')
-      }
+    try {
+      // TODO: 실제 로그아웃 API 호출
+      toast.success('로그아웃되었습니다.')
+      // 리다이렉트 로직
+      window.location.href = '/login'
+    } catch (error) {
+      toast.error('로그아웃에 실패했습니다.')
     }
   }
 
   const handleDeleteAccount = async () => {
+    try {
+      // TODO: 실제 계정 삭제 API 호출
+      toast.success('계정이 삭제되었습니다.')
+      // 리다이렉트 로직
+      window.location.href = '/'
+    } catch (error) {
+      toast.error('계정 삭제에 실패했습니다.')
+    }
+  }
+
+  const requestDeleteAccount = () => {
     const confirmText = '계정 삭제 확인'
     const userInput = prompt(`계정 삭제를 진행하려면 "${confirmText}"을 입력하세요.`)
-
     if (userInput === confirmText) {
-      if (confirm('정말 계정을 삭제하시겠습니까? 이 작업은 취소할 수 없습니다.')) {
-        try {
-          // TODO: 실제 계정 삭제 API 호출
-          toast.success('계정이 삭제되었습니다.')
-          // 리다이렉트 로직
-          window.location.href = '/'
-        } catch (error) {
-          toast.error('계정 삭제에 실패했습니다.')
-        }
-      }
+      setDeleteAccountConfirmOpen(true)
     } else if (userInput !== null) {
       toast.error('확인 문구가 일치하지 않습니다.')
     }
@@ -189,15 +191,11 @@ export default function SettingsPage() {
   return (
     <PageContainer maxWidth={false}>
       <Stack spacing={4}>
-        {/* 헤더 */}
-        <Box>
-          <Typography variant="h4" fontWeight="bold" gutterBottom>
-            설정
-          </Typography>
-          <Typography variant="body2" color="text.secondary">
-            계정 정보, 알림, 표시 등 개인 설정을 관리하세요
-          </Typography>
-        </Box>
+        <PageHeader
+          title="설정"
+          icon={<Settings className="h-5 w-5" />}
+          description="계정 정보, 보안, 표시 설정을 한 곳에서 관리하세요."
+        />
 
         {/* 요약 카드들 */}
         <Stack spacing={3}>
@@ -222,8 +220,8 @@ export default function SettingsPage() {
           />
 
           <AccountSettingsSummaryCard
-            onLogout={handleLogout}
-            onDeleteAccount={handleDeleteAccount}
+            onLogout={() => setLogoutConfirmOpen(true)}
+            onDeleteAccount={requestDeleteAccount}
             onExportData={handleExportData}
           />
         </Stack>
@@ -256,6 +254,26 @@ export default function SettingsPage() {
         data={displaySettings}
         onClose={() => setDisplayModalOpen(false)}
         onSave={handleSaveDisplaySettings}
+      />
+
+      <ConfirmDialog
+        open={logoutConfirmOpen}
+        onClose={() => setLogoutConfirmOpen(false)}
+        onConfirm={handleLogout}
+        title="로그아웃"
+        description="정말 로그아웃하시겠습니까?"
+        confirmText="로그아웃"
+        variant="danger"
+      />
+
+      <ConfirmDialog
+        open={deleteAccountConfirmOpen}
+        onClose={() => setDeleteAccountConfirmOpen(false)}
+        onConfirm={handleDeleteAccount}
+        title="계정 삭제"
+        description="정말 계정을 삭제하시겠습니까? 이 작업은 취소할 수 없습니다."
+        confirmText="계정 삭제"
+        variant="danger"
       />
     </PageContainer>
   )

@@ -14,7 +14,7 @@ import {
     InputLabel
 } from '@mui/material'
 import { Save, Calendar, Repeat } from 'lucide-react'
-import Modal, { ModalBody, ModalFooter, ModalHeader } from '@/app/components/ui/Modal'
+import Modal, { ModalBody, ModalFooter, ModalHeader } from '@/app/components/ui/AdaptiveModal'
 import Button from '@/app/components/ui/Button'
 import Input from '@/app/components/ui/Input'
 import { useAppToast } from '@/app/lib/ui/toast'

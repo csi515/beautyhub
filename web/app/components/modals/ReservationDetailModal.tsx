@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect, useMemo } from 'react'
-import Modal, { ModalBody, ModalFooter, ModalHeader } from '@/app/components/ui/Modal'
+import Modal, { ModalBody, ModalFooter, ModalHeader } from '@/app/components/ui/AdaptiveModal'
 import Button from '@/app/components/ui/Button'
 import Input from '@/app/components/ui/Input'
 import Select from '@/app/components/ui/Select'
@@ -12,6 +12,7 @@ import { useCustomerAndProductLists } from '@/app/lib/hooks/components/useCustom
 import { appointmentsApi } from '@/app/lib/api/appointments'
 import type { AppointmentUpdateInput, Product } from '@/types/entities'
 import { AlertCircle } from 'lucide-react'
+import ConfirmDialog from '@/app/components/ui/ConfirmDialog'
 
 type Item = { id: string; date: string; start: string; end?: string; status: string; notes?: string; customer_id?: string; staff_id?: string; service_id?: string; no_show?: boolean }
 
@@ -20,6 +21,8 @@ export default function ReservationDetailModal({ open, onClose, item, onSaved, o
   const [loading, setLoading] = useState(false)
   const [markingNoShow, setMarkingNoShow] = useState(false)
   const [error, setError] = useState('')
+  const [confirmNoShowOpen, setConfirmNoShowOpen] = useState(false)
+  const [confirmDeleteOpen, setConfirmDeleteOpen] = useState(false)
   const toast = useAppToast()
   const { customers, products } = useCustomerAndProductLists(open)
 
@@ -73,7 +76,6 @@ export default function ReservationDetailModal({ open, onClose, item, onSaved, o
 
   const handleMarkNoShow = async () => {
     if (!form?.id) return
-    if (!confirm('이 예약을 노쇼로 처리하시겠습니까?')) return
 
     try {
       setMarkingNoShow(true)
@@ -117,7 +119,6 @@ export default function ReservationDetailModal({ open, onClose, item, onSaved, o
 
   const removeItem = async () => {
     if (!form?.id) return
-    if (!confirm('정말 삭제하시겠어요? 이 작업은 되돌릴 수 없습니다.')) return
     try {
       await appointmentsApi.delete(form.id)
       onDeleted(); onClose(); toast.success('삭제되었습니다.')
@@ -255,7 +256,7 @@ export default function ReservationDetailModal({ open, onClose, item, onSaved, o
           {!form.no_show && form.status !== 'cancelled' && (
             <Button
               variant="outline"
-              onClick={handleMarkNoShow}
+              onClick={() => setConfirmNoShowOpen(true)}
               disabled={loading || markingNoShow}
               loading={markingNoShow}
               className="flex-1 md:flex-none border-amber-300 text-amber-700 hover:bg-amber-50"
@@ -263,10 +264,28 @@ export default function ReservationDetailModal({ open, onClose, item, onSaved, o
               노쇼 처리
             </Button>
           )}
-          <Button variant="danger" onClick={removeItem} disabled={loading || markingNoShow} className="flex-1 md:flex-none">삭제</Button>
-          <Button variant="primary" onClick={save} disabled={loading || markingNoShow} className="flex-1 md:flex-none">저장</Button>
+          <Button variant="danger" onClick={() => setConfirmDeleteOpen(true)} disabled={loading || markingNoShow} className="flex-1 md:flex-none">삭제</Button>
+          <Button variant="primary" onClick={save} disabled={loading || markingNoShow} loading={loading} className="flex-1 md:flex-none">저장</Button>
         </div>
       </ModalFooter>
+      <ConfirmDialog
+        open={confirmNoShowOpen}
+        onClose={() => setConfirmNoShowOpen(false)}
+        onConfirm={handleMarkNoShow}
+        title="노쇼 처리"
+        description="이 예약을 노쇼로 처리하시겠습니까?"
+        confirmText="노쇼 처리"
+        variant="danger"
+      />
+      <ConfirmDialog
+        open={confirmDeleteOpen}
+        onClose={() => setConfirmDeleteOpen(false)}
+        onConfirm={removeItem}
+        title="예약 삭제"
+        description="정말 삭제하시겠어요? 이 작업은 되돌릴 수 없습니다."
+        confirmText="삭제"
+        variant="danger"
+      />
     </Modal>
   )
 }

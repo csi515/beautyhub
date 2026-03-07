@@ -1,11 +1,12 @@
 'use client'
 
 import { lazy, Suspense, useState } from 'react'
-import { Plus } from 'lucide-react'
-import { Box, Stack, Fab, Typography } from '@mui/material'
+import { Plus, DollarSign } from 'lucide-react'
+import { Stack, Fab, Typography } from '@mui/material'
+import PageContainer from '@/app/components/layout/PageContainer'
+import PageHeader, { createActionButton } from '@/app/components/common/PageHeader'
 
 // Components
-import FinanceHeader from '@/app/components/features/finance/FinanceHeader'
 import FinanceSummaryCards from '@/app/components/features/finance/FinanceSummaryCards'
 import FinanceFilters from '@/app/components/features/finance/FinanceFilters'
 import FinanceMobileCards from '@/app/components/features/finance/FinanceMobileCards'
@@ -98,12 +99,16 @@ export default function FinancePage() {
   }
 
   return (
-    <Box sx={{ px: { xs: 1.5, sm: 2, md: 3 }, py: 4, maxWidth: { xs: '100%', md: '1200px' }, mx: 'auto', width: '100%' }}>
+    <PageContainer maxWidth="lg">
       <Stack spacing={3}>
-      {/* 헤더 영역 */}
-      <FinanceHeader
-        onExportExcel={handleExportExcel}
-        onGenerateTaxReport={handleGenerateTaxReport}
+      <PageHeader
+        title="재무 관리"
+        icon={<DollarSign className="h-5 w-5" />}
+        description="수입/지출 흐름과 수익 현황을 통합 관리하세요."
+        actions={[
+          createActionButton('엑셀 내보내기', handleExportExcel, 'secondary'),
+          createActionButton('세무 리포트', handleGenerateTaxReport, 'secondary'),
+        ]}
       />
 
       {/* 요약 카드 */}
@@ -196,6 +201,6 @@ export default function FinancePage() {
         <Plus />
       </Fab>
     </Stack>
-    </Box>
+    </PageContainer>
   )
 }

@@ -23,6 +23,8 @@ import {
 } from '@mui/material'
 import { format } from 'date-fns'
 import { ko } from 'date-fns/locale'
+import ConfirmDialog from '@/app/components/ui/ConfirmDialog'
+import { useAppToast } from '@/app/lib/ui/toast'
 
 interface ScheduleModalProps {
     open: boolean
@@ -65,8 +67,11 @@ export default function ScheduleModal({
         memo: ''
     })
     const [loading, setLoading] = useState(false)
+    const [confirmDeleteOpen, setConfirmDeleteOpen] = useState(false)
     const [enableRepeat, setEnableRepeat] = useState(false)
     const [repeatDays, setRepeatDays] = useState<number[]>([])
+    const [formError, setFormError] = useState('')
+    const toast = useAppToast()
 
     useEffect(() => {
         if (schedule) {
@@ -98,12 +103,13 @@ export default function ScheduleModal({
 
     const handleSave = async () => {
         if (!form.staff_id) {
-            alert('직원을 선택해주세요.')
+            setFormError('직원을 선택해주세요.')
             return
         }
 
         try {
             setLoading(true)
+            setFormError('')
             if (enableRepeat && repeatDays.length > 0) {
                 await onSave(form, { days: repeatDays })
             } else {
@@ -111,8 +117,9 @@ export default function ScheduleModal({
             }
             onClose()
         } catch (error) {
-            console.error('저장 실패:', error)
-            alert('저장에 실패했습니다.')
+            const message = error instanceof Error ? error.message : '저장에 실패했습니다.'
+            setFormError(message)
+            toast.error('저장에 실패했습니다.')
         } finally {
             setLoading(false)
         }
@@ -120,15 +127,15 @@ export default function ScheduleModal({
 
     const handleDelete = async () => {
         if (!schedule?.id) return
-        if (!confirm('이 스케줄을 삭제하시겠습니까?')) return
 
         try {
             setLoading(true)
             await onDelete?.(schedule.id)
             onClose()
         } catch (error) {
-            console.error('삭제 실패:', error)
-            alert('삭제에 실패했습니다.')
+            const message = error instanceof Error ? error.message : '삭제에 실패했습니다.'
+            setFormError(message)
+            toast.error('삭제에 실패했습니다.')
         } finally {
             setLoading(false)
         }
@@ -181,7 +188,12 @@ export default function ScheduleModal({
                         <Select
                             value={form.staff_id}
                             label="직원"
-                            onChange={e => setForm({ ...form, staff_id: e.target.value })}
+                            onChange={e => {
+                                setForm({ ...form, staff_id: e.target.value })
+                                if (formError) {
+                                    setFormError('')
+                                }
+                            }}
                             disabled={!!schedule}
                         >
                             {staffList.filter(s => s.active !== false).map(staff => (
@@ -191,6 +203,11 @@ export default function ScheduleModal({
                             ))}
                         </Select>
                     </FormControl>
+                    {formError && (
+                        <Typography variant="body2" color="error.main">
+                            {formError}
+                        </Typography>
+                    )}
 
                     <TextField
                         label="시작 시간"
@@ -264,7 +281,7 @@ export default function ScheduleModal({
             <DialogActions sx={{ p: 2, gap: 1 }}>
                 {schedule && onDelete && (
                     <Button
-                        onClick={handleDelete}
+                        onClick={() => setConfirmDeleteOpen(true)}
                         disabled={loading}
                         color="error"
                         sx={{ mr: 'auto' }}
@@ -283,6 +300,15 @@ export default function ScheduleModal({
                     저장
                 </Button>
             </DialogActions>
+            <ConfirmDialog
+                open={confirmDeleteOpen}
+                onClose={() => setConfirmDeleteOpen(false)}
+                onConfirm={handleDelete}
+                title="스케줄 삭제"
+                description="이 스케줄을 삭제하시겠습니까? 삭제 후 복구할 수 없습니다."
+                confirmText="삭제"
+                variant="danger"
+            />
         </Dialog>
     )
 }

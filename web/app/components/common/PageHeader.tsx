@@ -3,6 +3,7 @@
 import { ReactNode } from 'react'
 import { Plus } from 'lucide-react'
 import Button from '@/app/components/ui/Button'
+import Input from '@/app/components/ui/Input'
 
 type PageHeaderProps = {
   title?: string
@@ -59,17 +60,16 @@ export default function PageHeader({
               <label className="block text-xs sm:text-sm font-semibold text-neutral-700 mb-1.5">
                 검색
               </label>
-              <input
-                type="text"
+              <Input
                 value={search.value}
                 onChange={(e) => search.onChange(e.target.value)}
                 placeholder={search.placeholder || '검색어를 입력하세요'}
-                className="h-11 w-full rounded-lg border border-neutral-300 bg-white px-4 text-base sm:text-sm text-neutral-800 outline-none shadow-sm placeholder:text-neutral-400 focus:border-secondary-500 focus:ring-2 focus:ring-secondary-200 transition-all duration-200 touch-manipulation"
+                fullWidth
+                size="small"
                 onFocus={(e) => {
-                  // 모바일에서 입력 필드 포커스 시 자동 스크롤
                   if (typeof window !== 'undefined' && window.innerWidth < 768) {
                     setTimeout(() => {
-                      e.target.scrollIntoView({
+                      e.currentTarget.scrollIntoView({
                         behavior: 'smooth',
                         block: 'center',
                       })
@@ -79,7 +79,7 @@ export default function PageHeader({
                 autoComplete="off"
                 autoCorrect="off"
                 autoCapitalize="off"
-                spellCheck="false"
+                spellCheck={false}
               />
             </div>
           )}

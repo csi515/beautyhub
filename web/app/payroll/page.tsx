@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { Box, Container, Typography, Paper, Stack, TextField } from '@mui/material'
+import { Box, Typography, Paper, Stack, TextField } from '@mui/material'
 import { TableSkeleton, CardSkeleton } from '@/app/components/ui/SkeletonLoader'
 import { DollarSign, Download, Calculator, Search } from 'lucide-react'
 import PageHeader, { createActionButton } from '@/app/components/common/PageHeader'
@@ -26,6 +26,7 @@ import { exportToCSV, preparePayrollDataForExport } from '@/app/lib/utils/export
 
 // Types
 import { type PayrollCalculationResult } from '@/types/payroll'
+import PageContainer from '@/app/components/layout/PageContainer'
 
 export default function PayrollPage() {
     // Modal states
@@ -130,7 +131,7 @@ export default function PayrollPage() {
 
     if (loading) {
         return (
-            <Container maxWidth="lg" sx={{ py: 4, px: { xs: 2, sm: 3 } }}>
+            <PageContainer maxWidth="lg">
                 <PageHeader
                     title="급여 관리"
                     description="직원 급여 자동 계산 및 관리"
@@ -150,12 +151,12 @@ export default function PayrollPage() {
                     <CardSkeleton count={3} />
                 </Box>
                 <TableSkeleton rows={5} cols={6} />
-            </Container>
+            </PageContainer>
         )
     }
 
     return (
-        <Container maxWidth="lg" sx={{ py: 4 }}>
+        <PageContainer maxWidth="lg">
             <PageHeader
                 title="급여 관리"
                 description="직원 급여 자동 계산 및 관리"
@@ -279,6 +280,6 @@ export default function PayrollPage() {
                 onMonthChange={setSelectedMonth}
                 onCalculate={handleCalculatePayroll}
             />
-        </Container>
+        </PageContainer>
     )
 }

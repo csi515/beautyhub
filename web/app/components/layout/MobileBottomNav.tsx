@@ -8,8 +8,8 @@ import {
     LayoutDashboard,
     Users,
     Calendar,
-    DollarSign,
-    Package
+    Package,
+    Settings
 } from 'lucide-react'
 
 export default function MobileBottomNav() {
@@ -31,9 +31,11 @@ export default function MobileBottomNav() {
         { label: '대시보드', value: '/dashboard', icon: LayoutDashboard },
         { label: '고객', value: '/customers', icon: Users },
         { label: '예약', value: '/appointments', icon: Calendar },
-        { label: '재무', value: '/finance', icon: DollarSign },
         { label: '제품', value: '/products', icon: Package },
+        { label: '설정', value: '/settings', icon: Settings },
     ]
+
+    const currentValue = navItems.find((item) => pathname?.startsWith(item.value))?.value || false
 
     return (
         <Paper
@@ -49,7 +51,7 @@ export default function MobileBottomNav() {
         >
             <BottomNavigation
                 showLabels
-                value={pathname}
+                value={currentValue}
                 onChange={(_, newValue) => {
                     router.push(newValue)
                 }}

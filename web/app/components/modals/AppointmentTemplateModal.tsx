@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import Modal, { ModalBody, ModalFooter, ModalHeader } from '@/app/components/ui/Modal'
+import Modal, { ModalBody, ModalFooter, ModalHeader } from '@/app/components/ui/AdaptiveModal'
 import Button from '@/app/components/ui/Button'
 import Input from '@/app/components/ui/Input'
 import Select from '@/app/components/ui/Select'

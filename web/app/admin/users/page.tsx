@@ -8,6 +8,7 @@ import { CheckCircle, XCircle, Clock, Shield } from 'lucide-react'
 import PageHeader from '@/app/components/common/PageHeader'
 import Button from '@/app/components/ui/Button'
 import ErrorState from '@/app/components/common/ErrorState'
+import PageContainer from '@/app/components/layout/PageContainer'
 import { getUsersApi } from '@/app/lib/api/users'
 import { User, UserStatus } from '@/types/entities'
 import { format } from 'date-fns'
@@ -244,7 +245,7 @@ export default function AdminUsersPage() {
     }
 
     return (
-        <Box sx={{ p: { xs: 2, md: 3 }, maxWidth: 1400, mx: 'auto' }}>
+        <PageContainer maxWidth="xl">
             <PageHeader
                 title="사용자 승인 관리"
                 icon={<Shield className="h-5 w-5" />}
@@ -312,6 +313,6 @@ export default function AdminUsersPage() {
                     />
                 )}
             </Paper>
-        </Box>
+        </PageContainer>
     )
 }

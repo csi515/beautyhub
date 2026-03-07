@@ -21,6 +21,7 @@ export default function SignupPage() {
   const [error, setError] = useState('')
   const [info, setInfo] = useState('')
   const [busy, setBusy] = useState(false)
+  const [submitted, setSubmitted] = useState(false)
 
   useEffect(() => {
     const init = async () => {
@@ -47,19 +48,24 @@ export default function SignupPage() {
 
   const submit = async () => {
     if (!supabase) { setError('환경설정 오류: Supabase 초기화 실패'); return }
-    if (!canSubmit) return
+    setSubmitted(true)
+    if (!canSubmit) {
+      setError('필수 입력값을 확인해주세요.')
+      return
+    }
     setError(''); setInfo(''); setBusy(true)
     try {
+      const origin = typeof window !== 'undefined' ? window.location.origin : ''
       const { error } = await supabase.auth.signUp({
         email,
         password,
         options: {
-          data: { name, branch_name: branchName, phone, birthdate }
-          // emailRedirectTo를 제거하여 이메일 확인 비활성화
+          data: { name, branch_name: branchName, phone, birthdate },
+          emailRedirectTo: `${origin}/auth/callback?redirect=/login`,
         }
       })
       if (error) { setError(error.message); setBusy(false); return }
-      setInfo('가입이 완료되었습니다! 잠시 후 로그인 페이지로 이동합니다...')
+      setInfo('가입이 완료되었습니다. 이메일 인증 링크를 확인한 뒤 로그인해주세요.')
       setTimeout(() => router.push('/login'), 2000)
     } catch (e: unknown) {
       const errorMessage = e instanceof Error ? e.message : '회원가입 중 오류가 발생했습니다.'
@@ -90,7 +96,7 @@ export default function SignupPage() {
               onChange={(e) => setName(e.target.value)}
               placeholder="홍길동"
               required
-              {...((!name.trim() && !!name) ? { error: '이름을 입력하세요.' } : {})}
+              {...((submitted && !name.trim()) ? { error: '이름을 입력하세요.' } : {})}
             />
 
             <Input
@@ -99,7 +105,7 @@ export default function SignupPage() {
               onChange={(e) => setBranchName(e.target.value)}
               placeholder="강남점"
               required
-              {...((!branchName.trim() && !!branchName) ? { error: '지점명을 입력하세요.' } : {})}
+              {...((submitted && !branchName.trim()) ? { error: '지점명을 입력하세요.' } : {})}
             />
 
             <Input
@@ -108,7 +114,7 @@ export default function SignupPage() {
               onChange={(e) => setPhone(e.target.value)}
               placeholder="010-1234-5678"
               required
-              {...((!phone.trim() && !!phone) ? { error: '전화번호를 입력하세요.' } : {})}
+              {...((submitted && !phone.trim()) ? { error: '전화번호를 입력하세요.' } : {})}
             />
 
             <Input
@@ -118,7 +124,9 @@ export default function SignupPage() {
               onChange={(e) => setEmail(e.target.value)}
               placeholder="you@example.com"
               required
-              {...((!!email && !/.+@.+\..+/.test(email)) ? { error: '유효한 이메일을 입력하세요.' } : {})}
+              {...(((submitted && !email.trim()) || (!!email && !/.+@.+\..+/.test(email)))
+                ? { error: '유효한 이메일을 입력하세요.' }
+                : {})}
             />
 
             <Input
@@ -128,7 +136,9 @@ export default function SignupPage() {
               onChange={(e) => setPassword(e.target.value)}
               placeholder="6자 이상"
               required
-              {...((!!password && password.length < 6) ? { error: '비밀번호는 6자 이상이어야 합니다.' } : {})}
+              {...(((submitted && !password) || (!!password && password.length < 6))
+                ? { error: '비밀번호는 6자 이상이어야 합니다.' }
+                : {})}
             />
 
             <Input
@@ -138,7 +148,7 @@ export default function SignupPage() {
               onChange={(e) => setBirthdate(e.target.value)}
               required
               InputLabelProps={{ shrink: true }}
-              {...((!birthdate && !!birthdate) ? { error: '생년월일을 선택하세요.' } : {})}
+              {...((submitted && !birthdate) ? { error: '생년월일을 선택하세요.' } : {})}
             />
           </div>
 

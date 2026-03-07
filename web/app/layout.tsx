@@ -3,7 +3,6 @@ import AppShell from './components/layout/AppShell'
 import Providers from './providers'
 import ServiceWorkerRegistration from './components/providers/ServiceWorkerRegistration'
 import InstallPrompt from './components/ui/InstallPrompt'
-import { SnackbarProvider } from './components/common/GlobalSnackbar'
 import { Inter } from 'next/font/google'
 
 const pretendard = Inter({
@@ -45,11 +44,9 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       </head>
       <body className={`h-full font-sans bg-[var(--bg)] text-[color:var(--neutral-900)] ${pretendard.className}`}>
         <Providers>
-          <SnackbarProvider>
-            <ServiceWorkerRegistration />
-            <AppShell>{children}</AppShell>
-            <InstallPrompt />
-          </SnackbarProvider>
+          <ServiceWorkerRegistration />
+          <AppShell>{children}</AppShell>
+          <InstallPrompt />
         </Providers>
       </body>
     </html>

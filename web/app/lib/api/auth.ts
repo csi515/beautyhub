@@ -51,9 +51,12 @@ export function createAuthApi(supabase: SupabaseClient) {
       })
 
       if (error) {
+        const lowered = error.message.toLowerCase()
         throw new Error(
-          error.message.toLowerCase().includes('missing')
+          lowered.includes('missing')
             ? '이메일과 비밀번호를 입력하세요.'
+            : lowered.includes('email not confirmed')
+              ? '이메일 인증 후 로그인해주세요.'
             : error.message
         )
       }

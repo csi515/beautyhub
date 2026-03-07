@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react'
 import { Box, Grid, Typography, Divider } from '@mui/material'
 import { Edit, Save, User, Calendar } from 'lucide-react'
-import Modal, { ModalBody, ModalFooter, ModalHeader } from '@/app/components/ui/Modal'
+import Modal, { ModalBody, ModalFooter, ModalHeader } from '@/app/components/ui/AdaptiveModal'
 import Button from '@/app/components/ui/Button'
 import Input from '@/app/components/ui/Input'
 import Textarea from '@/app/components/ui/Textarea'

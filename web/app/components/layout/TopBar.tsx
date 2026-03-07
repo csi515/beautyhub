@@ -51,7 +51,12 @@ export default function TopBar({ onMenu }: { onMenu?: () => void }) {
           color="inherit"
           aria-label="메뉴 열기"
           onClick={onMenu}
-          sx={{ mr: 2, display: 'none' }}
+          sx={{
+            mr: 1.5,
+            display: { xs: 'inline-flex', md: 'none' },
+            minWidth: 44,
+            minHeight: 44,
+          }}
         >
           <Menu className="h-6 w-6" />
         </IconButton>

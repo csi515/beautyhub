@@ -1,10 +1,11 @@
-﻿'use client'
+'use client'
 
 import { useState, memo } from 'react'
 import { Users, Plus, Trash2 } from 'lucide-react'
 import CollapsibleSection from '@/app/components/ui/CollapsibleSection'
 import Input from '@/app/components/ui/Input'
 import Button from '@/app/components/ui/Button'
+import TimeInput from '@/app/components/ui/TimeInput'
 import InfoTooltip from '@/app/components/ui/InfoTooltip'
 import { type StaffSettings } from '@/types/settings'
 
@@ -75,14 +76,15 @@ function StaffSettingsSection({ data, onChange }: Props) {
                 className="inline-flex items-center gap-2 px-3 py-2 rounded-lg bg-purple-50 border border-purple-200 text-purple-700"
               >
                 <span className="text-sm font-medium">{position}</span>
-                <button
-                  type="button"
+                <Button
+                  variant="ghost"
+                  size="sm"
                   onClick={() => removePosition(position)}
-                  className="p-0.5 rounded hover:bg-purple-100 text-purple-600 hover:text-rose-600 transition-colors"
                   aria-label={`${position} 삭제`}
+                  sx={{ minWidth: 0, p: 0.5 }}
                 >
                   <Trash2 className="h-3.5 w-3.5" />
-                </button>
+                </Button>
               </div>
             ))}
           </div>
@@ -98,11 +100,8 @@ function StaffSettingsSection({ data, onChange }: Props) {
 
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-medium text-neutral-700 mb-2">
-                시작 시간
-              </label>
-              <input
-                type="time"
+              <TimeInput
+                label="시작 시간"
                 value={data?.defaultWorkHours?.startTime || '09:00'}
                 onChange={(e) =>
                   onChange({
@@ -113,15 +112,13 @@ function StaffSettingsSection({ data, onChange }: Props) {
                     },
                   })
                 }
-                className="w-full px-3 py-2 border border-neutral-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                fullWidth
+                size="small"
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-neutral-700 mb-2">
-                종료 시간
-              </label>
-              <input
-                type="time"
+              <TimeInput
+                label="종료 시간"
                 value={data?.defaultWorkHours?.endTime || '18:00'}
                 onChange={(e) =>
                   onChange({
@@ -132,7 +129,8 @@ function StaffSettingsSection({ data, onChange }: Props) {
                     },
                   })
                 }
-                className="w-full px-3 py-2 border border-neutral-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                fullWidth
+                size="small"
               />
             </div>
           </div>

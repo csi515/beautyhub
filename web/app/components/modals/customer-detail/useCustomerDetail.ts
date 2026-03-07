@@ -383,8 +383,6 @@ export function useCustomerDetail(
 
   // 보유 상품 삭제
   const handleDeleteHolding = async (holdingId: string) => {
-    if (!confirm('정말 삭제하시겠습니까?')) return
-
     try {
       await customerProductsApi.delete(holdingId)
       setHoldings(list => list.filter(x => x.id !== holdingId))

@@ -17,6 +17,7 @@ import type { AppointmentRow, Product } from './utils/appointmentUtils'
 import type { SelectedAppointment } from './types'
 import CalendarHeader from './components/CalendarHeader'
 import AppointmentsCalendar from './components/AppointmentsCalendar'
+import PageContainer from '@/app/components/layout/PageContainer'
 
 export default function AppointmentsPage() {
     const [createOpen, setCreateOpen] = useState(false)
@@ -169,6 +170,7 @@ export default function AppointmentsPage() {
     }
 
     return (
+        <PageContainer maxWidth="lg">
         <Stack spacing={3}>
             <CalendarHeader
                 view={view}
@@ -266,5 +268,6 @@ export default function AppointmentsPage() {
                 }}
             />
         </Stack>
+        </PageContainer>
     )
 }

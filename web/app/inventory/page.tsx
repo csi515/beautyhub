@@ -77,6 +77,7 @@ export default function InventoryPage() {
         stockQuantity,
         stockType,
         stockMemo,
+        savingStock,
         setStockModalOpen,
         setStockQuantity,
         setStockType,
@@ -291,6 +292,7 @@ export default function InventoryPage() {
                 onTypeChange={setStockType}
                 onMemoChange={setStockMemo}
                 onSave={handleStockUpdate}
+                saving={savingStock}
             />
 
             {/* Bulk Action Bar */}

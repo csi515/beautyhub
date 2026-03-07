@@ -8,6 +8,7 @@ export function useInventoryActions(onSuccess?: () => void) {
     const [stockQuantity, setStockQuantity] = useState(0)
     const [stockType, setStockType] = useState<'purchase' | 'sale' | 'adjustment'>('adjustment')
     const [stockMemo, setStockMemo] = useState('')
+    const [savingStock, setSavingStock] = useState(false)
     const toast = useAppToast()
 
     function openStockModal(product: Product) {
@@ -19,9 +20,10 @@ export function useInventoryActions(onSuccess?: () => void) {
     }
 
     async function handleStockUpdate() {
-        if (!selectedProduct) return
+        if (!selectedProduct || savingStock) return
 
         try {
+            setSavingStock(true)
             const response = await fetch('/api/inventory', {
                 method: 'PATCH',
                 headers: { 'Content-Type': 'application/json' },
@@ -43,6 +45,8 @@ export function useInventoryActions(onSuccess?: () => void) {
         } catch (error) {
             console.error('Error updating stock:', error)
             toast.error('재고 업데이트에 실패했습니다')
+        } finally {
+            setSavingStock(false)
         }
     }
 
@@ -103,6 +107,7 @@ export function useInventoryActions(onSuccess?: () => void) {
         stockQuantity,
         stockType,
         stockMemo,
+        savingStock,
         setStockModalOpen,
         setStockQuantity,
         setStockType,

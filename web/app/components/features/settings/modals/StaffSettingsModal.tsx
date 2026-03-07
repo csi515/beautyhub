@@ -1,8 +1,9 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { Modal, ModalBody, ModalFooter } from '@/app/components/ui/Modal'
+import { Modal, ModalBody, ModalFooter } from '@/app/components/ui/AdaptiveModal'
 import Button from '@/app/components/ui/Button'
+import ConfirmDialog from '@/app/components/ui/ConfirmDialog'
 import { type StaffSettings } from '@/types/settings'
 import StaffSettingsSection from '../StaffSettingsSection'
 
@@ -16,6 +17,7 @@ type Props = {
 export default function StaffSettingsModal({ open, data, onClose, onSave }: Props) {
     const [formData, setFormData] = useState<StaffSettings>(data)
     const [hasChanges, setHasChanges] = useState(false)
+    const [confirmCloseOpen, setConfirmCloseOpen] = useState(false)
 
     // open이 true가 될 때마다 데이터 초기화
     useEffect(() => {
@@ -37,17 +39,21 @@ export default function StaffSettingsModal({ open, data, onClose, onSave }: Prop
     }
 
     const handleCancel = () => {
-        if (hasChanges) {
-            const confirm = window.confirm('저장하지 않은 변경사항이 있습니다. 정말 닫으시겠습니까?')
-            if (!confirm) return
-        }
         setFormData(data) // 원래 데이터로 복원
         setHasChanges(false)
         onClose()
     }
 
+    const handleRequestClose = () => {
+        if (hasChanges) {
+            setConfirmCloseOpen(true)
+            return
+        }
+        handleCancel()
+    }
+
     return (
-        <Modal open={open} onClose={handleCancel} size="xl">
+        <Modal open={open} onClose={handleRequestClose} size="xl">
             {/* 헤더 */}
             <div className="px-6 py-4 border-b border-neutral-200 bg-white sticky top-0 z-10">
                 <h2 className="text-2xl font-bold text-neutral-900">직원 직책 설정</h2>
@@ -70,7 +76,7 @@ export default function StaffSettingsModal({ open, data, onClose, onSave }: Prop
                         )}
                     </div>
                     <div className="flex gap-3">
-                        <Button variant="secondary" onClick={handleCancel}>
+                        <Button variant="secondary" onClick={handleRequestClose}>
                             취소
                         </Button>
                         <Button variant="primary" onClick={handleSave} disabled={!hasChanges}>
@@ -79,6 +85,15 @@ export default function StaffSettingsModal({ open, data, onClose, onSave }: Prop
                     </div>
                 </div>
             </ModalFooter>
+            <ConfirmDialog
+                open={confirmCloseOpen}
+                onClose={() => setConfirmCloseOpen(false)}
+                onConfirm={handleCancel}
+                title="변경사항 닫기"
+                description="저장하지 않은 변경사항이 있습니다. 정말 닫으시겠습니까?"
+                confirmText="닫기"
+                variant="danger"
+            />
         </Modal>
     )
 }

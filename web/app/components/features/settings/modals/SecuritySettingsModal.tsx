@@ -1,9 +1,10 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { Modal, ModalBody, ModalFooter } from '@/app/components/ui/Modal'
+import { Modal, ModalBody, ModalFooter } from '@/app/components/ui/AdaptiveModal'
 import Button from '@/app/components/ui/Button'
 import ToggleSwitch from '@/app/components/ui/ToggleSwitch'
+import ConfirmDialog from '@/app/components/ui/ConfirmDialog'
 import { type SecuritySettings } from '@/types/settings'
 
 type Props = {
@@ -17,6 +18,7 @@ type Props = {
 export default function SecuritySettingsModal({ open, data, onClose, onSave, onChangePassword }: Props) {
     const [formData, setFormData] = useState<SecuritySettings>(data)
     const [hasChanges, setHasChanges] = useState(false)
+    const [confirmCloseOpen, setConfirmCloseOpen] = useState(false)
 
     useEffect(() => {
         if (open) {
@@ -37,17 +39,21 @@ export default function SecuritySettingsModal({ open, data, onClose, onSave, onC
     }
 
     const handleCancel = () => {
-        if (hasChanges) {
-            const confirm = window.confirm('저장하지 않은 변경사항이 있습니다. 정말 닫으시겠습니까?')
-            if (!confirm) return
-        }
         setFormData(data)
         setHasChanges(false)
         onClose()
     }
 
+    const handleRequestClose = () => {
+        if (hasChanges) {
+            setConfirmCloseOpen(true)
+            return
+        }
+        handleCancel()
+    }
+
     return (
-        <Modal open={open} onClose={handleCancel} size="lg">
+        <Modal open={open} onClose={handleRequestClose} size="lg">
             <div className="px-6 py-4 border-b border-neutral-200 bg-white sticky top-0 z-10">
                 <h2 className="text-2xl font-bold text-neutral-900">보안 설정</h2>
                 <p className="text-sm text-neutral-600 mt-1">계정 보안을 설정합니다.</p>
@@ -129,7 +135,7 @@ export default function SecuritySettingsModal({ open, data, onClose, onSave, onC
                         )}
                     </div>
                     <div className="flex gap-3">
-                        <Button variant="secondary" onClick={handleCancel}>
+                        <Button variant="secondary" onClick={handleRequestClose}>
                             취소
                         </Button>
                         <Button variant="primary" onClick={handleSave} disabled={!hasChanges}>
@@ -138,6 +144,15 @@ export default function SecuritySettingsModal({ open, data, onClose, onSave, onC
                     </div>
                 </div>
             </ModalFooter>
+            <ConfirmDialog
+                open={confirmCloseOpen}
+                onClose={() => setConfirmCloseOpen(false)}
+                onConfirm={handleCancel}
+                title="변경사항 닫기"
+                description="저장하지 않은 변경사항이 있습니다. 정말 닫으시겠습니까?"
+                confirmText="닫기"
+                variant="danger"
+            />
         </Modal>
     )
 }

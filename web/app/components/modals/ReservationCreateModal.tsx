@@ -1,8 +1,12 @@
 'use client'
 
 import { useEffect, useState, useMemo } from 'react'
-import Modal, { ModalBody, ModalFooter, ModalHeader } from '@/app/components/ui/Modal'
+import Modal, { ModalBody, ModalFooter, ModalHeader } from '@/app/components/ui/AdaptiveModal'
 import Button from '@/app/components/ui/Button'
+import Input from '@/app/components/ui/Input'
+import DateInput from '@/app/components/ui/DateInput'
+import TimeInput from '@/app/components/ui/TimeInput'
+import CheckboxField from '@/app/components/ui/CheckboxField'
 import { useAppToast } from '@/app/lib/ui/toast'
 import StaffAutoComplete from '@/app/components/features/staff/StaffAutoComplete'
 import Textarea from '@/app/components/ui/Textarea'
@@ -226,12 +230,18 @@ export default function ReservationCreateModal({ open, onClose, draft, onSaved }
   })()
 
   if (!open) return null
+  const handleClose = () => {
+    if (!loading) {
+      onClose()
+    }
+  }
+
   return (
-    <Modal open={open} onClose={onClose} size="lg">
+    <Modal open={open} onClose={handleClose} size="lg">
       <ModalHeader
         title="새 예약"
         description="날짜와 시간, 고객, 서비스를 선택해 새로운 예약을 등록합니다."
-        onClose={onClose}
+        onClose={handleClose}
       />
       <ModalBody>
         <div className="grid gap-4 md:grid-cols-[280px,1fr]">
@@ -265,12 +275,10 @@ export default function ReservationCreateModal({ open, onClose, draft, onSaved }
 
               <div className="grid grid-cols-2 gap-2 sm:gap-3">
                 <div className="min-w-0">
-                  <label className="mb-1 block text-sm font-medium text-neutral-700">
-                    날짜 <span className="text-rose-600">*</span>
-                  </label>
-                  <input
-                    className="h-10 w-full min-w-0 rounded-lg border border-neutral-300 px-2 sm:px-3 outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-300 text-xs sm:text-sm"
-                    type="date"
+                  <DateInput
+                    label="날짜 *"
+                    size="small"
+                    fullWidth
                     value={form.date}
                     onChange={(e) =>
                       setForm((f) => ({ ...f, date: e.target.value }))
@@ -278,12 +286,10 @@ export default function ReservationCreateModal({ open, onClose, draft, onSaved }
                   />
                 </div>
                 <div className="min-w-0">
-                  <label className="mb-1 block text-sm font-medium text-neutral-700">
-                    시작 시간 <span className="text-rose-600">*</span>
-                  </label>
-                  <input
-                    className="h-10 w-full min-w-0 rounded-lg border border-neutral-300 px-2 sm:px-3 outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-300 text-xs sm:text-sm"
-                    type="time"
+                  <TimeInput
+                    label="시작 시간 *"
+                    size="small"
+                    fullWidth
                     value={form.start}
                     onChange={(e) =>
                       setForm((f) => ({ ...f, start: e.target.value }))
@@ -305,12 +311,11 @@ export default function ReservationCreateModal({ open, onClose, draft, onSaved }
                   </div>
                 )}
                 <div className="col-span-2">
-                  <label className="mb-1 block text-sm font-medium text-neutral-700">
-                    고객
-                  </label>
                   <div className="relative">
-                    <input
-                      className="h-10 w-full rounded-lg border border-neutral-300 px-3 outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-300 placeholder:text-neutral-400"
+                    <Input
+                      label="고객"
+                      size="small"
+                      fullWidth
                       placeholder="이름/이메일/전화번호로 검색하여 선택"
                       value={customerQuery}
                       onChange={(e) => {
@@ -361,11 +366,8 @@ export default function ReservationCreateModal({ open, onClose, draft, onSaved }
                   </div>
                 </div>
                 <div>
-                  <label className="mb-1 block text-sm font-medium text-gray-700">
-                    상태
-                  </label>
-                  <select
-                    className="h-10 w-full rounded-lg border border-neutral-300 bg-white px-3 text-sm outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-300"
+                  <Select
+                    label="상태"
                     value={form.status}
                     onChange={(e) =>
                       setForm((f) => ({ ...f, status: e.target.value }))
@@ -375,7 +377,7 @@ export default function ReservationCreateModal({ open, onClose, draft, onSaved }
                     <option value="pending">대기</option>
                     <option value="cancelled">취소</option>
                     <option value="complete">완료</option>
-                  </select>
+                  </Select>
                 </div>
                 <div className="col-span-2">
                   <label className="mb-1 block text-sm font-medium text-gray-700">
@@ -397,11 +399,8 @@ export default function ReservationCreateModal({ open, onClose, draft, onSaved }
                   />
                 </div>
                 <div>
-                  <label className="mb-1 block text-sm font-medium text-gray-700">
-                    서비스/상품
-                  </label>
-                  <select
-                    className="h-10 w-full rounded-lg border border-neutral-300 bg-white px-3 text-sm outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-300"
+                  <Select
+                    label="서비스/상품"
                     value={form.service_id || ''}
                     onChange={(e) =>
                       setForm((f) => {
@@ -422,7 +421,7 @@ export default function ReservationCreateModal({ open, onClose, draft, onSaved }
                         {p.name}
                       </option>
                     ))}
-                  </select>
+                  </Select>
                   {form.service_id && (
                     <div className="mt-1 space-y-1">
                       <div className="text-xs text-neutral-500">
@@ -455,26 +454,18 @@ export default function ReservationCreateModal({ open, onClose, draft, onSaved }
                 {form.customer_id && form.status === 'complete' && (
                   <>
                     <div className="col-span-2">
-                      <label className="flex items-center gap-2 cursor-pointer">
-                        <input
-                          type="checkbox"
-                          checked={autoCreateTransaction}
-                          onChange={(e) => setAutoCreateTransaction(e.target.checked)}
-                          className="w-4 h-4 rounded border-neutral-300 text-blue-600 focus:ring-blue-500"
-                        />
-                        <span className="text-sm font-medium text-neutral-700">
-                          예약 완료 시 자동으로 매출 생성
-                        </span>
-                      </label>
+                      <CheckboxField
+                        label="예약 완료 시 자동으로 매출 생성"
+                        checked={autoCreateTransaction}
+                        onChange={setAutoCreateTransaction}
+                      />
                     </div>
                     {autoCreateTransaction && (
                       <div className="col-span-2">
-                        <label className="block text-sm font-medium text-gray-700 mb-1">
-                          매출 금액
-                        </label>
-                        <input
-                          type="text"
-                          className="h-10 w-full rounded-lg border border-neutral-300 px-3 outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-300"
+                        <Input
+                          label="매출 금액"
+                          size="small"
+                          fullWidth
                           value={transactionAmount}
                           onChange={(e) => {
                             const numericValue = e.target.value.replace(/[^0-9]/g, '')
@@ -496,8 +487,8 @@ export default function ReservationCreateModal({ open, onClose, draft, onSaved }
         </div>
       </ModalBody>
       <ModalFooter>
-        <Button variant="secondary" onClick={onClose} disabled={loading} className="w-full md:w-auto">취소</Button>
-        <Button variant="primary" onClick={save} disabled={loading} className="w-full md:w-auto">저장</Button>
+        <Button variant="secondary" onClick={handleClose} disabled={loading} className="w-full md:w-auto">취소</Button>
+        <Button variant="primary" onClick={save} disabled={loading} loading={loading} className="w-full md:w-auto">저장</Button>
       </ModalFooter>
     </Modal>
   )

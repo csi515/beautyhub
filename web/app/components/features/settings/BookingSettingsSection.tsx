@@ -1,14 +1,14 @@
-﻿'use client'
+'use client'
 
 import { memo } from 'react'
 import { Calendar, Bell } from 'lucide-react'
 import CollapsibleSection from '@/app/components/ui/CollapsibleSection'
 import Input from '@/app/components/ui/Input'
 import Select from '@/app/components/ui/Select'
+import Button from '@/app/components/ui/Button'
 import InfoTooltip from '@/app/components/ui/InfoTooltip'
 import { type BookingSettings } from '@/types/settings'
 import { DAY_LABELS } from '@/types/settings'
-import clsx from 'clsx'
 
 type Props = {
   data: BookingSettings
@@ -72,20 +72,20 @@ function BookingSettingsSection({ data, onChange }: Props) {
             <label className="block mb-3 text-base font-semibold text-neutral-700">예약 가능 요일</label>
             <div className="grid grid-cols-4 sm:grid-cols-7 gap-2">
               {DAYS.map((day) => (
-                <button
+                <Button
                   key={day}
-                  type="button"
                   onClick={() => toggleAvailableDay(day)}
-                  className={clsx(
-                    'p-3 rounded-lg border-2 font-medium transition-all text-sm sm:text-base',
-                    'focus-visible:ring-2 focus-visible:ring-[#F472B6] focus-visible:ring-offset-1',
-                    data.availableDays.includes(day)
-                      ? 'border-[#F472B6] bg-[#FDF2F8] text-[#F472B6] shadow-sm'
-                      : 'border-neutral-200 bg-white text-neutral-600 hover:border-neutral-300 hover:bg-neutral-50'
-                  )}
+                  variant={data.availableDays.includes(day) ? 'secondary' : 'outline'}
+                  size="sm"
+                  sx={{
+                    width: '100%',
+                    minHeight: 44,
+                    borderWidth: '2px',
+                    fontWeight: 600,
+                  }}
                 >
                   {DAY_LABELS[day]}
-                </button>
+                </Button>
               ))}
             </div>
           </div>
@@ -103,20 +103,18 @@ function BookingSettingsSection({ data, onChange }: Props) {
             <label className="block mb-3 text-base font-semibold text-neutral-700">알림 발송 시간</label>
             <div className="flex flex-wrap gap-2">
               {[24, 12, 3, 1].map((hours) => (
-                <button
+                <Button
                   key={hours}
-                  type="button"
                   onClick={() => toggleReminderTiming(hours)}
-                  className={clsx(
-                    'px-4 py-2 rounded-lg border-2 font-medium text-sm transition-all',
-                    'focus-visible:ring-2 focus-visible:ring-[#F472B6] focus-visible:ring-offset-1',
-                    data.reminderTimings.includes(hours)
-                      ? 'border-[#F472B6] bg-[#FDF2F8] text-[#F472B6] shadow-sm'
-                      : 'border-neutral-200 bg-white text-neutral-600 hover:border-neutral-300 hover:bg-neutral-50'
-                  )}
+                  variant={data.reminderTimings.includes(hours) ? 'secondary' : 'outline'}
+                  size="sm"
+                  sx={{
+                    borderWidth: '2px',
+                    fontWeight: 600,
+                  }}
                 >
                   {hours}시간 전
-                </button>
+                </Button>
               ))}
             </div>
           </div>

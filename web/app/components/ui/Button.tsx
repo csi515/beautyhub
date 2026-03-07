@@ -75,7 +75,13 @@ const Button = forwardRef<HTMLButtonElement, Props>(function Button(
       color={muiProps.color as any}
       size={muiSize as any}
       disabled={isDisabled}
-      sx={sx || {}}
+      sx={[
+        {
+          minHeight: { xs: 44, sm: 40 },
+          touchAction: 'manipulation',
+        },
+        ...(Array.isArray(sx) ? sx : [sx]),
+      ]}
       {...rest}
       startIcon={loading ? <CircularProgress size={20} color="inherit" /> : leftIcon}
       endIcon={rightIcon}

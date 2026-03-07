@@ -9,6 +9,7 @@ import { Card, Grid, Typography, Box, Stack, TextField, InputAdornment, MenuItem
 import { Plus, Minus, Package, Coins, History, Trash2, ChevronDown, ChevronUp } from 'lucide-react'
 import Button from '@/app/components/ui/Button'
 import { DataTable } from '@/app/components/ui/DataTable'
+import ConfirmDialog from '@/app/components/ui/ConfirmDialog'
 import type { CustomerProduct } from '@/app/lib/repositories/customer-products.repository'
 
 interface Product {
@@ -98,6 +99,7 @@ export default function CustomerTransactionsTab({
 }: CustomerTransactionsTabProps) {
     const [isHistoryExpanded, setIsHistoryExpanded] = useState(false)
     const [historyFilter, setHistoryFilter] = useState<'all' | 'points' | 'products'>('all')
+    const [deleteHoldingId, setDeleteHoldingId] = useState<string | null>(null)
 
     // 통합 변동 내역
     const combinedLedger: LedgerEntry[] = useMemo(() => {
@@ -323,8 +325,13 @@ export default function CustomerTransactionsTab({
                                         </Button>
                                         <IconButton
                                             size="small"
-                                            onClick={() => onDelete(holding.id)}
-                                            sx={{ color: 'text.secondary', '&:hover': { color: 'error.main', bgcolor: 'error.50' } }}
+                                            onClick={() => setDeleteHoldingId(holding.id)}
+                                            sx={{
+                                                color: 'text.secondary',
+                                                minWidth: 44,
+                                                minHeight: 44,
+                                                '&:hover': { color: 'error.main', bgcolor: 'error.50' }
+                                            }}
                                         >
                                             <Trash2 size={18} />
                                         </IconButton>
@@ -485,6 +492,19 @@ export default function CustomerTransactionsTab({
                     </Box>
                 )}
             </Card>
+            <ConfirmDialog
+                open={Boolean(deleteHoldingId)}
+                onClose={() => setDeleteHoldingId(null)}
+                onConfirm={() => {
+                    if (deleteHoldingId) {
+                        onDelete(deleteHoldingId)
+                    }
+                }}
+                title="보유 상품 삭제"
+                description="정말 삭제하시겠습니까? 이 작업은 되돌릴 수 없습니다."
+                confirmText="삭제"
+                variant="danger"
+            />
         </Stack>
     )
 }

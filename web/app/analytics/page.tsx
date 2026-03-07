@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react'
 
-import { Box, Container, Typography, Grid, Card, CardContent, Alert, Chip, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, useMediaQuery, Stack } from '@mui/material';
+import { Box, Typography, Grid, Card, CardContent, Alert, Chip, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, useMediaQuery, Stack } from '@mui/material';
 import { useTheme } from '@mui/material/styles';
 import MobileDataCard from '@/app/components/ui/MobileDataCard'
 import { CardSkeleton } from '@/app/components/ui/SkeletonLoader'
@@ -12,6 +12,7 @@ import PageHeader, { createActionButton } from '@/app/components/common/PageHead
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts'
 import { useAppToast } from '@/app/lib/ui/toast'
 import { exportToCSV } from '@/app/lib/utils/export'
+import PageContainer from '@/app/components/layout/PageContainer'
 
 interface CustomerLTV {
     customer_id: string
@@ -102,7 +103,7 @@ export default function AnalyticsPage() {
 
     if (loading) {
         return (
-            <Container maxWidth="lg" sx={{ py: 4, px: { xs: 2, sm: 3 } }}>
+            <PageContainer maxWidth="lg">
                 <PageHeader
                     title="고객 분석"
                     description="고객 생애 가치(LTV) 및 VIP 고객 분석"
@@ -113,21 +114,21 @@ export default function AnalyticsPage() {
                     <CardSkeleton count={3} />
                 </Box>
                 <CardSkeleton count={2} />
-            </Container>
+            </PageContainer>
         )
     }
 
     if (error) {
         return (
-            <Container maxWidth="lg" sx={{ py: 4, px: { xs: 2, sm: 3 } }}>
+            <PageContainer maxWidth="lg">
                 <Alert severity="error">{error}</Alert>
-            </Container>
+            </PageContainer>
         )
     }
 
     if (ltvData.length === 0) {
         return (
-            <Container maxWidth="lg" sx={{ py: 4, px: { xs: 2, sm: 3 } }}>
+            <PageContainer maxWidth="lg">
                 <PageHeader
                     title="고객 분석"
                     description="고객 생애 가치(LTV) 및 VIP 고객 분석"
@@ -143,12 +144,12 @@ export default function AnalyticsPage() {
                     actionLabel="새로고침"
                     onAction={fetchData}
                 />
-            </Container>
+            </PageContainer>
         )
     }
 
     return (
-        <Container maxWidth={false} sx={{ py: 4, px: { xs: 1.5, sm: 2, md: 3 }, maxWidth: { xs: '100%', md: '1200px' }, width: '100%' }}>
+        <PageContainer maxWidth="lg">
             <PageHeader
                 title="고객 분석"
                 description="고객 생애 가치(LTV) 및 VIP 고객 분석"
@@ -360,6 +361,6 @@ export default function AnalyticsPage() {
                     )}
                 </CardContent>
             </Card>
-        </Container >
+        </PageContainer >
     )
 }

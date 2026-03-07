@@ -32,6 +32,8 @@ import { useTheme } from '@mui/material/styles'
 // 공통 컴포넌트
 import Card from '../components/ui/Card'
 import ErrorState from '../components/common/ErrorState'
+import PageContainer from '../components/layout/PageContainer'
+import PageHeader, { createActionButton } from '../components/common/PageHeader'
 
 const ProductDetailModal = lazy(() => import('../components/modals/ProductDetailModal'))
 
@@ -184,7 +186,17 @@ export default function ProductsPage() {
   }
 
   return (
+    <PageContainer maxWidth="lg">
     <Stack spacing={3}>
+      <PageHeader
+        title="제품 관리"
+        icon={<Plus className="h-5 w-5" />}
+        description="상품/서비스를 검색하고 가격 및 상태를 관리하세요."
+        actions={[
+          ...(isMobile ? [] : [createActionButton('CSV 내보내기', handleExport, 'secondary', <Download size={16} />)]),
+          createActionButton('상품 등록', openCreate),
+        ]}
+      />
       <Card sx={{ p: 2 }}>
         <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2} alignItems="center">
           <TextField
@@ -499,5 +511,6 @@ export default function ProductsPage() {
         </Button>
       </Box>
     </Stack>
+    </PageContainer>
   )
 }

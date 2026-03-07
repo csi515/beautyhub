@@ -1,10 +1,13 @@
-﻿'use client'
+'use client'
 
 import { useState, memo } from 'react'
 import { Store, Clock, Calendar } from 'lucide-react'
 import CollapsibleSection from '@/app/components/ui/CollapsibleSection'
 import Input from '@/app/components/ui/Input'
 import Select from '@/app/components/ui/Select'
+import Button from '@/app/components/ui/Button'
+import TimeInput from '@/app/components/ui/TimeInput'
+import CheckboxField from '@/app/components/ui/CheckboxField'
 import InfoTooltip from '@/app/components/ui/InfoTooltip'
 import { type BusinessProfile } from '@/types/settings'
 import { DAY_LABELS } from '@/types/settings'
@@ -156,64 +159,54 @@ function BusinessProfileSection({ data, onChange }: Props) {
                   )}
                 >
                   <div className="flex items-center justify-between mb-2">
-                    <label className="flex items-center gap-2 cursor-pointer">
-                      <input
-                        type="checkbox"
+                    <div className="flex items-center gap-2">
+                      <CheckboxField
+                        label={DAY_LABELS[day] ?? day}
                         checked={isHoliday}
                         onChange={() => toggleRegularHoliday(day)}
-                        className="w-4 h-4 rounded border-neutral-300 text-rose-600"
                       />
-                      <span className="font-medium text-neutral-700">{DAY_LABELS[day]}</span>
                       {isHoliday && (
                         <span className="px-2 py-0.5 text-xs font-medium bg-rose-600 text-white rounded-full">
                           정기 휴무
                         </span>
                       )}
-                    </label>
+                    </div>
                     {!isHoliday && (
-                      <button
-                        type="button"
+                      <Button
+                        variant="ghost"
+                        size="sm"
                         onClick={() => toggleDay(day)}
-                        className="text-sm text-blue-600 hover:text-blue-700 font-medium"
                       >
                         {expandedDays[day] ? '접기' : '펼치기'}
-                      </button>
+                      </Button>
                     )}
                   </div>
 
                   {expandedDays[day] && !isHoliday && (
                     <div className="mt-3 space-y-3 pt-3 border-t border-neutral-200">
-                      <label className="flex items-center gap-2">
-                        <input
-                          type="checkbox"
-                          checked={isClosed}
-                          onChange={(e) => updateBusinessHours(day, 'closed', e.target.checked)}
-                          className="w-4 h-4 rounded border-neutral-300"
-                        />
-                        <span className="text-sm text-neutral-600">이날은 휴무인가</span>
-                      </label>
+                      <CheckboxField
+                        label="이날은 휴무인가"
+                        checked={isClosed}
+                        onChange={(checked) => updateBusinessHours(day, 'closed', checked)}
+                      />
                       {!isClosed && (
                         <div className="grid grid-cols-2 gap-3">
                           <div>
-                            <label className="block text-xs font-medium text-neutral-600 mb-1">
-                              오픈 시간
-                            </label>
-                            <input
-                              type="time"
+                            <TimeInput
+                              label="오픈 시간"
                               value={hours?.open || '09:00'}
                               onChange={(e) => updateBusinessHours(day, 'open', e.target.value)}
-                              className="h-10 w-full rounded-lg border border-neutral-300 px-3 text-sm outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-300"
+                              size="small"
+                              fullWidth
                             />
                           </div>
                           <div>
-                            <label className="block text-xs font-medium text-neutral-600 mb-1">
-                              마감 시간
-                            </label>
-                            <input
-                              type="time"
+                            <TimeInput
+                              label="마감 시간"
                               value={hours?.close || '18:00'}
                               onChange={(e) => updateBusinessHours(day, 'close', e.target.value)}
-                              className="h-10 w-full rounded-lg border border-neutral-300 px-3 text-sm outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-300"
+                              size="small"
+                              fullWidth
                             />
                           </div>
                         </div>

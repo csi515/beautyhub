@@ -2,6 +2,8 @@
 
 import { useEffect, useMemo, useState } from 'react'
 import { useClickOutside } from '@/app/lib/hooks/useClickOutside'
+import Input from '@/app/components/ui/Input'
+import Button from '@/app/components/ui/Button'
 
 type Staff = { id: string; name: string; email?: string | null; phone?: string | null; role?: string | null }
 
@@ -52,8 +54,9 @@ export default function StaffAutoComplete({ value, onChange }: { value?: string;
 
   return (
     <div className="relative" ref={wrapperRef}>
-      <input
-        className="h-10 w-full rounded-lg border border-neutral-300 px-3 outline-none focus:border-brand-500 focus:ring-2 focus:ring-brand-300"
+      <Input
+        fullWidth
+        size="small"
         placeholder="담당 직원을 검색하여 선택"
         value={q}
         onChange={e => { setQ(e.target.value); setOpen(true) }}
@@ -90,11 +93,14 @@ export default function StaffAutoComplete({ value, onChange }: { value?: string;
         </ul>
       )}
       {value && (
-        <button
-          type="button"
-          className="absolute right-2 top-1/2 -translate-y-1/2 text-neutral-400 hover:text-neutral-600"
+        <Button
+          variant="ghost"
+          size="sm"
+          className="absolute right-2 top-1/2 -translate-y-1/2"
           onClick={() => { onChange(undefined); setQ('') }}
-        >지움</button>
+        >
+          지움
+        </Button>
       )}
     </div>
   )

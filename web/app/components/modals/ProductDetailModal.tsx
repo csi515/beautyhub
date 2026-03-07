@@ -23,8 +23,8 @@ export default function ProductDetailModal({ open, onClose, item, onSaved, onDel
     try {
       setLoading(true); setError('')
       const priceValue = form.price === '' || form.price === null || form.price === undefined ? null : Number(form.price)
-      if (priceValue === null || priceValue <= 0) {
-        setError('가격은 0보다 커야 합니다.')
+      if (priceValue === null || priceValue < 0) {
+        setError('가격은 0 이상이어야 합니다.')
         setLoading(false)
         return
       }
