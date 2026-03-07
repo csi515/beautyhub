@@ -89,8 +89,18 @@ export function BottomSheetHeader({ title, description, onClose, children }: Bot
           ) : null}
         </Box>
         {onClose ? (
-          <IconButton aria-label="닫기" onClick={onClose} size="small" sx={{ mt: -0.25, mr: -0.25 }}>
-            <X size={18} />
+          <IconButton
+            aria-label="닫기"
+            onClick={onClose}
+            size="small"
+            sx={{
+              mt: -0.25,
+              mr: -0.25,
+              minWidth: 44,
+              minHeight: 44,
+            }}
+          >
+            <X size={20} />
           </IconButton>
         ) : null}
       </Stack>

@@ -101,11 +101,11 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
           component="main"
           sx={{
             flexGrow: 1,
-            p: { xs: 1.5, sm: 2, md: 3, lg: 4 },
-            pb: { xs: 10, md: 3 }, // Extra padding for mobile bottom nav (64px + 16px = 80px)
+            p: { xs: 2, sm: 2, md: 3, lg: 4 },
+            pb: { xs: 'calc(72px + env(safe-area-inset-bottom, 0px))', md: 3 },
             overflowX: 'hidden',
             width: '100%',
-            maxWidth: '100%'
+            maxWidth: '100%',
           }}
         >
           <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>

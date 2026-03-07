@@ -46,6 +46,7 @@ export default function MobileBottomNav() {
                 right: 0,
                 display: { xs: 'block', md: 'none' },
                 zIndex: 1100,
+                pb: 'env(safe-area-inset-bottom, 0px)',
             }}
             elevation={8}
         >
@@ -58,16 +59,15 @@ export default function MobileBottomNav() {
                 sx={{
                     borderTop: 1,
                     borderColor: 'divider',
-                    minHeight: { xs: '64px', sm: '56px' }, // 모바일에서 더 큰 터치 타겟
+                    minHeight: { xs: 64, sm: 56 },
                     '& .MuiBottomNavigationAction-root': {
-                        minWidth: 60,
-                        px: 0,
-                        minHeight: { xs: '44px', sm: '40px' },
-                        paddingTop: { xs: '6px', sm: '4px' },
-                        paddingBottom: { xs: '6px', sm: '4px' },
+                        minWidth: 64,
+                        minHeight: 48,
+                        paddingTop: 6,
+                        paddingBottom: 6,
                     },
                     '& .MuiBottomNavigationAction-label': {
-                        fontSize: { xs: '0.75rem', sm: '0.65rem' },
+                        fontSize: { xs: '0.7rem', sm: '0.65rem' },
                         mt: 0.5,
                     },
                 }}
