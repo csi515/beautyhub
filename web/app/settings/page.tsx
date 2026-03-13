@@ -8,6 +8,7 @@ import { DEFAULT_SETTINGS, type SystemSettings, type UserProfile, type SecurityS
 import SettingsSkeleton from '@/app/components/skeletons/SettingsSkeleton'
 
 // MUI Imports (레이아웃 유틸리티만 허용)
+import Box from '@mui/material/Box'
 import Stack from '@mui/material/Stack'
 import PageContainer from '../components/layout/PageContainer'
 import PageHeader from '../components/common/PageHeader'
@@ -183,18 +184,20 @@ export default function SettingsPage() {
   if (loading) {
     return (
       <PageContainer maxWidth={false}>
-        <SettingsSkeleton />
+        <Box sx={{ flex: 1, minHeight: 0, overflowY: 'auto' }}>
+          <SettingsSkeleton />
+        </Box>
       </PageContainer>
     )
   }
 
   return (
     <PageContainer maxWidth={false}>
+      <Box sx={{ flex: 1, minHeight: 0, overflowY: 'auto' }}>
       <Stack spacing={4}>
         <PageHeader
           title="설정"
           icon={<Settings className="h-5 w-5" />}
-          description="계정 정보, 보안, 표시 설정을 한 곳에서 관리하세요."
         />
 
         {/* 요약 카드들 */}
@@ -226,6 +229,7 @@ export default function SettingsPage() {
           />
         </Stack>
       </Stack>
+      </Box>
 
       {/* 모달들 */}
       <UserProfileModal

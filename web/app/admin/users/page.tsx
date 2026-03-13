@@ -249,7 +249,6 @@ export default function AdminUsersPage() {
             <PageHeader
                 title="사용자 승인 관리"
                 icon={<Shield className="h-5 w-5" />}
-                description="전체 사용자를 관리하고 승인/비승인 처리를 수행합니다."
             />
 
             {/* 통계 카드 */}

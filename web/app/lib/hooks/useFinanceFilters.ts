@@ -1,5 +1,7 @@
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { usePagination } from './usePagination'
+import { useIsTablet } from './useBreakpoint'
+import { DEFAULT_PAGE_SIZE } from '@/app/lib/constants/pagination'
 import { Expense, Transaction } from '@/types/entities'
 import { FinanceFilters, FinanceDateRange } from '@/types/finance'
 
@@ -8,6 +10,7 @@ export function useFinanceFilters(
   transactions: Transaction[],
   dateRange: FinanceDateRange
 ) {
+  const isTablet = useIsTablet()
   const [filters, setFilters] = useState<FinanceFilters>({
     filterType: ['income', 'expense'],
     sortKey: 'date',
@@ -17,10 +20,10 @@ export function useFinanceFilters(
 
   const pagination = usePagination({
     initialPage: 1,
-    initialPageSize: 10,
+    initialPageSize: isTablet ? DEFAULT_PAGE_SIZE.tablet : DEFAULT_PAGE_SIZE.desktop,
     totalItems: 0,
   })
-  const { page, pageSize } = pagination
+  const { page, pageSize, setTotalItems } = pagination
 
   // 결합된 데이터 생성
   const combined = useMemo(() => {
@@ -62,6 +65,10 @@ export function useFinanceFilters(
     return rows
   }, [transactions, expenses, filters, dateRange])
 
+  useEffect(() => {
+    setTotalItems(combined.length)
+  }, [combined.length, setTotalItems])
+
   const pagedCombined = useMemo(() => {
     const start = (page - 1) * pageSize
     return combined.slice(start, start + pageSize)
@@ -75,7 +82,12 @@ export function useFinanceFilters(
     })
     .reduce((s, t) => s + Number(t.amount || 0), 0), [transactions, dateRange])
 
-  const sumExpense = useMemo(() => expenses.reduce((s, e) => s + Number(e.amount || 0), 0), [expenses])
+  const sumExpense = useMemo(() => expenses
+    .filter(e => {
+      const d = (e.expense_date || '').slice(0, 10)
+      return (!dateRange.from || d >= dateRange.from) && (!dateRange.to || d <= dateRange.to)
+    })
+    .reduce((s, e) => s + Number(e.amount || 0), 0), [expenses, dateRange])
   const profit = sumIncome - sumExpense
 
   const updateFilters = (newFilters: Partial<FinanceFilters>) => {

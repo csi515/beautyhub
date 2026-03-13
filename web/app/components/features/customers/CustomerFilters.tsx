@@ -1,8 +1,9 @@
 'use client'
 
 import { Search, Download, Plus } from 'lucide-react'
-import { Paper, Stack, TextField, FormControl, InputLabel, Select, MenuItem, Chip, Box, Typography } from '@mui/material'
+import { Stack, TextField, FormControl, InputLabel, Select, MenuItem, Chip, Box, Typography } from '@mui/material'
 import Button from '@/app/components/ui/Button'
+import FilterCard from '@/app/components/common/FilterCard'
 import { type CustomerFilters } from '@/types/customer'
 
 interface CustomerFiltersProps {
@@ -31,10 +32,9 @@ export default function CustomerFilters({
   // Using responsive design instead of mobile detection
 
   return (
-    <Paper sx={{ p: 3, borderRadius: 3 }} elevation={0} variant="outlined">
-      <Stack spacing={3}>
-        {/* 검색 및 기본 액션 */}
-        <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2} alignItems="center" justifyContent="space-between">
+    <FilterCard>
+      {/* 검색 및 기본 액션 */}
+      <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2} alignItems="center" justifyContent="space-between">
             <TextField
               placeholder="이름, 이메일 또는 전화번호로 검색"
               value={query}
@@ -65,9 +65,9 @@ export default function CustomerFilters({
               variant="secondary"
               leftIcon={<Download className="h-4 w-4" />}
               onClick={onExport}
-              sx={{ whiteSpace: 'nowrap', display: { xs: 'none', md: 'inline-flex' } }}
+              sx={{ whiteSpace: 'nowrap', display: { xs: 'none', lg: 'inline-flex' } }}
             >
-              CSV 내보내기
+              엑셀 내보내기
             </Button>
             <Button
               variant="primary"
@@ -79,10 +79,10 @@ export default function CustomerFilters({
               새 고객
             </Button>
           </Stack>
-        </Stack>
+      </Stack>
 
-        {/* 인라인 필터 */}
-        <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 2, alignItems: 'center' }}>
+      {/* 인라인 필터 */}
+      <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 2, alignItems: 'center' }}>
           <Typography variant="body2" color="text.secondary" sx={{ mr: 1 }}>
             필터:
           </Typography>
@@ -151,8 +151,7 @@ export default function CustomerFilters({
               variant="outlined"
             />
           )}
-        </Box>
-      </Stack>
-    </Paper>
+      </Box>
+    </FilterCard>
   )
 }

@@ -1,7 +1,8 @@
 'use client'
 
 import { Pencil, Phone, Mail, Package } from 'lucide-react'
-import { Box, Card, CardContent, Typography, Stack, Chip, IconButton, Divider, Skeleton } from '@mui/material'
+import { Box, Card, CardContent, Typography, Stack, Chip, IconButton, Divider } from '@mui/material'
+import { ListSkeleton } from '@/app/components/ui/SkeletonLoader'
 import CustomerHoldingsBadge from './CustomerHoldingsBadge'
 import { type Customer } from '@/types/entities'
 
@@ -23,9 +24,7 @@ export default function CustomerCards({
   return (
     <Box sx={{ display: { xs: 'block', md: 'none' } }}>
       <Stack spacing={2}>
-        {loading && Array.from({ length: 3 }).map((_, i) => (
-          <Skeleton key={i} className="h-40 rounded-xl" />
-        ))}
+        {loading && <ListSkeleton count={3} />}
         {!loading && paginatedCustomers.map((c) => (
           <Card key={c.id} sx={{ borderRadius: 3 }} variant="outlined">
             <CardContent sx={{ pb: 1 }}>

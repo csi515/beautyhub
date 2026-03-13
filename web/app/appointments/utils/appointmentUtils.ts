@@ -65,11 +65,14 @@ export function mapAppointments(rows: AppointmentRow[], products: Product[]): Ap
     const customerLabel = row.customer_id ? '고객' : '미지정'
     const productLabel = product ? product.name : '서비스 미지정'
     const title = `${customerLabel} · ${productLabel}`
+    const start = new Date(row.appointment_date)
+    const end = new Date(start.getTime() + 60 * 60 * 1000)
 
     return {
       id: row.id,
       title,
-      start: new Date(row.appointment_date),
+      start,
+      end,
       extendedProps: {
         notes: row.notes ?? undefined,
         product_name: product?.name,

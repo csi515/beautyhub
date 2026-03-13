@@ -18,6 +18,16 @@ const nextConfig = {
     dangerouslyAllowSVG: true,
     contentSecurityPolicy: "default-src 'self'; script-src 'none'; sandbox;",
   },
+  async redirects() {
+    return [
+      { source: '/analytics', destination: '/dashboard', permanent: false },
+      { source: '/analytics/:path*', destination: '/dashboard', permanent: false },
+      { source: '/staff', destination: '/dashboard', permanent: false },
+      { source: '/staff/:path*', destination: '/dashboard', permanent: false },
+      { source: '/payroll', destination: '/dashboard', permanent: false },
+      { source: '/payroll/:path*', destination: '/dashboard', permanent: false },
+    ]
+  },
   // PWA 설정
   async headers() {
     return [

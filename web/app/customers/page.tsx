@@ -2,9 +2,9 @@
 
 import { Plus } from 'lucide-react'
 import { useState, lazy, Suspense } from 'react'
-import { Users, Download } from 'lucide-react'
+import { Users } from 'lucide-react'
 import { useAppToast } from '../lib/ui/toast'
-import { exportToCSV, prepareCustomerDataForExport } from '../lib/utils/export'
+import { exportToExcel, prepareCustomerDataForExport } from '../lib/utils/export'
 
 // MUI 레이아웃 유틸리티 (허용)
 import Box from '@mui/material/Box'
@@ -13,7 +13,7 @@ import Stack from '@mui/material/Stack'
 import ErrorState from '../components/common/ErrorState'
 import Button from '../components/ui/Button'
 import PageContainer from '../components/layout/PageContainer'
-import PageHeader, { createActionButton } from '../components/common/PageHeader'
+import PageHeader from '../components/common/PageHeader'
 
 // Components
 import CustomerFilters from '../components/features/customers/CustomerFilters'
@@ -73,11 +73,10 @@ export default function CustomersPage() {
     paginatedRows
   } = useCustomerFilters(customers, pointsByCustomer, filters)
 
-  // CSV export function
   const handleExport = () => {
     const dataToExport = prepareCustomerDataForExport(filteredRows)
-    exportToCSV(dataToExport, `고객목록_${new Date().toISOString().slice(0, 10)}.csv`)
-    toast.success('CSV 파일이 다운로드되었습니다')
+    exportToExcel(dataToExport, `고객목록_${new Date().toISOString().slice(0, 10)}.xlsx`)
+    toast.success('엑셀 파일이 다운로드되었습니다')
   }
 
   // Reset filters
@@ -97,21 +96,16 @@ export default function CustomersPage() {
 
 
   return (
-    <PageContainer maxWidth="lg">
-      <Stack spacing={3}>
-      <PageHeader
-        title="고객 관리"
-        icon={<Users className="h-5 w-5" />}
-        description="고객 정보를 검색하고 상태/포인트 기준으로 관리하세요."
-        actions={[
-          createActionButton('CSV 내보내기', handleExport, 'secondary', <Download size={16} />),
-          createActionButton('고객 추가', () => {
-            setSelected({ id: '', owner_id: '', name: '', phone: '', email: '', address: '' } as Customer)
-            setDetailOpen(true)
-          }),
-        ]}
-      />
+    <PageContainer maxWidth="xl">
+      <Stack spacing={3} sx={{ flex: 1, minHeight: 0, overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
+      <Box sx={{ flexShrink: 0 }}>
+        <PageHeader
+          title="고객 관리"
+          icon={<Users className="h-5 w-5" />}
+        />
+      </Box>
       {/* 필터 및 검색 */}
+      <Box sx={{ flexShrink: 0 }}>
       <CustomerFilters
         query={query}
         onQueryChange={setQuery}
@@ -126,6 +120,7 @@ export default function CustomersPage() {
         filteredCount={filteredRows.length}
         totalCount={customers.length}
       />
+      </Box>
 
       {error && (
         <ErrorState
@@ -135,6 +130,8 @@ export default function CustomersPage() {
         />
       )}
 
+      {/* 본문 영역 - 태블릿에서 flex로 남은 공간 채움 */}
+      <Box sx={{ flex: 1, minHeight: 0, overflow: 'auto', display: { xs: 'block', md: 'flex' }, flexDirection: { md: 'column' } }}>
       {/* 모바일 카드 뷰 */}
       <CustomerCards
         customers={customers}
@@ -168,8 +165,10 @@ export default function CustomersPage() {
           setDetailOpen(true)
         }}
       />
+      </Box>
 
       {/* 페이지네이션 및 일괄 작업 */}
+      <Box sx={{ flexShrink: 0 }}>
       <CustomerPagination
         loading={loading}
         filteredCount={filteredRows.length}
@@ -184,6 +183,7 @@ export default function CustomersPage() {
         selectedCustomerIds={selectedCustomerIds}
         onClearSelection={() => updateSelectedCustomerIds([])}
       />
+      </Box>
 
       {detailOpen && (
         <Suspense fallback={null}>

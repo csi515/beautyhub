@@ -1,6 +1,6 @@
-﻿'use client'
+'use client'
 
-import { TrendingUp, TrendingDown } from 'lucide-react'
+import { TrendingUp, TrendingDown, Plus } from 'lucide-react'
 import {
   Box,
   Grid,
@@ -11,7 +11,8 @@ import {
   Stack,
   Pagination
 } from '@mui/material'
-import { Skeleton } from '@/app/components/ui/Skeleton'
+import Button from '@/app/components/ui/Button'
+import { CardSkeleton } from '@/app/components/ui/SkeletonLoader'
 import EmptyState from '@/app/components/ui/EmptyState'
 import { FinanceCombinedRow } from '@/types/finance'
 
@@ -33,6 +34,7 @@ interface FinanceMobileCardsProps {
   pageSize: number
   onPageChange: (page: number) => void
   onItemClick: (row: FinanceCombinedRow) => void
+  onCreateNew?: () => void
 }
 
 export default function FinanceMobileCards({
@@ -42,20 +44,20 @@ export default function FinanceMobileCards({
   page,
   pageSize,
   onPageChange,
-  onItemClick
+  onItemClick,
+  onCreateNew
 }: FinanceMobileCardsProps) {
   return (
     <Box sx={{ display: { xs: 'block', md: 'none' } }}>
-      <Typography fontWeight="bold" mb={2}>수입/지출 내역</Typography>
-      {loading && (
-        <Grid container spacing={2}>
-          {Array.from({ length: 4 }).map((_, i) => (
-            <Grid item xs={12} sm={6} key={i}>
-              <Skeleton className="h-24 rounded-lg" />
-            </Grid>
-          ))}
-        </Grid>
-      )}
+      <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 2 }}>
+        <Typography fontWeight="bold">수입/지출 내역</Typography>
+        {onCreateNew && (
+          <Button variant="primary" size="sm" leftIcon={<Plus className="h-4 w-4" />} onClick={onCreateNew}>
+            수입/지출 입력
+          </Button>
+        )}
+      </Box>
+      {loading && <CardSkeleton count={4} />}
       {!loading && pagedCombined.length === 0 && (
         <EmptyState title="데이터가 없습니다." />
       )}

@@ -2,7 +2,8 @@
 
 import { useState } from 'react'
 import { Users } from 'lucide-react'
-import PageHeader, { createActionButton } from '@/app/components/common/PageHeader'
+import PageHeader from '@/app/components/common/PageHeader'
+import Button from '@/app/components/ui/Button'
 import StaffDetailModal from '@/app/components/modals/StaffDetailModal'
 import StatusChangeModal from '@/app/components/modals/StatusChangeModal'
 import AttendanceRecordModal from '@/app/components/modals/AttendanceRecordModal'
@@ -13,9 +14,8 @@ import StaffTabsContainer from '@/app/components/features/staff/StaffTabsContain
 import StaffAttendanceTab from '@/app/components/features/staff/StaffAttendanceTab'
 import StaffScheduleTab from '@/app/components/features/staff/StaffScheduleTab'
 import StaffListTab from '@/app/components/features/staff/StaffListTab'
-import { Stack } from '@mui/material'
+import { Stack, Box } from '@mui/material'
 import { Download } from 'lucide-react'
-import { useTheme, useMediaQuery } from '@mui/material'
 import PageContainer from '@/app/components/layout/PageContainer'
 
 // Hooks
@@ -28,9 +28,6 @@ import { useStaffHandlers } from '@/app/lib/hooks/useStaffHandlers'
  */
 export default function StaffPage() {
   const [tabIndex, setTabIndex] = useState(0) // 0: 근태현황, 1: 스케줄 표, 2: 명부관리
-
-  const theme = useTheme()
-  const isMobile = useMediaQuery(theme.breakpoints.down('md'))
 
   // Data hook
   const {
@@ -80,25 +77,45 @@ export default function StaffPage() {
 
 
   return (
-    <PageContainer maxWidth="lg">
+    <PageContainer maxWidth="xl">
       <Stack spacing={4}>
-      <PageHeader
-        title="직원 통합 관리"
-        icon={<Users className="h-5 w-5" />}
-        description="출결 확인부터 상세 일정 구성까지 한 곳에서 관리하세요"
-        actions={[
-          ...(isMobile ? [] : [createActionButton('CSV 내보내기', () => handleExport(tabIndex), 'secondary', <Download size={16} />)]),
-          createActionButton(
-            '직원 추가',
-            () => {
+      <PageHeader title="직원 통합 관리" icon={<Users className="h-5 w-5" />} />
+
+      <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1, justifyContent: 'flex-end' }}>
+        <Button
+          variant="secondary"
+          size="sm"
+          leftIcon={<Download size={16} />}
+          onClick={() => handleExport(tabIndex)}
+          sx={{ whiteSpace: 'nowrap', display: { xs: 'none', lg: 'inline-flex' } }}
+        >
+          엑셀 내보내기
+        </Button>
+        <Button
+          variant="primary"
+          size="sm"
+          onClick={() => {
+            setSelected(null)
+            setDetailOpen(true)
+          }}
+          sx={{ whiteSpace: 'nowrap' }}
+        >
+          직원 추가
+        </Button>
+        {tabIndex === 1 && (
+          <Button
+            variant="primary"
+            size="sm"
+            onClick={() => {
               setSelected(null)
-              setDetailOpen(true)
-            }
-          ),
-          // 주간 스케줄 버튼은 스케줄 탭(index 1)일 때만 보이거나 항상 보이게 할 수 있음
-          ...(tabIndex === 1 ? [createActionButton('주간 반복 설정', () => { setSelected(null); setWeeklyScheduleOpen(true) }, 'primary')] : [])
-        ]}
-      />
+              setWeeklyScheduleOpen(true)
+            }}
+            sx={{ whiteSpace: 'nowrap' }}
+          >
+            주간 반복 설정
+          </Button>
+        )}
+      </Box>
 
       {/* 통계 카드 */}
       <StaffStatsCards

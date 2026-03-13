@@ -180,7 +180,7 @@ export default function CustomerPointsTab({
               </div>
             </div>
             <div className="pt-2 flex justify-end">
-              <Button size="sm" variant="secondary" onClick={onExportExcel} className="w-full md:w-auto">
+              <Button size="sm" variant="secondary" onClick={onExportExcel} className="hidden lg:inline-flex w-auto">
                 엑셀 내보내기
               </Button>
             </div>

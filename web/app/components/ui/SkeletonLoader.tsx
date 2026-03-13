@@ -18,9 +18,9 @@ export function ListSkeleton({ count = 5 }: { count?: number }) {
 
 export function CardSkeleton({ count = 3 }: { count?: number }) {
     return (
-        <Grid container spacing={2}>
+        <Grid container spacing={{ xs: 0.75, sm: 1.5, md: 2 }}>
             {Array.from({ length: count }).map((_, i) => (
-                <Grid item xs={12} md={4} key={i}>
+                <Grid item xs={12} sm={6} md={4} lg={3} key={i}>
                     <Card>
                         <CardContent>
                             <Skeleton variant="text" width="60%" height={32} sx={{ mb: 1 }} />

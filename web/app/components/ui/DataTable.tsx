@@ -82,7 +82,7 @@ export function DataTable<T extends Record<string, unknown>>({
           <TableHead sx={{ bgcolor: 'action.hover' }}>
             <TableRow>
               {columns.map((_, idx) => (
-                <TableCell key={idx} sx={{ fontWeight: 700, py: 2 }}>
+                <TableCell key={idx} sx={{ fontWeight: 700, py: { xs: 2, md: 1 } }}>
                   <Skeleton width={80} height={20} />
                 </TableCell>
               ))}
@@ -92,7 +92,7 @@ export function DataTable<T extends Record<string, unknown>>({
             {Array.from({ length: 5 }).map((_, idx) => (
               <TableRow key={idx}>
                 {columns.map((_, colIdx) => (
-                  <TableCell key={colIdx} sx={{ py: 2 }}>
+                  <TableCell key={colIdx} sx={{ py: { xs: 2, md: 1 } }}>
                     <Skeleton width="100%" height={20} />
                   </TableCell>
                 ))}
@@ -198,7 +198,7 @@ export function DataTable<T extends Record<string, unknown>>({
                   sx={{
                     fontWeight: 700,
                     bgcolor: 'action.hover',
-                    py: 2,
+                    py: { xs: 2, md: 1 },
                     width: col.width,
                     borderBottom: '2px solid',
                     borderColor: 'divider'
@@ -234,7 +234,7 @@ export function DataTable<T extends Record<string, unknown>>({
                   <TableCell
                     key={colIdx}
                     align={col.align || 'left'}
-                    sx={{ py: 2, typography: 'body2', color: 'text.primary' }}
+                    sx={{ py: { xs: 2, md: 1 }, typography: 'body2', color: 'text.primary' }}
                   >
                     {col.render ? col.render(item, rowIdx) : String(item[col.key as keyof T] ?? '')}
                   </TableCell>

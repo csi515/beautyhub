@@ -13,9 +13,10 @@ import {
   IconButton,
   Checkbox,
   Chip,
-  Skeleton
+  Box
 } from '@mui/material'
 import EmptyState from '@/app/components/ui/EmptyState'
+import { TableSkeleton } from '@/app/components/ui/SkeletonLoader'
 import CustomerHoldingsBadge from './CustomerHoldingsBadge'
 import { type Customer } from '@/types/entities'
 
@@ -48,7 +49,12 @@ export default function CustomerTable({
 }: CustomerTableProps) {
   return (
     <TableContainer component={Paper} elevation={0} variant="outlined" sx={{ borderRadius: 3, display: { xs: 'none', md: 'block' } }}>
-      <Table role="table" aria-label="고객 목록 테이블">
+      {loading ? (
+        <Box sx={{ p: 2.5 }} aria-label="고객 데이터 로딩 중">
+          <TableSkeleton rows={5} cols={8} />
+        </Box>
+      ) : (
+      <Table role="table" aria-label="고객 목록 테이블" sx={{ '& .MuiTableCell-root': { py: { md: 1 } } }}>
         <TableHead sx={{ bgcolor: 'neutral.50' }}>
           <TableRow>
             <TableCell padding="checkbox">
@@ -90,14 +96,7 @@ export default function CustomerTable({
           </TableRow>
         </TableHead>
         <TableBody>
-          {loading && Array.from({ length: 5 }).map((_, i) => (
-            <TableRow key={i}>
-              <TableCell colSpan={7}>
-                <Skeleton className="h-10" aria-label="고객 데이터 로딩 중" />
-              </TableCell>
-            </TableRow>
-          ))}
-          {!loading && paginatedCustomers.map((c) => (
+          {paginatedCustomers.map((c) => (
             <TableRow
               key={c.id}
               hover
@@ -158,9 +157,9 @@ export default function CustomerTable({
               </TableCell>
             </TableRow>
           ))}
-          {!loading && customers.length === 0 && (
+          {customers.length === 0 && (
             <TableRow>
-              <TableCell colSpan={7} align="center" sx={{ py: 8 }}>
+              <TableCell colSpan={8} align="center" sx={{ py: 8 }}>
                 <EmptyState
                   title="고객 데이터가 없습니다."
                   actionLabel="새 고객"
@@ -171,6 +170,7 @@ export default function CustomerTable({
           )}
         </TableBody>
       </Table>
+      )}
     </TableContainer>
   )
 }

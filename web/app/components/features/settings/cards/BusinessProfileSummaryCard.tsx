@@ -3,6 +3,7 @@
 import Card from '@/app/components/ui/Card'
 import Button from '@/app/components/ui/Button'
 import { Pencil, Store, Phone, MapPin } from 'lucide-react'
+import { Box, Typography, Stack } from '@mui/material'
 import { type BusinessProfile } from '@/types/settings'
 
 type Props = {
@@ -15,50 +16,80 @@ export default function BusinessProfileSummaryCard({ data, onEdit }: Props) {
 
     return (
         <Card>
-            <div className="flex items-start justify-between mb-4">
-                <div>
-                    <h3 className="text-lg font-semibold text-neutral-900">가게 기본 정보</h3>
-                    <p className="text-sm text-neutral-600 mt-1">상호명, 주소, 영업시간</p>
-                </div>
-                <Button variant="outline" size="sm" onClick={onEdit} leftIcon={<Pencil className="h-4 w-4" />}>
+            <Stack direction="row" alignItems="flex-start" justifyContent="space-between" sx={{ mb: 2 }}>
+                <Box>
+                    <Typography variant="h6" fontWeight={600} sx={{ color: 'text.primary' }}>
+                        가게 기본 정보
+                    </Typography>
+                    <Typography variant="body2" sx={{ color: 'text.secondary', mt: 0.5 }}>
+                        상호명, 주소, 영업시간
+                    </Typography>
+                </Box>
+                <Button variant="outline" size="sm" onClick={onEdit} leftIcon={<Pencil size={16} />}>
                     편집
                 </Button>
-            </div>
+            </Stack>
 
             {hasBasicInfo ? (
-                <div className="space-y-3">
+                <Stack spacing={1.5}>
                     {data.storeName && (
-                        <div className="flex items-start gap-3">
-                            <Store className="h-5 w-5 text-neutral-500 mt-0.5" />
-                            <div>
-                                <div className="text-xs font-semibold text-neutral-500 uppercase">상호명</div>
-                                <div className="text-base font-medium text-neutral-900">{data.storeName}</div>
-                            </div>
-                        </div>
+                        <Stack direction="row" alignItems="flex-start" spacing={1.5}>
+                            <Store size={20} style={{ color: 'var(--mui-palette-text-secondary)', marginTop: 2 }} />
+                            <Box>
+                                <Typography
+                                    variant="caption"
+                                    fontWeight={600}
+                                    sx={{ color: 'text.secondary', textTransform: 'uppercase', display: 'block' }}
+                                >
+                                    상호명
+                                </Typography>
+                                <Typography variant="body1" fontWeight={500} sx={{ color: 'text.primary' }}>
+                                    {data.storeName}
+                                </Typography>
+                            </Box>
+                        </Stack>
                     )}
 
                     {data.phone && (
-                        <div className="flex items-start gap-3">
-                            <Phone className="h-5 w-5 text-neutral-500 mt-0.5" />
-                            <div>
-                                <div className="text-xs font-semibold text-neutral-500 uppercase">전화번호</div>
-                                <div className="text-base font-medium text-neutral-900">{data.phone}</div>
-                            </div>
-                        </div>
+                        <Stack direction="row" alignItems="flex-start" spacing={1.5}>
+                            <Phone size={20} style={{ color: 'var(--mui-palette-text-secondary)', marginTop: 2 }} />
+                            <Box>
+                                <Typography
+                                    variant="caption"
+                                    fontWeight={600}
+                                    sx={{ color: 'text.secondary', textTransform: 'uppercase', display: 'block' }}
+                                >
+                                    전화번호
+                                </Typography>
+                                <Typography variant="body1" fontWeight={500} sx={{ color: 'text.primary' }}>
+                                    {data.phone}
+                                </Typography>
+                            </Box>
+                        </Stack>
                     )}
 
                     {data.address && (
-                        <div className="flex items-start gap-3">
-                            <MapPin className="h-5 w-5 text-neutral-500 mt-0.5" />
-                            <div>
-                                <div className="text-xs font-semibold text-neutral-500 uppercase">주소</div>
-                                <div className="text-base text-neutral-900">{data.address}</div>
-                            </div>
-                        </div>
+                        <Stack direction="row" alignItems="flex-start" spacing={1.5}>
+                            <MapPin size={20} style={{ color: 'var(--mui-palette-text-secondary)', marginTop: 2 }} />
+                            <Box>
+                                <Typography
+                                    variant="caption"
+                                    fontWeight={600}
+                                    sx={{ color: 'text.secondary', textTransform: 'uppercase', display: 'block' }}
+                                >
+                                    주소
+                                </Typography>
+                                <Typography variant="body1" sx={{ color: 'text.primary' }}>
+                                    {data.address}
+                                </Typography>
+                            </Box>
+                        </Stack>
                     )}
-                </div>
+                </Stack>
             ) : (
-                <p className="text-sm text-neutral-400 italic">기본 정보를 등록하세요</p>
+                <Typography variant="body2" sx={{ color: 'text.disabled', fontStyle: 'italic' }}>
+                    기본 정보를 등록하세요
+                </Typography>
             )}
         </Card>
     )

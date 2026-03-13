@@ -1,6 +1,8 @@
 import { useMemo } from 'react'
 import { useSort } from './useSort'
 import { usePagination } from './usePagination'
+import { useIsTablet } from './useBreakpoint'
+import { DEFAULT_PAGE_SIZE } from '@/app/lib/constants/pagination'
 import { type Customer } from '@/types/entities'
 import { type CustomerFilters } from '@/types/customer'
 
@@ -9,6 +11,7 @@ export function useCustomerFilters(
   pointsByCustomer: Record<string, number>,
   filters: CustomerFilters
 ) {
+  const isTablet = useIsTablet()
   const { sortKey, sortDirection, toggleSort, sortFn } = useSort<Customer & Record<string, unknown>>({
     initialKey: 'name',
     initialDirection: 'asc',
@@ -16,7 +19,7 @@ export function useCustomerFilters(
 
   const pagination = usePagination({
     initialPage: 1,
-    initialPageSize: 10,
+    initialPageSize: isTablet ? DEFAULT_PAGE_SIZE.tablet : DEFAULT_PAGE_SIZE.desktop,
     totalItems: customers.length,
   })
 

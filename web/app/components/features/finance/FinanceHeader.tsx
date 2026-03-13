@@ -1,7 +1,7 @@
 'use client'
 
 import { FileText, Download } from 'lucide-react'
-import { Stack, Typography, IconButton } from '@mui/material'
+import { Stack, Typography } from '@mui/material'
 import Button from '@/app/components/ui/Button'
 
 interface FinanceHeaderProps {
@@ -22,7 +22,7 @@ export default function FinanceHeader({
           size="sm"
           leftIcon={<FileText className="h-4 w-4" />}
           onClick={onGenerateTaxReport}
-          sx={{ display: { xs: 'none', sm: 'flex' } }}
+          sx={{ display: { xs: 'none', lg: 'flex' } }}
         >
           세무 자료 생성
         </Button>
@@ -31,14 +31,10 @@ export default function FinanceHeader({
           size="sm"
           leftIcon={<Download className="h-4 w-4" />}
           onClick={onExportExcel}
-          sx={{ display: { xs: 'none', sm: 'flex' } }}
+          sx={{ display: { xs: 'none', lg: 'flex' } }}
         >
           엑셀로 내보내기
         </Button>
-        {/* 모바일용 */}
-        <IconButton onClick={onExportExcel} sx={{ display: { xs: 'flex', sm: 'none' } }}>
-          <Download className="h-5 w-5" />
-        </IconButton>
       </Stack>
     </Stack>
   )

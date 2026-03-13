@@ -3,7 +3,7 @@ import { format, addWeeks, getDay, addDays } from 'date-fns'
 import { useAppToast } from '../ui/toast'
 import { staffApi } from '../api/staff'
 import { attendanceApi } from '../api/attendance'
-import { exportToCSV } from '../utils/export'
+import { exportToExcel } from '../utils/export'
 import { Staff, StaffAttendance, StaffAttendanceCreateInput } from '@/types/entities'
 import { StaffScheduleRepeat } from '@/types/staff'
 
@@ -38,7 +38,7 @@ export function useStaffHandlers(
         '상태': r.active !== false ? '재직' : '퇴사',
         '현재상태': r.status === 'office' ? '근무중' : r.status === 'away' ? '자리비움' : '퇴근'
       }))
-      exportToCSV(data, `직원명부_${format(new Date(), 'yyyyMMdd')}.csv`)
+      exportToExcel(data, `직원명부_${format(new Date(), 'yyyyMMdd')}.xlsx`)
     } else {
       // Export Attendance/Schedule
       // Create staff map for name lookup
@@ -58,9 +58,9 @@ export function useStaffHandlers(
         '상태': a.status,
         '메모': a.memo || '-'
       }))
-      exportToCSV(data, `근태기록_${format(new Date(), 'yyyyMM')}.csv`)
+      exportToExcel(data, `근태기록_${format(new Date(), 'yyyyMM')}.xlsx`)
     }
-    toast.success('CSV 파일이 다운로드되었습니다')
+    toast.success('엑셀 파일이 다운로드되었습니다')
   }
 
   // === 출퇴근 기록 핸들러 ===

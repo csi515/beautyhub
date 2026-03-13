@@ -39,7 +39,7 @@ export default function ProductDetailModal({ open, onClose, item, onSaved, onDel
         body.description = form.description.trim()
       }
       await productsApi.update(String(form.id), body)
-      onSaved(); onClose(); toast.success('제품이 저장되었습니다.')
+      onSaved(); onClose(); toast.success('상품이 저장되었습니다.')
     } catch (e: unknown) {
       const errorMessage = e instanceof Error ? e.message : '에러가 발생했습니다.'
       setError(errorMessage)
@@ -107,13 +107,13 @@ export default function ProductDetailModal({ open, onClose, item, onSaved, onDel
       open={open}
       onClose={onClose}
       item={form}
-      title="제품 상세"
-      description="제품의 기본 정보를 수정합니다. 이름과 가격은 필수입니다."
+      title="상품 상세"
+      description="상품의 기본 정보를 수정합니다. 이름과 가격은 필수입니다."
       loading={loading}
       error={error}
       onSave={save}
       onDelete={removeItem}
-      confirmDeleteMessage="정말 이 제품을 삭제하시겠어요? 이 작업은 되돌릴 수 없습니다."
+      confirmDeleteMessage="정말 이 상품을 삭제하시겠어요? 이 작업은 되돌릴 수 없습니다."
       size="lg"
     >
       <div className="space-y-3">

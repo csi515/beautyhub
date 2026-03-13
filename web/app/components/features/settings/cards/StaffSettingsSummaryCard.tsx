@@ -3,6 +3,7 @@
 import Card from '@/app/components/ui/Card'
 import Button from '@/app/components/ui/Button'
 import { Pencil } from 'lucide-react'
+import { Box, Typography, Stack, Chip } from '@mui/material'
 import { type StaffSettings } from '@/types/settings'
 
 type Props = {
@@ -13,51 +14,92 @@ type Props = {
 export default function StaffSettingsSummaryCard({ data, onEdit }: Props) {
     return (
         <Card>
-            <div className="flex items-start justify-between mb-4">
-                <div>
-                    <h3 className="text-lg font-semibold text-neutral-900">직원 직책 설정</h3>
-                    <p className="text-sm text-neutral-600 mt-1">직원 직책 관리</p>
-                </div>
-                <Button variant="outline" size="sm" onClick={onEdit} leftIcon={<Pencil className="h-4 w-4" />}>
+            <Stack direction="row" alignItems="flex-start" justifyContent="space-between" sx={{ mb: 2 }}>
+                <Box>
+                    <Typography variant="h6" fontWeight={600} sx={{ color: 'text.primary' }}>
+                        직원 직책 설정
+                    </Typography>
+                    <Typography variant="body2" sx={{ color: 'text.secondary', mt: 0.5 }}>
+                        직원 직책 관리
+                    </Typography>
+                </Box>
+                <Button variant="outline" size="sm" onClick={onEdit} leftIcon={<Pencil size={16} />}>
                     편집
                 </Button>
-            </div>
+            </Stack>
 
-            <div className="space-y-3">
-                {/* 직책 목록 */}
-                <div>
-                    <div className="text-xs font-semibold text-neutral-500 uppercase mb-2">등록된 직책</div>
+            <Stack spacing={1.5}>
+                <Box>
+                    <Typography
+                        variant="caption"
+                        fontWeight={600}
+                        sx={{ color: 'text.secondary', textTransform: 'uppercase', display: 'block', mb: 1 }}
+                    >
+                        등록된 직책
+                    </Typography>
                     {data?.positions && data.positions.length > 0 ? (
-                        <div className="flex flex-wrap gap-2">
+                        <Stack direction="row" flexWrap="wrap" gap={1}>
                             {data.positions.map((position) => (
-                                <span
+                                <Chip
                                     key={position}
-                                    className="inline-flex items-center px-2.5 py-1 rounded-md bg-purple-50 border border-purple-200 text-purple-700 text-sm"
-                                >
-                                    {position}
-                                </span>
+                                    label={position}
+                                    size="small"
+                                    sx={{
+                                        bgcolor: 'secondary.light',
+                                        border: '1px solid',
+                                        borderColor: 'secondary.main',
+                                        color: 'secondary.dark',
+                                    }}
+                                />
                             ))}
-                        </div>
+                        </Stack>
                     ) : (
-                        <p className="text-sm text-neutral-400 italic">등록된 직책이 없습니다</p>
+                        <Typography variant="body2" sx={{ color: 'text.disabled', fontStyle: 'italic' }}>
+                            등록된 직책이 없습니다
+                        </Typography>
                     )}
-                </div>
+                </Box>
 
-                {/* 기본 근무시간 */}
-                <div>
-                    <div className="text-xs font-semibold text-neutral-500 uppercase mb-2">기본 근무시간</div>
-                    <div className="flex items-center gap-2">
-                        <span className="inline-flex items-center px-2.5 py-1 rounded-md bg-blue-50 border border-blue-200 text-blue-700 text-sm font-medium">
-                            {data?.defaultWorkHours?.startTime || '09:00'}
-                        </span>
-                        <span className="text-neutral-400">~</span>
-                        <span className="inline-flex items-center px-2.5 py-1 rounded-md bg-blue-50 border border-blue-200 text-blue-700 text-sm font-medium">
-                            {data?.defaultWorkHours?.endTime || '18:00'}
-                        </span>
-                    </div>
-                    <p className="text-xs text-neutral-500 mt-1">스케줄 추가 시 기본값</p>
-                </div>
-            </div>
+                <Box>
+                    <Typography
+                        variant="caption"
+                        fontWeight={600}
+                        sx={{ color: 'text.secondary', textTransform: 'uppercase', display: 'block', mb: 1 }}
+                    >
+                        기본 근무시간
+                    </Typography>
+                    <Stack direction="row" alignItems="center" spacing={1} flexWrap="wrap">
+                        <Chip
+                            label={data?.defaultWorkHours?.startTime || '09:00'}
+                            size="small"
+                            sx={{
+                                bgcolor: 'primary.light',
+                                border: '1px solid',
+                                borderColor: 'primary.main',
+                                color: 'primary.dark',
+                                fontWeight: 500,
+                            }}
+                        />
+                        <Typography variant="body2" sx={{ color: 'text.disabled' }}>
+                            ~
+                        </Typography>
+                        <Chip
+                            label={data?.defaultWorkHours?.endTime || '18:00'}
+                            size="small"
+                            sx={{
+                                bgcolor: 'primary.light',
+                                border: '1px solid',
+                                borderColor: 'primary.main',
+                                color: 'primary.dark',
+                                fontWeight: 500,
+                            }}
+                        />
+                    </Stack>
+                    <Typography variant="caption" sx={{ color: 'text.secondary', display: 'block', mt: 0.5 }}>
+                        스케줄 추가 시 기본값
+                    </Typography>
+                </Box>
+            </Stack>
         </Card>
     )
 }

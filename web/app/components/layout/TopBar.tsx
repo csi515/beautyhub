@@ -2,6 +2,7 @@
 
 import { Menu, Settings } from 'lucide-react'
 import Link from 'next/link'
+import LogoutButton from '../ui/LogoutButton'
 import { useEffect, useState } from 'react'
 import AppBar from '@mui/material/AppBar'
 import Toolbar from '@mui/material/Toolbar'
@@ -69,6 +70,7 @@ export default function TopBar({ onMenu }: { onMenu?: () => void }) {
               {userName}님
             </Typography>
           )}
+          <LogoutButton compact />
           <IconButton
             component={Link}
             href="/settings"

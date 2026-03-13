@@ -129,17 +129,32 @@ export default function InventoryTable({
     return (
         <>
             <TableContainer component={Paper} variant="outlined" sx={{ mt: 2 }}>
-                <Table>
+                <Table sx={{
+                    tableLayout: 'fixed',
+                    width: '100%',
+                    '& .MuiTableCell-root': { py: { md: 1 }, px: 1 },
+                    '& .MuiTableCell-root:first-of-type': { px: 0.5 },
+                    '& .MuiTableCell-root:last-of-type': { px: 0.5 },
+                }}>
+                    <colgroup>
+                        <col style={{ width: '36px' }} />
+                        <col style={{ width: '110px' }} />
+                        <col style={{ width: '52px' }} />
+                        <col style={{ width: '52px' }} />
+                        <col style={{ width: '72px' }} />
+                        <col style={{ width: '100px' }} />
+                    </colgroup>
                     <TableHead>
                         <TableRow>
-                            <TableCell padding="checkbox">
+                            <TableCell padding="none" align="center" sx={{ width: 36, minWidth: 36, px: 0.5 }}>
                                 <Checkbox
+                                    size="small"
                                     checked={products.length > 0 && selectedProductIds.size === products.length}
                                     indeterminate={selectedProductIds.size > 0 && selectedProductIds.size < products.length}
                                     onChange={onToggleSelectAll}
                                 />
                             </TableCell>
-                            <TableCell>
+                            <TableCell align="center" sx={{ whiteSpace: 'nowrap', minWidth: 0 }}>
                                 <TableSortLabel
                                     active={sortBy === 'name'}
                                     direction={sortBy === 'name' ? sortOrder : 'asc'}
@@ -148,18 +163,18 @@ export default function InventoryTable({
                                     제품명
                                 </TableSortLabel>
                             </TableCell>
-                            <TableCell align="right">
+                            <TableCell align="center" sx={{ whiteSpace: 'nowrap', width: 52, minWidth: 52 }}>
                                 <TableSortLabel
                                     active={sortBy === 'stock_count'}
                                     direction={sortBy === 'stock_count' ? sortOrder : 'asc'}
                                     onClick={() => onSortChange('stock_count')}
                                 >
-                                    현재 재고
+                                    현재고
                                 </TableSortLabel>
                             </TableCell>
-                            <TableCell align="right">안전 재고</TableCell>
-                            <TableCell>상태</TableCell>
-                            <TableCell align="right">작업</TableCell>
+                            <TableCell align="center" sx={{ whiteSpace: 'nowrap', width: 52, minWidth: 52 }}>안전재고</TableCell>
+                            <TableCell align="center" sx={{ whiteSpace: 'nowrap', width: 72, minWidth: 72 }}>상태</TableCell>
+                            <TableCell align="center" sx={{ whiteSpace: 'nowrap', width: 100, minWidth: 100, px: 0.5 }}>작업</TableCell>
                         </TableRow>
                     </TableHead>
                     <TableBody>
@@ -174,20 +189,23 @@ export default function InventoryTable({
                                             : 'inherit'
                                 }}
                             >
-                                <TableCell padding="checkbox">
+                                <TableCell padding="none" align="center" sx={{ width: 36, minWidth: 36, px: 0.5 }}>
                                     <Checkbox
+                                        size="small"
                                         checked={selectedProductIds.has(product.id)}
                                         onChange={() => onToggleSelect(product.id)}
                                     />
                                 </TableCell>
-                                <TableCell>{product.name}</TableCell>
-                                <TableCell align="right">
+                                <TableCell sx={{ minWidth: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }} title={product.name}>
+                                    {product.name}
+                                </TableCell>
+                                <TableCell align="center">
                                     <Typography variant="body2" fontWeight={600}>
                                         {product.stock_count ?? 0}
                                     </Typography>
                                 </TableCell>
-                                <TableCell align="right">{product.safety_stock ?? 5}</TableCell>
-                                <TableCell>
+                                <TableCell align="center">{product.safety_stock ?? 5}</TableCell>
+                                <TableCell align="center" sx={{ width: 72, minWidth: 72 }}>
                                     {product.inventory_status === 'out_of_stock' && (
                                         <Chip
                                             label="품절"
@@ -208,15 +226,16 @@ export default function InventoryTable({
                                         <Chip label="정상" color="success" size="small" />
                                     )}
                                 </TableCell>
-                                <TableCell align="right">
-                                    <Stack direction="row" spacing={1} justifyContent="flex-end">
+                                <TableCell align="center" sx={{ width: 100, minWidth: 100, px: 0.5 }}>
+                                    <Stack direction="row" spacing={0} justifyContent="center" sx={{ gap: 0 }}>
                                         <Tooltip title="출고 (-1)">
                                             <IconButton
                                                 size="small"
                                                 color="error"
                                                 onClick={() => onQuickAdjust(product, -1)}
+                                                sx={{ p: 0.25 }}
                                             >
-                                                <TrendingDown size={18} />
+                                                <TrendingDown size={14} />
                                             </IconButton>
                                         </Tooltip>
                                         <Tooltip title="입고 (+1)">
@@ -224,24 +243,27 @@ export default function InventoryTable({
                                                 size="small"
                                                 color="success"
                                                 onClick={() => onQuickAdjust(product, 1)}
+                                                sx={{ p: 0.25 }}
                                             >
-                                                <Package size={18} />
+                                                <Package size={14} />
                                             </IconButton>
                                         </Tooltip>
                                         <Tooltip title="재고 조정">
                                             <IconButton
                                                 size="small"
                                                 onClick={() => onOpenStockModal(product)}
+                                                sx={{ p: 0.25 }}
                                             >
-                                                <Edit size={18} />
+                                                <Edit size={14} />
                                             </IconButton>
                                         </Tooltip>
                                         <Tooltip title="재고 이력">
                                             <IconButton
                                                 size="small"
                                                 onClick={() => onOpenHistoryModal(product)}
+                                                sx={{ p: 0.25 }}
                                             >
-                                                <History size={18} />
+                                                <History size={14} />
                                             </IconButton>
                                         </Tooltip>
                                     </Stack>

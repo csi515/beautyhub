@@ -42,7 +42,7 @@ export default function Card({
         }
       }}
       sx={{
-        p: compact ? 2.5 : 3, // p-5 : p-6 (20px : 24px)
+        p: compact ? 1.5 : 2, // compact: 12px, default: 16px
         borderRadius: 3, // rounded-xl (12px)
         border: `1px solid ${theme.palette.divider}`, // border-neutral-200
         transition: 'all 200ms ease-out',

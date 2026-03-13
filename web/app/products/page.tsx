@@ -3,13 +3,15 @@
 import { useEffect, useState, useMemo, lazy, Suspense, useCallback } from 'react'
 import { Plus, Search, Download } from 'lucide-react'
 import EmptyState from '../components/ui/EmptyState'
-import { Skeleton } from '../components/ui/Skeleton'
+import { CardSkeleton } from '../components/ui/SkeletonLoader'
 import { useAppToast } from '../lib/ui/toast'
 import Button from '../components/ui/Button'
 import Modal, { ModalBody, ModalFooter, ModalHeader } from '../components/ui/Modal'
 import { useSearch } from '../lib/hooks/useSearch'
 import { useSort } from '../lib/hooks/useSort'
 import { usePagination } from '../lib/hooks/usePagination'
+import { useIsTablet } from '../lib/hooks/useBreakpoint'
+import { DEFAULT_PAGE_SIZE } from '../lib/constants/pagination'
 import { useForm } from '../lib/hooks/useForm'
 import { exportToCSV, prepareProductDataForExport } from '../lib/utils/export'
 
@@ -27,13 +29,12 @@ import Select from '@mui/material/Select'
 import MenuItem from '@mui/material/MenuItem'
 import Pagination from '@mui/material/Pagination'
 import FormControl from '@mui/material/FormControl'
-import useMediaQuery from '@mui/material/useMediaQuery'
-import { useTheme } from '@mui/material/styles'
 // 공통 컴포넌트
 import Card from '../components/ui/Card'
+import FilterCard from '../components/common/FilterCard'
 import ErrorState from '../components/common/ErrorState'
 import PageContainer from '../components/layout/PageContainer'
-import PageHeader, { createActionButton } from '../components/common/PageHeader'
+import PageHeader from '../components/common/PageHeader'
 
 const ProductDetailModal = lazy(() => import('../components/modals/ProductDetailModal'))
 
@@ -50,13 +51,14 @@ export default function ProductsPage() {
   const [products, setProducts] = useState<Product[]>([])
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
+  const isTablet = useIsTablet()
   const { sortFn } = useSort<Product & Record<string, unknown>>({
     initialKey: 'name',
     initialDirection: 'asc',
   })
   const pagination = usePagination({
     initialPage: 1,
-    initialPageSize: 10,
+    initialPageSize: isTablet ? DEFAULT_PAGE_SIZE.tablet : DEFAULT_PAGE_SIZE.desktop,
     totalItems: 0,
   })
   const { page, pageSize, setPage } = pagination
@@ -67,9 +69,6 @@ export default function ProductsPage() {
   const toast = useAppToast()
   const { query, debouncedQuery, setQuery } = useSearch({ debounceMs: 300 })
   const [statusFilter, setStatusFilter] = useState<'all' | 'active' | 'inactive'>('all')
-  const theme = useTheme()
-  const isMobile = useMediaQuery(theme.breakpoints.down('md'))
-
   // Price range filter
   const [minPrice, setMinPrice] = useState('')
   const [maxPrice, setMaxPrice] = useState('')
@@ -94,7 +93,7 @@ export default function ProductsPage() {
         setShowModal(false)
         setEditing(null)
         form.reset()
-        toast.success('제품이 저장되었습니다.')
+        toast.success('상품이 저장되었습니다.')
       } catch (e: unknown) {
         const errorMessage = e instanceof Error ? e.message : '에러가 발생했습니다.'
         setError(errorMessage)
@@ -186,70 +185,62 @@ export default function ProductsPage() {
   }
 
   return (
-    <PageContainer maxWidth="lg">
-    <Stack spacing={3}>
+    <PageContainer maxWidth="xl">
+    <Stack spacing={3} sx={{ flex: 1, minHeight: 0, overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
+      <Box sx={{ flexShrink: 0 }}>
       <PageHeader
-        title="제품 관리"
+        title="상품 관리"
         icon={<Plus className="h-5 w-5" />}
-        description="상품/서비스를 검색하고 가격 및 상태를 관리하세요."
-        actions={[
-          ...(isMobile ? [] : [createActionButton('CSV 내보내기', handleExport, 'secondary', <Download size={16} />)]),
-          createActionButton('상품 등록', openCreate),
-        ]}
       />
-      <Card sx={{ p: 2 }}>
+      </Box>
+      <Box sx={{ flexShrink: 0 }}>
+      <FilterCard>
         <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2} alignItems="center">
-          <TextField
-            placeholder="상품명 또는 설명으로 검색"
-            value={query}
-            onChange={e => setQuery(e.target.value)}
-            size="small"
-            fullWidth
-            sx={{
-              flexGrow: 1,
-              '& .MuiOutlinedInput-root': {
-                fontSize: { xs: '16px', md: '14px' },
-              },
-            }}
-            InputProps={{
-              startAdornment: (
-                <InputAdornment position="start">
-                  <Search className="h-4 w-4 text-neutral-400" />
-                </InputAdornment>
-              ),
-            }}
-            inputProps={{
-              autoComplete: 'off',
-              autoCorrect: 'off',
-              autoCapitalize: 'off',
-            }}
-          />
-          {!isMobile && (
+            <TextField
+              placeholder="상품명 또는 설명으로 검색"
+              value={query}
+              onChange={e => setQuery(e.target.value)}
+              size="small"
+              fullWidth
+              sx={{
+                flexGrow: 1,
+                '& .MuiOutlinedInput-root': {
+                  fontSize: { xs: '16px', md: '14px' },
+                },
+              }}
+              InputProps={{
+                startAdornment: (
+                  <InputAdornment position="start">
+                    <Search className="h-4 w-4 text-neutral-400" />
+                  </InputAdornment>
+                ),
+              }}
+              inputProps={{
+                autoComplete: 'off',
+                autoCorrect: 'off',
+                autoCapitalize: 'off',
+              }}
+            />
             <Button
               variant="secondary"
               leftIcon={<Download className="h-4 w-4" />}
               onClick={handleExport}
+              sx={{ whiteSpace: 'nowrap', flexShrink: 0, display: { xs: 'none', lg: 'inline-flex' } }}
+            >
+              엑셀 내보내기
+            </Button>
+            <Button
+              variant="primary"
+              leftIcon={<Plus className="h-4 w-4" />}
+              onClick={openCreate}
               sx={{ whiteSpace: 'nowrap', flexShrink: 0 }}
             >
-              CSV 내보내기
+              상품 추가
             </Button>
-          )}
-          <Button
-            variant="primary"
-            leftIcon={<Plus className="h-4 w-4" />}
-            onClick={openCreate}
-            sx={{ whiteSpace: 'nowrap', flexShrink: 0 }}
-          >
-            상품 등록
-          </Button>
         </Stack>
-      </Card>
-
-      {/* 필터 패널 */}
-      <Card sx={{ p: 2 }}>
-        <Stack spacing={2}>
+        <Stack spacing={1}>
           <Typography variant="subtitle2" fontWeight={600}>필터</Typography>
-          <Grid container spacing={{ xs: 0.75, sm: 1.5, md: 2 }} alignItems="center">
+            <Grid container spacing={{ xs: 0.75, sm: 1.5, md: 2 }} alignItems="center">
             <Grid item xs={12} md={3}>
               <FormControl size="small" fullWidth>
                 <Select
@@ -298,9 +289,10 @@ export default function ProductsPage() {
                 )}
               </Stack>
             </Grid>
-          </Grid>
+            </Grid>
         </Stack>
-      </Card>
+      </FilterCard>
+      </Box>
 
       {error && (
         <ErrorState
@@ -310,13 +302,12 @@ export default function ProductsPage() {
         />
       )}
 
+      <Box sx={{ flex: 1, minHeight: 0, overflow: 'auto' }}>
+      {loading ? (
+        <CardSkeleton count={8} />
+      ) : (
       <Grid container spacing={{ xs: 0.75, sm: 1.5, md: 2 }}>
-        {loading && Array.from({ length: 8 }).map((_, i) => (
-          <Grid item xs={12} sm={6} md={4} lg={3} key={i}>
-            <Skeleton className="h-32 rounded-lg" />
-          </Grid>
-        ))}
-        {!loading && paginatedProducts.map((p) => (
+        {paginatedProducts.map((p) => (
           <Grid item xs={12} sm={6} md={4} lg={3} key={String(p.id)}>
             <Card hover sx={{ height: '100%', display: 'flex', flexDirection: 'column', p: 1.5 }}>
               <Stack spacing={1} sx={{ flexGrow: 1 }}>
@@ -349,19 +340,22 @@ export default function ProductsPage() {
             </Card>
           </Grid>
         ))}
-        {!loading && filteredProducts.length === 0 && (
+        {filteredProducts.length === 0 && (
           <Grid item xs={12}>
             <EmptyState
-              title={products.length === 0 ? "제품이 없습니다." : "검색 결과가 없습니다."}
-              actionLabel="제품 추가"
+              title={products.length === 0 ? "상품이 없습니다." : "검색 결과가 없습니다."}
+              actionLabel="상품 추가"
               onAction={openCreate}
             />
           </Grid>
         )}
       </Grid>
+      )}
+      </Box>
 
       {/* 페이지네이션 */}
       {!loading && filteredProducts.length > 0 && (
+        <Box sx={{ flexShrink: 0 }}>
         <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2} justifyContent="space-between" alignItems="center" mt={2}>
           <Typography variant="body2" color="text.secondary">
             총 {filteredProducts.length}개
@@ -383,6 +377,7 @@ export default function ProductsPage() {
             />
           </Stack>
         </Stack>
+        </Box>
       )}
 
       {showModal && (
@@ -392,8 +387,8 @@ export default function ProductsPage() {
           size="lg"
         >
           <ModalHeader
-            title={editing ? '제품 수정' : '제품 추가'}
-            description="제품의 기본 정보를 입력하세요. 이름과 가격은 필수입니다."
+            title={editing ? '상품 수정' : '상품 추가'}
+            description="상품의 기본 정보를 입력하세요. 이름과 가격은 필수입니다."
           />
           <ModalBody>
             <Stack spacing={3} sx={{ mt: 1 }}>
@@ -494,7 +489,7 @@ export default function ProductsPage() {
           variant="primary"
           size="lg"
           onClick={openCreate}
-          aria-label="제품 추가"
+          aria-label="상품 추가"
           sx={{
             borderRadius: '50%',
             width: 56,

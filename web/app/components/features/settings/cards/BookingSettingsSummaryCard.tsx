@@ -3,6 +3,7 @@
 import Card from '@/app/components/ui/Card'
 import Button from '@/app/components/ui/Button'
 import { Pencil } from 'lucide-react'
+import { Box, Typography, Stack, Chip } from '@mui/material'
 import { type BookingSettings } from '@/types/settings'
 import { DAY_LABELS } from '@/types/settings'
 
@@ -14,56 +15,98 @@ type Props = {
 export default function BookingSettingsSummaryCard({ data, onEdit }: Props) {
     return (
         <Card>
-            <div className="flex items-start justify-between mb-4">
-                <div>
-                    <h3 className="text-lg font-semibold text-neutral-900">예약 및 스케줄 정책</h3>
-                    <p className="text-sm text-neutral-600 mt-1">예약 시간 정책 및 리마인드 알림</p>
-                </div>
-                <Button variant="outline" size="sm" onClick={onEdit} leftIcon={<Pencil className="h-4 w-4" />}>
+            <Stack direction="row" alignItems="flex-start" justifyContent="space-between" sx={{ mb: 2 }}>
+                <Box>
+                    <Typography variant="h6" fontWeight={600} sx={{ color: 'text.primary' }}>
+                        예약 및 스케줄 정책
+                    </Typography>
+                    <Typography variant="body2" sx={{ color: 'text.secondary', mt: 0.5 }}>
+                        예약 시간 정책 및 리마인드 알림
+                    </Typography>
+                </Box>
+                <Button variant="outline" size="sm" onClick={onEdit} leftIcon={<Pencil size={16} />}>
                     편집
                 </Button>
-            </div>
+            </Stack>
 
-            <div className="space-y-3">
-                <div className="grid grid-cols-2 gap-3">
-                    <div>
-                        <div className="text-xs font-semibold text-neutral-500 uppercase mb-1">최소 예약 간격</div>
-                        <div className="text-lg font-medium text-neutral-900">{data.minBookingInterval}분</div>
-                    </div>
-                    <div>
-                        <div className="text-xs font-semibold text-neutral-500 uppercase mb-1">최대 예약 시간</div>
-                        <div className="text-lg font-medium text-neutral-900">{data.maxBookingHoursPerDay}시간/일</div>
-                    </div>
-                </div>
+            <Stack spacing={1.5}>
+                <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2} sx={{ gap: 2 }}>
+                    <Box>
+                        <Typography
+                            variant="caption"
+                            fontWeight={600}
+                            sx={{ color: 'text.secondary', textTransform: 'uppercase', display: 'block', mb: 0.5 }}
+                        >
+                            최소 예약 간격
+                        </Typography>
+                        <Typography variant="h6" fontWeight={500} sx={{ color: 'text.primary' }}>
+                            {data.minBookingInterval}분
+                        </Typography>
+                    </Box>
+                    <Box>
+                        <Typography
+                            variant="caption"
+                            fontWeight={600}
+                            sx={{ color: 'text.secondary', textTransform: 'uppercase', display: 'block', mb: 0.5 }}
+                        >
+                            최대 예약 시간
+                        </Typography>
+                        <Typography variant="h6" fontWeight={500} sx={{ color: 'text.primary' }}>
+                            {data.maxBookingHoursPerDay}시간/일
+                        </Typography>
+                    </Box>
+                </Stack>
 
-                <div>
-                    <div className="text-xs font-semibold text-neutral-500 uppercase mb-2">예약 가능 요일</div>
-                    <div className="flex flex-wrap gap-2">
+                <Box>
+                    <Typography
+                        variant="caption"
+                        fontWeight={600}
+                        sx={{ color: 'text.secondary', textTransform: 'uppercase', display: 'block', mb: 1 }}
+                    >
+                        예약 가능 요일
+                    </Typography>
+                    <Stack direction="row" flexWrap="wrap" gap={1}>
                         {data.availableDays.map((day) => (
-                            <span
+                            <Chip
                                 key={day}
-                                className="inline-flex items-center px-2.5 py-1 rounded-md bg-blue-50 border border-blue-200 text-blue-700 text-sm"
-                            >
-                                {DAY_LABELS[day]}
-                            </span>
+                                label={DAY_LABELS[day]}
+                                size="small"
+                                sx={{
+                                    bgcolor: 'primary.light',
+                                    border: '1px solid',
+                                    borderColor: 'primary.main',
+                                    color: 'primary.dark',
+                                }}
+                            />
                         ))}
-                    </div>
-                </div>
+                    </Stack>
+                </Box>
 
-                <div>
-                    <div className="text-xs font-semibold text-neutral-500 uppercase mb-2">리마인드 알림</div>
-                    <div className="flex flex-wrap gap-2">
+                <Box>
+                    <Typography
+                        variant="caption"
+                        fontWeight={600}
+                        sx={{ color: 'text.secondary', textTransform: 'uppercase', display: 'block', mb: 1 }}
+                    >
+                        리마인드 알림
+                    </Typography>
+                    <Stack direction="row" flexWrap="wrap" gap={1}>
                         {data.reminderTimings.map((hours) => (
-                            <span
+                            <Chip
                                 key={hours}
-                                className="inline-flex items-center px-2.5 py-1 rounded-md bg-purple-50 border border-purple-200 text-purple-700 text-sm"
-                            >
-                                {hours}시간 전
-                            </span>
+                                label={`${hours}시간 전`}
+                                size="small"
+                                sx={{
+                                    bgcolor: 'secondary.light',
+                                    border: '1px solid',
+                                    borderColor: 'secondary.main',
+                                    color: 'secondary.dark',
+                                }}
+                            />
                         ))}
-                    </div>
-                </div>
-            </div>
+                    </Stack>
+                </Box>
+            </Stack>
         </Card>
     )
 }

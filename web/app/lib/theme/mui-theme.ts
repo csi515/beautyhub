@@ -233,24 +233,35 @@ export const theme = createTheme(
                 styleOverrides: {
                     root: {
                         borderRadius: '0.5rem',
+                        minHeight: 44,
                     },
                 },
             },
             MuiIconButton: {
                 styleOverrides: {
                     root: {
-                        // 모바일에서 최소 터치 타겟 크기 보장
-                        '@media (max-width: 640px)': {
-                            minWidth: '44px',
-                            minHeight: '44px',
-                        },
+                        minWidth: 44,
+                        minHeight: 44,
                     },
                     sizeSmall: {
-                        '@media (max-width: 640px)': {
-                            minWidth: '44px',
-                            minHeight: '44px',
-                        },
+                        minWidth: 44,
+                        minHeight: 44,
                     },
+                },
+            },
+            MuiTableCell: {
+                styleOverrides: {
+                    root: {
+                        paddingTop: 10,
+                        paddingBottom: 10,
+                        paddingLeft: 16,
+                        paddingRight: 16,
+                    },
+                },
+            },
+            MuiPagination: {
+                defaultProps: {
+                    size: 'small',
                 },
             },
         },

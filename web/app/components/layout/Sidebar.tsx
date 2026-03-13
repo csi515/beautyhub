@@ -8,16 +8,12 @@ import {
   Calendar,
   Package,
   Users,
-  UserCheck,
   DollarSign,
   Settings,
   Shield,
   ChevronLeft,
   ChevronRight,
-  Home,
-  TrendingUp,
   Warehouse,
-  Receipt,
 } from 'lucide-react'
 import {
   Box,
@@ -34,7 +30,6 @@ import {
   useTheme,
   alpha
 } from '@mui/material'
-import LogoutButton from '../ui/LogoutButton'
 import { useIsAdmin } from '@/app/lib/hooks/useUserRole'
 import { useShopName } from '@/app/lib/hooks/useShopName'
 
@@ -48,15 +43,11 @@ type Item = {
 const items: Item[] = [
   { href: '/dashboard', label: '대시보드', icon: LayoutDashboard },
   { href: '/appointments', label: '예약', icon: Calendar },
-  { href: '/products', label: '제품', icon: Package },
+  { href: '/products', label: '상품', icon: Package },
   { href: '/inventory', label: '재고', icon: Warehouse },
   { href: '/customers', label: '고객', icon: Users },
-  { href: '/analytics', label: '고객분석', icon: TrendingUp },
-  { href: '/staff', label: '직원', icon: UserCheck, disabled: true },
-  { href: '/payroll', label: '급여', icon: Receipt },
   { href: '/finance', label: '재무', icon: DollarSign },
   { href: '/settings', label: '설정', icon: Settings },
-  { href: '/', label: 'BeautyHub 홈', icon: Home },
 ]
 
 type Props = {
@@ -77,7 +68,7 @@ export default function Sidebar({
   const theme = useTheme()
   const shopName = useShopName()
 
-  const sidebarWidth = collapsed ? 80 : 256
+  const sidebarWidth = collapsed ? 60 : 192
 
   return (
     <Paper
@@ -105,7 +96,7 @@ export default function Sidebar({
       {/* 헤더 */}
       <Box
         sx={{
-          p: 2,
+          p: 1.5,
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'space-between',
@@ -197,7 +188,7 @@ export default function Sidebar({
                     <ListItemIcon
                       sx={{
                         minWidth: 0,
-                        mr: collapsed ? 0 : 2,
+                        mr: collapsed ? 0 : 1.5,
                         justifyContent: 'center',
                         color: active ? 'primary.main' : 'text.secondary',
                       }}
@@ -262,7 +253,7 @@ export default function Sidebar({
                   <ListItemIcon
                     sx={{
                       minWidth: 0,
-                      mr: collapsed ? 0 : 2,
+                      mr: collapsed ? 0 : 1.5,
                       justifyContent: 'center',
                       color: pathname?.startsWith('/admin') ? 'primary.main' : 'text.secondary',
                     }}
@@ -298,10 +289,6 @@ export default function Sidebar({
         )}
       </List>
 
-      {/* 푸터 */}
-      <Box sx={{ p: 2, borderTop: `1px solid ${theme.palette.divider}` }}>
-        <LogoutButton collapsed={collapsed} />
-      </Box>
     </Paper>
   )
 }

@@ -3,14 +3,16 @@
 import { useState } from 'react'
 import { Box, Typography, Alert, Stack, CardContent } from '@mui/material'
 import { useTheme, useMediaQuery } from '@mui/material'
-import { Package, PackageX, Download } from 'lucide-react'
+import { Package, PackageX, Download, Plus } from 'lucide-react'
 
 import PageContainer from '@/app/components/layout/PageContainer'
+import { useIsTablet } from '@/app/lib/hooks/useBreakpoint'
 import Card from '@/app/components/ui/Card'
+import FilterCard from '@/app/components/common/FilterCard'
 import Button from '@/app/components/ui/Button'
 import { TableSkeleton, CardSkeleton } from '@/app/components/ui/SkeletonLoader'
 import EmptyState from '@/app/components/ui/EmptyState'
-import PageHeader, { createActionButton } from '@/app/components/common/PageHeader'
+import PageHeader from '@/app/components/common/PageHeader'
 import SearchBar from '@/app/components/common/SearchBar'
 import FilterPanel from '@/app/components/common/FilterPanel'
 import InventoryHistoryModal from '@/app/components/features/inventory/InventoryHistoryModal'
@@ -25,8 +27,9 @@ export interface InventoryFilters {
 }
 import BulkActionBar from '@/app/components/features/inventory/BulkActionBar'
 import ProductAddModal from '@/app/components/features/inventory/ProductAddModal'
-import { exportToCSV, prepareInventoryDataForExport } from '@/app/lib/utils/export'
+import { exportToExcel, prepareInventoryDataForExport } from '@/app/lib/utils/export'
 
+import { INVENTORY_PAGE_SIZE } from '@/app/lib/constants/pagination'
 import { useInventoryData } from './hooks/useInventoryData'
 import { useInventoryActions } from './hooks/useInventoryActions'
 import InventorySummaryCards from './components/InventorySummaryCards'
@@ -36,10 +39,11 @@ import StockAdjustmentModal from './components/StockAdjustmentModal'
 export default function InventoryPage() {
     const theme = useTheme()
     const isMobile = useMediaQuery(theme.breakpoints.down('sm'))
+    const isTablet = useIsTablet()
 
     // Pagination, Search, Filter, Sort states
     const [page, setPage] = useState(1)
-    const [limit] = useState(25)
+    const limit = isTablet ? INVENTORY_PAGE_SIZE.tablet : INVENTORY_PAGE_SIZE.desktop
     const [search, setSearch] = useState('')
     const [filters, setFilters] = useState<InventoryFilters>({
         status: '',
@@ -124,18 +128,13 @@ export default function InventoryPage() {
 
     function handleExport() {
         const dataToExport = prepareInventoryDataForExport(products)
-        exportToCSV(dataToExport, `재고현황_${new Date().toISOString().slice(0, 10)}.csv`)
+        exportToExcel(dataToExport, `재고현황_${new Date().toISOString().slice(0, 10)}.xlsx`)
     }
 
     if (loading) {
         return (
-            <PageContainer maxWidth="lg">
-                <PageHeader
-                    title="재고 관리"
-                    description="제품 재고 현황 및 알림 관리"
-                    icon={<Package />}
-                    actions={[]}
-                />
+            <PageContainer maxWidth="xl">
+                <PageHeader title="재고 관리" icon={<Package />} />
                 <Box sx={{ mb: 4 }}>
                     <CardSkeleton count={3} />
                 </Box>
@@ -146,15 +145,8 @@ export default function InventoryPage() {
 
     if (products.length === 0) {
         return (
-            <PageContainer maxWidth="lg">
-                <PageHeader
-                    title="재고 관리"
-                    description="제품 재고 현황 및 알림 관리"
-                    icon={<Package />}
-                    actions={[
-                        createActionButton('제품 추가', () => setProductAddModalOpen(true), 'primary')
-                    ]}
-                />
+            <PageContainer maxWidth="xl">
+                <PageHeader title="재고 관리" icon={<Package />} />
                 <InventorySummaryCards products={[]} />
                 <EmptyState
                     icon={PackageX}
@@ -168,16 +160,10 @@ export default function InventoryPage() {
     }
 
     return (
-        <PageContainer maxWidth="lg">
-            <PageHeader
-                title="재고 관리"
-                description="제품 재고 현황 및 알림 관리"
-                icon={<Package />}
-                actions={[
-                    createActionButton('CSV 내보내기', handleExport, 'secondary', <Download size={16} />),
-                    createActionButton('제품 추가', () => setProductAddModalOpen(true), 'primary'),
-                ]}
-            />
+        <PageContainer maxWidth="xl">
+            <Stack spacing={3} sx={{ flex: 1, minHeight: 0, overflow: 'auto', display: 'flex', flexDirection: 'column' }}>
+            <Box sx={{ flexShrink: 0 }}>
+            <PageHeader title="재고 관리" icon={<Package />} />
 
             {/* 알림 섹션 */}
             {alerts.length > 0 && (
@@ -199,15 +185,37 @@ export default function InventoryPage() {
             {/* 요약 카드 */}
             <InventorySummaryCards products={products} />
 
-            {/* Search and Filter Section */}
-            <Stack spacing={2} sx={{ mb: 3 }}>
-                <SearchBar
-                    value={search}
-                    onChange={(newSearch) => {
-                        setSearch(newSearch)
-                        setPage(1)
-                    }}
-                />
+            {/* Search, Filter, Actions */}
+            <FilterCard>
+                <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2} alignItems="center">
+                    <Box sx={{ flexGrow: 1, width: '100%' }}>
+                        <SearchBar
+                            value={search}
+                            onChange={(newSearch) => {
+                                setSearch(newSearch)
+                                setPage(1)
+                            }}
+                        />
+                    </Box>
+                    <Stack direction="row" spacing={1} sx={{ flexShrink: 0 }}>
+                        <Button
+                            variant="secondary"
+                            leftIcon={<Download size={16} />}
+                            onClick={handleExport}
+                            sx={{ whiteSpace: 'nowrap', display: { xs: 'none', lg: 'inline-flex' } }}
+                        >
+                            엑셀 내보내기
+                        </Button>
+                        <Button
+                            variant="primary"
+                            leftIcon={<Plus size={16} />}
+                            onClick={() => setProductAddModalOpen(true)}
+                            sx={{ whiteSpace: 'nowrap' }}
+                        >
+                            제품 추가
+                        </Button>
+                    </Stack>
+                </Stack>
                 <FilterPanel<InventoryFilters>
                     filters={filters}
                     onFilterChange={(newFilters) => {
@@ -250,9 +258,11 @@ export default function InventoryPage() {
                     ]}
                     title="필터"
                 />
-            </Stack>
+            </FilterCard>
+            </Box>
 
             {/* 재고 현황 테이블 */}
+            <Box sx={{ flex: 1, minHeight: { xs: 200, md: 280 }, overflow: 'auto' }}>
             <Card>
                 <CardContent>
                     <Typography variant="h6" fontWeight={600} gutterBottom>
@@ -279,6 +289,7 @@ export default function InventoryPage() {
                     />
                 </CardContent>
             </Card>
+            </Box>
 
             {/* 재고 조정 모달 */}
             <StockAdjustmentModal
@@ -318,6 +329,7 @@ export default function InventoryPage() {
                 onClose={() => setProductAddModalOpen(false)}
                 onSuccess={refetch}
             />
+            </Stack>
         </PageContainer>
     )
 }

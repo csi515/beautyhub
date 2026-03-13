@@ -90,7 +90,7 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
         display: 'flex',
         flexDirection: 'column',
         minWidth: 0,
-        ml: { xs: 0, md: collapsed ? '80px' : '256px' },
+        ml: { xs: 0, md: collapsed ? '60px' : '192px' },
         transition: theme.transitions.create('margin', {
           easing: theme.transitions.easing.sharp,
           duration: theme.transitions.duration.enteringScreen,
@@ -101,14 +101,24 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
           component="main"
           sx={{
             flexGrow: 1,
+            height: { md: 'calc(100vh - 64px)' },
+            minHeight: 0,
             p: { xs: 2, sm: 2, md: 3, lg: 4 },
             pb: { xs: 'calc(72px + env(safe-area-inset-bottom, 0px))', md: 3 },
             overflowX: 'hidden',
+            overflowY: { md: 'hidden' },
             width: '100%',
             maxWidth: '100%',
           }}
         >
-          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
+          <Box sx={{
+            display: 'flex',
+            flexDirection: 'column',
+            gap: 3,
+            flex: { md: 1 },
+            minHeight: { md: 0 },
+            overflow: { md: 'hidden' },
+          }}>
             {isMobile ? (
               <PullToRefresh>
                 {children}

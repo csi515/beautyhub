@@ -31,7 +31,7 @@ export default function MobileBottomNav() {
         { label: '대시보드', value: '/dashboard', icon: LayoutDashboard },
         { label: '고객', value: '/customers', icon: Users },
         { label: '예약', value: '/appointments', icon: Calendar },
-        { label: '제품', value: '/products', icon: Package },
+        { label: '상품', value: '/products', icon: Package },
         { label: '설정', value: '/settings', icon: Settings },
     ]
 

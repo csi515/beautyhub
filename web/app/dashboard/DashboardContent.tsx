@@ -2,6 +2,7 @@
 
 import { useMemo, useEffect, useState } from 'react'
 import { useShopName } from '../lib/hooks/useShopName'
+import { useIsTablet } from '../lib/hooks/useBreakpoint'
 import Card from '../components/ui/Card'
 import Button from '../components/ui/Button'
 import MetricCard from '../components/features/dashboard/MetricCard'
@@ -15,7 +16,8 @@ import TopServicesChart from '../components/features/dashboard/TopServicesChart'
 import DashboardSkeleton from '../components/skeletons/DashboardSkeleton'
 import ErrorState from '../components/common/ErrorState'
 import DashboardAlerts from '../components/features/dashboard/DashboardAlerts'
-import { PackageOpen, CalendarX, CheckCircle, Circle, ChevronRight } from 'lucide-react'
+import { PackageOpen, CalendarX, CheckCircle, Circle, ChevronRight, LayoutDashboard } from 'lucide-react'
+import PageHeader from '../components/common/PageHeader'
 
 type RecentAppointment = {
     id: string
@@ -42,6 +44,7 @@ interface DashboardContentProps {
 
 export default function DashboardContent({ initialData, error }: DashboardContentProps) {
     const shopName = useShopName()
+    const isTablet = useIsTablet()
     const [scrollProgress, setScrollProgress] = useState(0)
 
     // 스크롤 진행률 계산 (모바일 전용)
@@ -99,20 +102,21 @@ export default function DashboardContent({ initialData, error }: DashboardConten
         activeProducts
     } = initialData
 
-    // 성능 최적화: 계산된 값 메모이제이션
+    // 성능 최적화: 계산된 값 메모이제이션 (태블릿에서 스크롤 방지 - 한 화면에 맞춤)
+    const productLimit = isTablet ? 4 : 12
+    const appointmentLimit = isTablet ? 3 : 8
+    const transactionLimit = isTablet ? 4 : 10
     const slicedProducts = useMemo(
-        () => activeProducts?.slice(0, 12) || [],
-        [activeProducts]
+        () => activeProducts?.slice(0, productLimit) || [],
+        [activeProducts, productLimit]
     )
-
     const slicedAppointments = useMemo(
-        () => recentAppointments?.slice(0, 8) || [],
-        [recentAppointments]
+        () => recentAppointments?.slice(0, appointmentLimit) || [],
+        [recentAppointments, appointmentLimit]
     )
-
     const slicedTransactions = useMemo(
-        () => recentTransactions?.slice(0, 10) || [],
-        [recentTransactions]
+        () => recentTransactions?.slice(0, transactionLimit) || [],
+        [recentTransactions, transactionLimit]
     )
 
     const formattedMonthlyProfit = useMemo(
@@ -159,36 +163,56 @@ export default function DashboardContent({ initialData, error }: DashboardConten
                 }}
             />
             <PageContainer maxWidth={false}>
-            <Stack spacing={{ xs: 2, sm: 2.5, md: 3 }} sx={{ width: '100%', overflowX: 'hidden' }}>
-                <Box>
-                    <Typography variant="h4" fontWeight={800} sx={{ color: 'text.primary', mb: 0.5, fontSize: { xs: '1.25rem', sm: '1.5rem' } }}>
-                        {shopName}
-                    </Typography>
-                    <Typography variant="body1" color="text.secondary" sx={{ fontSize: { xs: '1rem', sm: '1rem' } }}>
-                        오늘도 힘차게 비즈니스를 관리해 보세요.
-                    </Typography>
+            <Stack
+                spacing={{ xs: 2, sm: 2.5, md: isTablet ? 1 : 3 }}
+                sx={{
+                    width: '100%',
+                    overflowX: 'hidden',
+                    flex: 1,
+                    minHeight: 0,
+                    overflow: 'hidden',
+                    display: 'flex',
+                    flexDirection: 'column',
+                }}
+            >
+                <Box sx={{ flexShrink: 0 }}>
+                    <PageHeader title={shopName} icon={<LayoutDashboard size={20} />} />
                 </Box>
 
-                <DashboardInstallPrompt />
+                <Box sx={{ display: { md: isTablet ? 'none' : 'block' } }}>
+                    <DashboardInstallPrompt />
+                </Box>
 
                 {/* Alerts Section */}
-                <DashboardAlerts />
+                <Box sx={{ display: { md: isTablet ? 'none' : 'block' } }}>
+                    <DashboardAlerts />
+                </Box>
 
                 {/* 신규 사용자 온보딩 가이드 */}
                 {activeProducts.length === 0 && monthlyAppointments === 0 && (
-                    <Card sx={{ p: 3, border: '1.5px solid', borderColor: 'primary.200', bgcolor: 'primary.50' }}>
+                    <Card
+                        sx={{
+                            p: 3,
+                            border: '1px dashed',
+                            borderColor: 'divider',
+                            bgcolor: 'background.paper',
+                            borderRadius: 2,
+                        }}
+                    >
                         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, mb: 2.5 }}>
-                            <Typography variant="subtitle1" fontWeight={700} sx={{ color: 'primary.700' }}>
+                            <Typography variant="subtitle1" fontWeight={700} sx={{ color: 'text.primary' }}>
                                 시작 가이드
                             </Typography>
-                            <Typography variant="caption" sx={{ color: 'primary.500', bgcolor: 'primary.100', px: 1, py: 0.25, borderRadius: 1 }}>
-                                3단계
+                            <Typography
+                                variant="caption"
+                                sx={{ color: 'primary.main', bgcolor: 'primary.light', px: 1, py: 0.25, borderRadius: 1 }}
+                            >
+                                2단계
                             </Typography>
                         </Box>
                         <Stack spacing={1.5}>
                             {[
                                 { label: '상품/서비스 등록', desc: '판매할 서비스나 상품을 먼저 등록하세요', href: '/products', done: activeProducts.length > 0 },
-                                { label: '직원 등록', desc: '담당 직원을 등록하면 예약 배정이 가능해요', href: '/staff', done: false },
                                 { label: '첫 예약 잡기', desc: '고객의 첫 예약을 등록해보세요', href: '/appointments', done: monthlyAppointments > 0 },
                             ].map((step) => (
                                 <Box
@@ -201,27 +225,39 @@ export default function DashboardContent({ initialData, error }: DashboardConten
                                         gap: 2,
                                         p: 1.5,
                                         borderRadius: 2,
-                                        bgcolor: step.done ? 'success.50' : 'background.paper',
+                                        bgcolor: step.done ? 'success.light' : 'action.hover',
                                         border: '1px solid',
-                                        borderColor: step.done ? 'success.200' : 'divider',
+                                        borderColor: step.done ? 'success.main' : 'divider',
                                         textDecoration: 'none',
                                         color: 'inherit',
-                                        minHeight: '56px',
+                                        minHeight: 56,
                                         transition: 'all 0.15s ease',
-                                        '&:hover': { borderColor: 'primary.400', bgcolor: step.done ? 'success.50' : 'primary.50' },
+                                        '&:hover': {
+                                            borderColor: 'primary.main',
+                                            bgcolor: step.done ? 'success.light' : 'primary.light',
+                                        },
                                     }}
                                 >
-                                    {step.done
-                                        ? <CheckCircle size={20} className="text-emerald-500" style={{ flexShrink: 0 }} />
-                                        : <Circle size={20} style={{ color: '#94a3b8', flexShrink: 0 }} />
-                                    }
+                                    <Box sx={{ flexShrink: 0, color: step.done ? 'success.main' : 'text.disabled' }}>
+                                        {step.done ? <CheckCircle size={20} /> : <Circle size={20} />}
+                                    </Box>
                                     <Box sx={{ flex: 1 }}>
-                                        <Typography variant="body2" fontWeight={600} sx={{ color: step.done ? 'success.700' : 'text.primary' }}>
+                                        <Typography
+                                            variant="body2"
+                                            fontWeight={600}
+                                            sx={{ color: step.done ? 'success.dark' : 'text.primary' }}
+                                        >
                                             {step.label}
                                         </Typography>
-                                        <Typography variant="caption" color="text.secondary">{step.desc}</Typography>
+                                        <Typography variant="caption" color="text.secondary">
+                                            {step.desc}
+                                        </Typography>
                                     </Box>
-                                    {!step.done && <ChevronRight size={16} style={{ color: '#94a3b8', flexShrink: 0 }} />}
+                                    {!step.done && (
+                                        <Box component="span" sx={{ flexShrink: 0, color: 'text.disabled', display: 'flex' }}>
+                                            <ChevronRight size={16} />
+                                        </Box>
+                                    )}
                                 </Box>
                             ))}
                         </Stack>
@@ -229,7 +265,7 @@ export default function DashboardContent({ initialData, error }: DashboardConten
                 )}
 
                 {/* Metrics */}
-                <Grid container spacing={{ xs: 0.75, sm: 1.5, md: 2.5, lg: 3 }} sx={{ width: '100%', margin: 0 }}>
+                <Grid container spacing={{ xs: 0.75, sm: 1.5, md: isTablet ? 1 : 2.5, lg: 3 }} sx={{ width: '100%', margin: 0, flexShrink: 0 }}>
                     <Grid item xs={12} sm={6} md={3}>
                         <MetricCard
                             label="오늘 예약"
@@ -267,8 +303,8 @@ export default function DashboardContent({ initialData, error }: DashboardConten
                     </Grid>
                 </Grid>
 
-                {/* Charts Row - NEW */}
-                <Grid container spacing={{ xs: 0.75, sm: 1.5, md: 2.5, lg: 3 }} sx={{ minHeight: { xs: 'auto', md: 400 }, width: '100%', margin: 0, overflowX: 'hidden' }}>
+                {/* Charts Row */}
+                <Grid container spacing={{ xs: 0.75, sm: 1.5, md: isTablet ? 1 : 2.5, lg: 3 }} sx={{ minHeight: { xs: 'auto', md: isTablet ? 180 : 400 }, width: '100%', margin: 0, overflowX: 'hidden', flexShrink: 0 }}>
                     <Grid item xs={12} lg={8}>
                         {/* Revenue Chart */}
                         <RevenueChart transactions={monthlyRevenueData || recentTransactions} />
@@ -280,11 +316,11 @@ export default function DashboardContent({ initialData, error }: DashboardConten
                 </Grid>
 
                 {/* Main Content Areas */}
-                <Grid container spacing={{ xs: 0.75, sm: 1.5, md: 2.5, lg: 3 }} sx={{ width: '100%', margin: 0, overflowX: 'hidden' }}>
+                <Grid container spacing={{ xs: 0.75, sm: 1.5, md: isTablet ? 1 : 2.5, lg: 3 }} sx={{ width: '100%', margin: 0, overflowX: 'hidden', flex: 1, minHeight: 0, alignContent: 'flex-start' }}>
                     {/* Expanded Products Section */}
                     <Grid item xs={12} lg={8}>
-                        <Card sx={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
-                            <Box sx={{ mb: 2, display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: { xs: 'wrap', sm: 'nowrap' }, gap: { xs: 1, sm: 0 } }}>
+                        <Card sx={{ height: '100%', display: 'flex', flexDirection: 'column', p: { md: isTablet ? 1.5 : 3 } }}>
+                            <Box sx={{ mb: { xs: 2, md: isTablet ? 1 : 2 }, display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: { xs: 'wrap', sm: 'nowrap' }, gap: { xs: 1, sm: 0 } }}>
                                 <Typography variant="subtitle1" fontWeight={700} sx={{ background: 'linear-gradient(to right, #059669, #0d9488)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>
                                     판매 중인 상품
                                 </Typography>
@@ -308,14 +344,14 @@ export default function DashboardContent({ initialData, error }: DashboardConten
                                 </Box>
                             </Box>
                             {activeProducts.length > 0 ? (
-                                <Grid container spacing={{ xs: 0.75, sm: 1.5, md: 2 }}>
+                                <Grid container spacing={{ xs: 0.75, sm: 1.5, md: isTablet ? 1 : 2 }}>
                                     {slicedProducts.map((p: ProductSummary, index: number) => (
-                                        <Grid item xs={12} sm={6} md={4} key={p.id}>
+                                        <Grid item xs={12} sm={6} md={isTablet ? 6 : 4} key={p.id}>
                                             <Box
                                                 sx={{
                                                     display: 'flex',
                                                     flexDirection: 'column',
-                                                    p: 1.5,
+                                                    p: { xs: 1.5, md: isTablet ? 1 : 1.5 },
                                                     borderRadius: 3,
                                                     bgcolor: 'background.paper',
                                                     border: '1px solid',
@@ -407,8 +443,8 @@ export default function DashboardContent({ initialData, error }: DashboardConten
 
                     {/* Recent Appointments */}
                     <Grid item xs={12} lg={4}>
-                        <Card sx={{ height: '100%' }}>
-                            <Box sx={{ borderBottom: 1, borderColor: 'divider', pb: 2.5, mb: 2, display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: { xs: 'wrap', sm: 'nowrap' }, gap: { xs: 1, sm: 0 } }}>
+                        <Card sx={{ height: '100%', p: { md: isTablet ? 1.5 : 3 } }}>
+                            <Box sx={{ borderBottom: 1, borderColor: 'divider', pb: { xs: 2.5, md: isTablet ? 1 : 2.5 }, mb: { xs: 2, md: isTablet ? 1 : 2 }, display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: { xs: 'wrap', sm: 'nowrap' }, gap: { xs: 1, sm: 0 } }}>
                                 <Typography variant="subtitle1" fontWeight={700} sx={{ background: 'linear-gradient(to right, #db2777, #e11d48)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>
                                     최근 예약
                                 </Typography>
@@ -439,7 +475,7 @@ export default function DashboardContent({ initialData, error }: DashboardConten
                                             key={a.id}
                                             disableGutters
                                             sx={{
-                                                py: 1.75,
+                                                py: { xs: 1.75, md: isTablet ? 1 : 1.75 },
                                                 px: 1,
                                                 borderBottom: '1px solid',
                                                 borderLeft: isToday ? '3px solid' : 'none',
@@ -517,8 +553,8 @@ export default function DashboardContent({ initialData, error }: DashboardConten
 
                     {/* Full-width Recent Transactions Table */}
                     <Grid item xs={12}>
-                        <Card>
-                            <Box sx={{ borderBottom: 1, borderColor: 'divider', pb: 2.5, mb: 2, display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: { xs: 'wrap', sm: 'nowrap' }, gap: { xs: 1, sm: 0 } }}>
+                        <Card sx={{ p: { md: isTablet ? 1.5 : 3 } }}>
+                            <Box sx={{ borderBottom: 1, borderColor: 'divider', pb: { xs: 2.5, md: isTablet ? 1 : 2.5 }, mb: { xs: 2, md: isTablet ? 1 : 2 }, display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: { xs: 'wrap', sm: 'nowrap' }, gap: { xs: 1, sm: 0 } }}>
                                 <Typography variant="subtitle1" fontWeight={700} sx={{ background: 'linear-gradient(to right, #2563eb, #4f46e5)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>
                                     최근 거래 내역
                                 </Typography>

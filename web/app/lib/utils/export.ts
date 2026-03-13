@@ -1,3 +1,22 @@
+import * as XLSX from 'xlsx'
+
+/**
+ * 배열 데이터를 Excel(.xlsx) 파일로 내보내기
+ */
+export function exportToExcel(data: Record<string, unknown>[], filename: string) {
+    if (data.length === 0) return
+    const baseName = filename.replace(/\.(csv|xlsx)$/i, '')
+    const xlsxFilename = `${baseName}.xlsx`
+    const headers = Object.keys(data[0]!)
+    const rows = data.map(row => headers.map(h => row[h] ?? ''))
+    const sheetData = [headers, ...rows]
+    const ws = XLSX.utils.aoa_to_sheet(sheetData)
+    const wb = XLSX.utils.book_new()
+    XLSX.utils.book_append_sheet(wb, ws, 'Sheet1')
+    XLSX.writeFile(wb, xlsxFilename)
+}
+
+/** @deprecated CSV 대신 exportToExcel 사용 */
 export function exportToCSV(data: any[], filename: string) {
     if (data.length === 0) {
         return
@@ -61,22 +80,11 @@ export function prepareCustomerDataForExport(customers: any[]) {
 
 export function prepareProductDataForExport(products: any[]) {
     return products.map(product => ({
-        '제품명': product.name,
+        '상품명': product.name,
         '가격': product.price ?? 0,
         '설명': product.description || '-',
         '상태': product.active ? '활성' : '비활성',
         '재고': product.stock_count ?? '-',
         '등록일': product.created_at ? new Date(product.created_at).toLocaleDateString('ko-KR') : '-',
-    }))
-}
-
-export function preparePayrollDataForExport(records: any[]) {
-    return records.map(record => ({
-        '직원명': record.staff_name || '-',
-        '기본급': record.base_salary ?? 0,
-        '보너스': record.bonus ?? 0,
-        '공제액': record.deductions ?? 0,
-        '실수령액': record.net_pay ?? 0,
-        '지급일': record.payment_date ? new Date(record.payment_date).toLocaleDateString('ko-KR') : '-',
     }))
 }

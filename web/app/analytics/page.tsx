@@ -8,7 +8,8 @@ import MobileDataCard from '@/app/components/ui/MobileDataCard'
 import { CardSkeleton } from '@/app/components/ui/SkeletonLoader'
 import EmptyState from '@/app/components/ui/EmptyState'
 import { TrendingUp, Users, Star, DollarSign, BarChart2, Download } from 'lucide-react'
-import PageHeader, { createActionButton } from '@/app/components/common/PageHeader'
+import PageHeader from '@/app/components/common/PageHeader'
+import Button from '@/app/components/ui/Button'
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts'
 import { useAppToast } from '@/app/lib/ui/toast'
 import { exportToCSV } from '@/app/lib/utils/export'
@@ -103,13 +104,8 @@ export default function AnalyticsPage() {
 
     if (loading) {
         return (
-            <PageContainer maxWidth="lg">
-                <PageHeader
-                    title="고객 분석"
-                    description="고객 생애 가치(LTV) 및 VIP 고객 분석"
-                    icon={<TrendingUp />}
-                    actions={[]}
-                />
+            <PageContainer maxWidth="xl">
+                <PageHeader title="고객 분석" icon={<TrendingUp />} />
                 <Box sx={{ mb: 4 }}>
                     <CardSkeleton count={3} />
                 </Box>
@@ -120,7 +116,8 @@ export default function AnalyticsPage() {
 
     if (error) {
         return (
-            <PageContainer maxWidth="lg">
+            <PageContainer maxWidth="xl">
+                <PageHeader title="고객 분석" icon={<TrendingUp />} />
                 <Alert severity="error">{error}</Alert>
             </PageContainer>
         )
@@ -128,15 +125,8 @@ export default function AnalyticsPage() {
 
     if (ltvData.length === 0) {
         return (
-            <PageContainer maxWidth="lg">
-                <PageHeader
-                    title="고객 분석"
-                    description="고객 생애 가치(LTV) 및 VIP 고객 분석"
-                    icon={<TrendingUp />}
-                    actions={[
-                        createActionButton('새로고침', fetchData, 'secondary'),
-                    ]}
-                />
+            <PageContainer maxWidth="xl">
+                <PageHeader title="고객 분석" icon={<TrendingUp />} />
                 <EmptyState
                     icon={BarChart2}
                     title="분석할 데이터가 없습니다"
@@ -149,15 +139,19 @@ export default function AnalyticsPage() {
     }
 
     return (
-        <PageContainer maxWidth="lg">
-            <PageHeader
-                title="고객 분석"
-                description="고객 생애 가치(LTV) 및 VIP 고객 분석"
-                icon={<TrendingUp />}
-                actions={[
-                    ...(isMobile ? [] : [createActionButton('CSV 내보내기', handleExport, 'secondary', <Download size={16} />)])
-                ]}
-            />
+        <PageContainer maxWidth="xl">
+            <PageHeader title="고객 분석" icon={<TrendingUp />} />
+            <Stack direction="row" justifyContent="flex-end" sx={{ mb: 2 }}>
+                <Button
+                    variant="secondary"
+                    size="sm"
+                    leftIcon={<Download size={16} />}
+                    onClick={handleExport}
+                    sx={{ whiteSpace: 'nowrap', display: { xs: 'none', lg: 'inline-flex' } }}
+                >
+                    엑셀 내보내기
+                </Button>
+            </Stack>
 
             {/* 요약 카드 */}
             <Grid container spacing={{ xs: 0.75, sm: 1.5, md: 2.5, lg: 3 }} sx={{ mb: 4 }}>

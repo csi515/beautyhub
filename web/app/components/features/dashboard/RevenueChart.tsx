@@ -1,6 +1,6 @@
 'use client'
 
-import { Typography } from '@mui/material'
+import { Typography, useMediaQuery, useTheme } from '@mui/material'
 import Card from '@/app/components/ui/Card'
 import {
     ResponsiveContainer,
@@ -45,6 +45,9 @@ export default function RevenueChart({ transactions }: RevenueChartProps) {
     }
 
     const data = processData()
+    const theme = useTheme()
+    const isTablet = useMediaQuery(theme.breakpoints.only('md'))
+    const chartHeight = isTablet ? 180 : 220
 
     return (
         <Card sx={{ height: '100%', width: '100%', maxWidth: '100%', overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
@@ -52,7 +55,7 @@ export default function RevenueChart({ transactions }: RevenueChartProps) {
                 <Typography variant="h6" fontWeight="bold" sx={{ mb: 0.5 }}>매출 추이</Typography>
                 <Typography variant="body2" color="text.secondary">최근 일별 매출 현황</Typography>
             </div>
-            <div style={{ flex: 1, height: '220px', padding: '16px 24px', minHeight: '220px' }}>
+            <div style={{ flex: 1, height: `${chartHeight}px`, padding: '16px 24px', minHeight: `${chartHeight}px` }}>
                 <ResponsiveContainer width="100%" height="100%">
                     <BarChart data={data}>
                         <CartesianGrid strokeDasharray="3 3" vertical={false} />

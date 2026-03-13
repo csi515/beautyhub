@@ -9,6 +9,7 @@ import { getAuthApi } from '@/app/lib/api/auth'
 
 type LogoutButtonProps = {
   collapsed?: boolean
+  compact?: boolean
   className?: string
 }
 
@@ -20,7 +21,7 @@ type LogoutButtonProps = {
  */
 import Button from './Button'
 
-export default function LogoutButton({ collapsed = false, className }: LogoutButtonProps) {
+export default function LogoutButton({ collapsed = false, compact = false, className }: LogoutButtonProps) {
   const router = useRouter()
   const [loading, setLoading] = useState(false)
   const toast = useAppToast()
@@ -48,6 +49,24 @@ export default function LogoutButton({ collapsed = false, className }: LogoutBut
       toast.error('로그아웃 실패', error instanceof Error ? error.message : '알 수 없는 오류가 발생했습니다.')
       setLoading(false)
     }
+  }
+
+  if (compact) {
+    return (
+      <Button
+        onClick={handleLogout}
+        loading={loading}
+        variant="ghost"
+        size="sm"
+        className={clsx('!w-auto !min-w-0', className)}
+        title="로그아웃"
+        aria-label="로그아웃"
+        leftIcon={!loading && <LogOut className="h-4 w-4 flex-shrink-0" />}
+        sx={{ px: 1.5, py: 0.75 }}
+      >
+        로그아웃
+      </Button>
+    )
   }
 
   return (

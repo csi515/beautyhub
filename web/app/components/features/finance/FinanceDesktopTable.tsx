@@ -1,6 +1,6 @@
-﻿'use client'
+'use client'
 
-import { Pencil } from 'lucide-react'
+import { Pencil, Plus } from 'lucide-react'
 import {
   Box,
   TableContainer,
@@ -17,8 +17,9 @@ import {
   IconButton,
   Chip
 } from '@mui/material'
-import { Skeleton } from '@/app/components/ui/Skeleton'
+import { TableSkeleton } from '@/app/components/ui/SkeletonLoader'
 import EmptyState from '@/app/components/ui/EmptyState'
+import Button from '@/app/components/ui/Button'
 import { FinanceCombinedRow } from '@/types/finance'
 
 interface FinanceDesktopTableProps {
@@ -32,6 +33,7 @@ interface FinanceDesktopTableProps {
   onSortToggle: (key: 'date' | 'amount') => void
   onPageChange: (page: number) => void
   onItemClick: (row: FinanceCombinedRow) => void
+  onCreateNew?: () => void
 }
 
 export default function FinanceDesktopTable({
@@ -44,14 +46,25 @@ export default function FinanceDesktopTable({
   pageSize,
   onSortToggle,
   onPageChange,
-  onItemClick
+  onItemClick,
+  onCreateNew
 }: FinanceDesktopTableProps) {
   return (
     <TableContainer component={Paper} elevation={0} variant="outlined" sx={{ borderRadius: 3, display: { xs: 'none', md: 'block' } }}>
-      <Box p={2} borderBottom={1} borderColor="divider">
+      <Box p={2} borderBottom={1} borderColor="divider" sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
         <Typography fontWeight="bold">수입/지출 내역</Typography>
+        {onCreateNew && (
+          <Button variant="primary" size="sm" leftIcon={<Plus className="h-4 w-4" />} onClick={onCreateNew}>
+            수입/지출 입력
+          </Button>
+        )}
       </Box>
-      <Table>
+      {loading ? (
+        <Box sx={{ p: 2.5 }}>
+          <TableSkeleton rows={5} cols={5} />
+        </Box>
+      ) : (
+      <Table sx={{ '& .MuiTableCell-root': { py: { md: 1 } } }}>
         <TableHead sx={{ bgcolor: 'neutral.50' }}>
           <TableRow>
             <TableCell sortDirection={sortKey === 'date' ? sortDir : false}>
@@ -78,12 +91,7 @@ export default function FinanceDesktopTable({
           </TableRow>
         </TableHead>
         <TableBody>
-          {loading && Array.from({ length: 5 }).map((_, i) => (
-            <TableRow key={i}>
-              <TableCell colSpan={5}><Skeleton className="h-10" /></TableCell>
-            </TableRow>
-          ))}
-          {!loading && pagedCombined.map(row => (
+          {pagedCombined.map(row => (
             <TableRow key={`${row.type}-${row.id}`} hover>
               <TableCell>{row.date}</TableCell>
               <TableCell>
@@ -109,7 +117,7 @@ export default function FinanceDesktopTable({
               </TableCell>
             </TableRow>
           ))}
-          {!loading && combined.length === 0 && (
+          {combined.length === 0 && (
             <TableRow>
               <TableCell colSpan={5} align="center" sx={{ py: 4 }}>
                 <EmptyState title="데이터가 없습니다." />
@@ -118,6 +126,7 @@ export default function FinanceDesktopTable({
           )}
         </TableBody>
       </Table>
+      )}
       {/* 데스크톱 페이지네이션 */}
       {!loading && combined.length > 0 && (
         <Stack direction="row" justifyContent="flex-end" p={2}>

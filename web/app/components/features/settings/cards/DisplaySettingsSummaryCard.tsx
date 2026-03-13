@@ -3,6 +3,7 @@
 import Card from '@/app/components/ui/Card'
 import Button from '@/app/components/ui/Button'
 import { Pencil, Monitor, Globe, Clock } from 'lucide-react'
+import { Box, Typography, Stack } from '@mui/material'
 import { type DisplaySettings } from '@/types/settings'
 
 type Props = {
@@ -13,76 +14,102 @@ type Props = {
 export default function DisplaySettingsSummaryCard({ data, onEdit }: Props) {
     const getThemeLabel = (theme: string) => {
         switch (theme) {
-            case 'light': return '밝은 테마'
-            case 'dark': return '어두운 테마'
-            case 'auto': return '자동'
-            default: return theme
+            case 'light':
+                return '밝은 테마'
+            case 'dark':
+                return '어두운 테마'
+            case 'auto':
+                return '자동'
+            default:
+                return theme
         }
     }
 
     const getLanguageLabel = (lang: string) => {
         switch (lang) {
-            case 'ko': return '한국어'
-            case 'en': return 'English'
-            default: return lang
+            case 'ko':
+                return '한국어'
+            case 'en':
+                return 'English'
+            default:
+                return lang
         }
     }
 
     return (
         <Card>
-            <div className="flex items-start justify-between mb-4">
-                <div>
-                    <h3 className="text-lg font-semibold text-neutral-900">표시 설정</h3>
-                    <p className="text-sm text-neutral-600 mt-1">테마, 언어, 시간대를 설정하세요</p>
-                </div>
-                <Button variant="outline" size="sm" onClick={onEdit} leftIcon={<Pencil className="h-4 w-4" />}>
+            <Stack direction="row" alignItems="flex-start" justifyContent="space-between" sx={{ mb: 2 }}>
+                <Box>
+                    <Typography variant="h6" fontWeight={600} sx={{ color: 'text.primary' }}>
+                        표시 설정
+                    </Typography>
+                    <Typography variant="body2" sx={{ color: 'text.secondary', mt: 0.5 }}>
+                        테마, 언어, 시간대를 설정하세요
+                    </Typography>
+                </Box>
+                <Button variant="outline" size="sm" onClick={onEdit} leftIcon={<Pencil size={16} />}>
                     편집
                 </Button>
-            </div>
+            </Stack>
 
-            <div className="space-y-3">
-                <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-2">
-                        <Monitor className="h-5 w-5 text-neutral-600" />
-                        <span className="text-sm text-neutral-700">테마</span>
-                    </div>
-                    <span className="text-sm font-medium text-neutral-900">
+            <Stack spacing={1.5}>
+                <Stack direction="row" alignItems="center" justifyContent="space-between">
+                    <Stack direction="row" alignItems="center" spacing={1}>
+                        <Monitor size={20} style={{ color: 'var(--mui-palette-text-secondary)' }} />
+                        <Typography variant="body2" sx={{ color: 'text.secondary' }}>
+                            테마
+                        </Typography>
+                    </Stack>
+                    <Typography variant="body2" fontWeight={500} sx={{ color: 'text.primary' }}>
                         {getThemeLabel(data.theme)}
-                    </span>
-                </div>
+                    </Typography>
+                </Stack>
 
-                <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-2">
-                        <Globe className="h-5 w-5 text-neutral-600" />
-                        <span className="text-sm text-neutral-700">언어</span>
-                    </div>
-                    <span className="text-sm font-medium text-neutral-900">
+                <Stack direction="row" alignItems="center" justifyContent="space-between">
+                    <Stack direction="row" alignItems="center" spacing={1}>
+                        <Globe size={20} style={{ color: 'var(--mui-palette-text-secondary)' }} />
+                        <Typography variant="body2" sx={{ color: 'text.secondary' }}>
+                            언어
+                        </Typography>
+                    </Stack>
+                    <Typography variant="body2" fontWeight={500} sx={{ color: 'text.primary' }}>
                         {getLanguageLabel(data.language)}
-                    </span>
-                </div>
+                    </Typography>
+                </Stack>
 
-                <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-2">
-                        <Clock className="h-5 w-5 text-neutral-600" />
-                        <span className="text-sm text-neutral-700">시간대</span>
-                    </div>
-                    <span className="text-sm font-medium text-neutral-900">
+                <Stack direction="row" alignItems="center" justifyContent="space-between">
+                    <Stack direction="row" alignItems="center" spacing={1}>
+                        <Clock size={20} style={{ color: 'var(--mui-palette-text-secondary)' }} />
+                        <Typography variant="body2" sx={{ color: 'text.secondary' }}>
+                            시간대
+                        </Typography>
+                    </Stack>
+                    <Typography variant="body2" fontWeight={500} sx={{ color: 'text.primary' }}>
                         {data.timezone}
-                    </span>
-                </div>
+                    </Typography>
+                </Stack>
 
-                <div className="text-sm text-neutral-700">
-                    <span className="font-medium">날짜 형식:</span> {data.dateFormat}
-                </div>
+                <Typography variant="body2" sx={{ color: 'text.secondary' }}>
+                    <Box component="span" fontWeight={600}>
+                        날짜 형식:
+                    </Box>{' '}
+                    {data.dateFormat}
+                </Typography>
 
-                <div className="text-sm text-neutral-700">
-                    <span className="font-medium">시간 형식:</span> {data.timeFormat === '24h' ? '24시간제' : '12시간제'}
-                </div>
+                <Typography variant="body2" sx={{ color: 'text.secondary' }}>
+                    <Box component="span" fontWeight={600}>
+                        시간 형식:
+                    </Box>{' '}
+                    {data.timeFormat === '24h' ? '24시간제' : '12시간제'}
+                </Typography>
 
-                <div className="text-sm text-neutral-700">
-                    <span className="font-medium">통화:</span> {data.currency}
-                </div>
-            </div>
+                <Typography variant="body2" sx={{ color: 'text.secondary' }}>
+                    <Box component="span" fontWeight={600}>
+                        통화:
+                    </Box>{' '}
+                    {data.currency}
+                </Typography>
+            </Stack>
         </Card>
     )
 }

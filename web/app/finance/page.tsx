@@ -1,10 +1,10 @@
 'use client'
 
 import { lazy, Suspense, useState } from 'react'
-import { Plus, DollarSign } from 'lucide-react'
-import { Stack, Fab, Typography } from '@mui/material'
+import { DollarSign } from 'lucide-react'
+import { Stack, Box, Typography } from '@mui/material'
 import PageContainer from '@/app/components/layout/PageContainer'
-import PageHeader, { createActionButton } from '@/app/components/common/PageHeader'
+import PageHeader from '@/app/components/common/PageHeader'
 
 // Components
 import FinanceSummaryCards from '@/app/components/features/finance/FinanceSummaryCards'
@@ -99,26 +99,26 @@ export default function FinancePage() {
   }
 
   return (
-    <PageContainer maxWidth="lg">
-      <Stack spacing={3}>
-      <PageHeader
-        title="재무 관리"
-        icon={<DollarSign className="h-5 w-5" />}
-        description="수입/지출 흐름과 수익 현황을 통합 관리하세요."
-        actions={[
-          createActionButton('엑셀 내보내기', handleExportExcel, 'secondary'),
-          createActionButton('세무 리포트', handleGenerateTaxReport, 'secondary'),
-        ]}
-      />
+    <PageContainer maxWidth="xl">
+      <Stack spacing={3} sx={{ flex: 1, minHeight: 0, overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
+      <Box sx={{ flexShrink: 0 }}>
+        <PageHeader
+          title="재무 관리"
+          icon={<DollarSign className="h-5 w-5" />}
+        />
+      </Box>
 
       {/* 요약 카드 */}
+      <Box sx={{ flexShrink: 0 }}>
       <FinanceSummaryCards
         sumIncome={paginationData.sumIncome}
         sumExpense={paginationData.sumExpense}
         profit={paginationData.profit}
       />
+      </Box>
 
       {/* 필터 및 기간 */}
+      <Box sx={{ flexShrink: 0 }}>
       <FinanceFilters
         dateRange={dateRange}
         onUpdateRange={updateRange}
@@ -126,11 +126,13 @@ export default function FinancePage() {
         onFilterTypeChange={(types) => updateFilters({ filterType: types })}
         showFilters={filters.showFilters}
         onToggleShowFilters={() => updateFilters({ showFilters: !filters.showFilters })}
-        onCreateNew={openCreateModal}
         onExportExcel={handleExportExcel}
+        onGenerateTaxReport={handleGenerateTaxReport}
       />
+      </Box>
 
-      {/* 모바일 카드 뷰 */}
+      {/* 모바일 카드 뷰 + 데스크톱 테이블 */}
+      <Box sx={{ flex: 1, minHeight: 0, overflow: 'auto' }}>
       <FinanceMobileCards
         loading={loading}
         pagedCombined={paginationData.pagedCombined}
@@ -139,6 +141,7 @@ export default function FinancePage() {
         pageSize={paginationData.pageSize}
         onPageChange={paginationData.setPage}
         onItemClick={handleItemClick}
+        onCreateNew={openCreateModal}
       />
 
       {/* 데스크톱 테이블 뷰 */}
@@ -153,7 +156,9 @@ export default function FinancePage() {
         onSortToggle={toggleSort}
         onPageChange={paginationData.setPage}
         onItemClick={handleItemClick}
+        onCreateNew={openCreateModal}
       />
+      </Box>
 
       {/* 신규 등록 모달 */}
       <FinanceCreateModal
@@ -185,22 +190,7 @@ export default function FinancePage() {
         />}
       </Suspense>
       {error && <Typography color="error" variant="body2">{error}</Typography>}
-
-      {/* Mobile FAB */}
-      <Fab
-        color="primary"
-        aria-label="새 수입/지출 추가"
-        sx={{
-          position: 'fixed',
-          bottom: { xs: 72, md: 16 },
-          right: 16,
-          display: { xs: 'flex', md: 'none' },
-        }}
-        onClick={openCreateModal}
-      >
-        <Plus />
-      </Fab>
-    </Stack>
+      </Stack>
     </PageContainer>
   )
 }

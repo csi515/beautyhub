@@ -1,4 +1,5 @@
 import './globals.css'
+import 'react-big-calendar/lib/css/react-big-calendar.css'
 import AppShell from './components/layout/AppShell'
 import Providers from './providers'
 import ServiceWorkerRegistration from './components/providers/ServiceWorkerRegistration'

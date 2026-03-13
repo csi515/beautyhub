@@ -64,3 +64,8 @@ export function useIsBelowBreakpoint(breakpoint: Breakpoint): boolean {
   const targetWidth = breakpoints[breakpoint]
   return currentWidth < targetWidth
 }
+
+/** 태블릿(768px~1024px, md 브레이크포인트) 여부 */
+export function useIsTablet(): boolean {
+  return useIsBreakpoint('md')
+}

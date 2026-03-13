@@ -1,16 +1,16 @@
 'use client'
 
-import { Plus, Download } from 'lucide-react'
+import { Download } from 'lucide-react'
 import {
   Box,
   Stack,
-  Paper,
   TextField,
   Typography,
   ToggleButtonGroup,
   ToggleButton
 } from '@mui/material'
 import Button from '@/app/components/ui/Button'
+import FilterCard from '@/app/components/common/FilterCard'
 
 interface FinanceFiltersProps {
   dateRange: { from: string; to: string }
@@ -19,8 +19,8 @@ interface FinanceFiltersProps {
   onFilterTypeChange: (types: ('income' | 'expense')[]) => void
   showFilters: boolean
   onToggleShowFilters: () => void
-  onCreateNew: () => void
   onExportExcel: () => void
+  onGenerateTaxReport?: () => void
 }
 
 export default function FinanceFilters({
@@ -30,24 +30,13 @@ export default function FinanceFilters({
   onFilterTypeChange,
   showFilters,
   onToggleShowFilters,
-  onCreateNew,
-  onExportExcel
+  onExportExcel,
+  onGenerateTaxReport
 }: FinanceFiltersProps) {
   return (
-    <Paper sx={{ p: 2, borderRadius: 3 }} elevation={0} variant="outlined">
-      <Stack spacing={2}>
-        {/* 모바일용 세로 배치 버튼들 */}
+    <FilterCard>
+      {/* 모바일용 세로 배치 버튼들 */}
         <Stack spacing={1} sx={{ display: { xs: 'flex', md: 'none' } }}>
-          <Button
-            variant="primary"
-            size="sm"
-            leftIcon={<Plus className="h-4 w-4" />}
-            onClick={onCreateNew}
-            fullWidth
-            sx={{ minHeight: 44 }}
-          >
-            새 거래
-          </Button>
           <Box sx={{ display: 'flex', gap: 1 }}>
             <Button
               variant="ghost"
@@ -62,106 +51,108 @@ export default function FinanceFilters({
               size="sm"
               leftIcon={<Download className="h-4 w-4" />}
               onClick={onExportExcel}
-              sx={{ flex: 1, fontSize: '0.875rem' }}
+              sx={{ flex: 1, fontSize: '0.875rem', display: { xs: 'none', lg: 'inline-flex' } }}
             >
               엑셀
             </Button>
           </Box>
-        </Stack>
-        <Box sx={{ display: { xs: showFilters ? 'block' : 'none', md: 'block' } }}>
-          <Stack spacing={2}>
-            {/* Quick Date Filters */}
-            <Box sx={{ display: { xs: 'flex', sm: 'flex' }, gap: 0.5, mb: 1.5, flexWrap: 'wrap' }}>
-              <Button
-                size="sm"
-                variant="secondary"
-                onClick={() => {
-                  const now = new Date()
-                  const start = new Date(now.getFullYear(), now.getMonth(), 1)
-                  const end = new Date(now.getFullYear(), now.getMonth() + 1, 0)
-                  onUpdateRange({
-                    from: start.toISOString().split('T')[0]!,
-                    to: end.toISOString().split('T')[0]!
-                  })
-                }}
-                sx={{ fontSize: { xs: '0.75rem', sm: '0.875rem' }, py: 0.5, px: 1 }}
-              >
-                이번 달
-              </Button>
-              <Button
-                size="sm"
-                variant="secondary"
-                onClick={() => {
-                  const now = new Date()
-                  const start = new Date(now.getFullYear(), now.getMonth() - 1, 1)
-                  const end = new Date(now.getFullYear(), now.getMonth(), 0)
-                  onUpdateRange({
-                    from: start.toISOString().split('T')[0]!,
-                    to: end.toISOString().split('T')[0]!
-                  })
-                }}
-                sx={{ fontSize: { xs: '0.75rem', sm: '0.875rem' }, py: 0.5, px: 1 }}
-              >
-                지난 달
-              </Button>
-              <Button
-                size="sm"
-                variant="secondary"
-                onClick={() => {
-                  const now = new Date()
-                  const start = new Date(now.getFullYear(), now.getMonth() - 2, 1)
-                  const end = new Date(now.getFullYear(), now.getMonth() + 1, 0)
-                  onUpdateRange({
-                    from: start.toISOString().split('T')[0]!,
-                    to: end.toISOString().split('T')[0]!
-                  })
-                }}
-                sx={{ fontSize: { xs: '0.75rem', sm: '0.875rem' }, py: 0.5, px: 1, display: { xs: 'none', sm: 'flex' } }}
-              >
-                3개월
-              </Button>
-            </Box>
-
-            {/* Date Range Inputs */}
-            <Stack direction="row" spacing={1} alignItems="center">
-              <TextField
-                type="date"
-                label="시작일"
-                value={dateRange.from}
-                onChange={e => onUpdateRange({ from: e.target.value })}
-                size="small"
-                InputLabelProps={{ shrink: true }}
-                sx={{ flex: 1 }}
-              />
-              <Typography variant="body2" color="text.secondary" sx={{ fontSize: '0.875rem' }}>~</Typography>
-              <TextField
-                type="date"
-                label="종료일"
-                value={dateRange.to}
-                onChange={e => onUpdateRange({ to: e.target.value })}
-                size="small"
-                InputLabelProps={{ shrink: true }}
-                sx={{ flex: 1 }}
-              />
-            </Stack>
-
-            {/* 두 번째 줄: 필터 & 액션 */}
-            <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2} alignItems="center" justifyContent="space-between">
+      </Stack>
+      <Box sx={{ display: { xs: showFilters ? 'block' : 'none', md: 'block' } }}>
+        <Stack spacing={1}>
+            {/* 기간: 이번달/지난달/3개월 버튼 + 시작일~종료일 */}
+            <Stack
+              direction={{ xs: 'column', sm: 'row' }}
+              spacing={1.5}
+              alignItems={{ xs: 'stretch', sm: 'center' }}
+              flexWrap="wrap"
+              useFlexGap
+            >
+              <Stack direction="row" spacing={0.5} flexWrap="wrap" useFlexGap>
+                <Button
+                  size="sm"
+                  variant="secondary"
+                  onClick={() => {
+                    const now = new Date()
+                    const start = new Date(now.getFullYear(), now.getMonth(), 1)
+                    const end = new Date(now.getFullYear(), now.getMonth() + 1, 0)
+                    onUpdateRange({
+                      from: start.toISOString().split('T')[0]!,
+                      to: end.toISOString().split('T')[0]!
+                    })
+                  }}
+                  sx={{ fontSize: { xs: '0.75rem', sm: '0.875rem' }, py: 0.5, px: 1 }}
+                >
+                  이번달
+                </Button>
+                <Button
+                  size="sm"
+                  variant="secondary"
+                  onClick={() => {
+                    const now = new Date()
+                    const start = new Date(now.getFullYear(), now.getMonth() - 1, 1)
+                    const end = new Date(now.getFullYear(), now.getMonth(), 0)
+                    onUpdateRange({
+                      from: start.toISOString().split('T')[0]!,
+                      to: end.toISOString().split('T')[0]!
+                    })
+                  }}
+                  sx={{ fontSize: { xs: '0.75rem', sm: '0.875rem' }, py: 0.5, px: 1 }}
+                >
+                  지난달
+                </Button>
+                <Button
+                  size="sm"
+                  variant="secondary"
+                  onClick={() => {
+                    const now = new Date()
+                    const start = new Date(now.getFullYear(), now.getMonth() - 2, 1)
+                    const end = new Date(now.getFullYear(), now.getMonth() + 1, 0)
+                    onUpdateRange({
+                      from: start.toISOString().split('T')[0]!,
+                      to: end.toISOString().split('T')[0]!
+                    })
+                  }}
+                  sx={{ fontSize: { xs: '0.75rem', sm: '0.875rem' }, py: 0.5, px: 1 }}
+                >
+                  3개월
+                </Button>
+              </Stack>
+              <Stack direction="row" spacing={1} alignItems="center" sx={{ flex: { xs: '1 1 100%', sm: '1 1 auto' }, minWidth: 0 }}>
+                <TextField
+                  type="date"
+                  label="시작일"
+                  size="small"
+                  value={dateRange.from}
+                  onChange={e => onUpdateRange({ from: e.target.value })}
+                  InputLabelProps={{ shrink: true }}
+                  sx={{ minWidth: 120 }}
+                />
+                <Typography variant="body2" color="text.secondary" sx={{ flexShrink: 0 }}>~</Typography>
+                <TextField
+                  type="date"
+                  label="종료일"
+                  size="small"
+                  value={dateRange.to}
+                  onChange={e => onUpdateRange({ to: e.target.value })}
+                  InputLabelProps={{ shrink: true }}
+                  sx={{ minWidth: 120 }}
+                />
+              </Stack>
               <ToggleButtonGroup
                 value={filterType}
                 onChange={(_, newFilters) => onFilterTypeChange(newFilters as ('income' | 'expense')[])}
                 size="small"
                 color="primary"
-                fullWidth={false}
-                sx={{ width: { xs: '100%', sm: 'auto' } }}
+                sx={{ flexShrink: 0 }}
               >
-                <ToggleButton value="income" sx={{ flex: 1 }}>수입</ToggleButton>
-                <ToggleButton value="expense" sx={{ flex: 1 }}>지출</ToggleButton>
+                <ToggleButton value="income">수입</ToggleButton>
+                <ToggleButton value="expense">지출</ToggleButton>
               </ToggleButtonGroup>
+            </Stack>
 
-              <Box sx={{ flexGrow: 1 }} />
-
-              <Stack direction="row" spacing={1} sx={{ width: { xs: '100%', sm: 'auto' }, display: { xs: 'none', md: 'flex' } }}>
+            {/* 액션 버튼 */}
+            <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2} alignItems="center" justifyContent="flex-end">
+              <Stack direction="row" spacing={1} sx={{ width: { xs: '100%', sm: 'auto' }, display: { xs: 'none', lg: 'flex' } }}>
                 <Button
                   variant="outline"
                   size="sm"
@@ -170,19 +161,19 @@ export default function FinanceFilters({
                 >
                   엑셀
                 </Button>
-                <Button
-                  variant="primary"
-                  size="sm"
-                  leftIcon={<Plus className="h-4 w-4" />}
-                  onClick={onCreateNew}
-                >
-                  새 거래
-                </Button>
+                {onGenerateTaxReport && (
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={onGenerateTaxReport}
+                  >
+                    세무 리포트
+                  </Button>
+                )}
               </Stack>
             </Stack>
-          </Stack>
-        </Box>
-      </Stack>
-    </Paper>
+        </Stack>
+      </Box>
+    </FilterCard>
   )
 }

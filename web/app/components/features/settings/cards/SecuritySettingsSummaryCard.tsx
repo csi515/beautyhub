@@ -3,6 +3,7 @@
 import Card from '@/app/components/ui/Card'
 import Button from '@/app/components/ui/Button'
 import { Pencil, Shield, ShieldCheck } from 'lucide-react'
+import { Box, Typography, Stack, Chip } from '@mui/material'
 import { type SecuritySettings } from '@/types/settings'
 
 type Props = {
@@ -13,46 +14,59 @@ type Props = {
 export default function SecuritySettingsSummaryCard({ data, onEdit }: Props) {
     return (
         <Card>
-            <div className="flex items-start justify-between mb-4">
-                <div>
-                    <h3 className="text-lg font-semibold text-neutral-900">보안 설정</h3>
-                    <p className="text-sm text-neutral-600 mt-1">비밀번호, 2단계 인증을 관리하세요</p>
-                </div>
-                <Button variant="outline" size="sm" onClick={onEdit} leftIcon={<Pencil className="h-4 w-4" />}>
+            <Stack direction="row" alignItems="flex-start" justifyContent="space-between" sx={{ mb: 2 }}>
+                <Box>
+                    <Typography variant="h6" fontWeight={600} sx={{ color: 'text.primary' }}>
+                        보안 설정
+                    </Typography>
+                    <Typography variant="body2" sx={{ color: 'text.secondary', mt: 0.5 }}>
+                        비밀번호, 2단계 인증을 관리하세요
+                    </Typography>
+                </Box>
+                <Button variant="outline" size="sm" onClick={onEdit} leftIcon={<Pencil size={16} />}>
                     편집
                 </Button>
-            </div>
+            </Stack>
 
-            <div className="space-y-3">
-                <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-2">
+            <Stack spacing={1.5}>
+                <Stack direction="row" alignItems="center" justifyContent="space-between">
+                    <Stack direction="row" alignItems="center" spacing={1}>
                         {data.twoFactorEnabled ? (
-                            <ShieldCheck className="h-5 w-5 text-green-600" />
+                            <ShieldCheck size={20} style={{ color: 'var(--mui-palette-success-main)' }} />
                         ) : (
-                            <Shield className="h-5 w-5 text-neutral-400" />
+                            <Shield size={20} style={{ color: 'var(--mui-palette-action-disabled)' }} />
                         )}
-                        <span className="text-sm text-neutral-700">2단계 인증</span>
-                    </div>
-                    <span className={`text-sm px-2 py-1 rounded-full ${
-                        data.twoFactorEnabled
-                            ? 'bg-green-100 text-green-800'
-                            : 'bg-neutral-100 text-neutral-600'
-                    }`}>
-                        {data.twoFactorEnabled ? '활성화' : '비활성화'}
-                    </span>
-                </div>
+                        <Typography variant="body2" sx={{ color: 'text.secondary' }}>
+                            2단계 인증
+                        </Typography>
+                    </Stack>
+                    <Chip
+                        label={data.twoFactorEnabled ? '활성화' : '비활성화'}
+                        size="small"
+                        sx={{
+                            ...(data.twoFactorEnabled
+                                ? { bgcolor: 'success.light', color: 'success.dark' }
+                                : { bgcolor: 'action.hover', color: 'text.secondary' }),
+                        }}
+                    />
+                </Stack>
 
-                <div className="text-sm text-neutral-700">
-                    <span className="font-medium">세션 타임아웃:</span> {data.sessionTimeout}분
-                </div>
+                <Typography variant="body2" sx={{ color: 'text.secondary' }}>
+                    <Box component="span" fontWeight={600}>
+                        세션 타임아웃:
+                    </Box>{' '}
+                    {data.sessionTimeout}분
+                </Typography>
 
                 {data.passwordLastChanged && (
-                    <div className="text-sm text-neutral-700">
-                        <span className="font-medium">비밀번호 변경일:</span>{' '}
+                    <Typography variant="body2" sx={{ color: 'text.secondary' }}>
+                        <Box component="span" fontWeight={600}>
+                            비밀번호 변경일:
+                        </Box>{' '}
                         {new Date(data.passwordLastChanged).toLocaleDateString('ko-KR')}
-                    </div>
+                    </Typography>
                 )}
-            </div>
+            </Stack>
         </Card>
     )
 }

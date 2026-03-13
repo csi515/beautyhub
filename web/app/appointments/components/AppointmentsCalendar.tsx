@@ -4,24 +4,19 @@ import React, { useRef, Suspense, lazy } from 'react'
 import { Box } from '@mui/material'
 import Card from '../../components/ui/Card'
 import { Skeleton } from '../../components/ui/Skeleton'
-import { format, startOfWeek } from 'date-fns'
-import { ko } from 'date-fns/locale'
+import { format } from 'date-fns'
 import type { AppointmentEvent } from '../utils/appointmentUtils'
 import type { CalendarView } from '../types'
 
 // React Big Calendar를 동적 import로 로드하여 번들 크기 감소
+// date-fns v4는 react-big-calendar의 date-arithmetic과 호환성 이슈가 있어 dayjs 로컬라이저 사용
 const BigCalendarWrapper = lazy(async () => {
-    const { Calendar, dateFnsLocalizer } = await import('react-big-calendar')
-    // @ts-expect-error - CSS import
-    await import('react-big-calendar/lib/css/react-big-calendar.css')
+    const { Calendar, dayjsLocalizer } = await import('react-big-calendar')
+    const dayjs = (await import('dayjs')).default
+    await import('dayjs/locale/ko')
 
-    const localizer = dateFnsLocalizer({
-        format,
-        parse: (str: string) => new Date(str),
-        startOfWeek: () => startOfWeek(new Date(), { locale: ko }),
-        getDay: (date: Date) => date.getDay(),
-        locales: { ko },
-    })
+    dayjs.locale('ko')
+    const localizer = dayjsLocalizer(dayjs)
 
     const WrappedComponent = React.forwardRef<any, any>(
         function BigCalendarWrapperComponent(props, ref) {
@@ -31,6 +26,7 @@ const BigCalendarWrapper = lazy(async () => {
                     ref={ref}
                     localizer={localizer}
                     culture="ko"
+                    style={{ height: '100%' }}
                 />
             )
         }
@@ -97,9 +93,9 @@ export default function AppointmentsCalendar({
                             selectable
                             toolbar={false}
                             formats={{
-                                monthHeaderFormat: 'yyyy년 M월',
-                                weekdayFormat: 'eee',
-                                dayFormat: 'd',
+                                monthHeaderFormat: 'YYYY년 M월',
+                                weekdayFormat: 'ddd',
+                                dayFormat: 'D',
                             }}
                             messages={{
                                 today: '오늘',
@@ -123,9 +119,15 @@ export default function AppointmentsCalendar({
     }
 
     return (
-        <Card sx={{ display: { xs: 'none', md: 'block' }, p: 2, overflow: 'hidden' }}>
+        <Card sx={{ display: { xs: 'none', md: 'flex' }, flexDirection: 'column', p: 2, overflow: 'hidden', flex: 1, minHeight: 500 }}>
             <Suspense fallback={<Skeleton className="h-[500px] w-full" />}>
-                <Box sx={{ height: 500, minWidth: 800 }}>
+                <Box sx={{
+                    height: 600,
+                    minHeight: 500,
+                    flex: 1,
+                    minWidth: { md: 0, lg: 800 },
+                    overflowX: { md: 'auto', lg: 'visible' },
+                }}>
                     <BigCalendarWrapper
                         ref={calendarRef}
                         events={events}
@@ -139,9 +141,9 @@ export default function AppointmentsCalendar({
                         selectable
                         toolbar={false}
                         formats={{
-                            monthHeaderFormat: 'yyyy년 M월',
-                            weekdayFormat: 'eee',
-                            dayFormat: 'd',
+                            monthHeaderFormat: 'YYYY년 M월',
+                            weekdayFormat: 'ddd',
+                            dayFormat: 'D',
                             timeGutterFormat: 'HH:mm',
                             eventTimeRangeFormat: ({ start, end }: { start: Date; end: Date }) =>
                                 `${format(start, 'HH:mm')} - ${format(end, 'HH:mm')}`,

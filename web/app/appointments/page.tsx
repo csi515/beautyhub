@@ -7,8 +7,6 @@ import { format } from 'date-fns'
 import ReservationCreateModal from '@/app/components/modals/ReservationCreateModal'
 import ReservationDetailModal from '@/app/components/modals/ReservationDetailModal'
 import MobileTimelineView, { type MobileTimelineViewRef } from '@/app/components/features/appointments/MobileTimelineView'
-import { exportToCSV } from '@/app/lib/utils/export'
-import { useAppToast } from '@/app/lib/ui/toast'
 
 import { useAppointmentsData } from './hooks/useAppointmentsData'
 import { useAppointmentsNavigation } from './hooks/useAppointmentsNavigation'
@@ -32,9 +30,8 @@ export default function AppointmentsPage() {
     const [selected, setSelected] = useState<SelectedAppointment | null>(null)
     const timelineRef = useRef<MobileTimelineViewRef>(null)
     const [mobileViewMode, setMobileViewMode] = useState<'timeline' | 'calendar'>('calendar')
-    const toast = useAppToast()
 
-    const { setEvents, filteredEvents, query, setQuery, statusFilter, setStatusFilter } = useAppointmentsData()
+    const { setEvents, filteredEvents } = useAppointmentsData()
     const {
         view,
         range,
@@ -83,20 +80,6 @@ export default function AppointmentsPage() {
         reloadCalendar(newRange)
     }
 
-    const handleExport = () => {
-        const dataToExport = filteredEvents.map(event => ({
-            '예약일시': format(event.start, 'yyyy-MM-dd HH:mm'),
-            '제목': event.title.split(' · ')[0] || event.title,
-            '서비스': event.extendedProps?.product_name || '-',
-            '상태': event.extendedProps?.status === 'scheduled' ? '예약됨' :
-                event.extendedProps?.status === 'completed' ? '완료' :
-                    event.extendedProps?.status === 'cancelled' ? '취소' : event.extendedProps?.status,
-            '메모': event.extendedProps?.notes || '-'
-        }))
-        exportToCSV(dataToExport, `예약목록_${new Date().toISOString().slice(0, 10)}.csv`)
-        toast.success('예약 목록이 다운로드되었습니다')
-    }
-
     const handleSelectSlot = ({ start }: { start: Date; end: Date }) => {
         setDraft({
             date: start.toISOString().slice(0, 10),
@@ -140,17 +123,6 @@ export default function AppointmentsPage() {
         setCreateOpen(true)
     }
 
-    const handleCreateNew = () => {
-        setDraft({
-            date: new Date().toISOString().slice(0, 10),
-            start: '10:00',
-            end: '11:00',
-            status: 'scheduled',
-            notes: '',
-        })
-        setCreateOpen(true)
-    }
-
     React.useEffect(() => {
         if (currentDate) {
             updateRangeAndLabel(currentDate, view, handleRangeChange)
@@ -170,8 +142,9 @@ export default function AppointmentsPage() {
     }
 
     return (
-        <PageContainer maxWidth="lg">
-        <Stack spacing={3}>
+        <PageContainer maxWidth="xl">
+        <Stack spacing={3} sx={{ flex: 1, minHeight: 0, overflow: 'auto', display: 'flex', flexDirection: 'column' }}>
+            <Box sx={{ flexShrink: 0 }}>
             <CalendarHeader
                 view={view}
                 rangeLabel={rangeLabel}
@@ -179,13 +152,8 @@ export default function AppointmentsPage() {
                 onToday={() => handleToday(handleRangeChange)}
                 onPrev={() => handlePrev(handleRangeChange)}
                 onNext={() => handleNext(handleRangeChange)}
-                query={query}
-                onQueryChange={setQuery}
-                statusFilter={statusFilter}
-                onStatusFilterChange={setStatusFilter}
-                onExport={handleExport}
-                onCreateNew={handleCreateNew}
             />
+            </Box>
 
             {/* 모바일 뷰 전환 버튼 */}
             <Card sx={{ display: { md: 'none' }, p: 1.5 }}>
@@ -237,6 +205,7 @@ export default function AppointmentsPage() {
             )}
 
             {/* 데스크톱 캘린더 뷰 */}
+            <Box sx={{ flex: 1, minHeight: 400, overflow: 'auto', display: { xs: 'none', md: 'flex' }, flexDirection: 'column' }}>
             <AppointmentsCalendar
                 events={filteredEvents}
                 view={view}
@@ -247,6 +216,7 @@ export default function AppointmentsPage() {
                 onSelectEvent={handleSelectEvent}
                 isMobile={false}
             />
+            </Box>
 
             <ReservationCreateModal
                 open={createOpen}

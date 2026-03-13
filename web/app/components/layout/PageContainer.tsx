@@ -19,18 +19,23 @@ type PageContainerProps = {
 
 export default function PageContainer({
   children,
-  maxWidth = 'lg',
+  maxWidth = 'xl',
   className = '',
 }: PageContainerProps) {
   return (
     <Container
       maxWidth={maxWidth}
       sx={{
-        py: { xs: 2, sm: 3, md: 4 },
-        px: { xs: 2, sm: 2, md: 3 },
+        py: { xs: 1.5, sm: 2, md: 1.5 },
+        px: { xs: 1.5, sm: 2, md: 2 },
         width: '100%',
         maxWidth: maxWidth === false ? '100%' : undefined,
         overflowX: 'hidden',
+        display: { md: 'flex' },
+        flexDirection: { md: 'column' },
+        flex: { md: 1 },
+        minHeight: { md: 0 },
+        overflow: { md: 'hidden' },
       }}
       className={className}
     >
