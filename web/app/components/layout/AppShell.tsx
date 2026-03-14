@@ -17,6 +17,12 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname() || ''
   const theme = useTheme()
   const isMobile = useMediaQuery(theme.breakpoints.down('md'))
+  const isTablet = useMediaQuery(theme.breakpoints.between('md', 'lg'))
+  const isFullScreenPage =
+    pathname !== '/dashboard' &&
+    !pathname.startsWith('/dashboard') &&
+    pathname !== '/settings' &&
+    !pathname.startsWith('/settings')
 
   const isPublic =
     pathname === '/' ||
@@ -123,15 +129,23 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
             height: { md: 'calc(100vh - 64px)' },
             minHeight: 0,
             minWidth: 0,
-            pt: { xs: 'max(1rem, env(safe-area-inset-top, 0px))', sm: 1.25, md: 1.5, lg: 2 },
-            pr: { xs: 'max(0.75rem, env(safe-area-inset-right, 0px))', sm: 1, md: 1.5, lg: 2 },
-            pb: {
-              xs: 'calc(72px + env(safe-area-inset-bottom, 0px))',
-              md: 1.5,
-              lg: 2,
-              xl: 2.5,
-            },
-            pl: { xs: 'max(0.75rem, env(safe-area-inset-left, 0px))', sm: 1, md: 1.5, lg: 2 },
+            pt: isTablet && isFullScreenPage
+              ? 0
+              : { xs: 'max(1rem, env(safe-area-inset-top, 0px))', sm: 1.25, md: 1.5, lg: 2 },
+            pr: isTablet && isFullScreenPage
+              ? 0
+              : { xs: 'max(0.75rem, env(safe-area-inset-right, 0px))', sm: 1, md: 1.5, lg: 2 },
+            pb: isTablet && isFullScreenPage
+              ? 0
+              : {
+                  xs: 'calc(72px + env(safe-area-inset-bottom, 0px))',
+                  md: 1.5,
+                  lg: 2,
+                  xl: 2.5,
+                },
+            pl: isTablet && isFullScreenPage
+              ? 0
+              : { xs: 'max(0.75rem, env(safe-area-inset-left, 0px))', sm: 1, md: 1.5, lg: 2 },
             overflowX: 'hidden',
             overflowY: 'auto',
             width: '100%',

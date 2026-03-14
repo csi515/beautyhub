@@ -66,6 +66,57 @@ export default function DashboardContent({ initialData, error }: DashboardConten
         }
     }, [])
 
+    // Hook 규칙: early return 전에 모든 Hook 호출 (조건부 Hook 방지)
+    const data = initialData ?? {}
+    const {
+        todayAppointments,
+        monthlyProfit,
+        monthlyNewCustomers,
+        monthlyAppointments,
+        prevMonthlyProfit,
+        prevMonthlyAppointments,
+        prevMonthlyNewCustomers,
+        recentAppointments,
+        chartAppointments,
+        recentTransactions,
+        monthlyRevenueData,
+        activeProducts
+    } = data as typeof initialData
+
+    const productLimit = isTablet ? 4 : 12
+    const appointmentLimit = isTablet ? 3 : 8
+    const transactionLimit = isTablet ? 4 : 10
+    const slicedProducts = useMemo(
+        () => (activeProducts ?? []).slice(0, productLimit),
+        [activeProducts, productLimit]
+    )
+    const slicedAppointments = useMemo(
+        () => (recentAppointments ?? []).slice(0, appointmentLimit),
+        [recentAppointments, appointmentLimit]
+    )
+    const slicedTransactions = useMemo(
+        () => (recentTransactions ?? []).slice(0, transactionLimit),
+        [recentTransactions, transactionLimit]
+    )
+
+    const formattedMonthlyProfit = useMemo(
+        () => `₩${Number(monthlyProfit ?? 0).toLocaleString()}`,
+        [monthlyProfit]
+    )
+
+    const calcDelta = (current: number, prev: number) => {
+        if (!prev || prev === 0) return undefined
+        const pct = ((current - prev) / prev * 100)
+        return {
+            value: `${pct >= 0 ? '+' : ''}${pct.toFixed(1)}%`,
+            tone: (pct >= 0 ? 'up' : 'down') as 'up' | 'down',
+        }
+    }
+
+    const profitDelta = useMemo(() => calcDelta(Number(monthlyProfit ?? 0), Number(prevMonthlyProfit ?? 0)), [monthlyProfit, prevMonthlyProfit])
+    const appointmentsDelta = useMemo(() => calcDelta(Number(monthlyAppointments ?? 0), Number(prevMonthlyAppointments ?? 0)), [monthlyAppointments, prevMonthlyAppointments])
+    const newCustomersDelta = useMemo(() => calcDelta(Number(monthlyNewCustomers ?? 0), Number(prevMonthlyNewCustomers ?? 0)), [monthlyNewCustomers, prevMonthlyNewCustomers])
+
     if (error) {
         const errorMessage = error instanceof Error ? error.message : (typeof error === 'string' ? error : '데이터를 불러오는 중 오류가 발생했습니다.')
         return (
@@ -83,56 +134,6 @@ export default function DashboardContent({ initialData, error }: DashboardConten
     if (!initialData) {
         return <DashboardSkeleton />
     }
-
-    const {
-        todayAppointments,
-        monthlyProfit,
-        monthlyNewCustomers,
-        monthlyAppointments,
-        prevMonthlyProfit,
-        prevMonthlyAppointments,
-        prevMonthlyNewCustomers,
-        recentAppointments,
-        chartAppointments,
-        recentTransactions,
-        monthlyRevenueData,
-        activeProducts
-    } = initialData
-
-    // 성능 최적화: 계산된 값 메모이제이션 (태블릿에서 스크롤 방지 - 한 화면에 맞춤)
-    const productLimit = isTablet ? 4 : 12
-    const appointmentLimit = isTablet ? 3 : 8
-    const transactionLimit = isTablet ? 4 : 10
-    const slicedProducts = useMemo(
-        () => activeProducts?.slice(0, productLimit) || [],
-        [activeProducts, productLimit]
-    )
-    const slicedAppointments = useMemo(
-        () => recentAppointments?.slice(0, appointmentLimit) || [],
-        [recentAppointments, appointmentLimit]
-    )
-    const slicedTransactions = useMemo(
-        () => recentTransactions?.slice(0, transactionLimit) || [],
-        [recentTransactions, transactionLimit]
-    )
-
-    const formattedMonthlyProfit = useMemo(
-        () => `₩${Number(monthlyProfit || 0).toLocaleString()}`,
-        [monthlyProfit]
-    )
-
-    const calcDelta = (current: number, prev: number) => {
-        if (!prev || prev === 0) return undefined
-        const pct = ((current - prev) / prev * 100)
-        return {
-            value: `${pct >= 0 ? '+' : ''}${pct.toFixed(1)}%`,
-            tone: (pct >= 0 ? 'up' : 'down') as 'up' | 'down',
-        }
-    }
-
-    const profitDelta = useMemo(() => calcDelta(Number(monthlyProfit || 0), Number(prevMonthlyProfit || 0)), [monthlyProfit, prevMonthlyProfit])
-    const appointmentsDelta = useMemo(() => calcDelta(Number(monthlyAppointments || 0), Number(prevMonthlyAppointments || 0)), [monthlyAppointments, prevMonthlyAppointments])
-    const newCustomersDelta = useMemo(() => calcDelta(Number(monthlyNewCustomers || 0), Number(prevMonthlyNewCustomers || 0)), [monthlyNewCustomers, prevMonthlyNewCustomers])
 
     return (
         <>

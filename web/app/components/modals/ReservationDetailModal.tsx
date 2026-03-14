@@ -26,35 +26,45 @@ export default function ReservationDetailModal({ open, onClose, item, onSaved, o
   const toast = useAppToast()
   const { customers, products } = useCustomerAndProductLists(open)
 
+  // item 변경 시 form 동기화 (선택 변경 시 즉시 반영)
+  useEffect(() => {
+    if (!open) return
+    if (item) setForm(item)
+    else setForm(null)
+  }, [open, item])
+
   // 예약 상세 데이터 로드 (no_show 포함)
   useEffect(() => {
+    const targetId = item?.id
+    if (!open || !targetId) return
+    let cancelled = false
     const loadAppointmentDetail = async () => {
-      if (!open || !item?.id) return
       try {
-        const appointment = await appointmentsApi.get(item.id)
-        if (appointment) {
-          const [y, m, d] = new Date(appointment.appointment_date).toISOString().slice(0, 10).split('-').map(Number)
-          const startDate = new Date(appointment.appointment_date)
-          setForm({
-            id: appointment.id,
-            date: `${y}-${String(m).padStart(2, '0')}-${String(d).padStart(2, '0')}`,
-            start: `${String(startDate.getHours()).padStart(2, '0')}:${String(startDate.getMinutes()).padStart(2, '0')}`,
-            status: appointment.status || 'scheduled',
-            notes: appointment.notes || '',
-            customer_id: appointment.customer_id || '',
-            staff_id: appointment.staff_id || '',
-            service_id: appointment.service_id || '',
-            no_show: appointment.no_show || false,
-          })
-        }
+        const appointment = await appointmentsApi.get(targetId)
+        if (cancelled || !appointment || appointment.id !== targetId) return
+        const [y, m, d] = new Date(appointment.appointment_date).toISOString().slice(0, 10).split('-').map(Number)
+        const startDate = new Date(appointment.appointment_date)
+        setForm({
+          id: appointment.id,
+          date: `${y}-${String(m).padStart(2, '0')}-${String(d).padStart(2, '0')}`,
+          start: `${String(startDate.getHours()).padStart(2, '0')}:${String(startDate.getMinutes()).padStart(2, '0')}`,
+          status: appointment.status || 'scheduled',
+          notes: appointment.notes || '',
+          customer_id: appointment.customer_id || '',
+          staff_id: appointment.staff_id || '',
+          service_id: appointment.service_id || '',
+          no_show: appointment.no_show || false,
+        })
       } catch (error) {
-        console.error('예약 상세 로드 실패:', error)
-        // 실패 시 item 사용
-        setForm(item)
+        if (!cancelled && item?.id === targetId) {
+          console.error('예약 상세 로드 실패:', error)
+          setForm(item)
+        }
       }
     }
     loadAppointmentDetail()
-  }, [open, item?.id])
+    return () => { cancelled = true }
+  }, [open, item?.id, item])
 
   // 선택된 서비스의 소요 시간 계산
   const selectedProduct = useMemo(() => {

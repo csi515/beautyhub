@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useCallback } from 'react'
 
 import { Box, Typography, Grid, Card, CardContent, Alert, Chip, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, useMediaQuery, Stack } from '@mui/material';
 import { useTheme } from '@mui/material/styles';
@@ -44,11 +44,7 @@ export default function AnalyticsPage() {
     const theme = useTheme()
     const isMobile = useMediaQuery(theme.breakpoints.down('sm'))
 
-    useEffect(() => {
-        fetchData()
-    }, [])
-
-    async function fetchData() {
+    const fetchData = useCallback(async () => {
         try {
             setLoading(true)
             const [ltvResponse, vipResponse] = await Promise.all([
@@ -72,7 +68,11 @@ export default function AnalyticsPage() {
         } finally {
             setLoading(false)
         }
-    }
+    }, [toast])
+
+    useEffect(() => {
+        fetchData()
+    }, [fetchData])
 
     const totalCustomers = ltvData.length
     const avgLTV = totalCustomers > 0
@@ -104,7 +104,7 @@ export default function AnalyticsPage() {
 
     if (loading) {
         return (
-            <PageContainer maxWidth="xl">
+            <PageContainer maxWidth="xl" fullScreenOnTablet>
                 <Box sx={{ mb: 4 }}>
                     <CardSkeleton count={3} />
                 </Box>
@@ -115,7 +115,7 @@ export default function AnalyticsPage() {
 
     if (error) {
         return (
-            <PageContainer maxWidth="xl">
+            <PageContainer maxWidth="xl" fullScreenOnTablet>
                 <Alert severity="error">{error}</Alert>
             </PageContainer>
         )
@@ -123,7 +123,7 @@ export default function AnalyticsPage() {
 
     if (ltvData.length === 0) {
         return (
-            <PageContainer maxWidth="xl">
+            <PageContainer maxWidth="xl" fullScreenOnTablet>
                 <EmptyState
                     icon={BarChart2}
                     title="분석할 데이터가 없습니다"
@@ -136,7 +136,7 @@ export default function AnalyticsPage() {
     }
 
     return (
-        <PageContainer maxWidth="xl">
+        <PageContainer maxWidth="xl" fullScreenOnTablet>
             <PageIntro description="고객 LTV·VIP 분석 데이터를 확인합니다" count={totalCustomers} />
             <Stack direction="row" justifyContent="flex-end" sx={{ mb: 2 }}>
                 <Button

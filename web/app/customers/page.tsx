@@ -93,7 +93,7 @@ export default function CustomersPage() {
 
 
   return (
-    <PageContainer maxWidth="xl">
+    <PageContainer maxWidth="xl" fullScreenOnTablet>
       <Stack spacing={3} sx={{ flex: 1, minHeight: 0, minWidth: 0, overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
       <PageIntro description="고객 목록을 검색하고 관리합니다" count={`${filteredRows.length}명`} />
       {/* 검색 */}

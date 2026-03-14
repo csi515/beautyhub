@@ -76,9 +76,9 @@ export default function StaffPage() {
 
 
   return (
-    <PageContainer maxWidth="xl">
+    <PageContainer maxWidth="xl" fullScreenOnTablet>
       <Stack spacing={4}>
-      <PageIntro description="근태 현황, 스케줄, 직원 명부를 통합 관리합니다" count={staff.length ? `${staff.length}명` : undefined} />
+      <PageIntro description="근태 현황, 스케줄, 직원 명부를 통합 관리합니다" {...(staff.length ? { count: `${staff.length}명` } : {})} />
       <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1, justifyContent: 'flex-end' }}>
         <Button
           variant="secondary"

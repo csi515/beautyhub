@@ -143,7 +143,7 @@ export default function AppointmentsPage() {
     }
 
     return (
-        <PageContainer maxWidth="xl">
+        <PageContainer maxWidth="xl" fullScreenOnTablet>
         <Stack spacing={3} sx={{ flex: 1, minHeight: { xs: 0, md: 600 }, overflow: 'auto', display: 'flex', flexDirection: 'column' }}>
             <PageIntro description="예약 일정을 확인하고 관리합니다" count={filteredEvents.length} />
             <Box sx={{ flexShrink: 0 }}>

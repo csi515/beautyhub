@@ -8,7 +8,7 @@ export const GET = withAuth(async (req: NextRequest, { userId, supabase }) => {
   const params = parseQueryParams(req)
   const activeParam = req.nextUrl.searchParams.get('active')
 
-  const options: any = { ...params }
+  const options: Record<string, unknown> & { filter?: Record<string, unknown> } = { ...params }
   if (activeParam !== null) {
     options.filter = { ...options.filter, active: activeParam === 'true' }
   }

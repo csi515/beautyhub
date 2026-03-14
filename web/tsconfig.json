@@ -49,9 +49,6 @@
   "exclude": [
     "node_modules",
     ".next/types/app/api/admin/users/route.ts",
-    "scripts",
-    "**/*.stories.tsx",
-    "**/*.stories.ts",
-    ".storybook"
+    "scripts"
   ]
 }

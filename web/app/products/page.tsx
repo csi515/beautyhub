@@ -185,7 +185,7 @@ export default function ProductsPage() {
   }
 
   return (
-    <PageContainer maxWidth="xl">
+    <PageContainer maxWidth="xl" fullScreenOnTablet>
     <Stack spacing={3} sx={{ flex: 1, minHeight: 0, minWidth: 0, overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
       <PageIntro description="판매 상품·서비스를 등록하고 관리합니다" count={filteredProducts.length} />
       <Box sx={{ flexShrink: 0 }}>

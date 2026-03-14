@@ -1,9 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createSupabaseServerAdmin } from '@/lib/supabase/server-admin'
+import { logger } from '@/app/lib/utils/logger'
 
 export const dynamic = 'force-dynamic'
 
 type ReminderType = '1_day_before' | '3_hours_before' | 'on_day'
+
+type ReminderRow = { id: string; reminder_type: ReminderType; appointment_id: string }
+type AppointmentRow = { id: string; appointment_date: string }
 
 /**
  * 예약일 기준 리마인더 발송 시점 계산
@@ -62,7 +66,7 @@ export async function GET(request: NextRequest) {
       .is('sent_at', null)
 
     if (error) {
-      console.error('[cron/reminders] 리마인더 조회 오류:', error)
+      logger.error('[cron/reminders] 리마인더 조회 오류', error, 'cron/reminders')
       return NextResponse.json({ error: error.message }, { status: 500 })
     }
 
@@ -71,30 +75,30 @@ export async function GET(request: NextRequest) {
     }
 
     // 관련 예약 날짜 일괄 조회
-    const appointmentIds = [...new Set(reminders.map((r: any) => r.appointment_id))]
+    const appointmentIds = [...new Set((reminders as ReminderRow[]).map((r) => r.appointment_id))]
     const { data: appointments, error: apptError } = await admin
       .from('appointments')
       .select('id, appointment_date')
       .in('id', appointmentIds)
 
     if (apptError) {
-      console.error('[cron/reminders] 예약 조회 오류:', apptError)
+      logger.error('[cron/reminders] 예약 조회 오류', apptError, 'cron/reminders')
       return NextResponse.json({ error: apptError.message }, { status: 500 })
     }
 
     const apptDateMap: Record<string, string> = {}
-    for (const a of (appointments || [])) {
-      apptDateMap[(a as any).id] = (a as any).appointment_date
+    for (const a of (appointments || []) as AppointmentRow[]) {
+      apptDateMap[a.id] = a.appointment_date
     }
 
     let processedCount = 0
     const errors: string[] = []
 
-    for (const reminder of reminders) {
-      const apptDate = apptDateMap[(reminder as any).appointment_id]
+    for (const reminder of reminders as ReminderRow[]) {
+      const apptDate = apptDateMap[reminder.appointment_id]
       if (!apptDate) continue
 
-      const reminderType = (reminder as any).reminder_type as ReminderType
+      const reminderType = reminder.reminder_type
       if (!isDue(apptDate, reminderType)) continue
 
       // 향후 SMS/이메일 발송 로직 위치
@@ -103,12 +107,12 @@ export async function GET(request: NextRequest) {
       const { error: updateError } = await admin
         .from('appointment_reminders')
         .update({ sent_at: new Date().toISOString() })
-        .eq('id', (reminder as any).id)
+        .eq('id', reminder.id)
 
       if (updateError) {
-        errors.push(`${(reminder as any).id}: ${updateError.message}`)
+        errors.push(`${reminder.id}: ${updateError.message}`)
       } else {
-        console.log(`[cron/reminders] 처리됨: ${(reminder as any).id} (${reminderType}, 예약일: ${apptDate})`)
+        logger.info(`[cron/reminders] 처리됨: ${reminder.id} (${reminderType}, 예약일: ${apptDate})`, 'cron/reminders')
         processedCount++
       }
     }
@@ -120,7 +124,7 @@ export async function GET(request: NextRequest) {
     })
   } catch (e: unknown) {
     const message = e instanceof Error ? e.message : 'unknown error'
-    console.error('[cron/reminders] 오류:', message)
+    logger.error('[cron/reminders] 오류', e instanceof Error ? e : new Error(String(message)), 'cron/reminders')
     return NextResponse.json({ error: message }, { status: 500 })
   }
 }

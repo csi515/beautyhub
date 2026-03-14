@@ -133,7 +133,7 @@ export default function InventoryPage() {
 
     if (loading) {
         return (
-            <PageContainer maxWidth="xl">
+            <PageContainer maxWidth="xl" fullScreenOnTablet>
                 <Box sx={{ mb: 4 }}>
                     <CardSkeleton count={3} />
                 </Box>
@@ -144,7 +144,7 @@ export default function InventoryPage() {
 
     if (products.length === 0) {
         return (
-            <PageContainer maxWidth="xl">
+            <PageContainer maxWidth="xl" fullScreenOnTablet>
                 <InventorySummaryCards products={[]} />
                 <EmptyState
                     icon={PackageX}
@@ -158,7 +158,7 @@ export default function InventoryPage() {
     }
 
     return (
-        <PageContainer maxWidth="xl">
+        <PageContainer maxWidth="xl" fullScreenOnTablet>
             <Stack spacing={3} sx={{ flex: 1, minHeight: 0, overflow: 'auto', display: 'flex', flexDirection: 'column' }}>
             <PageIntro description="재고 현황을 확인하고 입출고를 관리합니다" count={total} />
             <Box sx={{ flexShrink: 0 }}>

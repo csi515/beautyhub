@@ -244,7 +244,7 @@ export default function AdminUsersPage() {
     }
 
     return (
-        <PageContainer maxWidth="xl">
+        <PageContainer maxWidth="xl" fullScreenOnTablet>
             {/* 통계 카드 */}
             <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr 1fr', md: 'repeat(4, 1fr)' }, gap: 2, mb: 3 }}>
                 {[

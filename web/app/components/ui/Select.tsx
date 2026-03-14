@@ -10,7 +10,6 @@ type Props = TextFieldProps & {
 
 export default function Select({
   label,
-  className,
   children,
   ...rest
 }: Props) {

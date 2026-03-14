@@ -71,10 +71,8 @@ export const MOCK_POINTS_LEDGER = MOCK_CUSTOMERS.flatMap(c => {
     // Each customer has 1-3 ledger entries
     const count = Math.floor(Math.random() * 3) + 1
     const entries = []
-    let balance = 0
     for (let j = 0; j < count; j++) {
         const delta = (Math.floor(Math.random() * 10) + 1) * 1000 * (Math.random() > 0.3 ? 1 : -1)
-        balance += delta
         entries.push({
             id: `pl_${c.id}_${j}`,
             customer_id: c.id,

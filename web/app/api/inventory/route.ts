@@ -70,8 +70,8 @@ export const GET = withAuth(async (request: NextRequest, { userId, supabase }) =
     }
 
     inventoryData.sort((a, b) => {
-      let aVal: any = a[sortBy as keyof typeof a]
-      let bVal: any = b[sortBy as keyof typeof b]
+      let aVal: string | number = a[sortBy as keyof typeof a] as string | number
+      let bVal: string | number = b[sortBy as keyof typeof b] as string | number
 
       if (aVal === null || aVal === undefined) aVal = ''
       if (bVal === null || bVal === undefined) bVal = ''
@@ -80,9 +80,10 @@ export const GET = withAuth(async (request: NextRequest, { userId, supabase }) =
         return sortOrder === 'asc'
           ? aVal.localeCompare(bVal)
           : bVal.localeCompare(aVal)
-      } else {
-        return sortOrder === 'asc' ? aVal - bVal : bVal - aVal
       }
+      const aNum = Number(aVal)
+      const bNum = Number(bVal)
+      return sortOrder === 'asc' ? aNum - bNum : bNum - aNum
     })
 
     const total = inventoryData.length
