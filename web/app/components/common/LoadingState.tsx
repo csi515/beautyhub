@@ -1,5 +1,6 @@
 'use client'
 
+import { Box } from '@mui/material'
 import { Skeleton } from '../ui/Skeleton'
 
 type LoadingStateProps = {
@@ -21,43 +22,78 @@ export default function LoadingState({
 }: LoadingStateProps) {
   if (variant === 'table') {
     return (
-      <div className={`space-y-2 ${className}`}>
+      <Box className={className} sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
         {Array.from({ length: rows }).map((_, i) => (
-          <div key={i} className="flex items-center gap-4 p-4 border-b border-neutral-200">
+          <Box
+            key={i}
+            sx={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: 2,
+              p: 2,
+              borderBottom: 1,
+              borderColor: 'divider',
+            }}
+          >
             {Array.from({ length: columns }).map((_, j) => (
-              <Skeleton key={j} className="h-4 flex-1" />
+              <Skeleton key={j} sx={{ flex: 1, height: 20 }} />
             ))}
-          </div>
+          </Box>
         ))}
-      </div>
+      </Box>
     )
   }
 
   if (variant === 'card') {
     return (
-      <div className={`grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 ${className}`}>
+      <Box
+        className={className}
+        sx={{
+          display: 'grid',
+          gridTemplateColumns: { xs: '1fr', sm: 'repeat(2, 1fr)', lg: 'repeat(3, 1fr)' },
+          gap: 2,
+        }}
+      >
         {Array.from({ length: rows }).map((_, i) => (
-          <div key={i} className="bg-white rounded-xl border border-neutral-200 p-4 sm:p-5">
-            <Skeleton className="h-5 w-1/2 mb-3" />
-            <Skeleton className="h-4 w-3/4 mb-2" />
-            <Skeleton className="h-4 w-1/2" />
-          </div>
+          <Box
+            key={i}
+            sx={{
+              bgcolor: 'background.paper',
+              borderRadius: 3,
+              border: '1px solid',
+              borderColor: 'divider',
+              p: { xs: 2, sm: 2.5 },
+            }}
+          >
+            <Skeleton width="50%" height={24} sx={{ mb: 1.5 }} />
+            <Skeleton width="75%" height={20} sx={{ mb: 1 }} />
+            <Skeleton width="50%" height={20} />
+          </Box>
         ))}
-      </div>
+      </Box>
     )
   }
 
   // list variant (default)
   return (
-    <div className={`space-y-3 ${className}`}>
+    <Box className={className} sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
       {Array.from({ length: rows }).map((_, i) => (
-        <div key={i} className="bg-white rounded-lg border border-neutral-200 p-4">
-          <Skeleton className="h-5 w-1/3 mb-2" />
-          <Skeleton className="h-4 w-full mb-1" />
-          <Skeleton className="h-4 w-2/3" />
-        </div>
+        <Box
+          key={i}
+          sx={{
+            bgcolor: 'background.paper',
+            borderRadius: 2,
+            border: 1,
+            borderColor: 'divider',
+            p: 2,
+          }}
+        >
+          <Skeleton width="33%" height={24} sx={{ mb: 1 }} />
+          <Skeleton width="100%" height={20} sx={{ mb: 0.5 }} />
+          <Skeleton width="66%" height={20} />
+        </Box>
       ))}
-    </div>
+    </Box>
   )
 }
 

@@ -1,6 +1,7 @@
 'use client'
 
 import { ReactNode } from 'react'
+import { Box, Typography } from '@mui/material'
 import { Plus } from 'lucide-react'
 import Button from '@/app/components/ui/Button'
 
@@ -20,18 +21,30 @@ export default function PageHeader({
   className = '',
 }: PageHeaderProps) {
   return (
-    <div className={`bg-white rounded-xl border border-neutral-200 shadow-sm p-2 sm:p-3 md:hidden ${className}`}>
+    <Box
+      className={className}
+      sx={{
+        bgcolor: 'background.paper',
+        borderRadius: 3,
+        border: 1,
+        borderColor: 'divider',
+        boxShadow: 1,
+        p: { xs: 2, sm: 2.5 },
+      }}
+    >
       {(title || icon) && (
-        <div className="flex items-center gap-2 sm:gap-3">
-          {icon && <div className="flex-shrink-0 text-blue-600">{icon}</div>}
-          {title && (
-            <h1 className="text-base sm:text-lg font-bold text-neutral-900">
-              {title}
-            </h1>
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: { xs: 2, sm: 3 } }}>
+          {icon && (
+            <Box sx={{ flexShrink: 0, color: 'primary.main' }}>{icon}</Box>
           )}
-        </div>
+          {title && (
+            <Typography component="h1" variant="h6" fontWeight={700} color="text.primary" sx={{ fontSize: { xs: '1rem', sm: '1.125rem' } }}>
+              {title}
+            </Typography>
+          )}
+        </Box>
       )}
-    </div>
+    </Box>
   )
 }
 

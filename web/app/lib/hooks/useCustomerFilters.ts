@@ -34,10 +34,6 @@ export function useCustomerFilters(
       if (filters.statusFilter === 'active' && customer.active === false) return false
       if (filters.statusFilter === 'inactive' && customer.active !== false) return false
 
-      // VIP filter (assuming VIP = points > 1000)
-      if (filters.vipFilter === 'vip' && points <= 1000) return false
-      if (filters.vipFilter === 'normal' && points > 1000) return false
-
       // Points range filter
       if (filters.minPoints && points < Number(filters.minPoints)) return false
       if (filters.maxPoints && points > Number(filters.maxPoints)) return false
@@ -61,7 +57,7 @@ export function useCustomerFilters(
   // Update totalPages based on filtered data
   const filteredTotalPages = Math.max(1, Math.ceil(filteredRows.length / pageSize))
 
-  // 필터 초기화
+  // 검색 조건 초기화
   const resetFilters = () => {
     // Note: This function will be implemented in the component
     // as it needs to update the filters state

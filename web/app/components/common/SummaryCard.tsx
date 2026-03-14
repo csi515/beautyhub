@@ -94,11 +94,14 @@ export default function SummaryCard({ items, columns = { xs: 12, sm: 6, md: 4 } 
                             variant="outlined"
                             sx={{
                                 bgcolor: colorScheme.bg,
-                                borderColor: colorScheme.border,
+                                border: `1px solid ${colorScheme.border}`,
                                 height: '100%',
+                                borderRadius: 3,
+                                transition: 'box-shadow 200ms ease',
+                                '&:hover': { boxShadow: 1 },
                             }}
                         >
-                            <CardContent sx={{ p: { xs: 1.5, sm: 2 }, '&:last-child': { pb: { xs: 1.5, sm: 2 } } }}>
+                            <CardContent sx={{ p: { xs: 2, sm: 2.5 }, '&:last-child': { pb: { xs: 2, sm: 2.5 } } }}>
                                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1 }}>
                                     {Icon && (
                                         <Icon

@@ -1,8 +1,6 @@
 'use client'
 
 import { useState } from 'react'
-import { Users } from 'lucide-react'
-import PageHeader from '@/app/components/common/PageHeader'
 import Button from '@/app/components/ui/Button'
 import StaffDetailModal from '@/app/components/modals/StaffDetailModal'
 import StatusChangeModal from '@/app/components/modals/StatusChangeModal'
@@ -17,6 +15,7 @@ import StaffListTab from '@/app/components/features/staff/StaffListTab'
 import { Stack, Box } from '@mui/material'
 import { Download } from 'lucide-react'
 import PageContainer from '@/app/components/layout/PageContainer'
+import PageIntro from '@/app/components/common/PageIntro'
 
 // Hooks
 import { useStaffData } from '@/app/lib/hooks/useStaffData'
@@ -79,8 +78,7 @@ export default function StaffPage() {
   return (
     <PageContainer maxWidth="xl">
       <Stack spacing={4}>
-      <PageHeader title="직원 통합 관리" icon={<Users className="h-5 w-5" />} />
-
+      <PageIntro description="근태 현황, 스케줄, 직원 명부를 통합 관리합니다" count={staff.length ? `${staff.length}명` : undefined} />
       <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1, justifyContent: 'flex-end' }}>
         <Button
           variant="secondary"

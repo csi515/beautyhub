@@ -63,7 +63,7 @@ export default function DevPage() {
   }, [])
 
   return (
-    <main className="p-6 space-y-4 max-w-screen-lg mx-auto">
+    <main className="p-6 pb-24 space-y-4 max-w-screen-lg mx-auto">
       <h1 className="text-xl font-semibold">개발자 화면</h1>
 
       <Card className="p-4">

@@ -14,6 +14,7 @@ import {
   ChevronLeft,
   ChevronRight,
   Warehouse,
+  Code2,
 } from 'lucide-react'
 import {
   Box,
@@ -40,7 +41,7 @@ type Item = {
   disabled?: boolean
 }
 
-const items: Item[] = [
+const baseItems: Item[] = [
   { href: '/dashboard', label: '대시보드', icon: LayoutDashboard },
   { href: '/appointments', label: '예약', icon: Calendar },
   { href: '/products', label: '상품', icon: Package },
@@ -48,7 +49,10 @@ const items: Item[] = [
   { href: '/customers', label: '고객', icon: Users },
   { href: '/finance', label: '재무', icon: DollarSign },
   { href: '/settings', label: '설정', icon: Settings },
+  { href: '/dev', label: '개발자 화면', icon: Code2 },
 ]
+
+const items = baseItems
 
 type Props = {
   mobile?: boolean
@@ -228,7 +232,7 @@ export default function Sidebar({
         {isAdmin && (
           <>
             <Divider sx={{ my: 1, mx: 1 }} />
-            <ListItem disablePadding>
+            <ListItem disablePadding sx={{ mb: 0.5 }}>
               <Tooltip title={collapsed ? '사용자 관리' : ''} placement="right" arrow>
                 {/* @ts-expect-error - Next.js Link component type mismatch with component prop */}
                 <ListItemButton

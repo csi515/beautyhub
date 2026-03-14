@@ -25,17 +25,17 @@ export default function PageContainer({
   return (
     <Container
       maxWidth={maxWidth}
+      disableGutters
       sx={{
-        py: { xs: 1.5, sm: 2, md: 1.5 },
-        px: { xs: 1.5, sm: 2, md: 2 },
+        py: { xs: 1.5, sm: 2, md: 2, lg: 2.5, xl: 3 },
+        px: { xs: 0.5, sm: 1, md: 1.5, lg: 2, xl: 2.5 },
         width: '100%',
         maxWidth: maxWidth === false ? '100%' : undefined,
-        overflowX: 'hidden',
+        minWidth: 0,
         display: { md: 'flex' },
         flexDirection: { md: 'column' },
         flex: { md: 1 },
         minHeight: { md: 0 },
-        overflow: { md: 'hidden' },
       }}
       className={className}
     >

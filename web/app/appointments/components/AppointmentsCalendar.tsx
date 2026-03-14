@@ -125,8 +125,8 @@ export default function AppointmentsCalendar({
                     height: 600,
                     minHeight: 500,
                     flex: 1,
-                    minWidth: { md: 0, lg: 800 },
-                    overflowX: { md: 'auto', lg: 'visible' },
+                    minWidth: 0,
+                    width: '100%',
                 }}>
                     <BigCalendarWrapper
                         ref={calendarRef}

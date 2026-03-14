@@ -7,13 +7,13 @@ import { useTheme } from '@mui/material/styles';
 import MobileDataCard from '@/app/components/ui/MobileDataCard'
 import { CardSkeleton } from '@/app/components/ui/SkeletonLoader'
 import EmptyState from '@/app/components/ui/EmptyState'
-import { TrendingUp, Users, Star, DollarSign, BarChart2, Download } from 'lucide-react'
-import PageHeader from '@/app/components/common/PageHeader'
+import { Users, Star, DollarSign, BarChart2, Download } from 'lucide-react'
 import Button from '@/app/components/ui/Button'
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts'
 import { useAppToast } from '@/app/lib/ui/toast'
 import { exportToCSV } from '@/app/lib/utils/export'
 import PageContainer from '@/app/components/layout/PageContainer'
+import PageIntro from '@/app/components/common/PageIntro'
 
 interface CustomerLTV {
     customer_id: string
@@ -105,7 +105,6 @@ export default function AnalyticsPage() {
     if (loading) {
         return (
             <PageContainer maxWidth="xl">
-                <PageHeader title="고객 분석" icon={<TrendingUp />} />
                 <Box sx={{ mb: 4 }}>
                     <CardSkeleton count={3} />
                 </Box>
@@ -117,7 +116,6 @@ export default function AnalyticsPage() {
     if (error) {
         return (
             <PageContainer maxWidth="xl">
-                <PageHeader title="고객 분석" icon={<TrendingUp />} />
                 <Alert severity="error">{error}</Alert>
             </PageContainer>
         )
@@ -126,7 +124,6 @@ export default function AnalyticsPage() {
     if (ltvData.length === 0) {
         return (
             <PageContainer maxWidth="xl">
-                <PageHeader title="고객 분석" icon={<TrendingUp />} />
                 <EmptyState
                     icon={BarChart2}
                     title="분석할 데이터가 없습니다"
@@ -140,7 +137,7 @@ export default function AnalyticsPage() {
 
     return (
         <PageContainer maxWidth="xl">
-            <PageHeader title="고객 분석" icon={<TrendingUp />} />
+            <PageIntro description="고객 LTV·VIP 분석 데이터를 확인합니다" count={totalCustomers} />
             <Stack direction="row" justifyContent="flex-end" sx={{ mb: 2 }}>
                 <Button
                     variant="secondary"

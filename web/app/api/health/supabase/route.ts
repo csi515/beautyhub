@@ -1,8 +1,25 @@
-import { NextResponse } from 'next/server'
+import { NextRequest, NextResponse } from 'next/server'
 import { createSupabaseServerAdmin } from '@/lib/supabase/server-admin'
 
-export async function GET() {
+export async function GET(req: NextRequest) {
   try {
+    const healthToken = process.env['HEALTH_CHECK_TOKEN']
+    const authHeader = req.headers.get('authorization')
+
+    if (!healthToken) {
+      return NextResponse.json(
+        { ok: false, message: 'Health check is not configured' },
+        { status: 503 },
+      )
+    }
+
+    if (authHeader !== `Bearer ${healthToken}`) {
+      return NextResponse.json(
+        { ok: false, message: 'Unauthorized' },
+        { status: 401 },
+      )
+    }
+
     const supabase = createSupabaseServerAdmin()
 
     // 가장 단순한 쿼리로 연결 여부만 확인 (RLS 무시용 admin 클라이언트 사용)

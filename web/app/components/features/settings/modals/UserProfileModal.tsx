@@ -1,8 +1,9 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { Modal, ModalBody, ModalFooter } from '@/app/components/ui/AdaptiveModal'
+import { Modal, ModalHeader, ModalBody, ModalFooter } from '@/app/components/ui/AdaptiveModal'
 import Button from '@/app/components/ui/Button'
+import Input from '@/app/components/ui/Input'
 import ConfirmDialog from '@/app/components/ui/ConfirmDialog'
 import { type UserProfile } from '@/types/settings'
 
@@ -10,12 +11,13 @@ type Props = {
     open: boolean
     data: UserProfile
     onClose: () => void
-    onSave: (data: UserProfile) => void
+    onSave: (data: UserProfile) => void | Promise<void>
 }
 
 export default function UserProfileModal({ open, data, onClose, onSave }: Props) {
     const [formData, setFormData] = useState<UserProfile>(data)
     const [hasChanges, setHasChanges] = useState(false)
+    const [saving, setSaving] = useState(false)
     const [confirmCloseOpen, setConfirmCloseOpen] = useState(false)
 
     useEffect(() => {
@@ -30,10 +32,15 @@ export default function UserProfileModal({ open, data, onClose, onSave }: Props)
         setHasChanges(true)
     }
 
-    const handleSave = () => {
-        onSave(formData)
-        setHasChanges(false)
-        onClose()
+    const handleSave = async () => {
+        setSaving(true)
+        try {
+            await onSave(formData)
+            setHasChanges(false)
+            onClose()
+        } finally {
+            setSaving(false)
+        }
     }
 
     const handleCancel = () => {
@@ -43,6 +50,7 @@ export default function UserProfileModal({ open, data, onClose, onSave }: Props)
     }
 
     const handleRequestClose = () => {
+        if (saving) return
         if (hasChanges) {
             setConfirmCloseOpen(true)
             return
@@ -52,76 +60,51 @@ export default function UserProfileModal({ open, data, onClose, onSave }: Props)
 
     return (
         <Modal open={open} onClose={handleRequestClose} size="lg">
-            <div className="px-6 py-4 border-b border-neutral-200 bg-white sticky top-0 z-10">
-                <h2 className="text-2xl font-bold text-neutral-900">개인 정보 설정</h2>
-                <p className="text-sm text-neutral-600 mt-1">개인 정보를 수정합니다.</p>
-            </div>
+            <ModalHeader title="개인 정보 설정" description="개인 정보를 수정합니다." />
 
             <ModalBody>
                 <div className="space-y-6">
-                    <div>
-                        <label className="block text-sm font-medium text-neutral-700 mb-2">
-                            이름
-                        </label>
-                        <input
-                            type="text"
-                            value={formData.name}
-                            onChange={(e) => handleChange('name', e.target.value)}
-                            className="w-full px-3 py-2 border border-neutral-300 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-pink-500"
-                            placeholder="이름을 입력하세요"
-                        />
-                    </div>
-
-                    <div>
-                        <label className="block text-sm font-medium text-neutral-700 mb-2">
-                            이메일
-                        </label>
-                        <input
-                            type="email"
-                            value={formData.email}
-                            onChange={(e) => handleChange('email', e.target.value)}
-                            className="w-full px-3 py-2 border border-neutral-300 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-pink-500"
-                            placeholder="이메일을 입력하세요"
-                        />
-                    </div>
-
-                    <div>
-                        <label className="block text-sm font-medium text-neutral-700 mb-2">
-                            전화번호
-                        </label>
-                        <input
-                            type="tel"
-                            value={formData.phone || ''}
-                            onChange={(e) => handleChange('phone', e.target.value)}
-                            className="w-full px-3 py-2 border border-neutral-300 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-pink-500"
-                            placeholder="전화번호를 입력하세요"
-                        />
-                    </div>
-
-                    <div>
-                        <label className="block text-sm font-medium text-neutral-700 mb-2">
-                            생년월일
-                        </label>
-                        <input
-                            type="date"
-                            value={formData.birthdate || ''}
-                            onChange={(e) => handleChange('birthdate', e.target.value)}
-                            className="w-full px-3 py-2 border border-neutral-300 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-pink-500"
-                        />
-                    </div>
-
-                    <div>
-                        <label className="block text-sm font-medium text-neutral-700 mb-2">
-                            자기소개
-                        </label>
-                        <textarea
-                            value={formData.bio || ''}
-                            onChange={(e) => handleChange('bio', e.target.value)}
-                            rows={3}
-                            className="w-full px-3 py-2 border border-neutral-300 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-pink-500 resize-none"
-                            placeholder="자기소개를 입력하세요"
-                        />
-                    </div>
+                    <Input
+                        label="이름"
+                        type="text"
+                        value={formData.name}
+                        onChange={(e) => handleChange('name', e.target.value)}
+                        placeholder="이름을 입력하세요"
+                        fullWidth
+                    />
+                    <Input
+                        label="이메일"
+                        type="email"
+                        value={formData.email}
+                        onChange={(e) => handleChange('email', e.target.value)}
+                        placeholder="이메일을 입력하세요"
+                        fullWidth
+                    />
+                    <Input
+                        label="전화번호"
+                        type="tel"
+                        value={formData.phone || ''}
+                        onChange={(e) => handleChange('phone', e.target.value)}
+                        placeholder="전화번호를 입력하세요"
+                        fullWidth
+                    />
+                    <Input
+                        label="생년월일"
+                        type="date"
+                        value={formData.birthdate || ''}
+                        onChange={(e) => handleChange('birthdate', e.target.value)}
+                        fullWidth
+                        InputLabelProps={{ shrink: true }}
+                    />
+                    <Input
+                        label="자기소개"
+                        value={formData.bio || ''}
+                        onChange={(e) => handleChange('bio', e.target.value)}
+                        placeholder="자기소개를 입력하세요"
+                        fullWidth
+                        multiline
+                        rows={3}
+                    />
                 </div>
             </ModalBody>
 
@@ -135,10 +118,10 @@ export default function UserProfileModal({ open, data, onClose, onSave }: Props)
                         )}
                     </div>
                     <div className="flex gap-3">
-                        <Button variant="secondary" onClick={handleRequestClose}>
+                        <Button variant="secondary" onClick={handleRequestClose} disabled={saving}>
                             취소
                         </Button>
-                        <Button variant="primary" onClick={handleSave} disabled={!hasChanges}>
+                        <Button variant="primary" onClick={handleSave} disabled={!hasChanges} loading={saving}>
                             저장
                         </Button>
                     </div>

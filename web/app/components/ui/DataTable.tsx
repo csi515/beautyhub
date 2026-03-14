@@ -20,6 +20,7 @@ import {
   Divider,
 } from '@mui/material'
 import { Skeleton } from './Skeleton'
+import EmptyState from './EmptyState'
 
 export interface Column<T> {
   key: keyof T | string
@@ -78,7 +79,7 @@ export function DataTable<T extends Record<string, unknown>>({
   if (loading) {
     return (
       <TableContainer component={Paper} elevation={0} sx={{ border: '1px solid', borderColor: 'divider', borderRadius: 3 }}>
-        <MuiTable sx={{ minWidth: { xs: 0, md: 650 }, width: '100%' }}>
+        <MuiTable sx={{ minWidth: 0, width: '100%' }}>
           <TableHead sx={{ bgcolor: 'action.hover' }}>
             <TableRow>
               {columns.map((_, idx) => (
@@ -105,19 +106,13 @@ export function DataTable<T extends Record<string, unknown>>({
   }
 
   if (data.length === 0) {
-    return (
-      <Box sx={{ py: 10, textAlign: 'center', bgcolor: 'background.paper', borderRadius: 3, border: '1px dashed', borderColor: 'divider' }}>
-        <Typography variant="body2" color="text.secondary">
-          {emptyMessage}
-        </Typography>
-      </Box>
-    )
+    return <EmptyState title={emptyMessage} />
   }
 
   return (
     <>
       {/* 모바일 카드 뷰 */}
-      <Box sx={{ display: { xs: 'flex', md: 'none' }, flexDirection: 'column', gap: 2, width: '100%', maxWidth: '100%', overflowX: 'hidden' }} className={className}>
+      <Box sx={{ display: { xs: 'flex', md: 'none' }, flexDirection: 'column', gap: 2, width: '100%', maxWidth: '100%', minWidth: 0 }} className={className}>
         {sortedData.map((item, rowIdx) => (
           <Card
             key={rowIdx}
@@ -130,7 +125,7 @@ export function DataTable<T extends Record<string, unknown>>({
               transition: 'all 200ms ease',
               width: '100%',
               maxWidth: '100%',
-              overflowX: 'hidden',
+              minWidth: 0,
               minHeight: { xs: '44px', sm: 'auto' },
               '&:hover': onRowClick ? { boxShadow: { xs: 'none', md: (theme: any) => theme.shadows[2] }, transform: { xs: 'none', md: 'translateY(-2px)' } } : {},
               '&:active': onRowClick ? { transform: 'scale(0.98)' } : {},
@@ -180,14 +175,14 @@ export function DataTable<T extends Record<string, unknown>>({
           borderColor: 'divider',
           borderRadius: 3,
           overflow: 'hidden',
-          overflowX: 'auto',
           width: '100%',
           maxWidth: '100%',
+          minWidth: 0,
           boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03)'
         }}
         className={className}
       >
-        <MuiTable stickyHeader sx={{ minWidth: { xs: 0, md: 650 }, width: '100%' }}>
+        <MuiTable stickyHeader sx={{ minWidth: 0, width: '100%', tableLayout: 'auto' }}>
           <TableHead>
             <TableRow>
               {columns.map((col, idx) => (

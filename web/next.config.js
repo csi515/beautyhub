@@ -50,8 +50,8 @@ const nextConfig = {
     serverActions: {
       bodySizeLimit: '2mb'
     },
-    // 번들 크기 최적화
-    optimizePackageImports: ['@heroicons/react', 'lucide-react', 'recharts'],
+    // 번들 크기 최적화 (recharts 제외 - lazy 로딩과 충돌 가능)
+    optimizePackageImports: ['@heroicons/react', 'lucide-react'],
   },
   // Vercel 배포 최적화 설정
   compress: true,

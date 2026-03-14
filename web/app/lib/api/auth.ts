@@ -155,6 +155,7 @@ export function createAuthApi(supabase: SupabaseClient) {
     async setSession(tokens: SessionTokens, remember: boolean = false) {
       const response = await fetch('/api/auth/session', {
         method: 'POST',
+        credentials: 'same-origin',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           access_token: tokens.access_token,

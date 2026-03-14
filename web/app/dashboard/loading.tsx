@@ -1,10 +1,8 @@
-import { Box, Grid, Skeleton, Stack } from '@mui/material'
-import Card from '../components/ui/Card'
+import { Box, Grid, Paper, Skeleton, Stack } from '@mui/material'
 
 export default function DashboardLoading() {
     return (
         <Stack spacing={3}>
-            {/* Metrics Skeleton */}
             <Grid container spacing={{ xs: 0.75, sm: 1.5, md: 2.5, lg: 3 }}>
                 {[...Array(4)].map((_, i) => (
                     <Grid item xs={12} sm={6} md={3} key={i}>
@@ -13,11 +11,9 @@ export default function DashboardLoading() {
                 ))}
             </Grid>
 
-            {/* Main Content Areas Skeleton */}
             <Grid container spacing={{ xs: 0.75, sm: 1.5, md: 2.5, lg: 3 }}>
-                {/* Products Section Skeleton */}
                 <Grid item xs={12} lg={8}>
-                    <Card sx={{ height: 400 }}>
+                    <Paper variant="outlined" sx={{ p: 2, height: 400, borderRadius: 3 }}>
                         <Box sx={{ mb: 3, display: 'flex', justifyContent: 'space-between' }}>
                             <Skeleton width={120} height={28} />
                             <Skeleton width={60} height={20} />
@@ -29,12 +25,11 @@ export default function DashboardLoading() {
                                 </Grid>
                             ))}
                         </Grid>
-                    </Card>
+                    </Paper>
                 </Grid>
 
-                {/* Recent Appointments Skeleton */}
                 <Grid item xs={12} lg={4}>
-                    <Card sx={{ height: 400 }}>
+                    <Paper variant="outlined" sx={{ p: 2, height: 400, borderRadius: 3 }}>
                         <Box sx={{ mb: 3, display: 'flex', justifyContent: 'space-between' }}>
                             <Skeleton width={100} height={28} />
                             <Skeleton width={60} height={20} />
@@ -50,12 +45,11 @@ export default function DashboardLoading() {
                                 </Box>
                             ))}
                         </Stack>
-                    </Card>
+                    </Paper>
                 </Grid>
 
-                {/* Recent Transactions Skeleton */}
                 <Grid item xs={12}>
-                    <Card sx={{ height: 300 }}>
+                    <Paper variant="outlined" sx={{ p: 2, height: 300, borderRadius: 3 }}>
                         <Box sx={{ mb: 3, display: 'flex', justifyContent: 'space-between' }}>
                             <Skeleton width={120} height={28} />
                             <Skeleton width={60} height={20} />
@@ -65,7 +59,7 @@ export default function DashboardLoading() {
                                 <Skeleton key={i} variant="rounded" height={50} sx={{ borderRadius: 2 }} />
                             ))}
                         </Stack>
-                    </Card>
+                    </Paper>
                 </Grid>
             </Grid>
         </Stack>

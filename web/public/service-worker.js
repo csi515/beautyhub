@@ -5,8 +5,8 @@
  * 오프라인일 때만 캐시된 리소스를 사용합니다.
  */
 
-const CACHE_NAME = 'beautyhub-v1'
-const RUNTIME_CACHE = 'beautyhub-runtime-v1'
+const CACHE_NAME = 'beautyhub-v2'
+const RUNTIME_CACHE = 'beautyhub-runtime-v2'
 
 // 캐시할 정적 리소스 목록
 const STATIC_ASSETS = [

@@ -1,7 +1,7 @@
 'use client'
 
 import { Search, Download, Plus } from 'lucide-react'
-import { Stack, TextField, FormControl, InputLabel, Select, MenuItem, Chip, Box, Typography } from '@mui/material'
+import { Stack, TextField, FormControl, InputLabel, Select, MenuItem, Chip, Box, Typography, InputAdornment } from '@mui/material'
 import Button from '@/app/components/ui/Button'
 import FilterCard from '@/app/components/common/FilterCard'
 import { type CustomerFilters } from '@/types/customer'
@@ -50,7 +50,9 @@ export default function CustomerFilters({
             slotProps={{
               input: {
                 startAdornment: (
-                  <Search className="h-4 w-4 text-neutral-400" />
+                  <InputAdornment position="start" sx={{ color: 'text.disabled' }}>
+                    <Search size={18} />
+                  </InputAdornment>
                 ),
               },
             }}
@@ -81,10 +83,10 @@ export default function CustomerFilters({
           </Stack>
       </Stack>
 
-      {/* 인라인 필터 */}
+      {/* 인라인 검색 조건 */}
       <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 2, alignItems: 'center' }}>
           <Typography variant="body2" color="text.secondary" sx={{ mr: 1 }}>
-            필터:
+            조건:
           </Typography>
 
           <FormControl size="small" sx={{ minWidth: 100 }}>
@@ -97,19 +99,6 @@ export default function CustomerFilters({
               <MenuItem value="all">전체</MenuItem>
               <MenuItem value="active">활성</MenuItem>
               <MenuItem value="inactive">비활성</MenuItem>
-            </Select>
-          </FormControl>
-
-          <FormControl size="small" sx={{ minWidth: 120 }}>
-            <InputLabel>VIP 등급</InputLabel>
-            <Select
-              value={filters.vipFilter}
-              onChange={(e) => onFiltersChange({ vipFilter: e.target.value as any })}
-              label="VIP 등급"
-            >
-              <MenuItem value="all">전체</MenuItem>
-              <MenuItem value="vip">VIP (1000P 이상)</MenuItem>
-              <MenuItem value="normal">일반</MenuItem>
             </Select>
           </FormControl>
 
@@ -131,7 +120,7 @@ export default function CustomerFilters({
             sx={{ width: 120 }}
           />
 
-          {(filters.vipFilter !== 'all' || filters.minPoints || filters.maxPoints) && (
+          {(filters.minPoints || filters.maxPoints) && (
             <Button
               variant="ghost"
               onClick={onResetFilters}
@@ -142,8 +131,8 @@ export default function CustomerFilters({
             </Button>
           )}
 
-          {/* 필터 상태 표시 */}
-          {(filters.vipFilter !== 'all' || filters.minPoints || filters.maxPoints) && (
+          {/* 적용 상태 표시 */}
+          {(filters.minPoints || filters.maxPoints) && (
             <Chip
               label={`${filteredCount}/${totalCount}명 표시`}
               size="small"

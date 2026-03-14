@@ -74,7 +74,7 @@ export default function AdminUsersList({ initialUsers }: Props) {
                 </div>
             </div>
 
-            {/* 검색 및 필터 */}
+            {/* 검색 */}
             <Card>
                 <div className="flex flex-col sm:flex-row gap-3">
                     <div className="flex-1">

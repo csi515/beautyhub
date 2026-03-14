@@ -4,11 +4,21 @@ import { ko } from 'date-fns/locale'
 import type { CalendarView, DateRange } from '../types'
 import { formatRangeLabel } from '../utils/appointmentUtils'
 
+function getInitialMonthRange() {
+    const now = new Date()
+    const start = startOfWeek(startOfMonth(now), { locale: ko })
+    const end = endOfWeek(endOfMonth(now), { locale: ko })
+    return { from: start.toISOString(), to: end.toISOString() }
+}
+
 export function useAppointmentsNavigation() {
     const [view, setView] = useState<CalendarView>('month')
-    const [range, setRange] = useState<DateRange>({})
+    const [range, setRange] = useState<DateRange>(getInitialMonthRange)
     const [currentDate, setCurrentDate] = useState<Date | null>(new Date())
-    const [rangeLabel, setRangeLabel] = useState<string>('')
+    const [rangeLabel, setRangeLabel] = useState<string>(() => {
+        const { from, to } = getInitialMonthRange()
+        return formatRangeLabel(new Date(from), new Date(to), 'month')
+    })
 
     const updateRangeAndLabel = (date: Date, viewType: CalendarView, onRangeChange?: (range: DateRange) => void) => {
         let start: Date

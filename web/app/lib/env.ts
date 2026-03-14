@@ -39,6 +39,7 @@ export interface Env {
 
 /**
  * 환경 변수 검증
+ * 개발 환경에서는 누락 시 앱 로드를 허용하고, 프로덕션에서만 즉시 throw
  */
 function validateEnv(): Env {
   const missing: string[] = []
@@ -52,12 +53,17 @@ function validateEnv(): Env {
   }
 
   if (missing.length > 0) {
-    throw new Error(`Missing required environment variables: ${missing.join(', ')}`)
+    const isDev = process.env.NODE_ENV === 'development'
+    if (isDev) {
+      console.warn(`[env] 개발 모드: 필수 환경변수 누락 (${missing.join(', ')}). .env 파일을 확인하세요.`)
+    } else {
+      throw new Error(`Missing required environment variables: ${missing.join(', ')}`)
+    }
   }
 
   return {
-    NEXT_PUBLIC_SUPABASE_URL: requiredEnvVars.NEXT_PUBLIC_SUPABASE_URL!,
-    NEXT_PUBLIC_SUPABASE_ANON_KEY: requiredEnvVars.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+    NEXT_PUBLIC_SUPABASE_URL: requiredEnvVars.NEXT_PUBLIC_SUPABASE_URL || '',
+    NEXT_PUBLIC_SUPABASE_ANON_KEY: requiredEnvVars.NEXT_PUBLIC_SUPABASE_ANON_KEY || '',
     NEXT_PUBLIC_BASE_URL: optionalEnvVars.NEXT_PUBLIC_BASE_URL || '',
     NEXT_PUBLIC_SITE_URL: optionalEnvVars.NEXT_PUBLIC_SITE_URL || '',
     ...(optionalEnvVars.SUPABASE_SERVICE_ROLE_KEY ? { SUPABASE_SERVICE_ROLE_KEY: optionalEnvVars.SUPABASE_SERVICE_ROLE_KEY } : {}),

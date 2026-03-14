@@ -5,6 +5,7 @@
 'use client'
 
 import { Skeleton } from './Skeleton'
+import EmptyState from './EmptyState'
 
 export interface DataListProps<T> {
   data: T[]
@@ -49,8 +50,8 @@ export function DataList<T>({
 
   if (data.length === 0) {
     return (
-      <div className={`text-center py-12 text-neutral-500 ${className}`}>
-        {emptyMessage}
+      <div className={className}>
+        <EmptyState title={emptyMessage} />
       </div>
     )
   }

@@ -2,16 +2,15 @@
 
 import Card from '@/app/components/ui/Card'
 import Button from '@/app/components/ui/Button'
-import { LogOut, Trash2, Download } from 'lucide-react'
+import { LogOut, Download } from 'lucide-react'
 import { Box, Typography, Stack } from '@mui/material'
 
 type Props = {
     onLogout: () => void
-    onDeleteAccount: () => void
     onExportData: () => void
 }
 
-export default function AccountSettingsSummaryCard({ onLogout, onDeleteAccount, onExportData }: Props) {
+export default function AccountSettingsSummaryCard({ onLogout, onExportData }: Props) {
     return (
         <Card>
             <Box sx={{ mb: 2 }}>
@@ -41,20 +40,6 @@ export default function AccountSettingsSummaryCard({ onLogout, onDeleteAccount, 
                 >
                     로그아웃
                 </Button>
-
-                <Box sx={{ pt: 1.5, borderTop: 1, borderColor: 'divider' }}>
-                    <Typography variant="body2" sx={{ color: 'text.secondary', mb: 1.5 }}>
-                        계정을 삭제하면 모든 데이터가 영구적으로 삭제됩니다. 이 작업은 취소할 수 없습니다.
-                    </Typography>
-                    <Button
-                        variant="danger"
-                        onClick={onDeleteAccount}
-                        leftIcon={<Trash2 size={16} />}
-                        sx={{ justifyContent: 'flex-start' }}
-                    >
-                        계정 삭제
-                    </Button>
-                </Box>
             </Stack>
         </Card>
     )

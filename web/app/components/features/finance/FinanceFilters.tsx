@@ -44,7 +44,7 @@ export default function FinanceFilters({
               onClick={onToggleShowFilters}
               sx={{ flex: 1 }}
             >
-              {showFilters ? '숨기기' : '필터'}
+              {showFilters ? '숨기기' : '보기'}
             </Button>
             <Button
               variant="outline"

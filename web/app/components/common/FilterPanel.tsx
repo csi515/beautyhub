@@ -35,14 +35,14 @@ export interface FilterPanelProps<T extends Record<string, string>> {
 
 /**
  * 공통 FilterPanel 컴포넌트
- * 다양한 필터 필드를 동적으로 생성하여 표시
+ * 다양한 검색 조건 필드를 동적으로 생성하여 표시
  */
 export default function FilterPanel<T extends Record<string, string>>({
     filters,
     onFilterChange,
     onReset,
     fields,
-    title = '필터',
+    title = '',
 }: FilterPanelProps<T>) {
     const handleChange = (key: string, value: string) => {
         onFilterChange({
@@ -152,7 +152,7 @@ export default function FilterPanel<T extends Record<string, string>>({
                             startIcon={<RotateCcw size={16} />}
                             onClick={onReset}
                         >
-                            필터 초기화
+                            초기화
                         </Button>
                     )}
                 </Stack>

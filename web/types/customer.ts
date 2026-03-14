@@ -3,11 +3,9 @@
  */
 
 export type CustomerStatusFilter = 'all' | 'active' | 'inactive'
-export type CustomerVipFilter = 'all' | 'vip' | 'normal'
 
 export interface CustomerFilters {
   statusFilter: CustomerStatusFilter
-  vipFilter: CustomerVipFilter
   minPoints: string
   maxPoints: string
 }

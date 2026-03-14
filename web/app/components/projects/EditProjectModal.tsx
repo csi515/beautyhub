@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react'
 import type { Project } from '@/app/lib/mock/projects'
 import Modal, { ModalBody, ModalFooter, ModalHeader } from '../ui/Modal'
 import Button from '../ui/Button'
+import Input from '../ui/Input'
 import Textarea from '../ui/Textarea'
 
 export default function EditProjectModal({
@@ -34,10 +35,12 @@ export default function EditProjectModal({
           <div />
           <div className="md:pl-6 md:border-l md:border-neutral-200 space-y-3">
             <div className="crm-section space-y-3">
-              <div>
-                <label className="mb-1 block text-sm font-medium text-gray-700">제목</label>
-                <input value={title} onChange={e=>setTitle(e.target.value)} className="w-full h-10 rounded-md border border-gray-300 px-3 text-sm text-gray-700 outline-none shadow-sm focus:border-blue-500 focus:ring-2 focus:ring-blue-200" />
-              </div>
+              <Input
+                label="제목"
+                value={title}
+                onChange={(e) => setTitle(e.target.value)}
+                fullWidth
+              />
               <div>
                 <Textarea
                   label="내용"

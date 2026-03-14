@@ -174,22 +174,21 @@ export default function ReservationDetailModal({ open, onClose, item, onSaved, o
                     </div>
                   </div>
                 )}
-                <label className="block">
-                  <div className="mb-1 text-sm font-medium text-neutral-700">고객(선택)</div>
-                  <select className="w-full h-10 rounded-lg border border-neutral-300 px-3 outline-none focus:border-brand-500 focus:ring-2 focus:ring-brand-300" value={form.customer_id || ''} onChange={e => setForm(f => {
+                <Select
+                  label="고객(선택)"
+                  value={form.customer_id || ''}
+                  onChange={(e) => setForm((f) => {
                     if (!f) return f
                     const value = e.target.value
-                    if (value) {
-                      return { ...f, customer_id: value }
-                    }
+                    if (value) return { ...f, customer_id: value }
                     const next = { ...f }
                     delete next.customer_id
                     return next
-                  })}>
-                    <option value="">선택 안 함</option>
-                    {customers.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
-                  </select>
-                </label>
+                  })}
+                >
+                  <option value="">선택 안 함</option>
+                  {customers.map((c) => <option key={c.id} value={c.id}>{c.name}</option>)}
+                </Select>
                 <label className="col-span-2 block">
                   <div className="mb-1 text-sm font-medium text-neutral-700">담당 직원(선택)</div>
                   <StaffAutoComplete value={form.staff_id || ''} onChange={(v) => setForm(f => {
@@ -202,20 +201,15 @@ export default function ReservationDetailModal({ open, onClose, item, onSaved, o
                     return next
                   })} />
                 </label>
-                <label className="block">
-                  <div className="mb-1 text-sm font-medium text-neutral-700">
-                    서비스/상품(선택)
-                  </div>
-                  <select
-                    className="h-10 w-full rounded-none border-2 border-neutral-500 bg-white px-3 text-sm text-neutral-900 outline-none hover:border-neutral-600 focus:border-[#1D4ED8] focus:ring-[4px] focus:ring-[#1D4ED8]/20"
+                <div>
+                  <Select
+                    label="서비스/상품(선택)"
                     value={form.service_id || ''}
                     onChange={(e) =>
                       setForm((f) => {
                         if (!f) return f
                         const value = e.target.value
-                        if (value) {
-                          return { ...f, service_id: value }
-                        }
+                        if (value) return { ...f, service_id: value }
                         const next = { ...f }
                         delete next.service_id
                         return next
@@ -228,13 +222,13 @@ export default function ReservationDetailModal({ open, onClose, item, onSaved, o
                         {p.name}
                       </option>
                     ))}
-                  </select>
+                  </Select>
                   {form.service_id && selectedProduct?.duration_minutes && (
                     <div className="mt-1 text-xs text-blue-600 font-medium">
                       소요 시간: {selectedProduct.duration_minutes}분
                     </div>
                   )}
-                </label>
+                </div>
                 <div className="col-span-2">
                   <Textarea
                     label="메모(선택)"

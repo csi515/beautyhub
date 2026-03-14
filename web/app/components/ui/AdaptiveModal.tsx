@@ -1,6 +1,6 @@
 'use client'
 
-import React, { createContext, useContext } from 'react'
+import React, { createContext, useContext, useId } from 'react'
 import Dialog from '@mui/material/Dialog'
 import DialogTitle from '@mui/material/DialogTitle'
 import DialogContent from '@mui/material/DialogContent'
@@ -34,7 +34,8 @@ type ModalProps = {
 
 type RenderMode = 'dialog' | 'sheet'
 
-const AdaptiveModalContext = createContext<RenderMode>('dialog')
+type AdaptiveModalContextValue = { mode: RenderMode; titleId: string }
+const AdaptiveModalContext = createContext<AdaptiveModalContextValue>({ mode: 'dialog', titleId: 'modal-title' })
 
 function useAdaptiveModalMode() {
   return useContext(AdaptiveModalContext)
@@ -54,6 +55,7 @@ function AdaptiveModal({
   const theme = useTheme()
   const isMobile = useMediaQuery(theme.breakpoints.down('md'))
   const shouldUseSheet = isMobile && fullScreenOnMobile
+  const titleId = useId()
 
   const getMaxWidth = (): 'xs' | 'sm' | 'md' | 'lg' | 'xl' | false => {
     if (size === 'full') return false
@@ -68,7 +70,7 @@ function AdaptiveModal({
 
   if (shouldUseSheet) {
     return (
-      <AdaptiveModalContext.Provider value="sheet">
+      <AdaptiveModalContext.Provider value={{ mode: 'sheet', titleId }}>
         <BottomSheet
           open={open}
           onClose={onClose}
@@ -82,7 +84,7 @@ function AdaptiveModal({
   }
 
   return (
-    <AdaptiveModalContext.Provider value="dialog">
+    <AdaptiveModalContext.Provider value={{ mode: 'dialog', titleId }}>
       <Dialog
         open={open}
         onClose={closeOnOutsideClick ? onClose : undefined}
@@ -90,7 +92,14 @@ function AdaptiveModal({
         fullWidth
         fullScreen={false}
         disableAutoFocus={disableAutoFocus}
-        aria-labelledby="modal-title"
+        aria-labelledby={titleId}
+        PaperProps={{
+          sx: {
+            maxHeight: '90vh',
+            display: 'flex',
+            flexDirection: 'column',
+          },
+        }}
         {...props}
       >
         {children}
@@ -108,7 +117,7 @@ type ModalHeaderProps = {
 }
 
 function ModalHeader({ title, description, icon, onClose, children }: ModalHeaderProps) {
-  const mode = useAdaptiveModalMode()
+  const { mode, titleId } = useAdaptiveModalMode()
 
   if (mode === 'sheet') {
     return (
@@ -120,7 +129,7 @@ function ModalHeader({ title, description, icon, onClose, children }: ModalHeade
 
   return (
     <DialogTitle
-      id="modal-title"
+      id={titleId}
       sx={{
         display: 'flex',
         alignItems: 'center',
@@ -128,6 +137,7 @@ function ModalHeader({ title, description, icon, onClose, children }: ModalHeade
         gap: 2,
         p: 3,
         pb: 2,
+        flexShrink: 0,
       }}
     >
       <Stack direction="row" spacing={2} alignItems="flex-start" sx={{ flex: 1, minWidth: 0 }}>
@@ -175,7 +185,7 @@ type ModalBodyProps = {
 }
 
 function ModalBody({ children }: ModalBodyProps) {
-  const mode = useAdaptiveModalMode()
+  const { mode } = useAdaptiveModalMode()
 
   if (mode === 'sheet') {
     return <BottomSheetBody>{children}</BottomSheetBody>
@@ -186,6 +196,9 @@ function ModalBody({ children }: ModalBodyProps) {
       dividers
       sx={{
         p: 3,
+        overflowY: 'auto',
+        flex: '1 1 auto',
+        minHeight: 0,
       }}
     >
       {children}
@@ -198,7 +211,7 @@ type ModalFooterProps = {
 }
 
 function ModalFooter({ children }: ModalFooterProps) {
-  const mode = useAdaptiveModalMode()
+  const { mode } = useAdaptiveModalMode()
 
   if (mode === 'sheet') {
     return <BottomSheetFooter>{children}</BottomSheetFooter>
@@ -209,6 +222,7 @@ function ModalFooter({ children }: ModalFooterProps) {
       sx={{
         p: 2,
         gap: 1,
+        flexShrink: 0,
       }}
     >
       {children}

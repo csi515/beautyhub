@@ -66,14 +66,6 @@ export default function LoginForm() {
         try {
             const { session } = await authApi.login({ email: trimmedEmail, password })
 
-            try {
-                await authApi.ensureProfile()
-            } catch {
-                // Ignore
-            }
-
-            // 승인 체크 제거 - 모든 사용자는 회원가입 시 자동 승인됨
-
             await authApi.setSession(
                 {
                     access_token: session.access_token,
@@ -82,6 +74,12 @@ export default function LoginForm() {
                 },
                 remember
             )
+
+            try {
+                await authApi.ensureProfile()
+            } catch {
+                // 프로필이 이미 있거나 생성 실패 시 무시
+            }
 
             localStorage.setItem('lastLoginEmail', trimmedEmail)
 
@@ -129,6 +127,7 @@ export default function LoginForm() {
                     width={160}
                     height={160}
                     priority
+                    unoptimized
                 />
             </Box>
 

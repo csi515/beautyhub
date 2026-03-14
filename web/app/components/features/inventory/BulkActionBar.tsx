@@ -18,13 +18,14 @@ export default function BulkActionBar({ selectedCount, onClearSelection, onBulkA
             sx={{
                 position: 'fixed',
                 bottom: 24,
-                left: '50%',
-                transform: 'translateX(-50%)',
+                left: { xs: 16, sm: '50%' },
+                right: { xs: 16, sm: 'auto' },
+                transform: { xs: 'none', sm: 'translateX(-50%)' },
                 zIndex: 1000,
-                px: 3,
+                px: { xs: 2, sm: 3 },
                 py: 2,
                 borderRadius: 3,
-                minWidth: 400
+                maxWidth: { xs: '100%', sm: 480 },
             }}
         >
             <Stack direction="row" spacing={2} alignItems="center">

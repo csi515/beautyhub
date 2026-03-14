@@ -14,11 +14,12 @@ export function middleware(req: NextRequest) {
     '/api',
     '/_next',
     '/favicon.ico',
+    '/icon',
     '/robots.txt',
     '/sitemap.xml',
     '/manifest.json',
     '/service-worker.js',
-    '/icons'
+    '/icons',
   ]
   if (publicPaths.some(p => pathname === p || pathname.startsWith(p + '/'))) {
     return NextResponse.next()

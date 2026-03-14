@@ -3,16 +3,16 @@
 import { useState } from 'react'
 import { Box, Typography, Alert, Stack, CardContent } from '@mui/material'
 import { useTheme, useMediaQuery } from '@mui/material'
-import { Package, PackageX, Download, Plus } from 'lucide-react'
+import { PackageX, Download, Plus } from 'lucide-react'
 
 import PageContainer from '@/app/components/layout/PageContainer'
+import PageIntro from '@/app/components/common/PageIntro'
 import { useIsTablet } from '@/app/lib/hooks/useBreakpoint'
 import Card from '@/app/components/ui/Card'
 import FilterCard from '@/app/components/common/FilterCard'
 import Button from '@/app/components/ui/Button'
 import { TableSkeleton, CardSkeleton } from '@/app/components/ui/SkeletonLoader'
 import EmptyState from '@/app/components/ui/EmptyState'
-import PageHeader from '@/app/components/common/PageHeader'
 import SearchBar from '@/app/components/common/SearchBar'
 import FilterPanel from '@/app/components/common/FilterPanel'
 import InventoryHistoryModal from '@/app/components/features/inventory/InventoryHistoryModal'
@@ -134,7 +134,6 @@ export default function InventoryPage() {
     if (loading) {
         return (
             <PageContainer maxWidth="xl">
-                <PageHeader title="재고 관리" icon={<Package />} />
                 <Box sx={{ mb: 4 }}>
                     <CardSkeleton count={3} />
                 </Box>
@@ -146,7 +145,6 @@ export default function InventoryPage() {
     if (products.length === 0) {
         return (
             <PageContainer maxWidth="xl">
-                <PageHeader title="재고 관리" icon={<Package />} />
                 <InventorySummaryCards products={[]} />
                 <EmptyState
                     icon={PackageX}
@@ -162,9 +160,8 @@ export default function InventoryPage() {
     return (
         <PageContainer maxWidth="xl">
             <Stack spacing={3} sx={{ flex: 1, minHeight: 0, overflow: 'auto', display: 'flex', flexDirection: 'column' }}>
+            <PageIntro description="재고 현황을 확인하고 입출고를 관리합니다" count={total} />
             <Box sx={{ flexShrink: 0 }}>
-            <PageHeader title="재고 관리" icon={<Package />} />
-
             {/* 알림 섹션 */}
             {alerts.length > 0 && (
                 <Alert
@@ -256,7 +253,7 @@ export default function InventoryPage() {
                             placeholder: '재고',
                         },
                     ]}
-                    title="필터"
+                    title="조건"
                 />
             </FilterCard>
             </Box>

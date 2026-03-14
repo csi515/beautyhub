@@ -2,9 +2,10 @@
 
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { Container, AppBar, Toolbar, Button, Typography, Stack, Skeleton } from '@mui/material'
+import { Container, AppBar, Toolbar, Button, Typography, Stack, Skeleton, IconButton, Drawer, List, ListItem, ListItemButton, ListItemText } from '@mui/material'
 import { useTheme } from '@mui/material/styles'
 import { useEffect, useState } from 'react'
+import { Menu } from 'lucide-react'
 
 const navItems = [
     { href: '/', label: '홈' },
@@ -18,6 +19,7 @@ export default function PublicHeader() {
     const theme = useTheme()
     const [isLoggedIn, setIsLoggedIn] = useState(false)
     const [isLoading, setIsLoading] = useState(true)
+    const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
 
     useEffect(() => {
         const checkLoginStatus = async () => {
@@ -70,6 +72,44 @@ export default function PublicHeader() {
                             </Button>
                         ))}
                     </Stack>
+
+                    <IconButton
+                        aria-label="메뉴 열기"
+                        onClick={() => setMobileMenuOpen(true)}
+                        sx={{ display: { xs: 'flex', md: 'none' }, mr: 1 }}
+                    >
+                        <Menu size={24} />
+                    </IconButton>
+
+                    <Drawer
+                        anchor="right"
+                        open={mobileMenuOpen}
+                        onClose={() => setMobileMenuOpen(false)}
+                        slotProps={{ backdrop: { sx: { backdropFilter: 'blur(4px)' } } }}
+                        PaperProps={{ sx: { width: 280, pt: 2 } }}
+                    >
+                        <List>
+                            {navItems.map((item) => (
+                                <ListItem key={item.href} disablePadding>
+                                    <ListItemButton
+                                        component={Link}
+                                        href={item.href}
+                                        onClick={() => setMobileMenuOpen(false)}
+                                        selected={pathname === item.href}
+                                        sx={{ py: 1.5, minHeight: 44 }}
+                                    >
+                                        <ListItemText
+                                            primary={item.label}
+                                            primaryTypographyProps={{
+                                                fontWeight: pathname === item.href ? 600 : 400,
+                                                color: pathname === item.href ? 'primary.main' : 'text.primary',
+                                            }}
+                                        />
+                                    </ListItemButton>
+                                </ListItem>
+                            ))}
+                        </List>
+                    </Drawer>
 
                     <Stack direction="row" spacing={2}>
                         {isLoading ? (

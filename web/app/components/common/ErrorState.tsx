@@ -1,6 +1,7 @@
 'use client'
 
 import { AlertCircle } from 'lucide-react'
+import { Box, Typography } from '@mui/material'
 import Button from '../ui/Button'
 
 type ErrorStateProps = {
@@ -23,24 +24,57 @@ export default function ErrorState({
   className = '',
 }: ErrorStateProps) {
   return (
-    <div className={`flex flex-col items-center justify-center py-12 px-4 ${className}`}>
-      <div className="text-center space-y-4 max-w-md">
-        <div className="flex justify-center">
-          <div className="h-12 w-12 rounded-full bg-error-50 flex items-center justify-center">
-            <AlertCircle className="h-6 w-6 text-error-600" />
-          </div>
-        </div>
-        <div>
-          <h3 className="text-lg font-semibold text-neutral-900 mb-1">{title}</h3>
-          <p className="text-sm text-neutral-600">{message}</p>
-        </div>
+    <Box
+      className={className}
+      sx={{
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+        justifyContent: 'center',
+        py: 6,
+        px: 2,
+      }}
+    >
+      <Box
+        sx={{
+          textAlign: 'center',
+          maxWidth: 400,
+          p: 3,
+          borderRadius: 3,
+          bgcolor: 'error.50',
+          border: '1px solid',
+          borderColor: 'error.200',
+        }}
+      >
+        <Box sx={{ display: 'flex', justifyContent: 'center', mb: 2 }}>
+          <Box
+            sx={{
+              width: 48,
+              height: 48,
+              borderRadius: '50%',
+              bgcolor: 'error.main',
+              color: 'error.contrastText',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+            }}
+          >
+            <AlertCircle size={24} strokeWidth={2} />
+          </Box>
+        </Box>
+        <Typography variant="subtitle1" fontWeight={600} color="text.primary" sx={{ mb: 1 }}>
+          {title}
+        </Typography>
+        <Typography variant="body2" color="text.secondary" sx={{ mb: 2, lineHeight: 1.6 }}>
+          {message}
+        </Typography>
         {onRetry && (
-          <Button variant="primary" onClick={onRetry} className="mt-2">
+          <Button variant="primary" onClick={onRetry} size="md">
             {retryLabel}
           </Button>
         )}
-      </div>
-    </div>
+      </Box>
+    </Box>
   )
 }
 

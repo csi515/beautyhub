@@ -16,6 +16,7 @@ import type { SelectedAppointment } from './types'
 import CalendarHeader from './components/CalendarHeader'
 import AppointmentsCalendar from './components/AppointmentsCalendar'
 import PageContainer from '@/app/components/layout/PageContainer'
+import PageIntro from '@/app/components/common/PageIntro'
 
 export default function AppointmentsPage() {
     const [createOpen, setCreateOpen] = useState(false)
@@ -143,7 +144,8 @@ export default function AppointmentsPage() {
 
     return (
         <PageContainer maxWidth="xl">
-        <Stack spacing={3} sx={{ flex: 1, minHeight: 0, overflow: 'auto', display: 'flex', flexDirection: 'column' }}>
+        <Stack spacing={3} sx={{ flex: 1, minHeight: { xs: 0, md: 600 }, overflow: 'auto', display: 'flex', flexDirection: 'column' }}>
+            <PageIntro description="예약 일정을 확인하고 관리합니다" count={filteredEvents.length} />
             <Box sx={{ flexShrink: 0 }}>
             <CalendarHeader
                 view={view}
@@ -205,7 +207,7 @@ export default function AppointmentsPage() {
             )}
 
             {/* 데스크톱 캘린더 뷰 */}
-            <Box sx={{ flex: 1, minHeight: 400, overflow: 'auto', display: { xs: 'none', md: 'flex' }, flexDirection: 'column' }}>
+            <Box sx={{ flex: '1 1 0', minHeight: 500, minWidth: 0, overflow: 'hidden', display: { xs: 'none', md: 'flex' }, flexDirection: 'column' }}>
             <AppointmentsCalendar
                 events={filteredEvents}
                 view={view}

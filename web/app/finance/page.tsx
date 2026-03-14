@@ -1,10 +1,10 @@
 'use client'
 
 import { lazy, Suspense, useState } from 'react'
-import { DollarSign } from 'lucide-react'
-import { Stack, Box, Typography } from '@mui/material'
+import { Stack, Box } from '@mui/material'
 import PageContainer from '@/app/components/layout/PageContainer'
-import PageHeader from '@/app/components/common/PageHeader'
+import PageIntro from '@/app/components/common/PageIntro'
+import ErrorState from '@/app/components/common/ErrorState'
 
 // Components
 import FinanceSummaryCards from '@/app/components/features/finance/FinanceSummaryCards'
@@ -100,14 +100,8 @@ export default function FinancePage() {
 
   return (
     <PageContainer maxWidth="xl">
-      <Stack spacing={3} sx={{ flex: 1, minHeight: 0, overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
-      <Box sx={{ flexShrink: 0 }}>
-        <PageHeader
-          title="재무 관리"
-          icon={<DollarSign className="h-5 w-5" />}
-        />
-      </Box>
-
+      <Stack spacing={3} sx={{ flex: 1, minHeight: 0, minWidth: 0, overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
+      <PageIntro description="수입·지출 내역을 확인하고 관리합니다" />
       {/* 요약 카드 */}
       <Box sx={{ flexShrink: 0 }}>
       <FinanceSummaryCards
@@ -117,7 +111,7 @@ export default function FinancePage() {
       />
       </Box>
 
-      {/* 필터 및 기간 */}
+      {/* 기간 */}
       <Box sx={{ flexShrink: 0 }}>
       <FinanceFilters
         dateRange={dateRange}
@@ -133,6 +127,14 @@ export default function FinancePage() {
 
       {/* 모바일 카드 뷰 + 데스크톱 테이블 */}
       <Box sx={{ flex: 1, minHeight: 0, overflow: 'auto' }}>
+      {error ? (
+        <ErrorState
+          message={error}
+          onRetry={load}
+          retryLabel="다시 시도"
+        />
+      ) : (
+      <>
       <FinanceMobileCards
         loading={loading}
         pagedCombined={paginationData.pagedCombined}
@@ -158,6 +160,8 @@ export default function FinancePage() {
         onItemClick={handleItemClick}
         onCreateNew={openCreateModal}
       />
+      </>
+      )}
       </Box>
 
       {/* 신규 등록 모달 */}
@@ -189,7 +193,6 @@ export default function FinancePage() {
           onDeleted={load}
         />}
       </Suspense>
-      {error && <Typography color="error" variant="body2">{error}</Typography>}
       </Stack>
     </PageContainer>
   )

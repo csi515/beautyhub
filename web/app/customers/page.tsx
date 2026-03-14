@@ -2,7 +2,6 @@
 
 import { Plus } from 'lucide-react'
 import { useState, lazy, Suspense } from 'react'
-import { Users } from 'lucide-react'
 import { useAppToast } from '../lib/ui/toast'
 import { exportToExcel, prepareCustomerDataForExport } from '../lib/utils/export'
 
@@ -13,7 +12,7 @@ import Stack from '@mui/material/Stack'
 import ErrorState from '../components/common/ErrorState'
 import Button from '../components/ui/Button'
 import PageContainer from '../components/layout/PageContainer'
-import PageHeader from '../components/common/PageHeader'
+import PageIntro from '../components/common/PageIntro'
 
 // Components
 import CustomerFilters from '../components/features/customers/CustomerFilters'
@@ -43,7 +42,6 @@ export default function CustomersPage() {
   // Filters state
   const [filters, setFilters] = useState<CustomerFiltersType>({
     statusFilter: 'all',
-    vipFilter: 'all',
     minPoints: '',
     maxPoints: ''
   })
@@ -83,7 +81,6 @@ export default function CustomersPage() {
   const handleResetFilters = () => {
     setFilters({
       statusFilter: 'all',
-      vipFilter: 'all',
       minPoints: '',
       maxPoints: ''
     })
@@ -97,14 +94,9 @@ export default function CustomersPage() {
 
   return (
     <PageContainer maxWidth="xl">
-      <Stack spacing={3} sx={{ flex: 1, minHeight: 0, overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
-      <Box sx={{ flexShrink: 0 }}>
-        <PageHeader
-          title="고객 관리"
-          icon={<Users className="h-5 w-5" />}
-        />
-      </Box>
-      {/* 필터 및 검색 */}
+      <Stack spacing={3} sx={{ flex: 1, minHeight: 0, minWidth: 0, overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
+      <PageIntro description="고객 목록을 검색하고 관리합니다" count={`${filteredRows.length}명`} />
+      {/* 검색 */}
       <Box sx={{ flexShrink: 0 }}>
       <CustomerFilters
         query={query}
@@ -125,8 +117,8 @@ export default function CustomersPage() {
       {error && (
         <ErrorState
           message={error}
-          onRetry={() => {}}
-          retryLabel="닫기"
+          onRetry={refreshCustomers}
+          retryLabel="다시 시도"
         />
       )}
 

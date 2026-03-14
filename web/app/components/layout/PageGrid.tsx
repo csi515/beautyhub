@@ -23,7 +23,7 @@ export default function PageGrid({
   children,
   mobileColumns = 1,
   desktopColumns = 2,
-  spacing = { xs: 2, sm: 2, md: 3 },
+  spacing = { xs: 1.5, sm: 2, md: 2.5, lg: 3 },
   ...rest
 }: PageGridProps) {
   // 모바일 열 크기 계산
@@ -39,7 +39,7 @@ export default function PageGrid({
       sx={{
         width: '100%',
         maxWidth: '100%',
-        overflowX: 'hidden',
+        minWidth: 0,
       }}
       {...rest}
     >
@@ -54,6 +54,7 @@ export default function PageGrid({
             sx={{
               width: '100%',
               maxWidth: '100%',
+              minWidth: 0,
             }}
           >
             {child}
@@ -68,6 +69,7 @@ export default function PageGrid({
           sx={{
             width: '100%',
             maxWidth: '100%',
+            minWidth: 0,
           }}
         >
           {children}

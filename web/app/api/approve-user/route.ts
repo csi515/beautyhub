@@ -6,7 +6,10 @@ export const dynamic = 'force-dynamic'
 
 export async function POST(req: Request) {
 	try {
-		const { userId, approved = true } = await req.json()
+		const body = await req.json() as { userId?: unknown; approved?: unknown }
+		const userId = typeof body.userId === 'string' ? body.userId.trim() : ''
+		const approved = typeof body.approved === 'boolean' ? body.approved : true
+
 		if (!userId) {
 			return NextResponse.json({ error: 'userId is required' }, { status: 400 })
 		}

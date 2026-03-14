@@ -1,8 +1,9 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { Modal, ModalBody, ModalFooter } from '@/app/components/ui/AdaptiveModal'
+import { Modal, ModalHeader, ModalBody, ModalFooter } from '@/app/components/ui/AdaptiveModal'
 import Button from '@/app/components/ui/Button'
+import Select from '@/app/components/ui/Select'
 import ToggleSwitch from '@/app/components/ui/ToggleSwitch'
 import ConfirmDialog from '@/app/components/ui/ConfirmDialog'
 import { type SecuritySettings } from '@/types/settings'
@@ -11,13 +12,14 @@ type Props = {
     open: boolean
     data: SecuritySettings
     onClose: () => void
-    onSave: (data: SecuritySettings) => void
+    onSave: (data: SecuritySettings) => void | Promise<void>
     onChangePassword?: () => void
 }
 
 export default function SecuritySettingsModal({ open, data, onClose, onSave, onChangePassword }: Props) {
     const [formData, setFormData] = useState<SecuritySettings>(data)
     const [hasChanges, setHasChanges] = useState(false)
+    const [saving, setSaving] = useState(false)
     const [confirmCloseOpen, setConfirmCloseOpen] = useState(false)
 
     useEffect(() => {
@@ -32,10 +34,15 @@ export default function SecuritySettingsModal({ open, data, onClose, onSave, onC
         setHasChanges(true)
     }
 
-    const handleSave = () => {
-        onSave(formData)
-        setHasChanges(false)
-        onClose()
+    const handleSave = async () => {
+        setSaving(true)
+        try {
+            await onSave(formData)
+            setHasChanges(false)
+            onClose()
+        } finally {
+            setSaving(false)
+        }
     }
 
     const handleCancel = () => {
@@ -45,6 +52,7 @@ export default function SecuritySettingsModal({ open, data, onClose, onSave, onC
     }
 
     const handleRequestClose = () => {
+        if (saving) return
         if (hasChanges) {
             setConfirmCloseOpen(true)
             return
@@ -54,10 +62,7 @@ export default function SecuritySettingsModal({ open, data, onClose, onSave, onC
 
     return (
         <Modal open={open} onClose={handleRequestClose} size="lg">
-            <div className="px-6 py-4 border-b border-neutral-200 bg-white sticky top-0 z-10">
-                <h2 className="text-2xl font-bold text-neutral-900">보안 설정</h2>
-                <p className="text-sm text-neutral-600 mt-1">계정 보안을 설정합니다.</p>
-            </div>
+            <ModalHeader title="보안 설정" description="계정 보안을 설정합니다." />
 
             <ModalBody>
                 <div className="space-y-6">
@@ -81,22 +86,17 @@ export default function SecuritySettingsModal({ open, data, onClose, onSave, onC
                         <div className="flex items-center gap-2">
                             <h3 className="text-lg font-semibold text-neutral-800">세션 설정</h3>
                         </div>
-                        <div>
-                            <label className="block text-sm font-medium text-neutral-700 mb-2">
-                                자동 로그아웃 시간 (분)
-                            </label>
-                            <select
-                                value={formData.sessionTimeout}
-                                onChange={(e) => handleChange('sessionTimeout', parseInt(e.target.value))}
-                                className="w-full px-3 py-2 border border-neutral-300 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-pink-500"
-                            >
-                                <option value={15}>15분</option>
-                                <option value={30}>30분</option>
-                                <option value={60}>1시간</option>
-                                <option value={240}>4시간</option>
-                                <option value={480}>8시간</option>
-                            </select>
-                        </div>
+                        <Select
+                            label="자동 로그아웃 시간 (분)"
+                            value={String(formData.sessionTimeout)}
+                            onChange={(e) => handleChange('sessionTimeout', parseInt(e.target.value))}
+                        >
+                            <option value={15}>15분</option>
+                            <option value={30}>30분</option>
+                            <option value={60}>1시간</option>
+                            <option value={240}>4시간</option>
+                            <option value={480}>8시간</option>
+                        </Select>
                     </div>
 
                     {/* 비밀번호 변경 */}
@@ -135,10 +135,10 @@ export default function SecuritySettingsModal({ open, data, onClose, onSave, onC
                         )}
                     </div>
                     <div className="flex gap-3">
-                        <Button variant="secondary" onClick={handleRequestClose}>
+                        <Button variant="secondary" onClick={handleRequestClose} disabled={saving}>
                             취소
                         </Button>
-                        <Button variant="primary" onClick={handleSave} disabled={!hasChanges}>
+                        <Button variant="primary" onClick={handleSave} disabled={!hasChanges} loading={saving}>
                             저장
                         </Button>
                     </div>

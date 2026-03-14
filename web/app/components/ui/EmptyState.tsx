@@ -1,5 +1,6 @@
-import { Box, Typography, Button } from '@mui/material'
+import { Box, Typography } from '@mui/material'
 import { LucideIcon } from 'lucide-react'
+import Button from './Button'
 
 interface EmptyStateProps {
     icon?: LucideIcon
@@ -16,27 +17,41 @@ export default function EmptyState({ icon: Icon, title, description, actionLabel
             flexDirection: 'column',
             alignItems: 'center',
             justifyContent: 'center',
-            p: 4,
+            p: { xs: 4, sm: 5 },
             textAlign: 'center',
             color: 'text.secondary',
-            minHeight: 200,
+            minHeight: 220,
             width: '100%',
-            bgcolor: 'background.paper',
-            borderRadius: 2,
+            bgcolor: 'action.hover',
+            borderRadius: 3,
             border: '1px dashed',
-            borderColor: 'divider'
+            borderColor: 'divider',
         }}>
-            {Icon && <Icon size={48} style={{ marginBottom: 16, opacity: 0.5 }} />}
-            <Typography variant="h6" gutterBottom color="text.primary">
+            {Icon && (
+                <Box sx={{
+                    width: 64,
+                    height: 64,
+                    borderRadius: 2,
+                    bgcolor: 'background.paper',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    mb: 2,
+                    color: 'text.disabled',
+                }}>
+                    <Icon size={32} strokeWidth={1.5} />
+                </Box>
+            )}
+            <Typography variant="subtitle1" fontWeight={600} sx={{ mb: 0.5, color: 'text.primary' }}>
                 {title}
             </Typography>
             {description && (
-                <Typography variant="body2" mb={3} maxWidth={400}>
+                <Typography variant="body2" sx={{ mb: 2, maxWidth: 360, color: 'text.secondary', lineHeight: 1.6 }}>
                     {description}
                 </Typography>
             )}
             {actionLabel && onAction && (
-                <Button variant="contained" onClick={onAction}>
+                <Button variant="primary" onClick={onAction} size="md">
                     {actionLabel}
                 </Button>
             )}

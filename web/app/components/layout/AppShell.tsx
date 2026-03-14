@@ -53,7 +53,24 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
   // ESC key handler is handled by MUI Modal/Drawer by default for mobile
 
   if (isPublic) {
-    return <>{children}</>
+    return (
+      <Box
+        component="main"
+        sx={{
+          height: { xs: '100dvh', md: 'auto' },
+          minHeight: { xs: '100dvh', md: '100vh' },
+          overflowY: { xs: 'auto', md: 'visible' },
+          overflowX: 'hidden',
+          WebkitOverflowScrolling: 'touch',
+          paddingTop: 'env(safe-area-inset-top, 0px)',
+          paddingLeft: 'env(safe-area-inset-left, 0px)',
+          paddingRight: 'env(safe-area-inset-right, 0px)',
+          paddingBottom: 'env(safe-area-inset-bottom, 0px)',
+        }}
+      >
+        {children}
+      </Box>
+    )
   }
 
   return (
@@ -101,23 +118,34 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
           component="main"
           sx={{
             flexGrow: 1,
+            display: 'flex',
+            flexDirection: 'column',
             height: { md: 'calc(100vh - 64px)' },
             minHeight: 0,
-            p: { xs: 2, sm: 2, md: 3, lg: 4 },
-            pb: { xs: 'calc(72px + env(safe-area-inset-bottom, 0px))', md: 3 },
+            minWidth: 0,
+            pt: { xs: 'max(1rem, env(safe-area-inset-top, 0px))', sm: 1.25, md: 1.5, lg: 2 },
+            pr: { xs: 'max(0.75rem, env(safe-area-inset-right, 0px))', sm: 1, md: 1.5, lg: 2 },
+            pb: {
+              xs: 'calc(72px + env(safe-area-inset-bottom, 0px))',
+              md: 1.5,
+              lg: 2,
+              xl: 2.5,
+            },
+            pl: { xs: 'max(0.75rem, env(safe-area-inset-left, 0px))', sm: 1, md: 1.5, lg: 2 },
             overflowX: 'hidden',
-            overflowY: { md: 'hidden' },
+            overflowY: 'auto',
             width: '100%',
             maxWidth: '100%',
+            WebkitOverflowScrolling: 'touch',
           }}
         >
           <Box sx={{
             display: 'flex',
             flexDirection: 'column',
-            gap: 3,
+            gap: { xs: 2, sm: 2.5, md: 3, lg: 3 },
             flex: { md: 1 },
             minHeight: { md: 0 },
-            overflow: { md: 'hidden' },
+            overflow: 'visible',
           }}>
             {isMobile ? (
               <PullToRefresh>

@@ -78,7 +78,7 @@ export default function LandingPage() {
                     예약 누락 걱정 없는 스마트 일정관리부터 데이터 기반의 매출 분석까지,
                     성장하는 뷰티 비즈니스의 시작을 함께합니다.
                   </Typography>
-                  <Stack direction="row" spacing={2}>
+                  <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2}>
                     <Button
                       component={Link}
                       href="/signup"

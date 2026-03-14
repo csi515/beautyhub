@@ -25,27 +25,32 @@ export async function POST() {
 			return NextResponse.json({ error: 'unauthorized' }, { status: 401 })
 		}
 
-		const admin = createSupabaseServerAdmin()
-		// 존재 체크
-		const { data: existing } = await admin
-			.from('users')
-			.select('id')
-			.eq('id', user.id)
-			.maybeSingle()
-		if (existing) return NextResponse.json({ ok: true })
+		const email = user.email ?? (user.user_metadata as Record<string, unknown>)?.['email']
+		if (!email || typeof email !== 'string') {
+			return NextResponse.json(
+				{ error: 'MISSING_EMAIL', message: '이메일 정보가 없습니다.' },
+				{ status: 400 }
+			)
+		}
 
-		// 없으면 생성
+		const admin = createSupabaseServerAdmin()
 		const payload = {
 			id: user.id,
-			email: user.email,
+			email,
 			name: (user.user_metadata as Record<string, unknown>)['name'] ?? null,
 			phone: (user.user_metadata as Record<string, unknown>)['phone'] ?? null,
 			birthdate: (user.user_metadata as Record<string, unknown>)['birthdate'] ?? null,
 			approved: true,
 			role: 'user',
 		}
-		const { error } = await admin.from('users').insert(payload)
-		if (error) return NextResponse.json({ error: error.message }, { status: 400 })
+		// upsert: 존재하면 무시, 없으면 생성 (race condition 방지)
+		const { error } = await admin
+			.from('users')
+			.upsert(payload, { onConflict: 'id', ignoreDuplicates: true })
+		if (error) {
+			console.error('api/user/ensure upsert error:', error)
+			return NextResponse.json({ error: error.message }, { status: 400 })
+		}
 		return NextResponse.json({ ok: true })
 	} catch (e: unknown) {
 		const message = e instanceof Error ? e.message : 'unknown error'

@@ -1,11 +1,10 @@
 -- =====================================================
--- BeautyHub CRM Complete Database Schema
--- Consolidated from all migration files
+-- BeautyHub CRM - 레거시 전체 스키마 (deprecated)
 -- =====================================================
 -- 
--- This script creates the complete database structure
--- Run in Supabase SQL Editor
--- 
+-- 신규 설치 시 supabase/migrations/20250313000000_consolidated_schema.sql 사용
+-- 이 파일은 참조용으로만 유지
+--
 -- =====================================================
 
 -- Enable required extensions

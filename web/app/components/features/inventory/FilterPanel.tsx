@@ -48,7 +48,7 @@ export default function FilterPanel({ filters, onFilterChange, onReset }: Filter
             <AccordionSummary expandIcon={<ChevronDown />}>
                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                     <Typography variant="body1" fontWeight={600}>
-                        필터
+                        조건
                     </Typography>
                     {hasActiveFilters && (
                         <Chip label={`${activeFilterCount}개 적용됨`} size="small" color="primary" />
@@ -132,7 +132,7 @@ export default function FilterPanel({ filters, onFilterChange, onReset }: Filter
                             startIcon={<RotateCcw size={16} />}
                             onClick={onReset}
                         >
-                            필터 초기화
+                            초기화
                         </Button>
                     )}
                 </Stack>

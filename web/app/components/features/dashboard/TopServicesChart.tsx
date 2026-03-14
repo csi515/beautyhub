@@ -40,15 +40,15 @@ export default function TopServicesChart({ recentAppointments }: TopServicesChar
     const data = processData()
     const theme = useTheme()
     const isTablet = useMediaQuery(theme.breakpoints.only('md'))
-    const chartHeight = isTablet ? 180 : 220
+    const chartHeight = isTablet ? 160 : 200
 
     return (
         <Card sx={{ height: '100%', width: '100%', maxWidth: '100%', overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
-            <div style={{ padding: '16px 24px 8px', borderBottom: '1px solid #E7E5E4' }}>
+            <div style={{ padding: '12px 16px 6px', borderBottom: '1px solid #E7E5E4' }}>
                 <Typography variant="h6" fontWeight="bold" sx={{ mb: 0.5 }}>인기 시술 Top 5</Typography>
                 <Typography variant="body2" color="text.secondary">최근 예약 기준</Typography>
             </div>
-            <div style={{ flex: 1, height: `${chartHeight}px`, display: 'flex', alignItems: 'center', justifyContent: 'center', width: '100%', maxWidth: '100%', overflow: 'hidden', padding: '16px 24px', minHeight: `${chartHeight}px` }}>
+            <div style={{ flex: 1, height: `${chartHeight}px`, display: 'flex', alignItems: 'center', justifyContent: 'center', width: '100%', maxWidth: '100%', overflow: 'hidden', padding: '12px 16px', minHeight: `${chartHeight}px` }}>
                 {data.length > 0 ? (
                     <ResponsiveContainer width="100%" height="100%">
                         <PieChart>

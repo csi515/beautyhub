@@ -32,7 +32,12 @@ export async function GET() {
 
 		if (error) {
 			console.error('Database error in /api/user/me:', error)
-			return NextResponse.json({ error: error.message, code: error.code }, { status: 500 })
+			// RLS/권한 오류는 401로 처리 (클라이언트에서 로그인 유도)
+			const isAuthRelated = ['PGRST301', '42501', '42P01'].includes(error.code ?? '')
+			return NextResponse.json(
+				{ error: error.message, code: error.code },
+				{ status: isAuthRelated ? 401 : 500 }
+			)
 		}
 
 		if (!data) {
@@ -43,8 +48,13 @@ export async function GET() {
 		return NextResponse.json({ profile: data })
 	} catch (e: unknown) {
 		console.error('API /api/user/me error:', e)
+		// 환경변수 누락 등 초기화 실패는 503
 		const message = e instanceof Error ? e.message : 'unknown error'
-		return NextResponse.json({ error: message }, { status: 500 })
+		const isConfigError = message.includes('환경변수') || message.includes('environment')
+		return NextResponse.json(
+			{ error: message },
+			{ status: isConfigError ? 503 : 500 }
+		)
 	}
 }
 

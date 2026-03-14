@@ -37,7 +37,7 @@ export default function PageList({
         gap: spacing,
         width: '100%',
         maxWidth: '100%',
-        overflowX: 'hidden',
+        minWidth: 0,
       }}
       className={className}
     >

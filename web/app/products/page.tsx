@@ -34,7 +34,7 @@ import Card from '../components/ui/Card'
 import FilterCard from '../components/common/FilterCard'
 import ErrorState from '../components/common/ErrorState'
 import PageContainer from '../components/layout/PageContainer'
-import PageHeader from '../components/common/PageHeader'
+import PageIntro from '../components/common/PageIntro'
 
 const ProductDetailModal = lazy(() => import('../components/modals/ProductDetailModal'))
 
@@ -118,7 +118,7 @@ export default function ProductsPage() {
 
   useEffect(() => { load() }, [load])
 
-  // 필터링된 데이터
+  // 검색/조건 적용된 데이터
   const filteredProducts = useMemo(() => {
     return products.filter((p) => {
       // Search query
@@ -153,7 +153,7 @@ export default function ProductsPage() {
     return sortedProducts.slice(start, end)
   }, [sortedProducts, page, pageSize])
 
-  // totalPages 계산 (필터링된 데이터 기준)
+  // totalPages 계산 (검색 결과 기준)
   const totalPages = Math.max(1, Math.ceil(filteredProducts.length / pageSize))
 
   // CSV export function
@@ -171,7 +171,7 @@ export default function ProductsPage() {
   }
 
 
-  // 페이지 변경 시 필터/검색 변경으로 인해 현재 페이지가 유효 범위를 벗어나면 첫 페이지로 이동
+  // 페이지 변경 시 검색 조건 변경으로 인해 현재 페이지가 유효 범위를 벗어나면 첫 페이지로 이동
   useEffect(() => {
     if (page > totalPages && totalPages > 0) {
       setPage(1)
@@ -186,13 +186,8 @@ export default function ProductsPage() {
 
   return (
     <PageContainer maxWidth="xl">
-    <Stack spacing={3} sx={{ flex: 1, minHeight: 0, overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
-      <Box sx={{ flexShrink: 0 }}>
-      <PageHeader
-        title="상품 관리"
-        icon={<Plus className="h-5 w-5" />}
-      />
-      </Box>
+    <Stack spacing={3} sx={{ flex: 1, minHeight: 0, minWidth: 0, overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
+      <PageIntro description="판매 상품·서비스를 등록하고 관리합니다" count={filteredProducts.length} />
       <Box sx={{ flexShrink: 0 }}>
       <FilterCard>
         <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2} alignItems="center">
@@ -239,7 +234,7 @@ export default function ProductsPage() {
             </Button>
         </Stack>
         <Stack spacing={1}>
-          <Typography variant="subtitle2" fontWeight={600}>필터</Typography>
+          <Typography variant="subtitle2" fontWeight={600}>조건</Typography>
             <Grid container spacing={{ xs: 0.75, sm: 1.5, md: 2 }} alignItems="center">
             <Grid item xs={12} md={3}>
               <FormControl size="small" fullWidth>
@@ -284,7 +279,7 @@ export default function ProductsPage() {
               <Stack direction="row" spacing={1} justifyContent="flex-end">
                 {(statusFilter !== 'all' || minPrice || maxPrice || query) && (
                   <Button variant="ghost" onClick={handleResetFilters} size="sm">
-                    필터 초기화
+                    초기화
                   </Button>
                 )}
               </Stack>

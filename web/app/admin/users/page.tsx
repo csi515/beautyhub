@@ -4,8 +4,7 @@ import { useEffect, useState, useMemo } from 'react'
 import { useRouter } from 'next/navigation'
 import { Box, Paper, Typography, Chip, CircularProgress, Alert as MuiAlert } from '@mui/material'
 import { DataGrid, GridColDef, GridRenderCellParams } from '@mui/x-data-grid'
-import { CheckCircle, XCircle, Clock, Shield } from 'lucide-react'
-import PageHeader from '@/app/components/common/PageHeader'
+import { CheckCircle, XCircle, Clock } from 'lucide-react'
 import Button from '@/app/components/ui/Button'
 import ErrorState from '@/app/components/common/ErrorState'
 import PageContainer from '@/app/components/layout/PageContainer'
@@ -246,11 +245,6 @@ export default function AdminUsersPage() {
 
     return (
         <PageContainer maxWidth="xl">
-            <PageHeader
-                title="사용자 승인 관리"
-                icon={<Shield className="h-5 w-5" />}
-            />
-
             {/* 통계 카드 */}
             <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr 1fr', md: 'repeat(4, 1fr)' }, gap: 2, mb: 3 }}>
                 {[

@@ -1,7 +1,6 @@
 'use client'
 
 import { useMemo, useEffect, useState } from 'react'
-import { useShopName } from '../lib/hooks/useShopName'
 import { useIsTablet } from '../lib/hooks/useBreakpoint'
 import Card from '../components/ui/Card'
 import Button from '../components/ui/Button'
@@ -11,13 +10,12 @@ import Link from 'next/link'
 import RecentTransactionsTable, { Transaction } from '../components/features/dashboard/RecentTransactionsTable'
 import { Box, Grid, Typography, Stack, List, ListItem, ListItemText } from '@mui/material'
 import PageContainer from '../components/layout/PageContainer'
+import PageIntro from '../components/common/PageIntro'
 import RevenueChart from '../components/features/dashboard/RevenueChart'
 import TopServicesChart from '../components/features/dashboard/TopServicesChart'
 import DashboardSkeleton from '../components/skeletons/DashboardSkeleton'
 import ErrorState from '../components/common/ErrorState'
-import DashboardAlerts from '../components/features/dashboard/DashboardAlerts'
-import { PackageOpen, CalendarX, CheckCircle, Circle, ChevronRight, LayoutDashboard } from 'lucide-react'
-import PageHeader from '../components/common/PageHeader'
+import { PackageOpen, CalendarX, CheckCircle, Circle, ChevronRight } from 'lucide-react'
 
 type RecentAppointment = {
     id: string
@@ -43,7 +41,6 @@ interface DashboardContentProps {
 }
 
 export default function DashboardContent({ initialData, error }: DashboardContentProps) {
-    const shopName = useShopName()
     const isTablet = useIsTablet()
     const [scrollProgress, setScrollProgress] = useState(0)
 
@@ -164,42 +161,34 @@ export default function DashboardContent({ initialData, error }: DashboardConten
             />
             <PageContainer maxWidth={false}>
             <Stack
-                spacing={{ xs: 2, sm: 2.5, md: isTablet ? 1 : 3 }}
+                spacing={{ xs: 1.5, sm: 1.5, md: isTablet ? 1 : 1.5 }}
                 sx={{
                     width: '100%',
-                    overflowX: 'hidden',
+                    maxWidth: '100%',
+                    minWidth: 0,
                     flex: 1,
                     minHeight: 0,
-                    overflow: 'hidden',
                     display: 'flex',
                     flexDirection: 'column',
                 }}
             >
-                <Box sx={{ flexShrink: 0 }}>
-                    <PageHeader title={shopName} icon={<LayoutDashboard size={20} />} />
-                </Box>
-
+                <PageIntro description="오늘의 요약과 최근 활동을 확인합니다" />
                 <Box sx={{ display: { md: isTablet ? 'none' : 'block' } }}>
                     <DashboardInstallPrompt />
-                </Box>
-
-                {/* Alerts Section */}
-                <Box sx={{ display: { md: isTablet ? 'none' : 'block' } }}>
-                    <DashboardAlerts />
                 </Box>
 
                 {/* 신규 사용자 온보딩 가이드 */}
                 {activeProducts.length === 0 && monthlyAppointments === 0 && (
                     <Card
                         sx={{
-                            p: 3,
+                            p: 2,
                             border: '1px dashed',
                             borderColor: 'divider',
                             bgcolor: 'background.paper',
                             borderRadius: 2,
                         }}
                     >
-                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, mb: 2.5 }}>
+                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, mb: 1.5 }}>
                             <Typography variant="subtitle1" fontWeight={700} sx={{ color: 'text.primary' }}>
                                 시작 가이드
                             </Typography>
@@ -223,7 +212,7 @@ export default function DashboardContent({ initialData, error }: DashboardConten
                                         display: 'flex',
                                         alignItems: 'center',
                                         gap: 2,
-                                        p: 1.5,
+                                        p: 1.25,
                                         borderRadius: 2,
                                         bgcolor: step.done ? 'success.light' : 'action.hover',
                                         border: '1px solid',
@@ -265,8 +254,8 @@ export default function DashboardContent({ initialData, error }: DashboardConten
                 )}
 
                 {/* Metrics */}
-                <Grid container spacing={{ xs: 0.75, sm: 1.5, md: isTablet ? 1 : 2.5, lg: 3 }} sx={{ width: '100%', margin: 0, flexShrink: 0 }}>
-                    <Grid item xs={12} sm={6} md={3}>
+                <Grid container spacing={{ xs: 0.75, sm: 1, md: isTablet ? 1 : 1.5, lg: 1.5 }} sx={{ width: '100%', maxWidth: '100%', margin: 0, flexShrink: 0, minWidth: 0 }}>
+                    <Grid item xs={12} sm={6} md={3} sx={{ minWidth: 0 }}>
                         <MetricCard
                             label="오늘 예약"
                             value={todayAppointments}
@@ -274,7 +263,7 @@ export default function DashboardContent({ initialData, error }: DashboardConten
                             colorIndex={0}
                         />
                     </Grid>
-                    <Grid item xs={12} sm={6} md={3}>
+                    <Grid item xs={12} sm={6} md={3} sx={{ minWidth: 0 }}>
                         <MetricCard
                             label="월간 순이익"
                             value={formattedMonthlyProfit}
@@ -283,7 +272,7 @@ export default function DashboardContent({ initialData, error }: DashboardConten
                             {...(profitDelta ? { delta: profitDelta } : {})}
                         />
                     </Grid>
-                    <Grid item xs={12} sm={6} md={3}>
+                    <Grid item xs={12} sm={6} md={3} sx={{ minWidth: 0 }}>
                         <MetricCard
                             label="이번 달 신규 고객"
                             value={monthlyNewCustomers}
@@ -292,7 +281,7 @@ export default function DashboardContent({ initialData, error }: DashboardConten
                             {...(newCustomersDelta ? { delta: newCustomersDelta } : {})}
                         />
                     </Grid>
-                    <Grid item xs={12} sm={6} md={3}>
+                    <Grid item xs={12} sm={6} md={3} sx={{ minWidth: 0 }}>
                         <MetricCard
                             label="이번 달 총 예약"
                             value={monthlyAppointments}
@@ -304,23 +293,23 @@ export default function DashboardContent({ initialData, error }: DashboardConten
                 </Grid>
 
                 {/* Charts Row */}
-                <Grid container spacing={{ xs: 0.75, sm: 1.5, md: isTablet ? 1 : 2.5, lg: 3 }} sx={{ minHeight: { xs: 'auto', md: isTablet ? 180 : 400 }, width: '100%', margin: 0, overflowX: 'hidden', flexShrink: 0 }}>
-                    <Grid item xs={12} lg={8}>
+                <Grid container spacing={{ xs: 0.75, sm: 1, md: isTablet ? 1 : 1.5, lg: 1.5 }} sx={{ minHeight: { xs: 'auto', md: isTablet ? 160 : 320 }, width: '100%', maxWidth: '100%', margin: 0, flexShrink: 0, minWidth: 0 }}>
+                    <Grid item xs={12} lg={8} sx={{ minWidth: 0 }}>
                         {/* Revenue Chart */}
                         <RevenueChart transactions={monthlyRevenueData || recentTransactions} />
                     </Grid>
-                    <Grid item xs={12} lg={4}>
+                    <Grid item xs={12} lg={4} sx={{ minWidth: 0 }}>
                         {/* Top Services Chart */}
                         <TopServicesChart recentAppointments={chartAppointments || recentAppointments} />
                     </Grid>
                 </Grid>
 
                 {/* Main Content Areas */}
-                <Grid container spacing={{ xs: 0.75, sm: 1.5, md: isTablet ? 1 : 2.5, lg: 3 }} sx={{ width: '100%', margin: 0, overflowX: 'hidden', flex: 1, minHeight: 0, alignContent: 'flex-start' }}>
+                <Grid container spacing={{ xs: 0.75, sm: 1, md: isTablet ? 1 : 1.5, lg: 1.5 }} sx={{ width: '100%', maxWidth: '100%', margin: 0, flex: 1, minHeight: 0, minWidth: 0, alignContent: 'flex-start' }}>
                     {/* Expanded Products Section */}
-                    <Grid item xs={12} lg={8}>
-                        <Card sx={{ height: '100%', display: 'flex', flexDirection: 'column', p: { md: isTablet ? 1.5 : 3 } }}>
-                            <Box sx={{ mb: { xs: 2, md: isTablet ? 1 : 2 }, display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: { xs: 'wrap', sm: 'nowrap' }, gap: { xs: 1, sm: 0 } }}>
+                    <Grid item xs={12} lg={8} sx={{ minWidth: 0 }}>
+                        <Card sx={{ height: '100%', display: 'flex', flexDirection: 'column', p: { xs: 2, md: isTablet ? 1.5 : 2 } }}>
+                            <Box sx={{ mb: { xs: 1.5, md: isTablet ? 1 : 1.5 }, display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: { xs: 'wrap', sm: 'nowrap' }, gap: { xs: 1, sm: 0 } }}>
                                 <Typography variant="subtitle1" fontWeight={700} sx={{ background: 'linear-gradient(to right, #059669, #0d9488)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>
                                     판매 중인 상품
                                 </Typography>
@@ -344,7 +333,7 @@ export default function DashboardContent({ initialData, error }: DashboardConten
                                 </Box>
                             </Box>
                             {activeProducts.length > 0 ? (
-                                <Grid container spacing={{ xs: 0.75, sm: 1.5, md: isTablet ? 1 : 2 }}>
+                                <Grid container spacing={{ xs: 0.5, sm: 1, md: isTablet ? 1 : 1 }}>
                                     {slicedProducts.map((p: ProductSummary, index: number) => (
                                         <Grid item xs={12} sm={6} md={isTablet ? 6 : 4} key={p.id}>
                                             <Box
@@ -385,7 +374,7 @@ export default function DashboardContent({ initialData, error }: DashboardConten
                                                     }
                                                 }}
                                             >
-                                                <Typography variant="body2" fontWeight={600} sx={{ mb: 1, color: 'text.primary', overflow: 'hidden', textOverflow: 'ellipsis', display: '-webkit-box', WebkitLineClamp: { xs: 2, sm: 1 }, WebkitBoxOrient: 'vertical', fontSize: { xs: '1rem', sm: '0.875rem' } }}>
+                                                <Typography variant="body2" fontWeight={600} sx={{ mb: 0.5, color: 'text.primary', overflow: 'hidden', textOverflow: 'ellipsis', display: '-webkit-box', WebkitLineClamp: { xs: 2, sm: 1 }, WebkitBoxOrient: 'vertical', fontSize: { xs: '1rem', sm: '0.875rem' } }}>
                                                     {p.name}
                                                 </Typography>
                                                 <Typography variant="h6" fontWeight={700} color="success.main">
@@ -400,7 +389,7 @@ export default function DashboardContent({ initialData, error }: DashboardConten
                                     alignItems="center"
                                     justifyContent="center"
                                     spacing={2}
-                                    sx={{ py: 8, bgcolor: 'background.default', borderRadius: 3, border: '1px dashed', borderColor: 'divider' }}
+                                    sx={{ py: 5, bgcolor: 'background.default', borderRadius: 3, border: '1px dashed', borderColor: 'divider' }}
                                 >
                                     <PackageOpen 
                                         size={48} 
@@ -442,9 +431,9 @@ export default function DashboardContent({ initialData, error }: DashboardConten
                     </Grid>
 
                     {/* Recent Appointments */}
-                    <Grid item xs={12} lg={4}>
-                        <Card sx={{ height: '100%', p: { md: isTablet ? 1.5 : 3 } }}>
-                            <Box sx={{ borderBottom: 1, borderColor: 'divider', pb: { xs: 2.5, md: isTablet ? 1 : 2.5 }, mb: { xs: 2, md: isTablet ? 1 : 2 }, display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: { xs: 'wrap', sm: 'nowrap' }, gap: { xs: 1, sm: 0 } }}>
+                    <Grid item xs={12} lg={4} sx={{ minWidth: 0 }}>
+                        <Card sx={{ height: '100%', p: { xs: 2, md: isTablet ? 1.5 : 2 } }}>
+                            <Box sx={{ borderBottom: 1, borderColor: 'divider', pb: { xs: 1.5, md: isTablet ? 1 : 1.5 }, mb: { xs: 1.5, md: isTablet ? 1 : 1.5 }, display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: { xs: 'wrap', sm: 'nowrap' }, gap: { xs: 1, sm: 0 } }}>
                                 <Typography variant="subtitle1" fontWeight={700} sx={{ background: 'linear-gradient(to right, #db2777, #e11d48)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>
                                     최근 예약
                                 </Typography>
@@ -467,7 +456,7 @@ export default function DashboardContent({ initialData, error }: DashboardConten
                                     전체보기 →
                                 </Box>
                             </Box>
-                            <List disablePadding sx={{ width: '100%', overflowX: 'hidden' }}>
+                            <List disablePadding sx={{ width: '100%', maxWidth: '100%', minWidth: 0 }}>
                                 {slicedAppointments.length > 0 ? slicedAppointments.map((a: RecentAppointment, index: number) => {
                                     const isToday = new Date(a.appointment_date).toDateString() === new Date().toDateString()
                                     return (
@@ -475,7 +464,7 @@ export default function DashboardContent({ initialData, error }: DashboardConten
                                             key={a.id}
                                             disableGutters
                                             sx={{
-                                                py: { xs: 1.75, md: isTablet ? 1 : 1.75 },
+                                                py: { xs: 1.25, md: isTablet ? 0.75 : 1.25 },
                                                 px: 1,
                                                 borderBottom: '1px solid',
                                                 borderLeft: isToday ? '3px solid' : 'none',
@@ -483,7 +472,7 @@ export default function DashboardContent({ initialData, error }: DashboardConten
                                                 bgcolor: isToday ? 'primary.50' : 'transparent',
                                                 width: '100%',
                                                 maxWidth: '100%',
-                                                overflowX: 'hidden',
+                                                minWidth: 0,
                                                 minHeight: { xs: '44px', sm: 'auto' },
                                                 touchAction: 'manipulation',
                                                 WebkitTapHighlightColor: 'transparent',
@@ -522,7 +511,7 @@ export default function DashboardContent({ initialData, error }: DashboardConten
                                         alignItems="center"
                                         justifyContent="center"
                                         spacing={2}
-                                        sx={{ py: 6 }}
+                                        sx={{ py: 4 }}
                                     >
                                         <CalendarX 
                                             size={48} 
@@ -552,9 +541,9 @@ export default function DashboardContent({ initialData, error }: DashboardConten
                     </Grid>
 
                     {/* Full-width Recent Transactions Table */}
-                    <Grid item xs={12}>
-                        <Card sx={{ p: { md: isTablet ? 1.5 : 3 } }}>
-                            <Box sx={{ borderBottom: 1, borderColor: 'divider', pb: { xs: 2.5, md: isTablet ? 1 : 2.5 }, mb: { xs: 2, md: isTablet ? 1 : 2 }, display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: { xs: 'wrap', sm: 'nowrap' }, gap: { xs: 1, sm: 0 } }}>
+                    <Grid item xs={12} sx={{ minWidth: 0 }}>
+                        <Card sx={{ p: { xs: 2, md: isTablet ? 1.5 : 2 } }}>
+                            <Box sx={{ borderBottom: 1, borderColor: 'divider', pb: { xs: 1.5, md: isTablet ? 1 : 1.5 }, mb: { xs: 1.5, md: isTablet ? 1 : 1.5 }, display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: { xs: 'wrap', sm: 'nowrap' }, gap: { xs: 1, sm: 0 } }}>
                                 <Typography variant="subtitle1" fontWeight={700} sx={{ background: 'linear-gradient(to right, #2563eb, #4f46e5)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>
                                     최근 거래 내역
                                 </Typography>

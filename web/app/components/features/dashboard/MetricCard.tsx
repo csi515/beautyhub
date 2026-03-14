@@ -44,7 +44,7 @@ function MetricCard({
         background: scheme.bg,
         borderRadius: 3, // 12px
         border: `2px solid ${scheme.border}`,
-        p: { xs: 1.5, md: 2, lg: 3 },
+        p: { xs: 1.25, md: 1.5, lg: 2 },
         height: '100%',
         transition: 'all 300ms ease-out',
         '&:hover': {

@@ -10,6 +10,9 @@
 export function formatKoreanDateTime(isoString: string): string {
   try {
     const date = new Date(isoString)
+    if (Number.isNaN(date.getTime())) {
+      return isoString
+    }
     const year = date.getFullYear()
     const month = date.getMonth() + 1
     const day = date.getDate()
@@ -44,6 +47,9 @@ export function formatDate(isoString: string): string {
 export function formatKoreanHour(isoString: string): string {
   try {
     const date = new Date(isoString)
+    if (Number.isNaN(date.getTime())) {
+      return ''
+    }
     const hours = date.getHours()
     const minutes = date.getMinutes()
     const isAM = hours < 12

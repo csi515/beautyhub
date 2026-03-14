@@ -44,16 +44,20 @@ export async function GET(request: NextRequest) {
   const authHeader = request.headers.get('authorization')
   const cronSecret = process.env['CRON_SECRET']
 
-  if (cronSecret && authHeader !== `Bearer ${cronSecret}`) {
+  if (!cronSecret) {
+    return NextResponse.json({ error: 'CRON_SECRET is not configured' }, { status: 503 })
+  }
+
+  if (authHeader !== `Bearer ${cronSecret}`) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
 
   const admin = createSupabaseServerAdmin()
 
   try {
-    // 미전송 리마인더 조회 (admin 클라이언트로 beautyhub_ 테이블 직접 접근)
+    // 미전송 리마인더 조회 (admin 클라이언트로 직접 접근)
     const { data: reminders, error } = await admin
-      .from('beautyhub_appointment_reminders')
+      .from('appointment_reminders')
       .select('id, reminder_type, owner_id, appointment_id, sent_at')
       .is('sent_at', null)
 
@@ -69,7 +73,7 @@ export async function GET(request: NextRequest) {
     // 관련 예약 날짜 일괄 조회
     const appointmentIds = [...new Set(reminders.map((r: any) => r.appointment_id))]
     const { data: appointments, error: apptError } = await admin
-      .from('beautyhub_appointments')
+      .from('appointments')
       .select('id, appointment_date')
       .in('id', appointmentIds)
 
@@ -97,7 +101,7 @@ export async function GET(request: NextRequest) {
       // await sendSms(customerPhone, message)
 
       const { error: updateError } = await admin
-        .from('beautyhub_appointment_reminders')
+        .from('appointment_reminders')
         .update({ sent_at: new Date().toISOString() })
         .eq('id', (reminder as any).id)
 

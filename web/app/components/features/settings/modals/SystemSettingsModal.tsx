@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { Modal, ModalBody, ModalFooter } from '@/app/components/ui/AdaptiveModal'
+import { Modal, ModalHeader, ModalBody, ModalFooter } from '@/app/components/ui/AdaptiveModal'
 import Button from '@/app/components/ui/Button'
 import ConfirmDialog from '@/app/components/ui/ConfirmDialog'
 import { type SystemSettings } from '@/types/settings'
@@ -11,12 +11,13 @@ type Props = {
     open: boolean
     data: SystemSettings
     onClose: () => void
-    onSave: (data: SystemSettings) => void
+    onSave: (data: SystemSettings) => void | Promise<void>
 }
 
 export default function SystemSettingsModal({ open, data, onClose, onSave }: Props) {
     const [formData, setFormData] = useState<SystemSettings>(data)
     const [hasChanges, setHasChanges] = useState(false)
+    const [saving, setSaving] = useState(false)
     const [confirmCloseOpen, setConfirmCloseOpen] = useState(false)
 
     useEffect(() => {
@@ -31,10 +32,15 @@ export default function SystemSettingsModal({ open, data, onClose, onSave }: Pro
         setHasChanges(true)
     }
 
-    const handleSave = () => {
-        onSave(formData)
-        setHasChanges(false)
-        onClose()
+    const handleSave = async () => {
+        setSaving(true)
+        try {
+            await onSave(formData)
+            setHasChanges(false)
+            onClose()
+        } finally {
+            setSaving(false)
+        }
     }
 
     const handleCancel = () => {
@@ -44,6 +50,7 @@ export default function SystemSettingsModal({ open, data, onClose, onSave }: Pro
     }
 
     const handleRequestClose = () => {
+        if (saving) return
         if (hasChanges) {
             setConfirmCloseOpen(true)
             return
@@ -53,10 +60,7 @@ export default function SystemSettingsModal({ open, data, onClose, onSave }: Pro
 
     return (
         <Modal open={open} onClose={handleRequestClose} size="lg">
-            <div className="px-6 py-4 border-b border-neutral-200 bg-white sticky top-0 z-10">
-                <h2 className="text-2xl font-bold text-neutral-900">시스템 및 앱 관리 설정</h2>
-                <p className="text-sm text-neutral-600 mt-1">시스템 알림을 설정합니다.</p>
-            </div>
+            <ModalHeader title="시스템 및 앱 관리 설정" description="시스템 알림을 설정합니다." />
 
             <ModalBody>
                 <SystemSettingsSection data={formData} onChange={handleChange} />
@@ -72,10 +76,10 @@ export default function SystemSettingsModal({ open, data, onClose, onSave }: Pro
                         )}
                     </div>
                     <div className="flex gap-3">
-                        <Button variant="secondary" onClick={handleRequestClose}>
+                        <Button variant="secondary" onClick={handleRequestClose} disabled={saving}>
                             취소
                         </Button>
-                        <Button variant="primary" onClick={handleSave} disabled={!hasChanges}>
+                        <Button variant="primary" onClick={handleSave} disabled={!hasChanges} loading={saving}>
                             저장
                         </Button>
                     </div>

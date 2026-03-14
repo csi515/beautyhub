@@ -1,7 +1,6 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { Settings } from 'lucide-react'
 import { useAppToast } from '@/app/lib/ui/toast'
 import { settingsApi } from '@/app/lib/api/settings'
 import { DEFAULT_SETTINGS, type SystemSettings, type UserProfile, type SecuritySettings, type DisplaySettings } from '@/types/settings'
@@ -11,14 +10,11 @@ import SettingsSkeleton from '@/app/components/skeletons/SettingsSkeleton'
 import Box from '@mui/material/Box'
 import Stack from '@mui/material/Stack'
 import PageContainer from '../components/layout/PageContainer'
-import PageHeader from '../components/common/PageHeader'
+import PageIntro from '../components/common/PageIntro'
 
-// Summary Cards
-import UserProfileSummaryCard from '@/app/components/features/settings/cards/UserProfileSummaryCard'
-import SystemSettingsSummaryCard from '@/app/components/features/settings/cards/SystemSettingsSummaryCard'
-import SecuritySettingsSummaryCard from '@/app/components/features/settings/cards/SecuritySettingsSummaryCard'
-import DisplaySettingsSummaryCard from '@/app/components/features/settings/cards/DisplaySettingsSummaryCard'
+import SettingsIconGrid from '@/app/components/features/settings/SettingsIconGrid'
 import AccountSettingsSummaryCard from '@/app/components/features/settings/cards/AccountSettingsSummaryCard'
+import { User, Bell, Shield, Monitor } from 'lucide-react'
 
 // Modals
 import UserProfileModal from '@/app/components/features/settings/modals/UserProfileModal'
@@ -57,7 +53,6 @@ export default function SettingsPage() {
   const [securityModalOpen, setSecurityModalOpen] = useState(false)
   const [displayModalOpen, setDisplayModalOpen] = useState(false)
   const [logoutConfirmOpen, setLogoutConfirmOpen] = useState(false)
-  const [deleteAccountConfirmOpen, setDeleteAccountConfirmOpen] = useState(false)
 
   const toast = useAppToast()
 
@@ -139,27 +134,6 @@ export default function SettingsPage() {
     }
   }
 
-  const handleDeleteAccount = async () => {
-    try {
-      // TODO: 실제 계정 삭제 API 호출
-      toast.success('계정이 삭제되었습니다.')
-      // 리다이렉트 로직
-      window.location.href = '/'
-    } catch (error) {
-      toast.error('계정 삭제에 실패했습니다.')
-    }
-  }
-
-  const requestDeleteAccount = () => {
-    const confirmText = '계정 삭제 확인'
-    const userInput = prompt(`계정 삭제를 진행하려면 "${confirmText}"을 입력하세요.`)
-    if (userInput === confirmText) {
-      setDeleteAccountConfirmOpen(true)
-    } else if (userInput !== null) {
-      toast.error('확인 문구가 일치하지 않습니다.')
-    }
-  }
-
   const handleExportData = async () => {
     try {
       // TODO: 실제 데이터 익스포트 API 호출
@@ -184,7 +158,7 @@ export default function SettingsPage() {
   if (loading) {
     return (
       <PageContainer maxWidth={false}>
-        <Box sx={{ flex: 1, minHeight: 0, overflowY: 'auto' }}>
+        <Box sx={{ flex: 1, minHeight: 0, overflowY: { xs: 'auto', md: 'hidden' } }}>
           <SettingsSkeleton />
         </Box>
       </PageContainer>
@@ -193,42 +167,43 @@ export default function SettingsPage() {
 
   return (
     <PageContainer maxWidth={false}>
-      <Box sx={{ flex: 1, minHeight: 0, overflowY: 'auto' }}>
-      <Stack spacing={4}>
-        <PageHeader
-          title="설정"
-          icon={<Settings className="h-5 w-5" />}
-        />
+      <Box
+        sx={{
+          flex: 1,
+          minHeight: 0,
+          display: 'flex',
+          flexDirection: 'column',
+          overflowY: { xs: 'auto', md: 'hidden' },
+        }}
+      >
+        <Stack
+          spacing={{ xs: 4, sm: 2, md: 3 }}
+          sx={{ flex: 1, minHeight: 0, display: 'flex', flexDirection: 'column' }}
+        >
+          <PageIntro description="계정 및 시스템 설정을 관리합니다" />
+          <Stack
+            spacing={{ xs: 3, sm: 2, md: 2 }}
+            sx={{ flex: 1, minHeight: 0, display: 'flex', flexDirection: 'column' }}
+          >
+            <Box sx={{ flex: 1, minHeight: 0, display: 'flex', flexDirection: 'column' }}>
+              <SettingsIconGrid
+                items={[
+                  { id: 'profile', label: '개인 정보', icon: <User size={24} />, onClick: () => setProfileModalOpen(true) },
+                  { id: 'system', label: '시스템', icon: <Bell size={24} />, onClick: () => setSystemModalOpen(true) },
+                  { id: 'security', label: '보안', icon: <Shield size={24} />, onClick: () => setSecurityModalOpen(true) },
+                  { id: 'display', label: '표시', icon: <Monitor size={24} />, onClick: () => setDisplayModalOpen(true) },
+                ]}
+              />
+            </Box>
 
-        {/* 요약 카드들 */}
-        <Stack spacing={3}>
-          <UserProfileSummaryCard
-            data={userProfile}
-            onEdit={() => setProfileModalOpen(true)}
-          />
-
-          <SystemSettingsSummaryCard
-            data={systemSettings}
-            onEdit={() => setSystemModalOpen(true)}
-          />
-
-          <SecuritySettingsSummaryCard
-            data={securitySettings}
-            onEdit={() => setSecurityModalOpen(true)}
-          />
-
-          <DisplaySettingsSummaryCard
-            data={displaySettings}
-            onEdit={() => setDisplayModalOpen(true)}
-          />
-
-          <AccountSettingsSummaryCard
-            onLogout={() => setLogoutConfirmOpen(true)}
-            onDeleteAccount={requestDeleteAccount}
-            onExportData={handleExportData}
-          />
+            <Box sx={{ flexShrink: 0 }}>
+              <AccountSettingsSummaryCard
+                onLogout={() => setLogoutConfirmOpen(true)}
+                onExportData={handleExportData}
+              />
+            </Box>
+          </Stack>
         </Stack>
-      </Stack>
       </Box>
 
       {/* 모달들 */}
@@ -267,16 +242,6 @@ export default function SettingsPage() {
         title="로그아웃"
         description="정말 로그아웃하시겠습니까?"
         confirmText="로그아웃"
-        variant="danger"
-      />
-
-      <ConfirmDialog
-        open={deleteAccountConfirmOpen}
-        onClose={() => setDeleteAccountConfirmOpen(false)}
-        onConfirm={handleDeleteAccount}
-        title="계정 삭제"
-        description="정말 계정을 삭제하시겠습니까? 이 작업은 취소할 수 없습니다."
-        confirmText="계정 삭제"
         variant="danger"
       />
     </PageContainer>
