@@ -1,4 +1,5 @@
 import * as XLSX from 'xlsx'
+import { formatDateShort } from '@/app/lib/utils/date'
 
 /**
  * 여러 시트를 포함한 Excel 파일로 내보내기
@@ -96,7 +97,7 @@ export function prepareCustomerDataForExport(customers: { name: string; phone?: 
         '전화번호': customer.phone || '-',
         '이메일': customer.email || '-',
         '주소': customer.address || '-',
-        '등록일': customer.created_at ? new Date(customer.created_at).toLocaleDateString('ko-KR') : '-',
+        '등록일': customer.created_at ? formatDateShort(customer.created_at) : '-',
     }))
 }
 
@@ -107,6 +108,6 @@ export function prepareProductDataForExport(products: { name: string; price?: nu
         '설명': product.description || '-',
         '상태': product.active ? '활성' : '비활성',
         '재고': product.stock_count ?? '-',
-        '등록일': product.created_at ? new Date(product.created_at).toLocaleDateString('ko-KR') : '-',
+        '등록일': product.created_at ? formatDateShort(product.created_at) : '-',
     }))
 }

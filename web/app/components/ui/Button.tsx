@@ -70,7 +70,7 @@ const Button = forwardRef<HTMLButtonElement, Props>(function Button(
 
   return (
     <MuiButton
-      ref={ref as any}
+      ref={ref}
       variant={muiProps.variant ?? 'contained'}
       color={muiProps.color ?? 'primary'}
       size={muiSize ?? 'medium'}

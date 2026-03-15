@@ -11,7 +11,7 @@ import { Plus, Minus, Package, Coins, History, Trash2, ChevronDown, ChevronUp } 
 import Button from '@/app/components/ui/Button'
 import { DataTable } from '@/app/components/ui/DataTable'
 import ConfirmDialog from '@/app/components/ui/ConfirmDialog'
-import { formatDateTime } from '@/app/lib/utils/format'
+import { formatDateTime, formatNumber } from '@/app/lib/utils/format'
 import type { CustomerProduct } from '@/app/lib/repositories/customer-products.repository'
 
 interface Product {
@@ -140,7 +140,7 @@ export default function CustomerTransactionsTab({
                 <Box sx={{ bgcolor: 'primary.50', p: 2, borderRadius: 2, mb: 3, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                     <Typography variant="body2" fontWeight={600} color="primary.dark">현 보유 포인트</Typography>
                     <Typography variant="h5" fontWeight={800} color="primary.main">
-                        {pointsBalance.toLocaleString()} <Typography component="span" variant="body1" fontWeight={600}>점</Typography>
+                        {formatNumber(pointsBalance)} <Typography component="span" variant="body1" fontWeight={600}>점</Typography>
                     </Typography>
                 </Box>
 
@@ -461,7 +461,7 @@ export default function CustomerTransactionsTab({
                                                 fontWeight={700}
                                                 color={(row.delta || 0) > 0 ? 'primary.main' : 'error.main'}
                                             >
-                                                {(row.delta || 0) > 0 ? '+' : ''}{(row.delta || 0).toLocaleString()}
+                                                {(row.delta || 0) > 0 ? '+' : ''}{formatNumber(row.delta || 0)}
                                             </Typography>
                                         )
                                     }

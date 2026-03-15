@@ -8,6 +8,7 @@ import { productsApi } from '@/app/lib/api/products'
 import { getAuthApi } from '@/app/lib/api/auth'
 import { DEFAULT_SETTINGS, type SystemSettings, type UserProfile, type DisplaySettings } from '@/types/settings'
 import { logger } from '@/app/lib/utils/logger'
+import { getLocalizedErrorMessage } from '@/app/lib/utils/messages'
 import {
   exportToExcelMultiSheet,
   prepareCustomerDataForExport,
@@ -87,7 +88,7 @@ export default function SettingsPage() {
         }
       } catch (error) {
         logger.error('설정 로드 실패', error, 'SettingsPage')
-        toast.error('설정을 불러오는데 실패했습니다.')
+        toast.error(getLocalizedErrorMessage(error, '설정을 불러오는데 실패했습니다.'))
       } finally {
         setLoading(false)
       }
@@ -118,7 +119,7 @@ export default function SettingsPage() {
       toast.success('개인 정보가 저장되었습니다.')
     } catch (error) {
       logger.error('개인 정보 저장 실패', error, 'SettingsPage')
-      toast.error('개인 정보 저장에 실패했습니다.', error instanceof Error ? error.message : '알 수 없는 오류')
+      toast.error(getLocalizedErrorMessage(error, '개인 정보 저장에 실패했습니다.'))
     }
   }
 
@@ -130,7 +131,7 @@ export default function SettingsPage() {
       toast.success('표시 설정이 저장되었습니다.')
     } catch (error) {
       logger.error('표시 설정 저장 실패', error, 'SettingsPage')
-      toast.error('표시 설정 저장에 실패했습니다.', error instanceof Error ? error.message : '알 수 없는 오류')
+      toast.error(getLocalizedErrorMessage(error, '표시 설정 저장에 실패했습니다.'))
     }
   }
 
@@ -152,7 +153,7 @@ export default function SettingsPage() {
       toast.success('로그아웃되었습니다.')
       window.location.href = '/login'
     } catch (error) {
-      toast.error('로그아웃에 실패했습니다.')
+      toast.error(getLocalizedErrorMessage(error, '로그아웃에 실패했습니다.'))
     }
   }
 
@@ -175,7 +176,7 @@ export default function SettingsPage() {
       toast.success('데이터 내보내기가 완료되었습니다.')
     } catch (error) {
       logger.error('데이터 내보내기 실패', error, 'SettingsPage')
-      toast.error('데이터 내보내기에 실패했습니다.')
+      toast.error(getLocalizedErrorMessage(error, '데이터 내보내기에 실패했습니다.'))
     }
   }
 
@@ -187,7 +188,7 @@ export default function SettingsPage() {
       toast.success('시스템 설정이 저장되었습니다.')
     } catch (error) {
       logger.error('시스템 설정 저장 실패', error, 'SettingsPage')
-      toast.error('시스템 설정 저장에 실패했습니다.', error instanceof Error ? error.message : '알 수 없는 오류')
+      toast.error(getLocalizedErrorMessage(error, '시스템 설정 저장에 실패했습니다.'))
     }
   }
 

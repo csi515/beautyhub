@@ -1,6 +1,11 @@
 import { cookies } from 'next/headers'
 import { getUserIdFromCookies } from '@/lib/auth/user'
 import { logger } from '@/app/lib/utils/logger'
+import { formatDateShort } from '@/app/lib/utils/date'
+import type { Product, Appointment } from '@/types/entities'
+
+type TransactionRow = { id: string; amount?: number; transaction_date?: string; created_at?: string; memo?: string }
+type ExpenseRow = { id: string; amount?: number; expense_date?: string; created_at?: string; memo?: string; category?: string }
 import { Box } from '@mui/material'
 import DashboardContent from './DashboardContent'
 
@@ -45,9 +50,9 @@ async function getDashboardData({ start, end, userId, accessToken }: { start: st
   })
 
   const { monthStart, monthEnd, prevMonthStart } = monthBounds()
-  const fromDate = monthStart.slice(0, 10)
-  const toDate = monthEnd.slice(0, 10)
-  const prevFromDate = prevMonthStart.slice(0, 10)
+  const fromDate = formatDateShort(monthStart)
+  const toDate = formatDateShort(monthEnd)
+  const prevFromDate = formatDateShort(prevMonthStart)
 
   try {
     // Combined fetch
@@ -132,23 +137,23 @@ async function getDashboardData({ start, end, userId, accessToken }: { start: st
 
     // Monthly Profit
     const monthlyIncome = Array.isArray(trMonth.data)
-      ? (trMonth.data as any[])
+      ? (trMonth.data as TransactionRow[])
         .filter((t) => {
-          const d = (t.transaction_date || t.created_at || '').slice(0, 10)
+          const d = formatDateShort(t.transaction_date || t.created_at || '')
           return (!fromDate || d >= fromDate) && (!toDate || d <= toDate)
         })
         .reduce((s: number, t) => s + Number(t.amount || 0), 0)
       : 0
 
     const monthlyExpense = Array.isArray(exMonth.data)
-      ? (exMonth.data as any[]).reduce((s: number, e) => s + Number(e.amount || 0), 0)
+      ? (exMonth.data as ExpenseRow[]).reduce((s: number, e) => s + Number(e.amount || 0), 0)
       : 0
 
     const monthlyProfit = Number(monthlyIncome || 0) - Number(monthlyExpense || 0)
 
     // 전월 수치 계산 (delta용)
     const prevMonthlyIncome = Array.isArray(prevTrMonth?.data)
-      ? (prevTrMonth.data as any[]).reduce((s: number, t) => s + Number(t.amount || 0), 0)
+      ? (prevTrMonth.data as TransactionRow[]).reduce((s: number, t) => s + Number(t.amount || 0), 0)
       : 0
     const prevMonthlyProfit = prevMonthlyIncome
     const prevMonthlyAppointments = prevApMonth?.count || 0
@@ -158,18 +163,18 @@ async function getDashboardData({ start, end, userId, accessToken }: { start: st
 
     // Active products
     const activeProducts = Array.isArray(productsRes.data)
-      ? productsRes.data.filter((p: any) => p.active !== false)
+      ? (productsRes.data as Product[]).filter((p) => p.active !== false)
       : []
 
     // Recent Appointments helper
-    const apRecentData = Array.isArray(apRecent.data) ? apRecent.data : []
-    const apStatsData = Array.isArray(apStatsRes.data) ? apStatsRes.data : []
+    const apRecentData = Array.isArray(apRecent.data) ? (apRecent.data as Appointment[]) : []
+    const apStatsData = Array.isArray(apStatsRes.data) ? (apStatsRes.data as Appointment[]) : []
 
-    const apIds = apRecentData.map((a: any) => ({
+    const apIds = apRecentData.map((a) => ({
       customer_id: a.customer_id,
       service_id: a.service_id,
     }))
-    const statsIds = apStatsData.map((a: any) => ({
+    const statsIds = apStatsData.map((a) => ({
       service_id: a.service_id
     }))
 
@@ -181,30 +186,30 @@ async function getDashboardData({ start, end, userId, accessToken }: { start: st
 
     if (cIds.length > 0) {
       const { data } = await supabase.from('customers').select('id,name').in('id', cIds)
-      if (data) data.forEach((c: any) => customersById[c.id] = c.name)
+      if (data) (data as { id: string; name: string }[]).forEach((c) => { customersById[c.id] = c.name })
     }
     if (sIds.length > 0) {
       const { data } = await supabase.from('products').select('id,name').in('id', sIds)
-      if (data) data.forEach((p: any) => productsById[p.id] = p.name)
+      if (data) (data as { id: string; name: string }[]).forEach((p) => { productsById[p.id] = p.name })
     }
 
     // Combined Transactions
-    const trData = Array.isArray(trRecent.data) ? trRecent.data : []
-    const exData = Array.isArray(exRecent.data) ? exRecent.data : []
+    const trData = Array.isArray(trRecent.data) ? (trRecent.data as TransactionRow[]) : []
+    const exData = Array.isArray(exRecent.data) ? (exRecent.data as ExpenseRow[]) : []
     const combinedTransactions = [
-      ...trData.map((t: any) => ({
+      ...trData.map((t) => ({
         id: t.id,
         type: 'income' as const,
         date: t.transaction_date || t.created_at || new Date().toISOString(),
         amount: Number(t.amount),
         memo: t.memo || '수입'
       })),
-      ...exData.map((e: any) => ({
+      ...exData.map((e) => ({
         id: e.id,
         type: 'expense' as const,
         date: e.expense_date || e.created_at || new Date().toISOString(),
         amount: Number(e.amount),
-        memo: e.memo || e.category
+        memo: e.memo || e.category || '지출'
       }))
     ].sort((a, b) => {
       const dA = new Date(a.date).getTime() || 0
@@ -220,20 +225,20 @@ async function getDashboardData({ start, end, userId, accessToken }: { start: st
       prevMonthlyProfit,
       prevMonthlyAppointments,
       prevMonthlyNewCustomers,
-      recentAppointments: apRecentData.map((a: any) => ({
+      recentAppointments: apRecentData.map((a) => ({
         id: a.id,
         appointment_date: a.appointment_date,
         customer_name: a.customer_id ? customersById[a.customer_id] || '-' : '-',
         product_name: a.service_id ? productsById[a.service_id] || '-' : '-',
       })),
-      chartAppointments: apStatsData.map((a: any) => ({
+      chartAppointments: apStatsData.map((a) => ({
         product_name: a.service_id ? productsById[a.service_id] || '-' : '-',
       })),
       recentTransactions: combinedTransactions,
-      monthlyRevenueData: Array.isArray(trMonth.data) ? trMonth.data.map((t: any) => ({
+      monthlyRevenueData: Array.isArray(trMonth.data) ? (trMonth.data as TransactionRow[]).map((t) => ({
         id: t.id,
         amount: Number(t.amount),
-        transaction_date: t.transaction_date || t.created_at,
+        transaction_date: t.transaction_date || t.created_at || new Date().toISOString(),
         type: 'income',
         owner_id: userId
       })) : [],

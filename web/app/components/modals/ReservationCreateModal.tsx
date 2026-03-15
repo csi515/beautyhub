@@ -15,6 +15,7 @@ import { appointmentsApi } from '@/app/lib/api/appointments'
 import { customerProductsApi } from '@/app/lib/api/customer-products'
 import { useAppointmentTemplates } from '@/app/lib/hooks/useAppointmentTemplates'
 import { logger } from '@/app/lib/utils/logger'
+import { getLocalizedErrorMessage } from '@/app/lib/utils/messages'
 import type { AppointmentCreateInput, Customer, Product, AppointmentTemplate } from '@/types/entities'
 
 type Draft = {
@@ -142,7 +143,7 @@ export default function ReservationCreateModal({ open, onClose, draft, onSaved }
           }
         } catch (error) {
           logger.error('자동 매출 생성 실패', error, 'ReservationCreateModal')
-          toast.error('예약은 저장되었지만 매출 생성에 실패했습니다.')
+          toast.error(getLocalizedErrorMessage(error, '예약은 저장되었지만 매출 생성에 실패했습니다.'))
         }
       }
 
@@ -150,7 +151,7 @@ export default function ReservationCreateModal({ open, onClose, draft, onSaved }
       try { if (form.customer_id && (form.notes || '').trim()) localStorage.setItem(`memoDraft:${form.customer_id}`, form.notes || '') } catch { }
       onSaved(); onClose(); toast.success('예약이 저장되었습니다.')
     } catch (e: unknown) {
-      const errorMessage = e instanceof Error ? e.message : '에러가 발생했습니다.'
+      const errorMessage = getLocalizedErrorMessage(e)
       setError(errorMessage)
       toast.error('예약 저장 실패', errorMessage)
     } finally { setLoading(false) }

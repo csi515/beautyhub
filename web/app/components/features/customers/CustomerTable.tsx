@@ -19,6 +19,7 @@ import EmptyState from '@/app/components/ui/EmptyState'
 import { TableSkeleton } from '@/app/components/ui/SkeletonLoader'
 import CustomerHoldingsBadge from './CustomerHoldingsBadge'
 import { type Customer } from '@/types/entities'
+import { formatNumber } from '@/app/lib/utils/format'
 
 interface CustomerTableProps {
   customers: Customer[]
@@ -143,7 +144,7 @@ export default function CustomerTable({
               </TableCell>
               <TableCell onClick={() => onCustomerClick(c)}><CustomerHoldingsBadge customerId={c.id} /></TableCell>
               <TableCell align="right" sx={{ fontWeight: 'bold', color: 'warning.main' }} onClick={() => onCustomerClick(c)}>
-                {Number(pointsByCustomer[c.id] ?? 0).toLocaleString()}
+                {formatNumber(pointsByCustomer[c.id] ?? 0)}
               </TableCell>
               <TableCell align="center">
                 <IconButton

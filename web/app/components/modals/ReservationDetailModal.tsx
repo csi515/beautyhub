@@ -13,6 +13,7 @@ import type { AppointmentUpdateInput, Product } from '@/types/entities'
 import { AlertCircle } from 'lucide-react'
 import ConfirmDialog from '@/app/components/ui/ConfirmDialog'
 import { logger } from '@/app/lib/utils/logger'
+import { getLocalizedErrorMessage } from '@/app/lib/utils/messages'
 
 type Item = { id: string; date: string; start: string; end?: string; status: string; notes?: string; customer_id?: string; service_id?: string; no_show?: boolean }
 
@@ -57,14 +58,14 @@ export default function ReservationDetailModal({ open, onClose, item, onSaved, o
       } catch (error) {
         if (!cancelled && item?.id === targetId) {
           logger.error('예약 상세 로드 실패', error, 'ReservationDetailModal')
-          toast.error('예약 상세를 불러오는데 실패했습니다.')
+          toast.error(getLocalizedErrorMessage(error, '예약 상세를 불러오는데 실패했습니다.'))
           setForm(item)
         }
       }
     }
     loadAppointmentDetail()
     return () => { cancelled = true }
-  }, [open, item?.id, item])
+  }, [open, item?.id, item, toast])
 
   // 선택된 서비스의 소요 시간 계산
   const selectedProduct = useMemo(() => {
@@ -94,7 +95,7 @@ export default function ReservationDetailModal({ open, onClose, item, onSaved, o
       toast.success('노쇼로 처리되었습니다')
       onSaved()
     } catch (error) {
-      toast.error('노쇼 처리 실패', error instanceof Error ? error.message : '알 수 없는 오류가 발생했습니다')
+      toast.error(getLocalizedErrorMessage(error, '노쇼 처리 실패'))
     } finally {
       setMarkingNoShow(false)
     }
@@ -121,7 +122,7 @@ export default function ReservationDetailModal({ open, onClose, item, onSaved, o
       await appointmentsApi.update(form.id, payload)
       onSaved(); onClose(); toast.success('예약이 저장되었습니다.')
     } catch (e: unknown) {
-      const errorMessage = e instanceof Error ? e.message : '에러가 발생했습니다.'
+      const errorMessage = getLocalizedErrorMessage(e)
       setError(errorMessage)
       toast.error('예약 저장 실패', errorMessage)
     } finally { setLoading(false) }
@@ -132,8 +133,8 @@ export default function ReservationDetailModal({ open, onClose, item, onSaved, o
     try {
       await appointmentsApi.delete(form.id)
       onDeleted(); onClose(); toast.success('삭제되었습니다.')
-    } catch {
-      toast.error('삭제 실패')
+    } catch (e) {
+      toast.error(getLocalizedErrorMessage(e, '삭제 실패'))
     }
   }
 

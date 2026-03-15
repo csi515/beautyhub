@@ -1,4 +1,5 @@
 import * as XLSX from 'xlsx'
+import { formatCurrency } from '@/app/lib/utils/format'
 
 export interface FinanceExportData {
   date: string
@@ -31,9 +32,9 @@ export function exportFinanceToExcel(
     [''],
     ['기간', `${summary.period.from} ~ ${summary.period.to}`],
     [''],
-    ['총 수입', `₩${summary.totalIncome.toLocaleString()}`],
-    ['총 지출', `₩${summary.totalExpense.toLocaleString()}`],
-    ['순이익', `₩${summary.profit.toLocaleString()}`],
+    ['총 수입', formatCurrency(summary.totalIncome)],
+    ['총 지출', formatCurrency(summary.totalExpense)],
+    ['순이익', formatCurrency(summary.profit)],
   ]
 
   // 상세 내역 시트 데이터

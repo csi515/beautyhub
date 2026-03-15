@@ -1,4 +1,5 @@
 import type { Transaction } from '@/types/entities'
+import { formatCurrency } from '@/app/lib/utils/format'
 import Link from 'next/link'
 import { ChevronLeft } from 'lucide-react'
 
@@ -40,7 +41,7 @@ export default async function CustomerDetailPage({ params }: { params: { id: str
           {history.map((t) => (
             <li key={t.id} className="p-4 text-sm flex items-center justify-between">
               <span>거래 {t.id}</span>
-              <span className="text-gray-500">₩{Number(t.amount || 0).toLocaleString()}</span>
+              <span className="text-gray-500">{formatCurrency(t.amount || 0)}</span>
             </li>
           ))}
           {history.length === 0 && <li className="p-4 text-sm text-gray-500">데이터가 없습니다.</li>}

@@ -5,6 +5,7 @@ import { Calendar, Clock, FileText } from 'lucide-react'
 import { useAppQuery } from '@/app/lib/hooks/useQuery'
 import { appointmentsApi } from '@/app/lib/api/appointments'
 import type { Appointment } from '@/types/entities'
+import { formatCurrency } from '@/app/lib/utils/format'
 import { format } from 'date-fns'
 import { ko } from 'date-fns/locale'
 
@@ -97,7 +98,7 @@ export default function CustomerVisitsTab({ customerId }: CustomerVisitsTabProps
                   <Stack direction="row" spacing={2} sx={{ mt: 1, flexWrap: 'wrap', gap: 1 }}>
                     {appt.total_price != null && (
                       <Typography variant="caption" fontWeight={600} color="success.main">
-                        ₩{Number(appt.total_price).toLocaleString()}
+                        {formatCurrency(appt.total_price)}
                       </Typography>
                     )}
                   </Stack>

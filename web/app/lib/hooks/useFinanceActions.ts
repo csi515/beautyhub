@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { useAppToast } from '../ui/toast'
 import { logger } from '../utils/logger'
+import { getLocalizedErrorMessage } from '../utils/messages'
 import { exportFinanceToExcel, type FinanceExportData } from '../utils/excelExport'
 import { generateTaxReport } from '../utils/taxReport'
 import { Expense, Transaction, TransactionCreateInput, ExpenseCreateInput } from '@/types/entities'
@@ -56,7 +57,7 @@ export function useFinanceActions(
       toast.success('엑셀 파일이 다운로드되었습니다.')
     } catch (error) {
       logger.error('엑셀 내보내기 실패', error, 'useFinanceActions')
-      toast.error('엑셀 내보내기 실패')
+      toast.error(getLocalizedErrorMessage(error, '엑셀 내보내기 실패'))
     }
   }
 
@@ -93,7 +94,7 @@ export function useFinanceActions(
       toast.success('세무 자료 파일이 다운로드되었습니다.')
     } catch (error) {
       logger.error('세무 자료 생성 실패', error, 'useFinanceActions')
-      toast.error('세무 자료 생성 실패')
+      toast.error(getLocalizedErrorMessage(error, '세무 자료 생성 실패'))
     }
   }
 
@@ -153,7 +154,7 @@ export function useFinanceActions(
       toast.success('저장되었습니다.')
       return true
     } catch (err) {
-      toast.error('저장 실패', err instanceof Error ? err.message : '')
+      toast.error(getLocalizedErrorMessage(err, '저장 실패'))
       return false
     }
   }

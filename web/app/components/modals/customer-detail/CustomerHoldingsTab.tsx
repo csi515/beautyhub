@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import { ChevronDown, ChevronUp } from 'lucide-react'
-import { formatDateTime } from '@/app/lib/utils/format'
+import { formatDateTime, formatNumber } from '@/app/lib/utils/format'
 import Button from '@/app/components/ui/Button'
 
 type Product = {
@@ -148,7 +148,7 @@ export default function CustomerHoldingsTab({
               <div className="flex items-center justify-between mb-3">
                 <div>
                   <h4 className="text-base font-semibold text-neutral-900">{h.products?.name || '(삭제됨)'}</h4>
-                  <p className="text-sm text-neutral-500">보유 수량: <span className="font-medium text-neutral-700">{h.quantity.toLocaleString()}개</span></p>
+                  <p className="text-sm text-neutral-500">보유 수량: <span className="font-medium text-neutral-700">{formatNumber(h.quantity)}개</span></p>
                 </div>
                 <Button variant="danger" size="sm" onClick={() => onDelete(h.id)} className="h-9 px-3">
                   삭제
@@ -283,7 +283,7 @@ export default function CustomerHoldingsTab({
                           </td>
                           <td className={`p-2 text-xs font-semibold text-right ${(r.delta || 0) > 0 ? 'text-blue-600' : 'text-rose-600'
                             }`}>
-                            {(r.delta || 0) > 0 ? '+' : ''}{(r.delta || 0).toLocaleString()}
+                            {(r.delta || 0) > 0 ? '+' : ''}{formatNumber(r.delta || 0)}
                           </td>
                           <td className="p-2 text-xs text-neutral-600">{r.reason || '-'}</td>
                           <td className="p-2 text-xs text-neutral-600">

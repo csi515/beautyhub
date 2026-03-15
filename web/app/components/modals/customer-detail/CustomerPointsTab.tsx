@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import { ChevronDown, ChevronUp } from 'lucide-react'
-import { formatDateTime } from '@/app/lib/utils/format'
+import { formatDateTime, formatNumber } from '@/app/lib/utils/format'
 import Button from '@/app/components/ui/Button'
 
 type LedgerEntry = {
@@ -52,7 +52,7 @@ export default function CustomerPointsTab({
       <div className="space-y-4">
         <div className="text-base font-semibold text-neutral-900">
           현재 잔액:{' '}
-          <span className="text-[#1D4ED8]">{pointsBalance.toLocaleString()}</span>
+          <span className="text-[#1D4ED8]">{formatNumber(pointsBalance)}</span>
         </div>
         <div className="flex flex-col md:flex-row items-stretch md:items-center gap-3">
           <input
@@ -130,7 +130,7 @@ export default function CustomerPointsTab({
                         className={`p-3 text-right font-semibold ${Number(r.delta) >= 0 ? 'text-emerald-600' : 'text-rose-600'
                           }`}
                       >
-                        {Number(r.delta) >= 0 ? `+${r.delta.toLocaleString()}` : r.delta.toLocaleString()}
+                        {Number(r.delta) >= 0 ? `+${formatNumber(r.delta)}` : formatNumber(r.delta)}
                       </td>
                       <td className="p-3">
                         <span className="inline-flex items-center rounded-sm border border-neutral-300 bg-neutral-100 px-2.5 py-1 text-xs font-medium text-neutral-700">

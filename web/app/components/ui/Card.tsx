@@ -65,7 +65,7 @@ export default function Card({
             borderTop: `1px solid ${theme.palette.divider}`,
           }
         }),
-        ...(sx as any)
+        ...(sx as SxProps<Theme>)
       }}
     >
       {children}

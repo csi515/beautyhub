@@ -15,16 +15,7 @@ import Button from '@/app/components/ui/Button'
 import { CardSkeleton } from '@/app/components/ui/SkeletonLoader'
 import EmptyState from '@/app/components/ui/EmptyState'
 import { FinanceCombinedRow } from '@/types/finance'
-
-// 금액 포맷팅 함수
-const formatAmount = (amount: number): string => {
-  if (amount >= 100000000) { // 1억 이상
-    return `${(amount / 100000000).toFixed(1)}억`
-  } else if (amount >= 10000) { // 1만 이상
-    return `${(amount / 10000).toFixed(0)}만`
-  }
-  return amount.toLocaleString()
-}
+import { formatCurrency } from '@/app/lib/utils/format'
 
 interface FinanceMobileCardsProps {
   loading: boolean
@@ -105,7 +96,7 @@ export default function FinanceMobileCards({
                     }}
                   >
                     {row.type === 'income' ? <TrendingUp size={16} /> : <TrendingDown size={16} />}
-                    {row.type === 'income' ? '+' : '-'}₩{formatAmount(row.amount)}
+                    {row.type === 'income' ? '+' : '-'}{formatCurrency(row.amount)}
                   </Typography>
                   {row.note && (
                     <Typography variant="body2" color="text.secondary" noWrap>

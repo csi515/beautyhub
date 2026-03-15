@@ -112,7 +112,7 @@ export default function InventoryHistoryModal({ open, onClose, productId, produc
                     <Typography variant="h6" fontWeight={600}>
                         재고 이력 - {productName}
                     </Typography>
-                    <IconButton onClick={onClose} size="small" aria-label="닫기">
+                    <IconButton onClick={onClose} size="small" aria-label="닫기" sx={{ minWidth: { xs: 44, md: 'auto' }, minHeight: { xs: 44, md: 'auto' } }}>
                         <X size={20} />
                     </IconButton>
                 </Box>

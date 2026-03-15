@@ -21,6 +21,7 @@ import FinancialSettingsModal from '@/app/components/features/settings/modals/Fi
 // Hooks
 import { useFinanceData } from '@/app/lib/hooks/useFinanceData'
 import { useAppToast } from '@/app/lib/ui/toast'
+import { getLocalizedErrorMessage } from '@/app/lib/utils/messages'
 import { settingsApi } from '@/app/lib/api/settings'
 import { DEFAULT_SETTINGS, type FinancialSettings } from '@/types/settings'
 import { useFinanceFilters } from '@/app/lib/hooks/useFinanceFilters'
@@ -99,9 +100,9 @@ export default function FinancePage() {
       if (data?.financialSettings) {
         setFinancialSettings(data.financialSettings)
       }
-    } catch {
+    } catch (error) {
       setFinancialSettings(DEFAULT_SETTINGS.financialSettings)
-      toast.error('카테고리 설정을 불러오는데 실패했습니다. 기본값으로 표시됩니다.')
+      toast.error(getLocalizedErrorMessage(error, '카테고리 설정을 불러오는데 실패했습니다. 기본값으로 표시됩니다.'))
     }
     setCategoryModalOpen(true)
   }, [toast])
@@ -112,8 +113,8 @@ export default function FinancePage() {
       setFinancialSettings(data)
       await loadCategories()
       toast.success('카테고리가 저장되었습니다.')
-    } catch {
-      toast.error('카테고리 저장에 실패했습니다.')
+    } catch (error) {
+      toast.error(getLocalizedErrorMessage(error, '카테고리 저장에 실패했습니다.'))
     }
   }, [loadCategories, toast])
 

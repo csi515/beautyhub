@@ -61,6 +61,7 @@ export function useCustomerDetail(
 
     const loadData = async () => {
       try {
+        setLoading(true)
         const [holdingsData, productsData, pointsData, pointsLedgerData, productLedgerData] = await Promise.all([
           customerProductsApi.list(form.id),
           productsApi.list({ limit: 1000 }),
@@ -91,7 +92,9 @@ export function useCustomerDetail(
         setHoldingDelta(init)
       } catch (err) {
         logger.error('Failed to load data', err, 'useCustomerDetail')
-        toast.error('고객 정보를 불러오는데 실패했습니다.')
+        toast.error(getLocalizedErrorMessage(err, '고객 정보를 불러오는데 실패했습니다.'))
+      } finally {
+        setLoading(false)
       }
     }
 
@@ -141,8 +144,7 @@ export function useCustomerDetail(
 
       await customersApi.update(form.id, body)
     } catch (e) {
-      const errorMessage = e instanceof Error ? e.message : '저장에 실패했습니다.'
-      toast.error(errorMessage)
+      toast.error(getLocalizedErrorMessage(e, '저장에 실패했습니다.'))
     } finally {
       setTimeout(() => setSaving(false), 500) // 최소 표시 시각
     }

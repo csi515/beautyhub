@@ -3,6 +3,7 @@
 import Link from 'next/link'
 import { Pencil } from 'lucide-react'
 import type { Project } from '@/app/lib/mock/projects'
+import { formatDateTimeShort } from '@/app/lib/utils/date'
 
 export default function ProjectList({ projects }: { projects: Project[] }) {
   return (
@@ -20,7 +21,7 @@ export default function ProjectList({ projects }: { projects: Project[] }) {
             {projects.map((p) => (
               <tr key={p.id} className="hover:bg-neutral-50/60">
                 <td className="px-4 py-3">{p.title}</td>
-                <td className="px-4 py-3 text-neutral-500">{new Date(p.updatedAt).toLocaleString()}</td>
+                <td className="px-4 py-3 text-neutral-500">{formatDateTimeShort(p.updatedAt)}</td>
                 <td className="px-4 py-3">
                   <div className="flex justify-end">
                     <Link

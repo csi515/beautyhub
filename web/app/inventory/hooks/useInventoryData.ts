@@ -79,7 +79,7 @@ export function useInventoryData(
         } finally {
             setLoading(false)
         }
-    }, [page, limit, search, filters, sortBy, sortOrder])
+    }, [page, limit, search, filters, sortBy, sortOrder, toast])
 
     const fetchAlerts = useCallback(async () => {
         try {
@@ -92,7 +92,7 @@ export function useInventoryData(
             logger.error('Error fetching alerts', error, 'useInventoryData')
             toast.error(getLocalizedErrorMessage(error, '재고 알림을 불러오는데 실패했습니다.'))
         }
-    }, [])
+    }, [toast])
 
     useEffect(() => {
         fetchData()

@@ -40,11 +40,11 @@ export default function CalendarHeader({
 
                     {/* 모바일 네비게이션 */}
                     <Stack direction="row" spacing={0.5} sx={{ display: { xs: 'flex', md: 'none' } }}>
-                        <IconButton onClick={onPrev} size="small" sx={{ border: 1, borderColor: 'divider', borderRadius: 2 }}>
+                        <IconButton onClick={onPrev} size="small" aria-label="이전" sx={{ border: 1, borderColor: 'divider', borderRadius: 2, minWidth: { xs: 44, md: 'auto' }, minHeight: { xs: 44, md: 'auto' } }}>
                             <ChevronLeft size={16} />
                         </IconButton>
                         <Button variant="outline" size="sm" onClick={onToday} style={{ height: 32 }}>오늘</Button>
-                        <IconButton onClick={onNext} size="small" sx={{ border: 1, borderColor: 'divider', borderRadius: 2 }}>
+                        <IconButton onClick={onNext} size="small" aria-label="다음" sx={{ border: 1, borderColor: 'divider', borderRadius: 2, minWidth: { xs: 44, md: 'auto' }, minHeight: { xs: 44, md: 'auto' } }}>
                             <ChevronRight size={16} />
                         </IconButton>
                     </Stack>
@@ -65,16 +65,16 @@ export default function CalendarHeader({
                             size="small"
                             aria-label="달력 보기 모드"
                         >
-                            <ToggleButton value="month" sx={{ whiteSpace: 'nowrap' }}>월</ToggleButton>
-                            <ToggleButton value="week" sx={{ whiteSpace: 'nowrap' }}>주</ToggleButton>
-                            <ToggleButton value="day" sx={{ whiteSpace: 'nowrap' }}>일</ToggleButton>
+                            <ToggleButton value="month" sx={{ whiteSpace: 'nowrap' }} aria-label="월 보기">월</ToggleButton>
+                            <ToggleButton value="week" sx={{ whiteSpace: 'nowrap' }} aria-label="주 보기">주</ToggleButton>
+                            <ToggleButton value="day" sx={{ whiteSpace: 'nowrap' }} aria-label="일 보기">일</ToggleButton>
                         </ToggleButtonGroup>
                     <Stack direction="row" spacing={0.5}>
-                        <IconButton onClick={onPrev} sx={{ border: 1, borderColor: 'divider', borderRadius: 2 }}>
+                        <IconButton onClick={onPrev} aria-label="이전" sx={{ border: 1, borderColor: 'divider', borderRadius: 2 }}>
                             <ChevronLeft size={18} />
                         </IconButton>
                         <Button variant="outline" onClick={onToday} sx={{ height: 36, borderColor: theme.palette.divider }}>오늘</Button>
-                        <IconButton onClick={onNext} sx={{ border: 1, borderColor: 'divider', borderRadius: 2 }}>
+                        <IconButton onClick={onNext} aria-label="다음" sx={{ border: 1, borderColor: 'divider', borderRadius: 2 }}>
                             <ChevronRight size={18} />
                         </IconButton>
                     </Stack>

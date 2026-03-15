@@ -5,6 +5,7 @@ import { DollarSign, TrendingUp } from 'lucide-react'
 import { transactionsApi } from '@/app/lib/api/transactions'
 import { logger } from '@/app/lib/utils/logger'
 import type { Transaction } from '@/types/entities'
+import { formatCurrency } from '@/app/lib/utils/format'
 
 type CustomerRevenueCardProps = {
   customerId: string
@@ -103,11 +104,11 @@ export default function CustomerRevenueCard({ customerId }: CustomerRevenueCardP
       <div className="space-y-1">
         <div className="flex items-baseline justify-between">
           <span className="text-xs text-blue-700">총 매출</span>
-          <span className="text-lg font-bold text-blue-900">₩{revenue.total.toLocaleString()}</span>
+          <span className="text-lg font-bold text-blue-900">{formatCurrency(revenue.total)}</span>
         </div>
         <div className="flex items-baseline justify-between">
           <span className="text-xs text-blue-700">이번 달</span>
-          <span className="text-base font-semibold text-blue-800">₩{revenue.thisMonth.toLocaleString()}</span>
+          <span className="text-base font-semibold text-blue-800">{formatCurrency(revenue.thisMonth)}</span>
         </div>
         <div className="flex items-baseline justify-between">
           <span className="text-xs text-blue-700">거래 횟수</span>

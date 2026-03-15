@@ -46,7 +46,7 @@ export default function SearchBar({ value, onChange, placeholder = '상품명 �
                 ),
                 endAdornment: localValue && (
                     <InputAdornment position="end">
-                        <IconButton size="small" onClick={handleClear} aria-label="검색어 지우기">
+                        <IconButton size="small" onClick={handleClear} aria-label="검색어 지우기" sx={{ minWidth: { xs: 44, md: 'auto' }, minHeight: { xs: 44, md: 'auto' } }}>
                             <X size={18} />
                         </IconButton>
                     </InputAdornment>

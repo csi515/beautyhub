@@ -23,7 +23,6 @@ const PAGE_TITLES: Record<string, string> = {
   '/products': '상품 관리',
   '/inventory': '재고 관리',
   '/appointments': '예약 관리',
-  '/analytics': '고객 분석',
   '/settings': '설정',
   '/projects': '프로젝트',
   '/admin/users': '사용자 승인 관리',
@@ -66,7 +65,7 @@ export default function TopBar({ onMenu }: { onMenu?: () => void }) {
       }
     }
     loadUserProfile()
-  }, [])
+  }, [toast])
 
   return (
     <AppBar

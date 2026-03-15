@@ -13,7 +13,7 @@ export default function InfoTooltip({ content, className = '' }: Props) {
     return (
         <div className={clsx('relative inline-block', className)}>
             <Tooltip title={content} arrow enterTouchDelay={0}>
-                <IconButton size="small" tabIndex={0} sx={{ padding: 0.5 }} aria-label="도움말">
+                <IconButton size="small" tabIndex={0} sx={{ padding: 0.5, minWidth: { xs: 44, md: 'auto' }, minHeight: { xs: 44, md: 'auto' } }} aria-label="도움말">
                     <Info className="w-4 h-4 text-neutral-400 hover:text-neutral-600" />
                 </IconButton>
             </Tooltip>

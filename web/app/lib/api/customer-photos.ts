@@ -37,7 +37,7 @@ export const customerPhotosApi = {
 
     if (!response.ok) {
       const error = await response.json().catch(() => ({ error: 'Failed to upload photo' }))
-      throw new Error(error.error || 'Failed to upload photo')
+      throw new Error(error.error || '사진 업로드에 실패했습니다.')
     }
 
     return response.json()

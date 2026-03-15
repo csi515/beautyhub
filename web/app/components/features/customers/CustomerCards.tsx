@@ -5,6 +5,7 @@ import { Box, Card, CardContent, Typography, Stack, Chip, IconButton, Divider } 
 import { ListSkeleton } from '@/app/components/ui/SkeletonLoader'
 import CustomerHoldingsBadge from './CustomerHoldingsBadge'
 import { type Customer } from '@/types/entities'
+import { formatNumber } from '@/app/lib/utils/format'
 
 interface CustomerCardsProps {
   customers: Customer[]
@@ -63,7 +64,7 @@ export default function CustomerCards({
                     <CustomerHoldingsBadge customerId={c.id} />
                   </Stack>
                   <Typography fontWeight="bold" color="warning.main">
-                    {Number(pointsByCustomer[c.id] ?? 0).toLocaleString()} P
+                    {formatNumber(pointsByCustomer[c.id] ?? 0)} P
                   </Typography>
                 </Stack>
               </Stack>

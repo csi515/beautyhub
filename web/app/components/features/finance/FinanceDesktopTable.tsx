@@ -21,6 +21,7 @@ import { TableSkeleton } from '@/app/components/ui/SkeletonLoader'
 import EmptyState from '@/app/components/ui/EmptyState'
 import Button from '@/app/components/ui/Button'
 import { FinanceCombinedRow } from '@/types/finance'
+import { formatCurrency } from '@/app/lib/utils/format'
 
 interface FinanceDesktopTableProps {
   loading: boolean
@@ -103,7 +104,7 @@ export default function FinanceDesktopTable({
                 />
               </TableCell>
               <TableCell align="right" sx={{ fontWeight: 'bold', color: row.type === 'income' ? 'success.main' : 'error.main' }}>
-                ₩{Number(row.amount || 0).toLocaleString()}
+                {formatCurrency(row.amount || 0)}
               </TableCell>
               <TableCell>{row.note || '-'}</TableCell>
               <TableCell align="center">

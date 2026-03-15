@@ -88,6 +88,12 @@ export default function CustomerDetailModal({
       </ModalHeader>
 
       <ModalBody>
+        {loading && (
+          <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', py: 6 }}>
+            <CircularProgress size={32} />
+          </Box>
+        )}
+        {!loading && (
         <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
           {error && (
             <Box sx={{ p: 1.5, bgcolor: 'error.50', borderRadius: 1.5, border: '1px solid', borderColor: 'error.100' }}>
@@ -257,6 +263,7 @@ export default function CustomerDetailModal({
             </Tabs>
           )}
         </Box>
+        )}
       </ModalBody>
 
       {isNew && (

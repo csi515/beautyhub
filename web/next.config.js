@@ -21,6 +21,8 @@ const nextConfig = {
   async redirects() {
     return [
       { source: '/favicon.ico', destination: '/icon.svg', permanent: false },
+      { source: '/analytics', destination: '/dashboard', permanent: false },
+      { source: '/analytics/:path*', destination: '/dashboard', permanent: false },
       { source: '/staff', destination: '/dashboard', permanent: false },
       { source: '/staff/:path*', destination: '/dashboard', permanent: false },
       { source: '/payroll', destination: '/dashboard', permanent: false },

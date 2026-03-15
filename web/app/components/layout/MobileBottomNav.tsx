@@ -19,7 +19,6 @@ import {
     DollarSign,
     MoreHorizontal,
     Code2,
-    BarChart2,
 } from 'lucide-react'
 import { BottomSheet, BottomSheetHeader, BottomSheetBody } from '@/app/components/ui/BottomSheet'
 
@@ -33,7 +32,6 @@ const MAIN_NAV_ITEMS = [
 const BASE_MORE_ITEMS: Array<{ label: string; value: string; icon: typeof Package }> = [
     { label: '상품', value: '/products', icon: Package },
     { label: '재고', value: '/inventory', icon: Warehouse },
-    { label: '고객 분석', value: '/analytics', icon: BarChart2 },
     { label: '설정', value: '/settings', icon: Settings },
     { label: '개발자 화면', value: '/dev', icon: Code2 },
 ]

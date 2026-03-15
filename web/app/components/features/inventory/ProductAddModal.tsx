@@ -15,6 +15,7 @@ import {
 } from '@mui/material'
 import { useAppToast } from '@/app/lib/ui/toast'
 import { logger } from '@/app/lib/utils/logger'
+import { getLocalizedErrorMessage } from '@/app/lib/utils/messages'
 import { productsApi } from '@/app/lib/api/products'
 import type { ProductCreateInput } from '@/types/entities'
 
@@ -188,7 +189,7 @@ export default function ProductAddModal({ open, onClose, onSuccess }: ProductAdd
 
         } catch (error: unknown) {
             logger.error('Error creating product', error, 'ProductAddModal')
-            toast.error(error instanceof Error ? error.message : '상품 추가에 실패했습니다')
+            toast.error(getLocalizedErrorMessage(error, '상품 추가에 실패했습니다'))
         } finally {
             setLoading(false)
         }

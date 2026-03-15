@@ -14,6 +14,7 @@ import { usePagination } from '../lib/hooks/usePagination'
 import { useIsTablet } from '../lib/hooks/useBreakpoint'
 import { DEFAULT_PAGE_SIZE } from '../lib/constants/pagination'
 import { useForm } from '../lib/hooks/useForm'
+import { formatCurrency } from '../lib/utils/format'
 // MUI 레이아웃 유틸리티 (허용)
 import Box from '@mui/material/Box'
 import Stack from '@mui/material/Stack'
@@ -302,7 +303,7 @@ export default function ProductsPage() {
                   {p.name}
                 </Typography>
                 <Typography variant="body2" color="primary.main" fontWeight="bold">
-                  ₩{Number(p.price || 0).toLocaleString()}
+                  {formatCurrency(p.price || 0)}
                 </Typography>
               </Stack>
               <Stack direction="row" spacing={1} sx={{ mt: 1, pt: 1 }}>

@@ -2,6 +2,7 @@
 
 import { Card, Box, Typography, Stack, Avatar } from '@mui/material'
 import { User, Phone, Mail, Coins, Package } from 'lucide-react'
+import { formatNumber } from '@/app/lib/utils/format'
 
 type CustomerSummaryBarProps = {
   name: string
@@ -85,7 +86,7 @@ export default function CustomerSummaryBar({
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, color: 'primary.main' }}>
             <Coins size={18} />
             <Typography variant="h6" fontWeight={800}>
-              {pointsBalance.toLocaleString()}
+              {formatNumber(pointsBalance)}
             </Typography>
           </Box>
         </Box>

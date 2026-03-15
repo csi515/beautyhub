@@ -1,7 +1,7 @@
 'use client'
 
 import React, { useState, useRef } from 'react'
-import { Stack, Card, ToggleButtonGroup, ToggleButton, Box } from '@mui/material'
+import { Stack, Card, ToggleButtonGroup, ToggleButton, Box, CircularProgress } from '@mui/material'
 import AppointmentsSkeleton from '@/app/components/skeletons/AppointmentsSkeleton'
 import { format } from 'date-fns'
 import ReservationCreateModal from '@/app/components/modals/ReservationCreateModal'
@@ -18,6 +18,7 @@ import AppointmentsCalendar from './components/AppointmentsCalendar'
 import PageContainer from '@/app/components/layout/PageContainer'
 import PageIntro from '@/app/components/common/PageIntro'
 import { useAppToast } from '@/app/lib/ui/toast'
+import { getLocalizedErrorMessage } from '@/app/lib/utils/messages'
 
 export default function AppointmentsPage() {
     const [createOpen, setCreateOpen] = useState(false)
@@ -32,6 +33,7 @@ export default function AppointmentsPage() {
     const [selected, setSelected] = useState<SelectedAppointment | null>(null)
     const timelineRef = useRef<MobileTimelineViewRef>(null)
     const [mobileViewMode, setMobileViewMode] = useState<'timeline' | 'calendar'>('calendar')
+    const [isReloading, setIsReloading] = useState(false)
     const toast = useAppToast()
 
     const { setEvents, filteredEvents } = useAppointmentsData()
@@ -50,6 +52,7 @@ export default function AppointmentsPage() {
 
     const reloadCalendar = async (opt?: { from?: string; to?: string }): Promise<void> => {
         try {
+            setIsReloading(true)
             const from = opt?.from ?? range.from
             const to = opt?.to ?? range.to
 
@@ -72,7 +75,9 @@ export default function AppointmentsPage() {
         } catch (error) {
             const { logger } = await import('@/app/lib/utils/logger')
             logger.error('예약 캘린더 로딩 실패', error, 'AppointmentsPage')
-            toast.error('예약 일정을 불러오는데 실패했습니다.')
+            toast.error(getLocalizedErrorMessage(error, '예약 일정을 불러오는데 실패했습니다.'))
+        } finally {
+            setIsReloading(false)
         }
     }
 
@@ -148,7 +153,7 @@ export default function AppointmentsPage() {
 
     return (
         <PageContainer maxWidth="xl" fullScreenOnTablet>
-        <Stack spacing={2} sx={{ flex: 1, minHeight: { xs: 0, md: 600 }, overflow: 'auto', display: 'flex', flexDirection: 'column' }}>
+        <Stack spacing={2} sx={{ flex: 1, minHeight: { xs: 0, md: 600 }, overflow: 'auto', display: 'flex', flexDirection: 'column', position: 'relative' }}>
             <PageIntro description="예약 일정을 확인하고 관리합니다" count={filteredEvents.length} />
             <Box sx={{ flexShrink: 0 }}>
             <CalendarHeader
@@ -194,6 +199,13 @@ export default function AppointmentsPage() {
                         />
                     </Box>
                 </Card>
+            )}
+
+            {/* 로딩 오버레이 */}
+            {isReloading && (
+                <Box sx={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', bgcolor: 'rgba(255,255,255,0.7)', zIndex: 10, borderRadius: 2 }}>
+                    <CircularProgress size={40} />
+                </Box>
             )}
 
             {/* 모바일 달력 뷰 */}

@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from 'react'
 import { usePagination } from './usePagination'
 import { useIsTablet } from './useBreakpoint'
 import { DEFAULT_PAGE_SIZE } from '@/app/lib/constants/pagination'
+import { formatDateShort } from '@/app/lib/utils/date'
 import { Expense, Transaction } from '@/types/entities'
 import { FinanceFilters, FinanceDateRange } from '@/types/finance'
 
@@ -28,7 +29,7 @@ export function useFinanceFilters(
   // 결합된 데이터 생성
   const combined = useMemo(() => {
     const inRange = (iso: string) => {
-      const d = (iso || '').slice(0, 10)
+      const d = formatDateShort(iso || '')
       return (!dateRange.from || d >= dateRange.from) && (!dateRange.to || d <= dateRange.to)
     }
     const incomeRows = filters.filterType.includes('income') ? transactions
@@ -36,7 +37,7 @@ export function useFinanceFilters(
       .map(t => ({
         id: t.id,
         type: 'income' as const,
-        date: (t.transaction_date || t.created_at || '').slice(0, 10),
+        date: formatDateShort(t.transaction_date || t.created_at || ''),
         amount: Number(t.amount || 0),
         note: t.category || '',
         raw: t,
@@ -46,7 +47,7 @@ export function useFinanceFilters(
       .map(e => ({
         id: e.id,
         type: 'expense' as const,
-        date: (e.expense_date || '').slice(0, 10),
+        date: formatDateShort(e.expense_date || ''),
         amount: Number(e.amount || 0),
         note: e.category || e.memo || '',
         raw: e,
@@ -77,14 +78,14 @@ export function useFinanceFilters(
   // 통계 계산
   const sumIncome = useMemo(() => transactions
     .filter(t => {
-      const d = (t.transaction_date || t.created_at || '').slice(0, 10)
+      const d = formatDateShort(t.transaction_date || t.created_at || '')
       return (!dateRange.from || d >= dateRange.from) && (!dateRange.to || d <= dateRange.to)
     })
     .reduce((s, t) => s + Number(t.amount || 0), 0), [transactions, dateRange])
 
   const sumExpense = useMemo(() => expenses
     .filter(e => {
-      const d = (e.expense_date || '').slice(0, 10)
+      const d = formatDateShort(e.expense_date || '')
       return (!dateRange.from || d >= dateRange.from) && (!dateRange.to || d <= dateRange.to)
     })
     .reduce((s, e) => s + Number(e.amount || 0), 0), [expenses, dateRange])

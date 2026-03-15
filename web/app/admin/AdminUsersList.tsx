@@ -6,6 +6,7 @@ import Input from '@/app/components/ui/Input'
 import Button from '@/app/components/ui/Button'
 import Card from '@/app/components/ui/Card'
 import UserActionButtons from './UserActionButtons'
+import { formatDateShort } from '@/app/lib/utils/date'
 
 type PendingUser = {
     id: string
@@ -173,7 +174,7 @@ export default function AdminUsersList({ initialUsers }: Props) {
                                     </div>
                                     <div className="flex items-center gap-2 text-neutral-600">
                                         <span className="font-medium">가입일:</span>
-                                        <span>{new Date(user.created_at).toLocaleDateString()}</span>
+                                        <span>{formatDateShort(user.created_at || '')}</span>
                                     </div>
                                 </div>
 
