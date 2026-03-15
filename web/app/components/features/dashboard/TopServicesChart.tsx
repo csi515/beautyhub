@@ -40,7 +40,7 @@ export default function TopServicesChart({ recentAppointments }: TopServicesChar
     const data = processData()
     const theme = useTheme()
     const isTablet = useMediaQuery(theme.breakpoints.only('md'))
-    const chartHeight = isTablet ? 160 : 200
+    const chartHeight = isTablet ? 140 : 180
 
     return (
         <Card sx={{ height: '100%', width: '100%', maxWidth: '100%', overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>

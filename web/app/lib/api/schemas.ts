@@ -48,7 +48,17 @@ export const customerCreateSchema = z.object({
 /**
  * 고객 업데이트 스키마
  */
-export const customerUpdateSchema = customerCreateSchema.partial()
+export const customerUpdateSchema = customerCreateSchema.partial().extend({
+  active: z.boolean().optional(),
+})
+
+/**
+ * 고객 일괄 상태 변경 스키마
+ */
+export const customerBulkStatusSchema = z.object({
+  ids: z.array(z.string().uuid()).min(1, '최소 1명의 고객을 선택해주세요'),
+  active: z.boolean(),
+})
 
 /**
  * 상품 생성 스키마

@@ -160,7 +160,7 @@ export default function InventoryTable({
                                     direction={sortBy === 'name' ? sortOrder : 'asc'}
                                     onClick={() => onSortChange('name')}
                                 >
-                                    제품명
+                                    상품명
                                 </TableSortLabel>
                             </TableCell>
                             <TableCell align="center" sx={{ whiteSpace: 'nowrap', width: 52, minWidth: 52 }}>

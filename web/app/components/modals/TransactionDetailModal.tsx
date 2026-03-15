@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react'
 import DetailModal from '@/app/components/common/DetailModal'
 import DetailForm, { type DetailFormField } from '@/app/components/common/DetailForm'
 import { useAppToast } from '@/app/lib/ui/toast'
+import { SUCCESS_MESSAGES, CONFIRMATION_MESSAGES, getLocalizedErrorMessage } from '@/app/lib/utils/messages'
 import { customersApi } from '@/app/lib/api/customers'
 import { transactionsApi } from '@/app/lib/api/transactions'
 import type { Transaction, TransactionUpdateInput, Customer } from '@/types/entities'
@@ -53,9 +54,9 @@ export default function TransactionDetailModal({ open, onClose, item, onSaved, o
         payload.notes = form.notes.trim()
       }
       await transactionsApi.update(form.id, payload)
-      onSaved(); onClose(); toast.success('거래가 저장되었습니다.')
+      onSaved(); onClose(); toast.success(SUCCESS_MESSAGES.updated('거래'))
     } catch (e: unknown) {
-      const errorMessage = e instanceof Error ? e.message : '에러가 발생했습니다.'
+      const errorMessage = getLocalizedErrorMessage(e)
       setError(errorMessage)
       toast.error('저장 실패', errorMessage)
     } finally { setLoading(false) }
@@ -65,9 +66,9 @@ export default function TransactionDetailModal({ open, onClose, item, onSaved, o
     if (!form?.id) return
     try {
       await transactionsApi.delete(form.id)
-      onDeleted(); onClose(); toast.success('삭제되었습니다.')
-    } catch {
-      toast.error('삭제 실패')
+      onDeleted(); onClose(); toast.success(SUCCESS_MESSAGES.deleted('거래'))
+    } catch (e) {
+      toast.error(getLocalizedErrorMessage(e))
     }
   }
 
@@ -130,7 +131,7 @@ export default function TransactionDetailModal({ open, onClose, item, onSaved, o
       error={error}
       onSave={save}
       onDelete={removeItem}
-      confirmDeleteMessage="정말 이 거래를 삭제하시겠습니까?"
+      confirmDeleteMessage={CONFIRMATION_MESSAGES.delete('거래')}
       size="lg"
     >
       <DetailForm fields={formFields} />

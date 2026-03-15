@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createSupabaseServerClient } from '@/lib/supabase/server'
 import { withRateLimit, withErrorHandling, withAuth } from '@/app/lib/api/middleware'
+import { logger } from '@/app/lib/utils/logger'
 import { createSuccessResponse } from '@/app/lib/api/handlers'
 
 // 글자 수 제한 상수
@@ -91,7 +92,7 @@ export const POST = withRateLimit(
             })
 
         if (error) {
-            console.error('Error creating inquiry:', error)
+            logger.error('Error creating inquiry', error, 'Inquiries')
             return NextResponse.json(
                 { error: '문의 등록 중 오류가 발생했습니다.' },
                 { status: 500 }
@@ -138,7 +139,7 @@ export const GET = withAuth(async (request: NextRequest, { userId, supabase }) =
     const { data: inquiries, error, count } = await query
 
     if (error) {
-        console.error('Error fetching inquiries:', error)
+        logger.error('Error fetching inquiries', error, 'Inquiries')
         return NextResponse.json(
             { error: '문의 목록을 가져오는 중 오류가 발생했습니다.' },
             { status: 500 }

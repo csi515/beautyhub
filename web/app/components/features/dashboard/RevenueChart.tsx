@@ -1,6 +1,7 @@
 'use client'
 
 import { Typography, useMediaQuery, useTheme } from '@mui/material'
+import { formatCurrency } from '@/app/lib/utils/format'
 import Card from '@/app/components/ui/Card'
 import {
     ResponsiveContainer,
@@ -47,7 +48,7 @@ export default function RevenueChart({ transactions }: RevenueChartProps) {
     const data = processData()
     const theme = useTheme()
     const isTablet = useMediaQuery(theme.breakpoints.only('md'))
-    const chartHeight = isTablet ? 160 : 200
+    const chartHeight = isTablet ? 140 : 180
 
     return (
         <Card sx={{ height: '100%', width: '100%', maxWidth: '100%', overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
@@ -72,7 +73,7 @@ export default function RevenueChart({ transactions }: RevenueChartProps) {
                             tickFormatter={(value) => `${value / 10000}만`}
                         />
                         <Tooltip
-                            formatter={(value: number) => [`${value.toLocaleString()}원`, '매출']}
+                            formatter={(value: number) => [formatCurrency(value), '매출']}
                             contentStyle={{ borderRadius: 8, border: 'none', boxShadow: '0 4px 12px rgba(0,0,0,0.1)' }}
                         />
                         <Bar

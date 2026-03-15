@@ -3,6 +3,8 @@
  * 자주 사용하는 지출 카테고리 관리
  */
 
+import { logger } from '@/app/lib/utils/logger'
+
 export const DEFAULT_EXPENSE_CATEGORIES = [
   '임대료',
   '인건비',
@@ -32,7 +34,7 @@ export function getExpenseCategories(): string[] {
       }
     }
   } catch (error) {
-    console.error('지출 카테고리 로드 실패:', error)
+    logger.error('지출 카테고리 로드 실패', error, 'expenseCategories')
   }
   
   return DEFAULT_EXPENSE_CATEGORIES
@@ -47,7 +49,7 @@ export function saveExpenseCategories(categories: string[]): void {
   try {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(categories))
   } catch (error) {
-    console.error('지출 카테고리 저장 실패:', error)
+    logger.error('지출 카테고리 저장 실패', error, 'expenseCategories')
   }
 }
 

@@ -1,5 +1,7 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { useAppToast } from '../../lib/ui/toast'
+import { logger } from '@/app/lib/utils/logger'
+import { getLocalizedErrorMessage } from '@/app/lib/utils/messages'
 export interface InventoryFilters {
     status: string
     minPrice: string
@@ -47,13 +49,7 @@ export function useInventoryData(
     const [totalPages, setTotalPages] = useState(0)
     const toast = useAppToast()
 
-    useEffect(() => {
-        fetchData()
-        fetchAlerts()
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [page, limit, search, filters, sortBy, sortOrder])
-
-    async function fetchData() {
+    const fetchData = useCallback(async () => {
         try {
             setLoading(true)
 
@@ -78,14 +74,14 @@ export function useInventoryData(
                 setTotalPages(inventoryData.pagination?.total_pages || 0)
             }
         } catch (error) {
-            console.error('Error fetching inventory:', error)
-            toast.error('데이터를 불러오는데 실패했습니다')
+            logger.error('Error fetching inventory', error, 'useInventoryData')
+            toast.error(getLocalizedErrorMessage(error, '데이터를 불러오는데 실패했습니다'))
         } finally {
             setLoading(false)
         }
-    }
+    }, [page, limit, search, filters, sortBy, sortOrder])
 
-    async function fetchAlerts() {
+    const fetchAlerts = useCallback(async () => {
         try {
             const alertsResponse = await fetch('/api/inventory/alerts?unacknowledged=true')
             if (alertsResponse.ok) {
@@ -93,9 +89,15 @@ export function useInventoryData(
                 setAlerts(Array.isArray(alertsData) ? alertsData : [])
             }
         } catch (error) {
-            console.error('Error fetching alerts:', error)
+            logger.error('Error fetching alerts', error, 'useInventoryData')
+            toast.error(getLocalizedErrorMessage(error, '재고 알림을 불러오는데 실패했습니다.'))
         }
-    }
+    }, [])
+
+    useEffect(() => {
+        fetchData()
+        fetchAlerts()
+    }, [fetchData, fetchAlerts])
 
     return {
         products,

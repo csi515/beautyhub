@@ -1,10 +1,11 @@
 "use client"
 
 import { useEffect, useState, useMemo, lazy, Suspense, useCallback } from 'react'
-import { Plus, Search, Download } from 'lucide-react'
+import { Plus, Search } from 'lucide-react'
 import EmptyState from '../components/ui/EmptyState'
 import { CardSkeleton } from '../components/ui/SkeletonLoader'
 import { useAppToast } from '../lib/ui/toast'
+import { SUCCESS_MESSAGES, getLocalizedErrorMessage } from '../lib/utils/messages'
 import Button from '../components/ui/Button'
 import Modal, { ModalBody, ModalFooter, ModalHeader } from '../components/ui/Modal'
 import { useSearch } from '../lib/hooks/useSearch'
@@ -13,8 +14,6 @@ import { usePagination } from '../lib/hooks/usePagination'
 import { useIsTablet } from '../lib/hooks/useBreakpoint'
 import { DEFAULT_PAGE_SIZE } from '../lib/constants/pagination'
 import { useForm } from '../lib/hooks/useForm'
-import { exportToCSV, prepareProductDataForExport } from '../lib/utils/export'
-
 // MUI 레이아웃 유틸리티 (허용)
 import Box from '@mui/material/Box'
 import Stack from '@mui/material/Stack'
@@ -93,9 +92,9 @@ export default function ProductsPage() {
         setShowModal(false)
         setEditing(null)
         form.reset()
-        toast.success('상품이 저장되었습니다.')
+        toast.success(SUCCESS_MESSAGES.saved)
       } catch (e: unknown) {
-        const errorMessage = e instanceof Error ? e.message : '에러가 발생했습니다.'
+        const errorMessage = getLocalizedErrorMessage(e)
         setError(errorMessage)
         toast.error('저장 실패', errorMessage)
       } finally { setLoading(false) }
@@ -109,7 +108,7 @@ export default function ProductsPage() {
       const rows = await productsApi.list(debouncedQuery ? { search: debouncedQuery } : {})
       setProducts(Array.isArray(rows) ? rows as Product[] : [])
     } catch (e: unknown) {
-      const errorMessage = e instanceof Error ? e.message : '에러가 발생했습니다.'
+      const errorMessage = getLocalizedErrorMessage(e)
       setError(errorMessage)
     } finally {
       setLoading(false)
@@ -156,13 +155,6 @@ export default function ProductsPage() {
   // totalPages 계산 (검색 결과 기준)
   const totalPages = Math.max(1, Math.ceil(filteredProducts.length / pageSize))
 
-  // CSV export function
-  const handleExport = () => {
-    const dataToExport = prepareProductDataForExport(filteredProducts)
-    exportToCSV(dataToExport, `상품목록_${new Date().toISOString().slice(0, 10)}.csv`)
-    toast.success('CSV 파일이 다운로드되었습니다')
-  }
-
   const handleResetFilters = () => {
     setStatusFilter('all')
     setMinPrice('')
@@ -186,7 +178,7 @@ export default function ProductsPage() {
 
   return (
     <PageContainer maxWidth="xl" fullScreenOnTablet>
-    <Stack spacing={3} sx={{ flex: 1, minHeight: 0, minWidth: 0, overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
+    <Stack spacing={2} sx={{ flex: 1, minHeight: 0, minWidth: 0, overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
       <PageIntro description="판매 상품·서비스를 등록하고 관리합니다" count={filteredProducts.length} />
       <Box sx={{ flexShrink: 0 }}>
       <FilterCard>
@@ -217,14 +209,6 @@ export default function ProductsPage() {
               }}
             />
             <Button
-              variant="secondary"
-              leftIcon={<Download className="h-4 w-4" />}
-              onClick={handleExport}
-              sx={{ whiteSpace: 'nowrap', flexShrink: 0, display: { xs: 'none', lg: 'inline-flex' } }}
-            >
-              엑셀 내보내기
-            </Button>
-            <Button
               variant="primary"
               leftIcon={<Plus className="h-4 w-4" />}
               onClick={openCreate}
@@ -234,7 +218,6 @@ export default function ProductsPage() {
             </Button>
         </Stack>
         <Stack spacing={1}>
-          <Typography variant="subtitle2" fontWeight={600}>조건</Typography>
             <Grid container spacing={{ xs: 0.75, sm: 1.5, md: 2 }} alignItems="center">
             <Grid item xs={12} md={3}>
               <FormControl size="small" fullWidth>
@@ -292,8 +275,8 @@ export default function ProductsPage() {
       {error && (
         <ErrorState
           message={error}
-          onRetry={() => setError('')}
-          retryLabel="닫기"
+          onRetry={load}
+          retryLabel="다시 시도"
         />
       )}
 
@@ -339,8 +322,8 @@ export default function ProductsPage() {
           <Grid item xs={12}>
             <EmptyState
               title={products.length === 0 ? "상품이 없습니다." : "검색 결과가 없습니다."}
-              actionLabel="상품 추가"
-              onAction={openCreate}
+              description={products.length === 0 ? "상품을 추가해보세요." : "다른 검색어로 시도해보세요."}
+              {...(products.length === 0 && { actionLabel: "상품 추가", onAction: openCreate })}
             />
           </Grid>
         )}
@@ -388,7 +371,7 @@ export default function ProductsPage() {
           <ModalBody>
             <Stack spacing={3} sx={{ mt: 1 }}>
               <TextField
-                label="이름"
+                label="이름 *"
                 fullWidth
                 value={form.values.name}
                 onChange={e => {
@@ -400,7 +383,7 @@ export default function ProductsPage() {
                 helperText={form.errors.name && form.touched.name ? form.errors.name : undefined}
               />
               <TextField
-                label="가격"
+                label="가격 *"
                 fullWidth
                 type="number"
                 value={form.values.price}

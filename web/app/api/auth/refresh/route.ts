@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server'
 import { cookies } from 'next/headers'
 import { createClient } from '@supabase/supabase-js'
 import { getEnv } from '@/app/lib/env'
+import { logger } from '@/app/lib/utils/logger'
 
 export const dynamic = 'force-dynamic'
 
@@ -16,7 +17,7 @@ export async function POST() {
     const anon = getEnv.supabaseAnonKey()
 
     if (!url || !anon) {
-      console.error('Supabase environment variables not configured')
+      logger.error('Supabase environment variables not configured', undefined, 'AuthRefresh')
       return NextResponse.json({ success: false, error: 'Server configuration error' }, { status: 500 })
     }
 
@@ -49,7 +50,7 @@ export async function POST() {
 
     return res
   } catch (e: unknown) {
-    console.error('Refresh route error:', e)
+    logger.error('Refresh route error', e, 'AuthRefresh')
     const message = e instanceof Error ? e.message : 'refresh error'
     return NextResponse.json({ success: false, error: message }, { status: 500 })
   }

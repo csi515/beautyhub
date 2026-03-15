@@ -171,6 +171,8 @@ function ModalHeader({ title, description, icon, onClose, children }: ModalHeade
             alignSelf: 'flex-start',
             mt: -0.5,
             mr: -0.5,
+            minWidth: { xs: 44, sm: 40 },
+            minHeight: { xs: 44, sm: 40 },
           }}
         >
           <X size={20} />

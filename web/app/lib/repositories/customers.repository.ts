@@ -90,6 +90,7 @@ export class CustomersRepository extends BaseRepository<Customer> {
     if (input.phone !== undefined) payload.phone = input.phone || null
     if (input.email !== undefined) payload.email = input.email || null
     if (input.address !== undefined) payload.address = input.address || null
+    if (input.active !== undefined) payload.active = input.active
     // features??媛믪씠 ?덉쓣 ?뚮쭔 ?낅뜲?댄듃 (?ㅽ궎留덉뿉 ?놁쓣 ???덉쓬)
     const featuresValue = input.features
     if (featuresValue !== undefined) {

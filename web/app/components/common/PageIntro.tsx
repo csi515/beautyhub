@@ -19,21 +19,36 @@ export default function PageIntro({ description, count, children }: PageIntroPro
   return (
     <Box
       sx={{
-        py: { xs: 0.5, sm: 1, md: 1 },
+        py: { xs: 0.25, sm: 0.5, md: 0.5 },
         px: 0,
         display: 'flex',
         alignItems: 'center',
         gap: 1,
-        flexWrap: 'wrap',
+        flexWrap: 'nowrap',
+        minWidth: 0,
       }}
     >
       {description && (
-        <Typography variant="body2" color="text.secondary" sx={{ fontSize: { xs: '0.8125rem', sm: '0.875rem' } }}>
+        <Typography
+          variant="body2"
+          color="text.secondary"
+          sx={{
+            fontSize: { xs: '0.8125rem', sm: '0.875rem' },
+            whiteSpace: 'nowrap',
+            overflow: 'hidden',
+            textOverflow: 'ellipsis',
+            minWidth: 0,
+          }}
+        >
           {description}
         </Typography>
       )}
       {count !== undefined && (
-        <Typography variant="body2" color="text.secondary" sx={{ fontSize: { xs: '0.8125rem', sm: '0.875rem' } }}>
+        <Typography
+          variant="body2"
+          color="text.secondary"
+          sx={{ fontSize: { xs: '0.8125rem', sm: '0.875rem' }, whiteSpace: 'nowrap', flexShrink: 0 }}
+        >
           {typeof count === 'number' ? `총 ${count.toLocaleString()}건` : String(count)}
         </Typography>
       )}

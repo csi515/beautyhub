@@ -93,6 +93,7 @@ export default function FilterPanel<T extends Record<string, string>>({
                                 value={filters[minKey] || ''}
                                 onChange={(e) => handleChange(minKey, e.target.value)}
                                 fullWidth
+                                inputProps={{ 'aria-label': `${field.label} 최소` }}
                             />
                             <Typography sx={{ alignSelf: 'center' }}>-</Typography>
                             <TextField
@@ -102,6 +103,7 @@ export default function FilterPanel<T extends Record<string, string>>({
                                 value={filters[maxKey] || ''}
                                 onChange={(e) => handleChange(maxKey, e.target.value)}
                                 fullWidth
+                                inputProps={{ 'aria-label': `${field.label} 최대` }}
                             />
                         </Stack>
                     </Box>
@@ -131,8 +133,8 @@ export default function FilterPanel<T extends Record<string, string>>({
     return (
         <Accordion>
             <AccordionSummary expandIcon={<ChevronDown />}>
-                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                    <Typography variant="body1" fontWeight={600}>
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, minWidth: 0 }}>
+                    <Typography variant="body1" fontWeight={600} sx={{ whiteSpace: 'nowrap' }}>
                         {title}
                     </Typography>
                     {hasActiveFilters && (

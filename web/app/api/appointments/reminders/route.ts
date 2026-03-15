@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { createSupabaseServerClient } from '@/lib/supabase/server'
 import { getUserIdFromCookies } from '@/lib/auth/user'
 import { AppointmentRemindersRepository } from '@/app/lib/repositories/appointment-reminders.repository'
+import { logger } from '@/app/lib/utils/logger'
 
 /**
  * GET /api/appointments/reminders
@@ -33,7 +34,7 @@ export async function GET(request: NextRequest) {
 
     return NextResponse.json(reminders)
   } catch (error) {
-    console.error('Error fetching appointment reminders:', error)
+    logger.error('Error fetching appointment reminders', error, 'AppointmentReminders')
     return NextResponse.json(
       { error: 'Failed to fetch appointment reminders' },
       { status: 500 }

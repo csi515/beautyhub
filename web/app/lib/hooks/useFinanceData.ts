@@ -43,7 +43,9 @@ export function useFinanceData() {
 
   useEffect(() => { load() }, [load])
 
-  // 설정 로드
+  const [categoriesVersion, setCategoriesVersion] = useState(0)
+  const loadCategories = useCallback(() => setCategoriesVersion(v => v + 1), [])
+
   useEffect(() => {
     const loadSettings = async () => {
       try {
@@ -58,7 +60,7 @@ export function useFinanceData() {
       } catch { }
     }
     loadSettings()
-  }, [])
+  }, [categoriesVersion])
 
   const updateRange = (newRange: Partial<FinanceDateRange>) => {
     setRange(prev => ({ ...prev, ...newRange }))
@@ -74,5 +76,6 @@ export function useFinanceData() {
 
     // Actions
     load,
+    loadCategories,
   }
 }

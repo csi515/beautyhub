@@ -120,7 +120,11 @@ export default function FinanceDesktopTable({
           {combined.length === 0 && (
             <TableRow>
               <TableCell colSpan={5} align="center" sx={{ py: 4 }}>
-                <EmptyState title="데이터가 없습니다." />
+                <EmptyState
+                  title="데이터가 없습니다."
+                  description="수입 또는 지출 내역을 추가해보세요."
+                  {...(onCreateNew && { actionLabel: "수입/지출 추가", onAction: onCreateNew })}
+                />
               </TableCell>
             </TableRow>
           )}

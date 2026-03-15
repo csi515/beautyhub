@@ -1,5 +1,6 @@
 'use client'
 
+import { useCallback, useEffect, useState } from 'react'
 import {
     Dialog,
     DialogTitle,
@@ -18,8 +19,8 @@ import {
     CircularProgress
 } from '@mui/material'
 import { X, TrendingUp, TrendingDown, Edit3 } from 'lucide-react'
-import { useEffect, useState } from 'react'
 import { format } from 'date-fns'
+import { logger } from '@/app/lib/utils/logger'
 import { ko } from 'date-fns/locale'
 
 interface InventoryTransaction {
@@ -44,14 +45,7 @@ export default function InventoryHistoryModal({ open, onClose, productId, produc
     const [transactions, setTransactions] = useState<InventoryTransaction[]>([])
     const [loading, setLoading] = useState(false)
 
-    useEffect(() => {
-        if (open && productId) {
-            fetchTransactions()
-        }
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [open, productId])
-
-    async function fetchTransactions() {
+    const fetchTransactions = useCallback(async () => {
         if (!productId) return
 
         try {
@@ -62,11 +56,17 @@ export default function InventoryHistoryModal({ open, onClose, productId, produc
                 setTransactions(Array.isArray(data) ? data : [])
             }
         } catch (error) {
-            console.error('Error fetching transactions:', error)
+            logger.error('Error fetching transactions', error, 'InventoryHistoryModal')
         } finally {
             setLoading(false)
         }
-    }
+    }, [productId])
+
+    useEffect(() => {
+        if (open && productId) {
+            fetchTransactions()
+        }
+    }, [open, productId, fetchTransactions])
 
     const getTransactionIcon = (type: string) => {
         switch (type) {
@@ -112,7 +112,7 @@ export default function InventoryHistoryModal({ open, onClose, productId, produc
                     <Typography variant="h6" fontWeight={600}>
                         재고 이력 - {productName}
                     </Typography>
-                    <IconButton onClick={onClose} size="small">
+                    <IconButton onClick={onClose} size="small" aria-label="닫기">
                         <X size={20} />
                     </IconButton>
                 </Box>

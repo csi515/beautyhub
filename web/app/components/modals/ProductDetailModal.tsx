@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react'
 import DetailModal from '@/app/components/common/DetailModal'
 import DetailForm, { type DetailFormField } from '@/app/components/common/DetailForm'
 import { useAppToast } from '@/app/lib/ui/toast'
+import { SUCCESS_MESSAGES, CONFIRMATION_MESSAGES, getLocalizedErrorMessage } from '@/app/lib/utils/messages'
 import { productsApi } from '@/app/lib/api/products'
 import Textarea from '@/app/components/ui/Textarea'
 import type { Product as ProductEntity, ProductUpdateInput } from '@/types/entities'
@@ -39,9 +40,9 @@ export default function ProductDetailModal({ open, onClose, item, onSaved, onDel
         body.description = form.description.trim()
       }
       await productsApi.update(String(form.id), body)
-      onSaved(); onClose(); toast.success('상품이 저장되었습니다.')
+      onSaved(); onClose(); toast.success(SUCCESS_MESSAGES.updated('상품'))
     } catch (e: unknown) {
-      const errorMessage = e instanceof Error ? e.message : '에러가 발생했습니다.'
+      const errorMessage = getLocalizedErrorMessage(e)
       setError(errorMessage)
       toast.error('저장 실패', errorMessage)
     } finally { setLoading(false) }
@@ -51,9 +52,9 @@ export default function ProductDetailModal({ open, onClose, item, onSaved, onDel
     if (!form?.id) return
     try {
       await productsApi.delete(String(form.id))
-      onDeleted(); onClose(); toast.success('삭제되었습니다.')
-    } catch {
-      toast.error('삭제 실패')
+      onDeleted(); onClose(); toast.success(SUCCESS_MESSAGES.deleted('상품'))
+    } catch (e) {
+      toast.error(getLocalizedErrorMessage(e))
     }
   }
 
@@ -113,7 +114,7 @@ export default function ProductDetailModal({ open, onClose, item, onSaved, onDel
       error={error}
       onSave={save}
       onDelete={removeItem}
-      confirmDeleteMessage="정말 이 상품을 삭제하시겠어요? 이 작업은 되돌릴 수 없습니다."
+      confirmDeleteMessage={CONFIRMATION_MESSAGES.delete('상품')}
       size="lg"
     >
       <div className="space-y-3">

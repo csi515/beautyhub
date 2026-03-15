@@ -8,6 +8,7 @@ import type { SupabaseClient } from '@supabase/supabase-js'
 import Button from '@/app/components/ui/Button'
 import Input from '@/app/components/ui/Input'
 import Alert from '@/app/components/ui/Alert'
+import { logger } from '@/app/lib/utils/logger'
 
 export default function ForgotPasswordPage() {
   const router = useRouter()
@@ -25,7 +26,7 @@ export default function ForgotPasswordPage() {
         const client = createSupabaseBrowserClient()
         setSupabase(client)
       } catch (error) {
-        console.error('Supabase 초기화 오류:', error)
+        logger.error('Supabase 초기화 오류', error, 'ForgotPasswordPage')
         setError('환경설정 오류: Supabase 초기화에 실패했습니다.')
       }
     }

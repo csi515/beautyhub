@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { createSupabaseServerClient } from '@/lib/supabase/server'
 import { getUserIdFromCookies } from '@/lib/auth/user'
 import { CustomerPhotosRepository } from '@/app/lib/repositories/customer-photos.repository'
+import { logger } from '@/app/lib/utils/logger'
 
 /**
  * DELETE /api/customers/[id]/photos/[photoId]
@@ -37,7 +38,7 @@ export async function DELETE(
         .remove([filePath])
 
       if (deleteError) {
-        console.error('Error deleting file from storage:', deleteError)
+        logger.error('Error deleting file from storage', deleteError, 'CustomerPhotos')
         // Storage 삭제 실패해도 DB 삭제는 진행
       }
     }
@@ -47,7 +48,7 @@ export async function DELETE(
 
     return NextResponse.json({ success: true })
   } catch (error) {
-    console.error('Error deleting customer photo:', error)
+    logger.error('Error deleting customer photo', error, 'CustomerPhotos')
     return NextResponse.json(
       { error: 'Failed to delete customer photo' },
       { status: 500 }

@@ -1,10 +1,10 @@
 'use client'
 
-import { Search, Download, Plus } from 'lucide-react'
+import { Search, Plus } from 'lucide-react'
 import { Stack, TextField, FormControl, InputLabel, Select, MenuItem, Chip, Box, Typography, InputAdornment } from '@mui/material'
 import Button from '@/app/components/ui/Button'
 import FilterCard from '@/app/components/common/FilterCard'
-import { type CustomerFilters } from '@/types/customer'
+import { type CustomerFilters, type CustomerStatusFilter } from '@/types/customer'
 
 interface CustomerFiltersProps {
   query: string
@@ -12,7 +12,6 @@ interface CustomerFiltersProps {
   filters: CustomerFilters
   onFiltersChange: (filters: Partial<CustomerFilters>) => void
   onResetFilters: () => void
-  onExport: () => void
   onCreateCustomer: () => void
   filteredCount: number
   totalCount: number
@@ -24,7 +23,6 @@ export default function CustomerFilters({
   filters,
   onFiltersChange,
   onResetFilters,
-  onExport,
   onCreateCustomer,
   filteredCount,
   totalCount
@@ -57,20 +55,13 @@ export default function CustomerFilters({
               },
             }}
             inputProps={{
+              'aria-label': '이름, 이메일 또는 전화번호로 검색',
               autoComplete: 'off',
               autoCorrect: 'off',
               autoCapitalize: 'off',
             }}
           />
           <Stack direction="row" spacing={1}>
-            <Button
-              variant="secondary"
-              leftIcon={<Download className="h-4 w-4" />}
-              onClick={onExport}
-              sx={{ whiteSpace: 'nowrap', display: { xs: 'none', lg: 'inline-flex' } }}
-            >
-              엑셀 내보내기
-            </Button>
             <Button
               variant="primary"
               leftIcon={<Plus className="h-4 w-4" />}
@@ -93,7 +84,7 @@ export default function CustomerFilters({
             <InputLabel>상태</InputLabel>
             <Select
               value={filters.statusFilter}
-              onChange={(e) => onFiltersChange({ statusFilter: e.target.value as any })}
+              onChange={(e) => onFiltersChange({ statusFilter: e.target.value as CustomerStatusFilter })}
               label="상태"
             >
               <MenuItem value="all">전체</MenuItem>

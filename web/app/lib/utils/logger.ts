@@ -70,10 +70,20 @@ class Logger {
       }
     }
 
-    // 에러 추적 도구 연동 (Sentry 등)
+    // Sentry 에러 추적 연동
     if (level === 'error' && typeof window !== 'undefined') {
-      // TODO: Sentry 또는 다른 에러 추적 도구 연동
-      // Sentry.captureException(new Error(message), { extra: data })
+      import('@/app/lib/utils/sentry')
+        .then(({ captureError }) => {
+          const err = new Error(message)
+          const stack = data && typeof data === 'object' && 'stack' in (data as object)
+            ? (data as { stack?: string }).stack
+            : undefined
+          if (stack) {
+            err.stack = stack
+          }
+          return captureError(err, { message, context, extra: data })
+        })
+        .catch(() => { /* Sentry 미설정 시 무시 */ })
     }
   }
 

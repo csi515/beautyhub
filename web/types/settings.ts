@@ -108,6 +108,8 @@ export interface AppSettings {
   financialSettings: FinancialSettings
   staffSettings: StaffSettings
   systemSettings: SystemSettings
+  securitySettings?: SecuritySettings
+  displaySettings?: DisplaySettings
 }
 
 /**
@@ -119,6 +121,8 @@ export interface SettingsUpdateInput {
   financialSettings?: Partial<FinancialSettings>
   staffSettings?: Partial<StaffSettings>
   systemSettings?: Partial<SystemSettings>
+  securitySettings?: Partial<SecuritySettings>
+  displaySettings?: Partial<DisplaySettings>
 }
 
 /**
@@ -170,6 +174,18 @@ export const DEFAULT_SETTINGS: AppSettings = {
     customerNotificationsEnabled: true,
     internalNotificationsEnabled: true,
     apiKeys: {},
+  },
+  securitySettings: {
+    twoFactorEnabled: false,
+    sessionTimeout: 60,
+  },
+  displaySettings: {
+    theme: 'light',
+    language: 'ko',
+    timezone: 'Asia/Seoul',
+    dateFormat: 'YYYY년 MM월 DD일',
+    currency: 'KRW',
+    timeFormat: '24h',
   },
 }
 

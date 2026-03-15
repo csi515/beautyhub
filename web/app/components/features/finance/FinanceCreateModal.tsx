@@ -1,5 +1,6 @@
 'use client'
 
+import { useState } from 'react'
 import {
   Dialog,
   DialogTitle,
@@ -37,10 +38,17 @@ export default function FinanceCreateModal({
   expenseCategories,
   onSubmit
 }: FinanceCreateModalProps) {
+  const [saving, setSaving] = useState(false)
+
   const handleSubmit = async () => {
-    const success = await onSubmit(incomeCategories, expenseCategories)
-    if (success) {
-      onClose()
+    setSaving(true)
+    try {
+      const success = await onSubmit(incomeCategories, expenseCategories)
+      if (success) {
+        onClose()
+      }
+    } finally {
+      setSaving(false)
     }
   }
 
@@ -61,7 +69,7 @@ export default function FinanceCreateModal({
           </ToggleButtonGroup>
 
           <TextField
-            label="일자"
+            label="일자 *"
             type="date"
             value={form.newDate}
             onChange={e => onFormChange({ newDate: e.target.value })}
@@ -70,7 +78,7 @@ export default function FinanceCreateModal({
           />
 
           <TextField
-            label="금액"
+            label="금액 *"
             value={form.newAmount}
             onChange={e => {
               const numeric = e.target.value.replace(/[^0-9]/g, '')
@@ -83,10 +91,10 @@ export default function FinanceCreateModal({
           />
 
           <FormControl fullWidth>
-            <InputLabel>{form.newType === 'income' ? '수입 카테고리' : '지출 카테고리'}</InputLabel>
+            <InputLabel>{form.newType === 'income' ? '수입 카테고리 *' : '지출 카테고리 *'}</InputLabel>
             <Select
               value={form.selectedCategory}
-              label={form.newType === 'income' ? '수입 카테고리' : '지출 카테고리'}
+              label={form.newType === 'income' ? '수입 카테고리 *' : '지출 카테고리 *'}
               onChange={(e) => onFormChange({ selectedCategory: e.target.value })}
             >
               {(form.newType === 'income' ? incomeCategories : expenseCategories).map(c => (
@@ -107,8 +115,8 @@ export default function FinanceCreateModal({
         </Stack>
       </DialogContent>
       <DialogActions>
-        <Button variant="secondary" onClick={onClose}>취소</Button>
-        <Button variant="primary" onClick={handleSubmit}>저장</Button>
+        <Button variant="secondary" onClick={onClose} disabled={saving}>취소</Button>
+        <Button variant="primary" onClick={handleSubmit} loading={saving} disabled={saving}>저장</Button>
       </DialogActions>
     </Dialog>
   )

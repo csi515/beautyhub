@@ -19,6 +19,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang="ko" className={`h-full ${pretendard.variable}`}>
       <head>
+        <link rel="icon" href="/icon.svg" type="image/svg+xml" sizes="any" />
         {/* 뷰포트 메타 태그 - 모바일 최적화 필수 */}
         <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=5, user-scalable=yes, viewport-fit=cover" />
         {/* Pretendard 폰트 로드 - 모바일 성능 최적화 */}

@@ -2,9 +2,6 @@
 
 import { Plus } from 'lucide-react'
 import { useState, lazy, Suspense } from 'react'
-import { useAppToast } from '../lib/ui/toast'
-import { exportToExcel, prepareCustomerDataForExport } from '../lib/utils/export'
-
 // MUI 레이아웃 유틸리티 (허용)
 import Box from '@mui/material/Box'
 import Stack from '@mui/material/Stack'
@@ -34,7 +31,6 @@ const CustomerDetailModal = lazy(() => import('../components/modals/CustomerDeta
 export default function CustomersPage() {
   const [detailOpen, setDetailOpen] = useState(false)
   const [selected, setSelected] = useState<Customer | null>(null)
-  const toast = useAppToast()
 
   // Search
   const { query, setQuery } = useSearch({ debounceMs: 300 })
@@ -71,12 +67,6 @@ export default function CustomersPage() {
     paginatedRows
   } = useCustomerFilters(customers, pointsByCustomer, filters)
 
-  const handleExport = () => {
-    const dataToExport = prepareCustomerDataForExport(filteredRows)
-    exportToExcel(dataToExport, `고객목록_${new Date().toISOString().slice(0, 10)}.xlsx`)
-    toast.success('엑셀 파일이 다운로드되었습니다')
-  }
-
   // Reset filters
   const handleResetFilters = () => {
     setFilters({
@@ -94,7 +84,7 @@ export default function CustomersPage() {
 
   return (
     <PageContainer maxWidth="xl" fullScreenOnTablet>
-      <Stack spacing={3} sx={{ flex: 1, minHeight: 0, minWidth: 0, overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
+      <Stack spacing={2} sx={{ flex: 1, minHeight: 0, minWidth: 0, overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
       <PageIntro description="고객 목록을 검색하고 관리합니다" count={`${filteredRows.length}명`} />
       {/* 검색 */}
       <Box sx={{ flexShrink: 0 }}>
@@ -104,7 +94,6 @@ export default function CustomersPage() {
         filters={filters}
         onFiltersChange={handleFiltersChange}
         onResetFilters={handleResetFilters}
-        onExport={handleExport}
         onCreateCustomer={() => {
           setSelected({ id: '', owner_id: '', name: '', phone: '', email: '', address: '' } as Customer)
           setDetailOpen(true)
@@ -174,6 +163,7 @@ export default function CustomersPage() {
         }}
         selectedCustomerIds={selectedCustomerIds}
         onClearSelection={() => updateSelectedCustomerIds([])}
+        onRefresh={refreshCustomers}
       />
       </Box>
 

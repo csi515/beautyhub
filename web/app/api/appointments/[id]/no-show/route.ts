@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { createSupabaseServerClient } from '@/lib/supabase/server'
 import { getUserIdFromCookies } from '@/lib/auth/user'
 import { AppointmentsRepository } from '@/app/lib/repositories/appointments.repository'
+import { logger } from '@/app/lib/utils/logger'
 
 /**
  * PATCH /api/appointments/[id]/no-show
@@ -25,7 +26,7 @@ export async function PATCH(
 
     return NextResponse.json(appointment)
   } catch (error) {
-    console.error('Error marking appointment as no-show:', error)
+    logger.error('Error marking appointment as no-show', error, 'AppointmentNoShow')
     return NextResponse.json(
       { error: 'Failed to mark appointment as no-show' },
       { status: 500 }

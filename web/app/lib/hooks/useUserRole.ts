@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useState } from 'react'
+import { logger } from '@/app/lib/utils/logger'
 import { createSupabaseBrowserClient } from '@/lib/supabase/client'
 
 type UserRole = 'admin' | 'user' | null
@@ -37,7 +38,7 @@ export function useUserRole(): UseUserRoleReturn {
 
                 setRole((data?.role as UserRole) || 'user')
             } catch (error) {
-                console.error('Failed to fetch user role:', error)
+                logger.error('Failed to fetch user role', error, 'useUserRole')
                 setRole(null)
             } finally {
                 setIsLoading(false)

@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect, useCallback } from 'react'
+import { logger } from '@/app/lib/utils/logger'
 
 interface BeforeInstallPromptEvent extends Event {
   prompt: () => Promise<void>
@@ -103,7 +104,7 @@ export function useInstallPrompt(): UseInstallPromptReturn {
       
       return outcome === 'accepted'
     } catch (error) {
-      console.error('설치 프롬프트 오류:', error)
+      logger.error('설치 프롬프트 오류', error, 'useInstallPrompt')
       return false
     }
   }, [deferredPrompt])

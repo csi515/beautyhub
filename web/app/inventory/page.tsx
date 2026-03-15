@@ -3,7 +3,7 @@
 import { useState } from 'react'
 import { Box, Typography, Alert, Stack, CardContent } from '@mui/material'
 import { useTheme, useMediaQuery } from '@mui/material'
-import { PackageX, Download, Plus } from 'lucide-react'
+import { PackageX, Plus } from 'lucide-react'
 
 import PageContainer from '@/app/components/layout/PageContainer'
 import PageIntro from '@/app/components/common/PageIntro'
@@ -27,8 +27,6 @@ export interface InventoryFilters {
 }
 import BulkActionBar from '@/app/components/features/inventory/BulkActionBar'
 import ProductAddModal from '@/app/components/features/inventory/ProductAddModal'
-import { exportToExcel, prepareInventoryDataForExport } from '@/app/lib/utils/export'
-
 import { INVENTORY_PAGE_SIZE } from '@/app/lib/constants/pagination'
 import { useInventoryData } from './hooks/useInventoryData'
 import { useInventoryActions } from './hooks/useInventoryActions'
@@ -90,6 +88,7 @@ export default function InventoryPage() {
         handleStockUpdate,
         quickStockAdjust,
         acknowledgeAllAlerts,
+        acknowledging,
     } = useInventoryActions(refetch)
 
     // Helper functions
@@ -126,11 +125,6 @@ export default function InventoryPage() {
         }
     }
 
-    function handleExport() {
-        const dataToExport = prepareInventoryDataForExport(products)
-        exportToExcel(dataToExport, `재고현황_${new Date().toISOString().slice(0, 10)}.xlsx`)
-    }
-
     if (loading) {
         return (
             <PageContainer maxWidth="xl" fullScreenOnTablet>
@@ -148,9 +142,9 @@ export default function InventoryPage() {
                 <InventorySummaryCards products={[]} />
                 <EmptyState
                     icon={PackageX}
-                    title="등록된 제품이 없습니다"
-                    description="새로운 제품을 등록하고 재고를 관리해보세요."
-                    actionLabel="제품 추가"
+                    title="등록된 상품이 없습니다"
+                    description="새로운 상품을 등록하고 재고를 관리해보세요."
+                    actionLabel="상품 추가"
                     onAction={() => setProductAddModalOpen(true)}
                 />
             </PageContainer>
@@ -159,7 +153,7 @@ export default function InventoryPage() {
 
     return (
         <PageContainer maxWidth="xl" fullScreenOnTablet>
-            <Stack spacing={3} sx={{ flex: 1, minHeight: 0, overflow: 'auto', display: 'flex', flexDirection: 'column' }}>
+            <Stack spacing={2} sx={{ flex: 1, minHeight: 0, overflow: 'auto', display: 'flex', flexDirection: 'column' }}>
             <PageIntro description="재고 현황을 확인하고 입출고를 관리합니다" count={total} />
             <Box sx={{ flexShrink: 0 }}>
             {/* 알림 섹션 */}
@@ -168,7 +162,7 @@ export default function InventoryPage() {
                     severity="warning"
                     sx={{ mb: 3 }}
                     action={
-                        <Button variant="ghost" size="sm" onClick={acknowledgeAllAlerts}>
+                        <Button variant="ghost" size="sm" onClick={acknowledgeAllAlerts} loading={acknowledging} disabled={acknowledging}>
                             모두 확인
                         </Button>
                     }
@@ -192,24 +186,17 @@ export default function InventoryPage() {
                                 setSearch(newSearch)
                                 setPage(1)
                             }}
+                            placeholder="상품명 검색..."
                         />
                     </Box>
                     <Stack direction="row" spacing={1} sx={{ flexShrink: 0 }}>
-                        <Button
-                            variant="secondary"
-                            leftIcon={<Download size={16} />}
-                            onClick={handleExport}
-                            sx={{ whiteSpace: 'nowrap', display: { xs: 'none', lg: 'inline-flex' } }}
-                        >
-                            엑셀 내보내기
-                        </Button>
                         <Button
                             variant="primary"
                             leftIcon={<Plus size={16} />}
                             onClick={() => setProductAddModalOpen(true)}
                             sx={{ whiteSpace: 'nowrap' }}
                         >
-                            제품 추가
+                            상품 추가
                         </Button>
                     </Stack>
                 </Stack>

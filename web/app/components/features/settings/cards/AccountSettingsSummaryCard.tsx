@@ -12,19 +12,20 @@ type Props = {
 
 export default function AccountSettingsSummaryCard({ onLogout, onExportData }: Props) {
     return (
-        <Card>
-            <Box sx={{ mb: 2 }}>
-                <Typography variant="h6" fontWeight={600} sx={{ color: 'text.primary' }}>
+        <Card compact>
+            <Box sx={{ mb: 1.5 }}>
+                <Typography variant="subtitle1" fontWeight={600} sx={{ color: 'text.primary' }}>
                     계정 관리
                 </Typography>
-                <Typography variant="body2" sx={{ color: 'text.secondary', mt: 0.5 }}>
+                <Typography variant="caption" sx={{ color: 'text.secondary', mt: 0.5, display: 'block', fontSize: '0.8125rem' }}>
                     계정 관련 작업을 수행하세요
                 </Typography>
             </Box>
 
-            <Stack spacing={1.5}>
+            <Stack spacing={1}>
                 <Button
                     variant="outline"
+                    size="sm"
                     onClick={onExportData}
                     leftIcon={<Download size={16} />}
                     sx={{ justifyContent: 'flex-start' }}
@@ -34,6 +35,7 @@ export default function AccountSettingsSummaryCard({ onLogout, onExportData }: P
 
                 <Button
                     variant="outline"
+                    size="sm"
                     onClick={onLogout}
                     leftIcon={<LogOut size={16} />}
                     sx={{ justifyContent: 'flex-start', color: 'text.secondary', '&:hover': { color: 'text.primary' } }}

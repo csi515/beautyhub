@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import { logger } from '@/app/lib/utils/logger'
 import { settingsApi } from '../api/settings'
 
 /**
@@ -18,8 +19,7 @@ export function useShopName(): string {
                     setShopName(settings.businessProfile.storeName)
                 }
             } catch (error) {
-                // 에러 발생 시 기본값 유지
-                console.error('Failed to load shop name:', error)
+                logger.error('Failed to load shop name', error, 'useShopName')
             }
         }
 

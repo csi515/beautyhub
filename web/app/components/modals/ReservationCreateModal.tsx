@@ -8,13 +8,13 @@ import DateInput from '@/app/components/ui/DateInput'
 import TimeInput from '@/app/components/ui/TimeInput'
 import CheckboxField from '@/app/components/ui/CheckboxField'
 import { useAppToast } from '@/app/lib/ui/toast'
-import StaffAutoComplete from '@/app/components/features/staff/StaffAutoComplete'
 import Textarea from '@/app/components/ui/Textarea'
 import Select from '@/app/components/ui/Select'
 import { useCustomerAndProductLists } from '@/app/lib/hooks/components/useCustomerAndProductLists'
 import { appointmentsApi } from '@/app/lib/api/appointments'
 import { customerProductsApi } from '@/app/lib/api/customer-products'
 import { useAppointmentTemplates } from '@/app/lib/hooks/useAppointmentTemplates'
+import { logger } from '@/app/lib/utils/logger'
 import type { AppointmentCreateInput, Customer, Product, AppointmentTemplate } from '@/types/entities'
 
 type Draft = {
@@ -24,7 +24,6 @@ type Draft = {
   status: string
   notes: string
   customer_id?: string
-  staff_id?: string
   service_id?: string
 }
 
@@ -32,7 +31,6 @@ export default function ReservationCreateModal({ open, onClose, draft, onSaved }
   const [form, setForm] = useState<Draft>(draft)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
-  const [conflictWarning, setConflictWarning] = useState<string | null>(null)
   const toast = useAppToast()
   const { customers, products } = useCustomerAndProductLists(open)
   const { data: templates = [] } = useAppointmentTemplates()
@@ -74,46 +72,7 @@ export default function ReservationCreateModal({ open, onClose, draft, onSaved }
     }
   }, [selectedTemplateId, templates, open])
 
-  // 중복 검사
-  useEffect(() => {
-    const checkConflict = async () => {
-      if (!form.date || !form.start || !form.staff_id || !open) {
-        setConflictWarning(null)
-        return
-      }
-
-      try {
-        const [y, m, d] = form.date.split('-').map(Number)
-        const [hh, mm] = form.start.split(':').map(Number)
-        const appointmentDate = new Date(y || 2024, (m || 1) - 1, d || 1, hh || 0, mm || 0, 0).toISOString()
-
-        const result = await appointmentsApi.checkConflict({
-          appointment_date: appointmentDate,
-          staff_id: form.staff_id,
-          duration_minutes: durationMinutes,
-        })
-
-        if (result.hasConflict && result.conflictingAppointments.length > 0) {
-          const conflictTimes = result.conflictingAppointments
-            .map((a) => {
-              const d = new Date(a.appointment_date)
-              return `${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`
-            })
-            .join(', ')
-          setConflictWarning(`해당 시간대에 이미 예약이 있습니다: ${conflictTimes}`)
-        } else {
-          setConflictWarning(null)
-        }
-      } catch (error) {
-        // 중복 검사 실패는 경고만 표시
-        console.error('중복 검사 실패:', error)
-      }
-    }
-
-    // 디바운스: 500ms 후에 검사
-    const timeoutId = setTimeout(checkConflict, 500)
-    return () => clearTimeout(timeoutId)
-  }, [form.date, form.start, form.staff_id, durationMinutes, open])
+  // 중복 검사 (staff 제거로 비활성화)
 
   // Reset form to fresh draft on open
   useEffect(() => {
@@ -122,7 +81,6 @@ export default function ReservationCreateModal({ open, onClose, draft, onSaved }
       setCustomerQuery('')
       setShowSuggest(false)
       setSelectedTemplateId('')
-      setConflictWarning(null)
     }
   }, [open, draft])
 
@@ -150,25 +108,6 @@ export default function ReservationCreateModal({ open, onClose, draft, onSaved }
       setLoading(true); setError('')
       if (!form.date || !form.start) { setError('날짜와 시작 시간은 필수입니다.'); setLoading(false); return }
 
-      // 중복 검사 재확인
-      if (form.staff_id) {
-        const [y, m, d] = form.date.split('-').map(Number)
-        const [hh, mm] = form.start.split(':').map(Number)
-        const appointmentDate = new Date(y || 2024, (m || 1) - 1, d || 1, hh || 0, mm || 0, 0).toISOString()
-
-        const conflictResult = await appointmentsApi.checkConflict({
-          appointment_date: appointmentDate,
-          staff_id: form.staff_id,
-          duration_minutes: durationMinutes,
-        })
-
-        if (conflictResult.hasConflict) {
-          setError('해당 시간대에 이미 예약이 있습니다. 다른 시간을 선택해주세요.')
-          setLoading(false)
-          return
-        }
-      }
-
       // 로컬 날짜/시간을 UTC ISO 문자열로 변환하여 TZ 오차 방지
       const [y, m, d] = form.date.split('-').map(Number)
       const [hh, mm] = form.start.split(':').map(Number)
@@ -178,7 +117,6 @@ export default function ReservationCreateModal({ open, onClose, draft, onSaved }
         appointment_date: startIso,
         status: form.status,
         customer_id: form.customer_id || null,
-        staff_id: form.staff_id || null,
         service_id: form.service_id || null,
       }
       // notes는 값이 있을 때만 포함
@@ -203,7 +141,7 @@ export default function ReservationCreateModal({ open, onClose, draft, onSaved }
             toast.success('예약과 매출이 자동으로 생성되었습니다.')
           }
         } catch (error) {
-          console.error('자동 매출 생성 실패:', error)
+          logger.error('자동 매출 생성 실패', error, 'ReservationCreateModal')
           toast.error('예약은 저장되었지만 매출 생성에 실패했습니다.')
         }
       }
@@ -247,11 +185,6 @@ export default function ReservationCreateModal({ open, onClose, draft, onSaved }
         <div className="grid gap-4 md:grid-cols-[280px,1fr]">
           <div className="space-y-3">
             {error && <p className="text-sm text-rose-600">{error}</p>}
-            {conflictWarning && (
-              <div className="p-2 bg-amber-50 border border-amber-200 rounded-lg">
-                <p className="text-sm text-amber-800">{conflictWarning}</p>
-              </div>
-            )}
           </div>
           <div className="space-y-3">
             <div className="space-y-3">
@@ -378,25 +311,6 @@ export default function ReservationCreateModal({ open, onClose, draft, onSaved }
                     <option value="cancelled">취소</option>
                     <option value="complete">완료</option>
                   </Select>
-                </div>
-                <div className="col-span-2">
-                  <label className="mb-1 block text-sm font-medium text-gray-700">
-                    담당 직원(선택)
-                  </label>
-                  <StaffAutoComplete
-                    value={form.staff_id || ''}
-                    onChange={(v) =>
-                      setForm((f) => {
-                        if (!f) return f
-                        if (v) {
-                          return { ...f, staff_id: v }
-                        }
-                        const next = { ...f }
-                        delete next.staff_id
-                        return next
-                      })
-                    }
-                  />
                 </div>
                 <div>
                   <Select

@@ -1,8 +1,10 @@
 'use client'
 
+import { useState } from 'react'
 import { Stack, Typography, FormControl, Select, MenuItem, Pagination, Paper } from '@mui/material'
 import Button from '@/app/components/ui/Button'
 import { useAppToast } from '@/app/lib/ui/toast'
+import BulkStatusModal from './BulkStatusModal'
 
 interface CustomerPaginationProps {
   loading: boolean
@@ -14,6 +16,7 @@ interface CustomerPaginationProps {
   onPageSizeChange: (pageSize: number) => void
   selectedCustomerIds: string[]
   onClearSelection: () => void
+  onRefresh?: () => void
 }
 
 export default function CustomerPagination({
@@ -25,13 +28,27 @@ export default function CustomerPagination({
   onPageChange,
   onPageSizeChange,
   selectedCustomerIds,
-  onClearSelection
+  onClearSelection,
+  onRefresh,
 }: CustomerPaginationProps) {
   const toast = useAppToast()
+  const [bulkModalOpen, setBulkModalOpen] = useState(false)
 
-  const handleBulkAction = () => {
-    // TODO: 일괄 상태 변경 기능 구현
-    toast.info('일괄 상태 변경 기능은 곧 추가됩니다')
+  const handleBulkStatusConfirm = async (active: boolean) => {
+    const res = await fetch('/api/customers/bulk-update', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      credentials: 'include',
+      body: JSON.stringify({ ids: selectedCustomerIds, active }),
+    })
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({}))
+      throw new Error(err?.message ?? '일괄 상태 변경에 실패했습니다.')
+    }
+    const { updated } = await res.json()
+    toast.success(`${updated}명의 고객이 ${active ? '활성' : '비활성'}으로 변경되었습니다.`)
+    onClearSelection()
+    onRefresh?.()
   }
 
   if (loading || filteredCount === 0) return null
@@ -41,15 +58,16 @@ export default function CustomerPagination({
       {/* 선택된 고객 표시 및 일괄 작업 */}
       {selectedCustomerIds.length > 0 && (
         <Paper sx={{ p: 2, mb: 3, borderRadius: 2, bgcolor: 'primary.light', border: '1px solid', borderColor: 'primary.main' }}>
-          <Stack direction="row" justifyContent="space-between" alignItems="center">
-            <Typography variant="body1" fontWeight={600} color="primary.dark">
+          <Stack direction="row" justifyContent="space-between" alignItems="center" flexWrap="nowrap" sx={{ minWidth: 0, overflow: 'auto' }}>
+            <Typography variant="body1" fontWeight={600} color="primary.dark" sx={{ whiteSpace: 'nowrap', flexShrink: 0 }}>
               {selectedCustomerIds.length}명의 고객이 선택되었습니다
             </Typography>
-            <Stack direction="row" spacing={1}>
+            <Stack direction="row" spacing={1} flexWrap="nowrap" sx={{ flexShrink: 0 }}>
               <Button
                 variant="primary"
                 size="sm"
-                onClick={handleBulkAction}
+                onClick={() => setBulkModalOpen(true)}
+                aria-label="일괄 상태 변경"
               >
                 상태 변경
               </Button>
@@ -100,6 +118,13 @@ export default function CustomerPagination({
           />
         </Stack>
       </Stack>
+
+      <BulkStatusModal
+        open={bulkModalOpen}
+        onClose={() => setBulkModalOpen(false)}
+        selectedCount={selectedCustomerIds.length}
+        onConfirm={handleBulkStatusConfirm}
+      />
     </>
   )
 }

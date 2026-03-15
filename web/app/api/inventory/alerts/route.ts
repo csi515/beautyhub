@@ -3,6 +3,7 @@ import { createSupabaseServerClient } from '@/lib/supabase/server'
 import { getUserIdFromCookies } from '@/lib/auth/user'
 import { InventoryAlertsRepository } from '@/app/lib/repositories/inventory-alerts.repository'
 import { ProductsRepository } from '@/app/lib/repositories/products.repository'
+import { logger } from '@/app/lib/utils/logger'
 
 /**
  * GET /api/inventory/alerts
@@ -53,7 +54,7 @@ export async function GET(request: NextRequest) {
 
         return NextResponse.json(alertsWithProducts)
     } catch (error) {
-        console.error('Error fetching inventory alerts:', error)
+        logger.error('Error fetching inventory alerts', error, 'InventoryAlerts')
         return NextResponse.json(
             { error: 'Failed to fetch inventory alerts' },
             { status: 500 }
@@ -91,7 +92,7 @@ export async function PATCH(request: NextRequest) {
 
         return NextResponse.json({ success: true })
     } catch (error) {
-        console.error('Error acknowledging inventory alerts:', error)
+        logger.error('Error acknowledging inventory alerts', error, 'InventoryAlerts')
         return NextResponse.json(
             { error: 'Failed to acknowledge inventory alerts' },
             { status: 500 }
@@ -123,7 +124,7 @@ export async function DELETE(request: NextRequest) {
 
         return NextResponse.json({ success: true })
     } catch (error) {
-        console.error('Error deleting inventory alert:', error)
+        logger.error('Error deleting inventory alert', error, 'InventoryAlerts')
         return NextResponse.json(
             { error: 'Failed to delete inventory alert' },
             { status: 500 }

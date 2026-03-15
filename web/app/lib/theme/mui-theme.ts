@@ -120,6 +120,7 @@ export const theme = createTheme(
             MuiButton: {
                 styleOverrides: {
                     root: {
+                        whiteSpace: 'nowrap',
                         borderRadius: '0.75rem', // 12px
                         padding: '0.625rem 1.25rem', // 10px 20px
                         minHeight: '44px', // 터치 최소 크기
@@ -190,6 +191,13 @@ export const theme = createTheme(
                     },
                 },
             },
+            MuiInputLabel: {
+                styleOverrides: {
+                    root: {
+                        whiteSpace: 'nowrap',
+                    },
+                },
+            },
             MuiTextField: {
                 styleOverrides: {
                     root: {
@@ -232,6 +240,7 @@ export const theme = createTheme(
             MuiChip: {
                 styleOverrides: {
                     root: {
+                        whiteSpace: 'nowrap',
                         borderRadius: '0.5rem',
                         minHeight: 44,
                     },
@@ -262,6 +271,20 @@ export const theme = createTheme(
             MuiPagination: {
                 defaultProps: {
                     size: 'small',
+                },
+            },
+            MuiToggleButton: {
+                styleOverrides: {
+                    root: {
+                        whiteSpace: 'nowrap',
+                    },
+                },
+            },
+            MuiMenuItem: {
+                styleOverrides: {
+                    root: {
+                        whiteSpace: 'nowrap',
+                    },
                 },
             },
         },

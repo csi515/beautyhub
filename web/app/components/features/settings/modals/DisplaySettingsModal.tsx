@@ -5,6 +5,7 @@ import { Modal, ModalHeader, ModalBody, ModalFooter } from '@/app/components/ui/
 import Button from '@/app/components/ui/Button'
 import Select from '@/app/components/ui/Select'
 import ConfirmDialog from '@/app/components/ui/ConfirmDialog'
+import { CONFIRMATION_MESSAGES } from '@/app/lib/utils/messages'
 import { type DisplaySettings } from '@/types/settings'
 
 type Props = {
@@ -27,7 +28,7 @@ export default function DisplaySettingsModal({ open, data, onClose, onSave }: Pr
         }
     }, [open, data])
 
-    const handleChange = (field: keyof DisplaySettings, value: any) => {
+    const handleChange = (field: keyof DisplaySettings, value: string | number | boolean) => {
         setFormData((prev) => ({ ...prev, [field]: value }))
         setHasChanges(true)
     }
@@ -146,7 +147,7 @@ export default function DisplaySettingsModal({ open, data, onClose, onSave }: Pr
                 onClose={() => setConfirmCloseOpen(false)}
                 onConfirm={handleCancel}
                 title="변경사항 닫기"
-                description="저장하지 않은 변경사항이 있습니다. 정말 닫으시겠습니까?"
+                description={CONFIRMATION_MESSAGES.cancel}
                 confirmText="닫기"
                 variant="danger"
             />

@@ -3,6 +3,7 @@ import { withAuth } from '@/app/lib/api/middleware'
 import { CustomersRepository } from '@/app/lib/repositories/customers.repository'
 import { TransactionsRepository } from '@/app/lib/repositories/transactions.repository'
 import { AppointmentsRepository } from '@/app/lib/repositories/appointments.repository'
+import { logger } from '@/app/lib/utils/logger'
 
 /**
  * GET /api/analytics/customer-ltv
@@ -53,7 +54,7 @@ export const GET = withAuth(async (_request: NextRequest, { userId, supabase }) 
 
     return NextResponse.json(sortedLTVs)
   } catch (error) {
-    console.error('Error calculating customer LTV:', error)
+    logger.error('Error calculating customer LTV', error, 'CustomerLTV')
     return NextResponse.json(
       { error: 'Failed to calculate customer LTV' },
       { status: 500 }

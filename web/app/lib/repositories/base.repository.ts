@@ -6,6 +6,7 @@
 import { SupabaseClient } from '@supabase/supabase-js'
 import { ApiError, NotFoundError, UnauthorizedError } from '../api/errors'
 import type { PaginationParams, SearchParams } from '@/types/common'
+import { logger } from '../utils/logger'
 
 
 
@@ -32,7 +33,7 @@ export abstract class BaseRepository<T> {
   // ... (handleSupabaseError remains)
 
   protected handleSupabaseError(error: unknown): never {
-    console.error(`[${this.tableName}] Supabase Error:`, error)
+    logger.error(`Supabase Error`, error, this.tableName)
 
     const err = error as { code?: string; message?: string; status?: number }
 
@@ -70,6 +71,14 @@ export abstract class BaseRepository<T> {
    * 모든 레코드 조회 (페이지네이션 지원)
    */
   async findAll(options: QueryOptions = {}): Promise<T[]> {
+    const result = await this.findAllWithCount(options)
+    return result.data
+  }
+
+  /**
+   * 페이지네이션용 조회 (data + total 반환)
+   */
+  async findAllWithCount(options: QueryOptions = {}): Promise<{ data: T[]; total: number }> {
     const {
       limit = 50,
       offset = 0,
@@ -80,7 +89,7 @@ export abstract class BaseRepository<T> {
 
     let query = this.supabase
       .from(this.tableName)
-      .select('*')
+      .select('*', { count: 'exact' })
       .eq('owner_id', this.userId)
       .order(orderBy, { ascending })
 
@@ -100,13 +109,16 @@ export abstract class BaseRepository<T> {
       })
     }
 
-    const { data, error } = await query.range(offset, offset + limit - 1)
+    const { data, error, count } = await query.range(offset, offset + limit - 1)
 
     if (error) {
       this.handleSupabaseError(error)
     }
 
-    return (data || []) as T[]
+    return {
+      data: (data || []) as T[],
+      total: count ?? (data?.length ?? 0),
+    }
   }
 
   /**

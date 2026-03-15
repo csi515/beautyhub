@@ -10,7 +10,6 @@ import CustomerSummaryBar from './customer-detail/CustomerSummaryBar'
 import CustomerOverviewTab from './customer-detail/CustomerOverviewTab'
 import CustomerTransactionsTab from './customer-detail/CustomerTransactionsTab'
 import CustomerConsultationNotesTab from './customer-detail/CustomerConsultationNotesTab'
-import CustomerPhotosTab from './customer-detail/CustomerPhotosTab'
 import CustomerVisitsTab from './customer-detail/CustomerVisitsTab'
 import type { Customer } from '@/types/entities'
 import { useCustomerDetail } from './customer-detail/useCustomerDetail'
@@ -28,7 +27,7 @@ export default function CustomerDetailModal({
   onSaved: () => void
   onDeleted: () => void
 }) {
-  const [activeTab, setActiveTab] = useState<'overview' | 'transactions' | 'visits' | 'consultation' | 'photos'>('overview')
+  const [activeTab, setActiveTab] = useState<'overview' | 'transactions' | 'visits' | 'consultation'>('overview')
 
   const {
     form, setForm,
@@ -154,7 +153,7 @@ export default function CustomerDetailModal({
             </Box>
           ) : (
             // 기존 고객: 탭 표시
-            <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as 'overview' | 'transactions' | 'visits' | 'consultation' | 'photos')}>
+            <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as 'overview' | 'transactions' | 'visits' | 'consultation')}>
               <TabsList>
                 <TabsTrigger value="overview">
                   기본 정보
@@ -167,9 +166,6 @@ export default function CustomerDetailModal({
                 </TabsTrigger>
                 <TabsTrigger value="consultation">
                   상담 일지
-                </TabsTrigger>
-                <TabsTrigger value="photos">
-                  사진
                 </TabsTrigger>
               </TabsList>
 
@@ -257,10 +253,6 @@ export default function CustomerDetailModal({
 
               <TabsContent value="consultation">
                 <CustomerConsultationNotesTab customerId={form?.id || ''} />
-              </TabsContent>
-
-              <TabsContent value="photos">
-                <CustomerPhotosTab customerId={form?.id || ''} />
               </TabsContent>
             </Tabs>
           )}

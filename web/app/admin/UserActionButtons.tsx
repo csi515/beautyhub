@@ -119,7 +119,7 @@ export default function UserActionButtons({ userId, userName, isApproved = false
                         <Button variant="secondary" onClick={() => setShowSuspendModal(false)}>
                             취소
                         </Button>
-                        <Button variant="danger" onClick={confirmSuspend}>
+                        <Button variant="danger" onClick={confirmSuspend} loading={isSuspending} disabled={pending}>
                             사용 중지
                         </Button>
                     </ModalFooter>
@@ -170,7 +170,7 @@ export default function UserActionButtons({ userId, userName, isApproved = false
                     <Button variant="secondary" onClick={() => setShowRejectModal(false)}>
                         취소
                     </Button>
-                    <Button variant="danger" onClick={confirmReject}>
+                    <Button variant="danger" onClick={confirmReject} loading={isRejecting} disabled={pending}>
                         거절
                     </Button>
                 </ModalFooter>

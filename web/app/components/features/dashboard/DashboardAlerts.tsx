@@ -2,14 +2,10 @@
 
 import { useMemo } from 'react'
 import Card from '@/app/components/ui/Card'
-import { Box, Typography, Stack, Chip, Button as MuiButton, Divider } from '@mui/material'
-import { Bell, Clock, UserX } from 'lucide-react'
+import { Box, Typography, Stack, Chip, Button as MuiButton } from '@mui/material'
+import { Bell, Clock } from 'lucide-react'
 import Link from 'next/link'
-import { format } from 'date-fns'
-import { ko } from 'date-fns/locale'
 import { useAppointmentReminders, useMarkReminderAsSent } from '@/app/lib/hooks/useAppointmentReminders'
-import { customersApi } from '@/app/lib/api/customers'
-import { useQuery } from '@tanstack/react-query'
 import type { AppointmentReminder } from '@/types/entities'
 import { useState } from 'react'
 
@@ -19,20 +15,13 @@ export default function DashboardAlerts() {
   const { data: reminders = [], isLoading: remindersLoading } = useAppointmentReminders({ upcoming: true })
   const markAsSentMutation = useMarkReminderAsSent()
 
-  // 장기 미방문 고객 조회 (기본 90일)
-  const { data: inactiveCustomers = [], isLoading: inactiveLoading } = useQuery({
-    queryKey: ['inactive-customers', 90],
-    queryFn: () => customersApi.inactive(90),
-    staleTime: 5 * 60 * 1000, // 5분
-  })
-
   const unsentReminders = useMemo(() => {
     return reminders.filter((r: AppointmentReminder) => !r.sent_at)
   }, [reminders])
 
-  const hasAlerts = unsentReminders.length > 0 || (inactiveCustomers?.length || 0) > 0
+  const hasAlerts = unsentReminders.length > 0
 
-  if (remindersLoading || inactiveLoading) {
+  if (remindersLoading) {
     return null
   }
 
@@ -129,63 +118,6 @@ export default function DashboardAlerts() {
           </Box>
         )}
 
-        {/* 장기 미방문 고객 알림 */}
-        {inactiveCustomers && inactiveCustomers.length > 0 && (
-          <>
-            {unsentReminders.length > 0 && <Divider sx={{ my: 1 }} />}
-            <Box>
-              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1.5 }}>
-                <UserX size={16} className="text-blue-600" />
-                <Typography variant="subtitle2" fontWeight={600}>
-                  장기 미방문 고객 ({inactiveCustomers.length})
-                </Typography>
-              </Box>
-              <Stack spacing={1}>
-                {inactiveCustomers.slice(0, 5).map((customer: any) => {
-                  const daysSinceVisit = customer.days_since_last_visit || 0
-                  return (
-                    <Box
-                      key={customer.id}
-                      sx={{
-                        p: 1.5,
-                        bgcolor: 'blue.50',
-                        border: '1px solid',
-                        borderColor: 'blue.200',
-                        borderRadius: 2,
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'space-between',
-                      }}
-                    >
-                      <Box>
-                        <Typography variant="body2" fontWeight={500}>
-                          {customer.name}
-                        </Typography>
-                        <Typography variant="caption" color="text.secondary">
-                          {daysSinceVisit}일간 방문 없음
-                          {customer.last_visit_date && ` (마지막 방문: ${format(new Date(customer.last_visit_date), 'yyyy.MM.dd', { locale: ko })})`}
-                        </Typography>
-                      </Box>
-                      <Chip label={`${daysSinceVisit}일`} size="small" sx={{ bgcolor: 'blue.100', color: 'blue.800' }} />
-                    </Box>
-                  )
-                })}
-                {inactiveCustomers.length > 5 && (
-                  <Typography variant="caption" color="text.secondary" sx={{ textAlign: 'right' }}>
-                    외 {inactiveCustomers.length - 5}명 더
-                  </Typography>
-                )}
-              </Stack>
-              <Box sx={{ mt: 1.5 }}>
-                <Link href="/customers" style={{ textDecoration: 'none', display: 'block' }}>
-                  <MuiButton variant="outlined" fullWidth size="small">
-                    고객 관리로 이동
-                  </MuiButton>
-                </Link>
-              </Box>
-            </Box>
-          </>
-        )}
       </Stack>
     </Card>
   )

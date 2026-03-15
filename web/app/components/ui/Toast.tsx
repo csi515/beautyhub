@@ -173,12 +173,13 @@ function ToastItem({
         <IconButton
           onClick={handleRemove}
           size="small"
+          aria-label="닫기"
+          sx={{ minWidth: { xs: 44, sm: 40 }, minHeight: { xs: 44, sm: 40 } }}
           className={clsx(
             'flex-shrink-0 transition-all duration-200',
             'hover:scale-110 active:scale-95 touch-manipulation',
             config.close
           )}
-          aria-label="닫기"
         >
           <X className="h-4 w-4" />
         </IconButton>

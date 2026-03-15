@@ -59,7 +59,11 @@ export default function FinanceMobileCards({
       </Box>
       {loading && <CardSkeleton count={4} />}
       {!loading && pagedCombined.length === 0 && (
-        <EmptyState title="데이터가 없습니다." />
+        <EmptyState
+          title="데이터가 없습니다."
+          description="수입 또는 지출 내역을 추가해보세요."
+          {...(onCreateNew && { actionLabel: "수입/지출 추가", onAction: onCreateNew })}
+        />
       )}
       {!loading && (
         <Grid container spacing={1.5}>

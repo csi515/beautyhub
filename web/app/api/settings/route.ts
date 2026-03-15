@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createSupabaseServerClient } from '@/lib/supabase/server'
-import { DEFAULT_SETTINGS, type AppSettings, type SettingsUpdateInput } from '@/types/settings'
+import { DEFAULT_SETTINGS, type AppSettings, type SettingsUpdateInput, type SecuritySettings, type DisplaySettings } from '@/types/settings'
+import { logger } from '@/app/lib/utils/logger'
 
 export const dynamic = 'force-dynamic'
 
@@ -24,8 +25,8 @@ export async function GET() {
       .eq('owner_id', user.id)
       .maybeSingle()
 
-    if (error && error.code !== 'PGRST116') { // PGRST116 = no rows returned
-      console.error('Settings fetch error:', error)
+    if (error && error.code !== 'PGRST116') {
+      logger.error('Settings fetch error', error, 'SettingsAPI')
       return NextResponse.json({ error: 'Failed to fetch settings' }, { status: 500 })
     }
 
@@ -36,7 +37,7 @@ export async function GET() {
 
     // 추가 보안 검증: owner_id가 현재 사용자와 일치하는지 확인
     if (data.owner_id !== user.id) {
-      console.error('Security violation: settings owner_id mismatch', {
+      logger.error('Security violation: settings owner_id mismatch', {
         dataOwnerId: data.owner_id,
         currentUserId: user.id
       })
@@ -55,7 +56,7 @@ export async function GET() {
 
     return NextResponse.json(settings)
   } catch (error) {
-    console.error('Settings API error:', error)
+    logger.error('Settings API error', error, 'SettingsAPI')
     return NextResponse.json(
       { error: 'Internal server error' },
       { status: 500 }
@@ -86,13 +87,13 @@ export async function PUT(req: NextRequest) {
       .maybeSingle()
 
     if (fetchError && fetchError.code !== 'PGRST116') {
-      console.error('Settings fetch error:', fetchError)
+      logger.error('Settings fetch error', fetchError, 'SettingsAPI')
       return NextResponse.json({ error: 'Failed to fetch settings' }, { status: 500 })
     }
 
     // 추가 보안 검증: owner_id가 현재 사용자와 일치하는지 확인
     if (existing && existing.owner_id !== user.id) {
-      console.error('Security violation: settings owner_id mismatch', {
+      logger.error('Security violation: settings owner_id mismatch', {
         existingOwnerId: existing.owner_id,
         currentUserId: user.id
       })
@@ -111,6 +112,38 @@ export async function PUT(req: NextRequest) {
     }
 
     // 병합
+    const mergedSecurity: SecuritySettings | undefined = body.securitySettings !== undefined
+      ? ((): SecuritySettings => {
+          const base = DEFAULT_SETTINGS.securitySettings!
+          const curr: Partial<SecuritySettings> = currentSettings.securitySettings ?? {}
+          const upd = body.securitySettings!
+          const result: SecuritySettings = {
+            twoFactorEnabled: upd.twoFactorEnabled ?? curr.twoFactorEnabled ?? base.twoFactorEnabled,
+            sessionTimeout: upd.sessionTimeout ?? curr.sessionTimeout ?? base.sessionTimeout,
+          }
+          if (upd.passwordLastChanged !== undefined || curr.passwordLastChanged !== undefined) {
+            result.passwordLastChanged = upd.passwordLastChanged ?? curr.passwordLastChanged
+          }
+          return result
+        })()
+      : currentSettings.securitySettings
+
+    const mergedDisplay: DisplaySettings | undefined = body.displaySettings !== undefined
+      ? ((): DisplaySettings => {
+          const base = DEFAULT_SETTINGS.displaySettings!
+          const curr: Partial<DisplaySettings> = currentSettings.displaySettings ?? {}
+          const upd = body.displaySettings!
+          return {
+            theme: upd.theme ?? curr.theme ?? base.theme,
+            language: upd.language ?? curr.language ?? base.language,
+            timezone: upd.timezone ?? curr.timezone ?? base.timezone,
+            dateFormat: upd.dateFormat ?? curr.dateFormat ?? base.dateFormat,
+            currency: upd.currency ?? curr.currency ?? base.currency,
+            timeFormat: upd.timeFormat ?? curr.timeFormat ?? base.timeFormat,
+          }
+        })()
+      : currentSettings.displaySettings
+
     const updatedSettings: AppSettings = {
       businessProfile: {
         ...currentSettings.businessProfile,
@@ -132,6 +165,8 @@ export async function PUT(req: NextRequest) {
         ...currentSettings.systemSettings,
         ...body.systemSettings,
       },
+      ...(mergedSecurity !== undefined && { securitySettings: mergedSecurity }),
+      ...(mergedDisplay !== undefined && { displaySettings: mergedDisplay }),
     }
 
     // upsert (owner_id는 항상 현재 사용자로 설정)
@@ -148,13 +183,13 @@ export async function PUT(req: NextRequest) {
       .single()
 
     if (error) {
-      console.error('Settings update error:', error)
+      logger.error('Settings update error', error, 'SettingsAPI')
       return NextResponse.json({ error: 'Failed to update settings' }, { status: 500 })
     }
 
     // 추가 보안 검증: 저장된 데이터의 owner_id 확인
     if (upserted && upserted.owner_id !== user.id) {
-      console.error('Security violation: upserted settings owner_id mismatch', {
+      logger.error('Security violation: upserted settings owner_id mismatch', {
         upsertedOwnerId: upserted.owner_id,
         currentUserId: user.id
       })
@@ -163,7 +198,7 @@ export async function PUT(req: NextRequest) {
 
     return NextResponse.json(updatedSettings)
   } catch (error) {
-    console.error('Settings API error:', error)
+    logger.error('Settings API error', error, 'SettingsAPI')
     return NextResponse.json(
       { error: 'Internal server error' },
       { status: 500 }

@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react'
 import { DollarSign, TrendingUp } from 'lucide-react'
 import { transactionsApi } from '@/app/lib/api/transactions'
+import { logger } from '@/app/lib/utils/logger'
 import type { Transaction } from '@/types/entities'
 
 type CustomerRevenueCardProps = {
@@ -61,7 +62,7 @@ export default function CustomerRevenueCard({ customerId }: CustomerRevenueCardP
           count: customerTxs.length,
         })
       } catch (error) {
-        console.error('매출 조회 오류:', error)
+        logger.error('매출 조회 오류', error, 'CustomerRevenueCard')
       } finally {
         setLoading(false)
       }

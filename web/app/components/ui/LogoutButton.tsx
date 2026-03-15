@@ -6,6 +6,7 @@ import { LogOut } from 'lucide-react'
 import clsx from 'clsx'
 import { useAppToast } from '@/app/lib/ui/toast'
 import { getAuthApi } from '@/app/lib/api/auth'
+import { logger } from '@/app/lib/utils/logger'
 
 type LogoutButtonProps = {
   collapsed?: boolean
@@ -36,7 +37,10 @@ export default function LogoutButton({ collapsed = false, compact = false, class
       await authApi.logout()
       try {
         await fetch('/api/auth/logout', { method: 'POST', credentials: 'include' })
-      } catch (error) { console.error(error) }
+      } catch (error) {
+        logger.error('세션 정리 실패', error, 'LogoutButton')
+        toast.error('세션 정리에 실패했습니다.')
+      }
       if (typeof window !== 'undefined') {
         try {
           localStorage.clear()
@@ -45,7 +49,7 @@ export default function LogoutButton({ collapsed = false, compact = false, class
       router.push('/')
       router.refresh()
     } catch (error) {
-      console.error('로그아웃 오류:', error)
+      logger.error('로그아웃 오류', error, 'LogoutButton')
       toast.error('로그아웃 실패', error instanceof Error ? error.message : '알 수 없는 오류가 발생했습니다.')
       setLoading(false)
     }

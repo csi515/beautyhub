@@ -9,6 +9,16 @@ export function registerServiceWorker() {
     return
   }
 
+  // 개발 모드에서는 SW 미등록 - chunk 404 및 상호작용 불가 방지
+  if (process.env.NODE_ENV === 'development') {
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.getRegistrations().then((regs) => {
+        regs.forEach((r) => r.unregister())
+      })
+    }
+    return
+  }
+
   if ('serviceWorker' in navigator) {
     window.addEventListener('load', () => {
       navigator.serviceWorker

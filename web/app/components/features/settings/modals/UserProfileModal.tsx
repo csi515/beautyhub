@@ -5,6 +5,7 @@ import { Modal, ModalHeader, ModalBody, ModalFooter } from '@/app/components/ui/
 import Button from '@/app/components/ui/Button'
 import Input from '@/app/components/ui/Input'
 import ConfirmDialog from '@/app/components/ui/ConfirmDialog'
+import { CONFIRMATION_MESSAGES } from '@/app/lib/utils/messages'
 import { type UserProfile } from '@/types/settings'
 
 type Props = {
@@ -132,7 +133,7 @@ export default function UserProfileModal({ open, data, onClose, onSave }: Props)
                 onClose={() => setConfirmCloseOpen(false)}
                 onConfirm={handleCancel}
                 title="변경사항 닫기"
-                description="저장하지 않은 변경사항이 있습니다. 정말 닫으시겠습니까?"
+                description={CONFIRMATION_MESSAGES.cancel}
                 confirmText="닫기"
                 variant="danger"
             />

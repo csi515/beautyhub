@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { useAppToast } from '../ui/toast'
-import { exportFinanceToExcel } from '../utils/excelExport'
+import { logger } from '../utils/logger'
+import { exportFinanceToExcel, type FinanceExportData } from '../utils/excelExport'
 import { generateTaxReport } from '../utils/taxReport'
 import { Expense, Transaction, TransactionCreateInput, ExpenseCreateInput } from '@/types/entities'
 import { FinanceCombinedRow, FinanceCreateForm, FinanceDateRange } from '@/types/finance'
@@ -26,7 +27,7 @@ export function useFinanceActions(
   const handleExportExcel = async () => {
     try {
       toast.info('엑셀 파일을 생성하는 중입니다...')
-      const exportData: any[] = combined.map((row) => {
+      const exportData: FinanceExportData[] = combined.map((row) => {
         const baseData = {
           date: row.date,
           type: row.type === 'income' ? '수입' as const : '지출' as const,
@@ -54,7 +55,7 @@ export function useFinanceActions(
       exportFinanceToExcel(exportData, summary)
       toast.success('엑셀 파일이 다운로드되었습니다.')
     } catch (error) {
-      console.error(error)
+      logger.error('엑셀 내보내기 실패', error, 'useFinanceActions')
       toast.error('엑셀 내보내기 실패')
     }
   }
@@ -91,7 +92,7 @@ export function useFinanceActions(
       })
       toast.success('세무 자료 파일이 다운로드되었습니다.')
     } catch (error) {
-      console.error(error)
+      logger.error('세무 자료 생성 실패', error, 'useFinanceActions')
       toast.error('세무 자료 생성 실패')
     }
   }

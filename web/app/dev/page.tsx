@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useState } from 'react'
+import { logger } from '@/app/lib/utils/logger'
 import Card from '../components/ui/Card'
 import Button from '../components/ui/Button'
 
@@ -44,7 +45,7 @@ export default function DevPage() {
         const { data: { session } } = await supa.auth.getSession()
         setSession(session)
       } catch (error) {
-        console.error('Failed to get session:', error)
+        logger.error('Failed to get session', error, 'DevPage')
       }
 
       // 환경변수 정보 로드

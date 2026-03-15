@@ -4,6 +4,8 @@ import { useState, useEffect } from 'react'
 import { Modal, ModalBody, ModalFooter } from '@/app/components/ui/AdaptiveModal'
 import Button from '@/app/components/ui/Button'
 import ConfirmDialog from '@/app/components/ui/ConfirmDialog'
+import { CONFIRMATION_MESSAGES } from '@/app/lib/utils/messages'
+import { useAppToast } from '@/app/lib/ui/toast'
 import { type BusinessProfile } from '@/types/settings'
 import BusinessProfileSection from '../BusinessProfileSection'
 
@@ -11,12 +13,14 @@ type Props = {
     open: boolean
     data: BusinessProfile
     onClose: () => void
-    onSave: (data: BusinessProfile) => void
+    onSave: (data: BusinessProfile) => void | Promise<void>
 }
 
 export default function BusinessProfileModal({ open, data, onClose, onSave }: Props) {
+    const toast = useAppToast()
     const [formData, setFormData] = useState<BusinessProfile>(data)
     const [hasChanges, setHasChanges] = useState(false)
+    const [saving, setSaving] = useState(false)
     const [confirmCloseOpen, setConfirmCloseOpen] = useState(false)
 
     useEffect(() => {
@@ -31,10 +35,18 @@ export default function BusinessProfileModal({ open, data, onClose, onSave }: Pr
         setHasChanges(true)
     }
 
-    const handleSave = () => {
-        onSave(formData)
-        setHasChanges(false)
-        onClose()
+    const handleSave = async () => {
+        setSaving(true)
+        try {
+            await onSave(formData)
+            setHasChanges(false)
+            onClose()
+            toast.success('가게 정보가 저장되었습니다.')
+        } catch (error) {
+            toast.error('저장에 실패했습니다.', error instanceof Error ? error.message : undefined)
+        } finally {
+            setSaving(false)
+        }
     }
 
     const handleCancel = () => {
@@ -72,10 +84,10 @@ export default function BusinessProfileModal({ open, data, onClose, onSave }: Pr
                         )}
                     </div>
                     <div className="flex gap-3">
-                        <Button variant="secondary" onClick={handleRequestClose}>
+                        <Button variant="secondary" onClick={handleRequestClose} disabled={saving}>
                             취소
                         </Button>
-                        <Button variant="primary" onClick={handleSave} disabled={!hasChanges}>
+                        <Button variant="primary" onClick={handleSave} disabled={!hasChanges} loading={saving}>
                             저장
                         </Button>
                     </div>
@@ -86,7 +98,7 @@ export default function BusinessProfileModal({ open, data, onClose, onSave }: Pr
                 onClose={() => setConfirmCloseOpen(false)}
                 onConfirm={handleCancel}
                 title="변경사항 닫기"
-                description="저장하지 않은 변경사항이 있습니다. 정말 닫으시겠습니까?"
+                description={CONFIRMATION_MESSAGES.cancel}
                 confirmText="닫기"
                 variant="danger"
             />

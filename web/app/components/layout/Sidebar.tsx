@@ -15,6 +15,7 @@ import {
   ChevronRight,
   Warehouse,
   Code2,
+  BarChart2,
 } from 'lucide-react'
 import {
   Box,
@@ -47,12 +48,16 @@ const baseItems: Item[] = [
   { href: '/products', label: '상품', icon: Package },
   { href: '/inventory', label: '재고', icon: Warehouse },
   { href: '/customers', label: '고객', icon: Users },
+  { href: '/analytics', label: '고객 분석', icon: BarChart2 },
   { href: '/finance', label: '재무', icon: DollarSign },
   { href: '/settings', label: '설정', icon: Settings },
   { href: '/dev', label: '개발자 화면', icon: Code2 },
 ]
 
-const items = baseItems
+const items =
+  process.env.NODE_ENV === 'development'
+    ? baseItems
+    : baseItems.filter((item) => item.href !== '/dev')
 
 type Props = {
   mobile?: boolean

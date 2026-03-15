@@ -44,7 +44,7 @@ function MetricCard({
         background: scheme.bg,
         borderRadius: 3, // 12px
         border: `2px solid ${scheme.border}`,
-        p: { xs: 1.25, md: 1.5, lg: 2 },
+        p: { xs: 1, md: 1.25, lg: 1.5 },
         height: '100%',
         transition: 'all 300ms ease-out',
         '&:hover': {
@@ -56,8 +56,19 @@ function MetricCard({
       <Typography variant="body2" fontWeight={500} sx={{ color: scheme.text, opacity: 0.9, fontSize: { xs: '0.75rem', md: '0.875rem' } }}>
         {label}
       </Typography>
-      <Box sx={{ mt: 0.5, display: 'flex', alignItems: 'baseline', gap: 1, flexWrap: 'wrap' }}>
-        <Typography variant="h4" fontWeight={700} sx={{ color: scheme.text, letterSpacing: '-0.02em', fontSize: { xs: '1.25rem', sm: '1.75rem', md: '2rem' }, wordBreak: 'break-all' }}>
+      <Box sx={{ mt: 0.5, display: 'flex', alignItems: 'baseline', gap: 1, flexWrap: 'nowrap', minWidth: 0 }}>
+        <Typography
+          variant="h4"
+          fontWeight={700}
+          sx={{
+            color: scheme.text,
+            letterSpacing: '-0.02em',
+            fontSize: { xs: '1.25rem', sm: '1.75rem', md: '2rem' },
+            whiteSpace: 'nowrap',
+            overflow: 'hidden',
+            textOverflow: 'ellipsis',
+          }}
+        >
           {value}
         </Typography>
         {delta?.value && (

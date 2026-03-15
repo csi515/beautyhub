@@ -1,7 +1,7 @@
 'use client'
 
 import { Card, Typography, Box, Stack, Chip } from '@mui/material'
-import { Calendar, Clock, User, FileText } from 'lucide-react'
+import { Calendar, Clock, FileText } from 'lucide-react'
 import { useAppQuery } from '@/app/lib/hooks/useQuery'
 import { appointmentsApi } from '@/app/lib/api/appointments'
 import type { Appointment } from '@/types/entities'
@@ -95,14 +95,6 @@ export default function CustomerVisitsTab({ customerId }: CustomerVisitsTabProps
                   </Box>
 
                   <Stack direction="row" spacing={2} sx={{ mt: 1, flexWrap: 'wrap', gap: 1 }}>
-                    {appt.staff_id && (
-                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
-                        <User size={13} style={{ color: '#94a3b8' }} />
-                        <Typography variant="caption" color="text.secondary">
-                          직원 배정됨
-                        </Typography>
-                      </Box>
-                    )}
                     {appt.total_price != null && (
                       <Typography variant="caption" fontWeight={600} color="success.main">
                         ₩{Number(appt.total_price).toLocaleString()}

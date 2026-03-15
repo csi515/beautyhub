@@ -3,6 +3,7 @@ import { createSupabaseServerClient } from '@/lib/supabase/server'
 import { getUserIdFromCookies } from '@/lib/auth/user'
 import { ConsultationNotesRepository } from '@/app/lib/repositories/consultation-notes.repository'
 import type { ConsultationNoteCreateInput } from '@/types/entities'
+import { logger } from '@/app/lib/utils/logger'
 
 /**
  * GET /api/customers/[id]/consultation-notes
@@ -37,7 +38,7 @@ export async function GET(
 
     return NextResponse.json(notes)
   } catch (error) {
-    console.error('Error fetching consultation notes:', error)
+    logger.error('Error fetching consultation notes', error, 'ConsultationNotes')
     return NextResponse.json(
       { error: 'Failed to fetch consultation notes' },
       { status: 500 }
@@ -75,7 +76,7 @@ export async function POST(
 
     return NextResponse.json(note, { status: 201 })
   } catch (error) {
-    console.error('Error creating consultation note:', error)
+    logger.error('Error creating consultation note', error, 'ConsultationNotes')
     const errorMessage = error instanceof Error ? error.message : 'Failed to create consultation note'
     return NextResponse.json(
       { error: errorMessage },

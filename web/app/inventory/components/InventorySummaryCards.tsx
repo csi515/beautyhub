@@ -14,13 +14,13 @@ export default function InventorySummaryCards({ products }: InventorySummaryCard
     const outOfStockProducts = products.filter(p => p.inventory_status === 'out_of_stock')
 
     return (
-        <Grid container spacing={3} sx={{ mb: 4 }}>
+        <Grid container spacing={2} sx={{ mb: 2.5 }}>
             <Grid item xs={12} md={4}>
                 <Card sx={{ p: 2 }}>
                     <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1 }}>
                         <Package size={20} color="#667eea" />
                         <Typography variant="body2" color="text.secondary">
-                            총 제품 수
+                            총 상품 수
                         </Typography>
                     </Box>
                     <Typography variant="h4" fontWeight={700}>

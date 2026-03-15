@@ -7,6 +7,7 @@ import Select from '@/app/components/ui/Select'
 import { expensesApi } from '@/app/lib/api/expenses'
 import { getExpenseCategories, suggestCategory } from '@/app/lib/utils/expenseCategories'
 import { useAppToast } from '@/app/lib/ui/toast'
+import { SUCCESS_MESSAGES, CONFIRMATION_MESSAGES, getLocalizedErrorMessage } from '@/app/lib/utils/messages'
 import type { Expense, ExpenseUpdateInput } from '@/types/entities'
 
 type ExpenseForm = Omit<Expense, 'amount' | 'memo'> & { amount: number | string; memo?: string | null }
@@ -50,9 +51,9 @@ export default function ExpenseDetailModal({ open, onClose, item, onSaved, onDel
         body.memo = form.memo.trim()
       }
       await expensesApi.update(form.id, body)
-      onSaved(); onClose(); toast.success('지출이 저장되었습니다.')
+      onSaved(); onClose(); toast.success(SUCCESS_MESSAGES.updated('지출'))
     } catch (e: unknown) {
-      const errorMessage = e instanceof Error ? e.message : '에러가 발생했습니다.'
+      const errorMessage = getLocalizedErrorMessage(e)
       setError(errorMessage)
       toast.error('저장 실패', errorMessage)
     } finally { setLoading(false) }
@@ -62,9 +63,9 @@ export default function ExpenseDetailModal({ open, onClose, item, onSaved, onDel
     if (!form?.id) return
     try {
       await expensesApi.delete(form.id)
-      onDeleted(); onClose(); toast.success('삭제되었습니다.')
-    } catch {
-      toast.error('삭제 실패')
+      onDeleted(); onClose(); toast.success(SUCCESS_MESSAGES.deleted('지출'))
+    } catch (e) {
+      toast.error(getLocalizedErrorMessage(e))
     }
   }
 
@@ -163,7 +164,7 @@ export default function ExpenseDetailModal({ open, onClose, item, onSaved, onDel
       error={error}
       onSave={save}
       onDelete={removeItem}
-      confirmDeleteMessage="이 지출 내역을 삭제하시겠습니까?"
+      confirmDeleteMessage={CONFIRMATION_MESSAGES.delete('지출 내역')}
       size="lg"
     >
       <div className="space-y-3">

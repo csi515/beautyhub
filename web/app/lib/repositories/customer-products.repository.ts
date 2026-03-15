@@ -1,10 +1,11 @@
-﻿import { SupabaseClient } from '@supabase/supabase-js'
+import { SupabaseClient } from '@supabase/supabase-js'
 /**
  * 고객 상품 보유 내역 Repository
  */
 
 import { BaseRepository } from './base.repository'
 import { NotFoundError } from '../api/errors'
+import { logger } from '@/app/lib/utils/logger'
 import type { QueryOptions } from './base.repository'
 
 export interface CustomerProduct {
@@ -125,7 +126,7 @@ export class CustomerProductsRepository extends BaseRepository<CustomerProduct> 
       })
 
       if (ledgerError) {
-        console.error('[CustomerProducts] Failed to record ledger for new holding:', ledgerError)
+        logger.error('[CustomerProducts] Failed to record ledger for new holding', ledgerError, 'CustomerProducts')
       }
     }
 
@@ -219,7 +220,7 @@ export class CustomerProductsRepository extends BaseRepository<CustomerProduct> 
         })
 
         if (ledgerError) {
-          console.error('[CustomerProducts] Failed to record ledger:', ledgerError)
+          logger.error('[CustomerProducts] Failed to record ledger', ledgerError, 'CustomerProducts')
         }
       }
     }

@@ -1,7 +1,9 @@
 'use client'
 
-import { useMemo, useEffect, useState } from 'react'
+import { useMemo } from 'react'
 import { useIsTablet } from '../lib/hooks/useBreakpoint'
+import { formatCurrency } from '../lib/utils/format'
+import { formatDateTimeShort } from '../lib/utils/date'
 import Card from '../components/ui/Card'
 import Button from '../components/ui/Button'
 import MetricCard from '../components/features/dashboard/MetricCard'
@@ -31,40 +33,32 @@ type ProductSummary = {
     active?: boolean
 }
 
+export interface DashboardData {
+    todayAppointments: number
+    monthlyProfit: number
+    monthlyNewCustomers: number
+    monthlyAppointments: number
+    prevMonthlyProfit: number
+    prevMonthlyAppointments: number
+    prevMonthlyNewCustomers: number
+    recentAppointments: RecentAppointment[]
+    chartAppointments: { product_name: string }[]
+    recentTransactions: Transaction[]
+    monthlyRevenueData: { id: string; amount: number; transaction_date: string; type: string; owner_id: string }[]
+    activeProducts: ProductSummary[]
+}
+
 interface DashboardContentProps {
     start: string
     end: string
     userId: string
     accessToken: string | undefined
-    initialData: any
+    initialData: DashboardData | null
     error?: string | Error | null
 }
 
 export default function DashboardContent({ initialData, error }: DashboardContentProps) {
     const isTablet = useIsTablet()
-    const [scrollProgress, setScrollProgress] = useState(0)
-
-    // 스크롤 진행률 계산 (모바일 전용)
-    useEffect(() => {
-        const handleScroll = () => {
-            const windowHeight = window.innerHeight
-            const documentHeight = document.documentElement.scrollHeight
-            const scrollTop = window.scrollY || document.documentElement.scrollTop
-            const scrollableHeight = documentHeight - windowHeight
-            const progress = scrollableHeight > 0 ? (scrollTop / scrollableHeight) * 100 : 0
-            setScrollProgress(Math.min(100, Math.max(0, progress)))
-        }
-
-        // 모바일에서만 스크롤 인디케이터 활성화
-        if (window.innerWidth < 768) {
-            window.addEventListener('scroll', handleScroll, { passive: true })
-            handleScroll() // 초기값 설정
-        }
-
-        return () => {
-            window.removeEventListener('scroll', handleScroll)
-        }
-    }, [])
 
     // Hook 규칙: early return 전에 모든 Hook 호출 (조건부 Hook 방지)
     const data = initialData ?? {}
@@ -81,11 +75,11 @@ export default function DashboardContent({ initialData, error }: DashboardConten
         recentTransactions,
         monthlyRevenueData,
         activeProducts
-    } = data as typeof initialData
+    } = data as DashboardData
 
-    const productLimit = isTablet ? 4 : 12
-    const appointmentLimit = isTablet ? 3 : 8
-    const transactionLimit = isTablet ? 4 : 10
+    const productLimit = isTablet ? 3 : 6
+    const appointmentLimit = isTablet ? 3 : 5
+    const transactionLimit = isTablet ? 4 : 5
     const slicedProducts = useMemo(
         () => (activeProducts ?? []).slice(0, productLimit),
         [activeProducts, productLimit]
@@ -100,7 +94,7 @@ export default function DashboardContent({ initialData, error }: DashboardConten
     )
 
     const formattedMonthlyProfit = useMemo(
-        () => `₩${Number(monthlyProfit ?? 0).toLocaleString()}`,
+        () => formatCurrency(monthlyProfit ?? 0),
         [monthlyProfit]
     )
 
@@ -136,33 +130,9 @@ export default function DashboardContent({ initialData, error }: DashboardConten
     }
 
     return (
-        <>
-            {/* 스크롤 인디케이터 (모바일 전용) */}
-            <Box
-                sx={{
-                    position: 'fixed',
-                    top: 0,
-                    left: 0,
-                    right: 0,
-                    height: '4px',
-                    bgcolor: 'divider',
-                    zIndex: 1100,
-                    display: { xs: 'block', md: 'none' },
-                    '&::after': {
-                        content: '""',
-                        position: 'absolute',
-                        left: 0,
-                        top: 0,
-                        height: '100%',
-                        width: `${scrollProgress}%`,
-                        bgcolor: 'primary.main',
-                        transition: 'width 0.1s ease-out',
-                    },
-                }}
-            />
-            <PageContainer maxWidth={false}>
+        <PageContainer maxWidth={false}>
             <Stack
-                spacing={{ xs: 1.5, sm: 1.5, md: isTablet ? 1 : 1.5 }}
+                spacing={{ xs: 1, sm: 1, md: isTablet ? 0.75 : 1 }}
                 sx={{
                     width: '100%',
                     maxWidth: '100%',
@@ -182,7 +152,7 @@ export default function DashboardContent({ initialData, error }: DashboardConten
                 {activeProducts.length === 0 && monthlyAppointments === 0 && (
                     <Card
                         sx={{
-                            p: 2,
+                            p: 1.5,
                             border: '1px dashed',
                             borderColor: 'divider',
                             bgcolor: 'background.paper',
@@ -255,7 +225,7 @@ export default function DashboardContent({ initialData, error }: DashboardConten
                 )}
 
                 {/* Metrics */}
-                <Grid container spacing={{ xs: 0.75, sm: 1, md: isTablet ? 1 : 1.5, lg: 1.5 }} sx={{ width: '100%', maxWidth: '100%', margin: 0, flexShrink: 0, minWidth: 0 }}>
+                <Grid container spacing={{ xs: 0.5, sm: 0.75, md: isTablet ? 0.75 : 1, lg: 1 }} sx={{ width: '100%', maxWidth: '100%', margin: 0, flexShrink: 0, minWidth: 0 }}>
                     <Grid item xs={12} sm={6} md={3} sx={{ minWidth: 0 }}>
                         <MetricCard
                             label="오늘 예약"
@@ -294,7 +264,7 @@ export default function DashboardContent({ initialData, error }: DashboardConten
                 </Grid>
 
                 {/* Charts Row */}
-                <Grid container spacing={{ xs: 0.75, sm: 1, md: isTablet ? 1 : 1.5, lg: 1.5 }} sx={{ minHeight: { xs: 'auto', md: isTablet ? 160 : 320 }, width: '100%', maxWidth: '100%', margin: 0, flexShrink: 0, minWidth: 0 }}>
+                <Grid container spacing={{ xs: 0.5, sm: 0.75, md: isTablet ? 0.75 : 1, lg: 1 }} sx={{ minHeight: { xs: 'auto', md: isTablet ? 140 : 220 }, width: '100%', maxWidth: '100%', margin: 0, flexShrink: 0, minWidth: 0 }}>
                     <Grid item xs={12} lg={8} sx={{ minWidth: 0 }}>
                         {/* Revenue Chart */}
                         <RevenueChart transactions={monthlyRevenueData || recentTransactions} />
@@ -306,7 +276,7 @@ export default function DashboardContent({ initialData, error }: DashboardConten
                 </Grid>
 
                 {/* Main Content Areas */}
-                <Grid container spacing={{ xs: 0.75, sm: 1, md: isTablet ? 1 : 1.5, lg: 1.5 }} sx={{ width: '100%', maxWidth: '100%', margin: 0, flex: 1, minHeight: 0, minWidth: 0, alignContent: 'flex-start' }}>
+                <Grid container spacing={{ xs: 0.5, sm: 0.75, md: isTablet ? 0.75 : 1, lg: 1 }} sx={{ width: '100%', maxWidth: '100%', margin: 0, flex: 1, minHeight: 0, minWidth: 0, alignContent: 'flex-start' }}>
                     {/* Expanded Products Section */}
                     <Grid item xs={12} lg={8} sx={{ minWidth: 0 }}>
                         <Card sx={{ height: '100%', display: 'flex', flexDirection: 'column', p: { xs: 2, md: isTablet ? 1.5 : 2 } }}>
@@ -379,7 +349,7 @@ export default function DashboardContent({ initialData, error }: DashboardConten
                                                     {p.name}
                                                 </Typography>
                                                 <Typography variant="h6" fontWeight={700} color="success.main">
-                                                    ₩{Number(p.price || 0).toLocaleString()}
+                                                    {formatCurrency(p.price || 0)}
                                                 </Typography>
                                             </Box>
                                         </Grid>
@@ -502,7 +472,7 @@ export default function DashboardContent({ initialData, error }: DashboardConten
                                                         <Typography variant="caption" color="primary.main" sx={{ flexShrink: 0, fontSize: { xs: '0.875rem', sm: '0.75rem' } }}>{a.product_name}</Typography>
                                                     </Box>
                                                 }
-                                                secondary={String(a.appointment_date).slice(0, 16).replace('T', ' ')}
+                                                secondary={formatDateTimeShort(String(a.appointment_date || ''))}
                                                 secondaryTypographyProps={{ variant: 'caption', sx: { mt: 0.5, display: 'block', fontSize: { xs: '0.875rem', sm: '0.75rem' } } }}
                                             />
                                         </ListItem>
@@ -573,6 +543,5 @@ export default function DashboardContent({ initialData, error }: DashboardConten
                 </Grid>
             </Stack>
         </PageContainer>
-        </>
     )
 }

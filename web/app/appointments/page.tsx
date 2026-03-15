@@ -2,7 +2,7 @@
 
 import React, { useState, useRef } from 'react'
 import { Stack, Card, ToggleButtonGroup, ToggleButton, Box } from '@mui/material'
-import { Skeleton } from '@/app/components/ui/Skeleton'
+import AppointmentsSkeleton from '@/app/components/skeletons/AppointmentsSkeleton'
 import { format } from 'date-fns'
 import ReservationCreateModal from '@/app/components/modals/ReservationCreateModal'
 import ReservationDetailModal from '@/app/components/modals/ReservationDetailModal'
@@ -17,6 +17,7 @@ import CalendarHeader from './components/CalendarHeader'
 import AppointmentsCalendar from './components/AppointmentsCalendar'
 import PageContainer from '@/app/components/layout/PageContainer'
 import PageIntro from '@/app/components/common/PageIntro'
+import { useAppToast } from '@/app/lib/ui/toast'
 
 export default function AppointmentsPage() {
     const [createOpen, setCreateOpen] = useState(false)
@@ -31,6 +32,7 @@ export default function AppointmentsPage() {
     const [selected, setSelected] = useState<SelectedAppointment | null>(null)
     const timelineRef = useRef<MobileTimelineViewRef>(null)
     const [mobileViewMode, setMobileViewMode] = useState<'timeline' | 'calendar'>('calendar')
+    const toast = useAppToast()
 
     const { setEvents, filteredEvents } = useAppointmentsData()
     const {
@@ -68,12 +70,9 @@ export default function AppointmentsPage() {
             const productsArray = Array.isArray(products) ? (products as Product[]) : []
             setEvents(mapAppointments(rowsArray, productsArray))
         } catch (error) {
-            if (typeof window !== 'undefined') {
-                const { logger } = await import('@/app/lib/utils/logger')
-                logger.error('예약 캘린더 로딩 실패', error, 'AppointmentsPage')
-            } else {
-                console.error('예약 캘린더 로딩 실패', error)
-            }
+            const { logger } = await import('@/app/lib/utils/logger')
+            logger.error('예약 캘린더 로딩 실패', error, 'AppointmentsPage')
+            toast.error('예약 일정을 불러오는데 실패했습니다.')
         }
     }
 
@@ -103,7 +102,6 @@ export default function AppointmentsPage() {
             notes: event.extendedProps?.notes || '',
             service_id: event.extendedProps?.service_id || '',
             customer_id: event.extendedProps?.customer_id || '',
-            staff_id: event.extendedProps?.staff_id || '',
             no_show: event.extendedProps?.no_show || false,
         })
         setDetailOpen(true)
@@ -128,6 +126,7 @@ export default function AppointmentsPage() {
         if (currentDate) {
             updateRangeAndLabel(currentDate, view, handleRangeChange)
         }
+        // view 변경 시에만 range/label 갱신 (updateRangeAndLabel은 navigation 훅 내부 안정화됨)
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [view])
 
@@ -135,16 +134,21 @@ export default function AppointmentsPage() {
         if (currentDate && !rangeLabel) {
             updateRangeAndLabel(currentDate, view, handleRangeChange)
         }
+        // currentDate/rangeLabel 변경 시 초기화 (의도적 1회 실행)
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [currentDate, rangeLabel])
 
     if (!currentDate || !rangeLabel) {
-        return <Skeleton className="h-[600px] w-full" />
+        return (
+            <PageContainer maxWidth="xl" fullScreenOnTablet>
+                <AppointmentsSkeleton />
+            </PageContainer>
+        )
     }
 
     return (
         <PageContainer maxWidth="xl" fullScreenOnTablet>
-        <Stack spacing={3} sx={{ flex: 1, minHeight: { xs: 0, md: 600 }, overflow: 'auto', display: 'flex', flexDirection: 'column' }}>
+        <Stack spacing={2} sx={{ flex: 1, minHeight: { xs: 0, md: 600 }, overflow: 'auto', display: 'flex', flexDirection: 'column' }}>
             <PageIntro description="예약 일정을 확인하고 관리합니다" count={filteredEvents.length} />
             <Box sx={{ flexShrink: 0 }}>
             <CalendarHeader
@@ -172,8 +176,8 @@ export default function AppointmentsPage() {
                     fullWidth
                     size="small"
                 >
-                    <ToggleButton value="timeline">타임라인</ToggleButton>
-                    <ToggleButton value="calendar">달력</ToggleButton>
+                    <ToggleButton value="timeline" sx={{ whiteSpace: 'nowrap' }}>타임라인</ToggleButton>
+                    <ToggleButton value="calendar" sx={{ whiteSpace: 'nowrap' }}>달력</ToggleButton>
                 </ToggleButtonGroup>
             </Card>
 

@@ -8,6 +8,7 @@ import type { SupabaseClient } from '@supabase/supabase-js'
 import Button from '@/app/components/ui/Button'
 import Input from '@/app/components/ui/Input'
 import Alert from '@/app/components/ui/Alert'
+import { logger } from '@/app/lib/utils/logger'
 
 export default function SignupPage() {
   const router = useRouter()
@@ -31,7 +32,7 @@ export default function SignupPage() {
         const client = createSupabaseBrowserClient()
         setSupabase(client)
       } catch (error) {
-        console.error('Supabase 초기화 오류:', error)
+        logger.error('Supabase 초기화 오류', error, 'SignupPage')
         setError('환경설정 오류: Supabase 초기화에 실패했습니다.')
       }
     }
@@ -91,7 +92,7 @@ export default function SignupPage() {
 
           <div className="flex flex-col space-y-4">
             <Input
-              label="이름"
+              label="이름 *"
               value={name}
               onChange={(e) => setName(e.target.value)}
               placeholder="홍길동"
@@ -100,7 +101,7 @@ export default function SignupPage() {
             />
 
             <Input
-              label="지점명"
+              label="지점명 *"
               value={branchName}
               onChange={(e) => setBranchName(e.target.value)}
               placeholder="강남점"
@@ -109,7 +110,7 @@ export default function SignupPage() {
             />
 
             <Input
-              label="전화번호"
+              label="전화번호 *"
               value={phone}
               onChange={(e) => setPhone(e.target.value)}
               placeholder="010-1234-5678"
@@ -118,7 +119,7 @@ export default function SignupPage() {
             />
 
             <Input
-              label="이메일"
+              label="이메일 *"
               type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
@@ -130,7 +131,7 @@ export default function SignupPage() {
             />
 
             <Input
-              label="비밀번호"
+              label="비밀번호 *"
               type="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
@@ -142,7 +143,7 @@ export default function SignupPage() {
             />
 
             <Input
-              label="생년월일"
+              label="생년월일 *"
               type="date"
               value={birthdate}
               onChange={(e) => setBirthdate(e.target.value)}

@@ -3,6 +3,7 @@ import { createSupabaseServerClient } from '@/lib/supabase/server'
 import { getUserIdFromCookies } from '@/lib/auth/user'
 import { ConsultationNotesRepository } from '@/app/lib/repositories/consultation-notes.repository'
 import type { ConsultationNoteUpdateInput } from '@/types/entities'
+import { logger } from '@/app/lib/utils/logger'
 
 /**
  * PATCH /api/customers/[id]/consultation-notes/[noteId]
@@ -33,7 +34,7 @@ export async function PATCH(
 
     return NextResponse.json(note)
   } catch (error) {
-    console.error('Error updating consultation note:', error)
+    logger.error('Error updating consultation note', error, 'ConsultationNote')
     const errorMessage = error instanceof Error ? error.message : 'Failed to update consultation note'
     return NextResponse.json(
       { error: errorMessage },
@@ -64,7 +65,7 @@ export async function DELETE(
 
     return NextResponse.json({ success: true })
   } catch (error) {
-    console.error('Error deleting consultation note:', error)
+    logger.error('Error deleting consultation note', error, 'ConsultationNote')
     return NextResponse.json(
       { error: 'Failed to delete consultation note' },
       { status: 500 }

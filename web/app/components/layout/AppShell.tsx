@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useState } from 'react'
+import React, { useState, useRef } from 'react'
 import { usePathname } from 'next/navigation'
 import Box from '@mui/material/Box'
 import Drawer from '@mui/material/Drawer'
@@ -12,6 +12,7 @@ import TopBar from './TopBar'
 import MobileBottomNav from './MobileBottomNav'
 import OfflineIndicator from '../common/OfflineIndicator'
 import PullToRefresh from '../ui/PullToRefresh'
+import ScrollToTop from '../ui/ScrollToTop'
 
 export default function AppShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname() || ''
@@ -38,6 +39,7 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
     pathname === '/terms-of-service'
 
   const [navOpen, setNavOpen] = useState(false)
+  const mainScrollRef = useRef<HTMLDivElement>(null)
 
   // Collapse state for desktop with localStorage persistence
   const [collapsed, setCollapsed] = useState(() => {
@@ -121,6 +123,7 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
       }}>
         <TopBar onMenu={() => setNavOpen(true)} />
         <Box
+          ref={mainScrollRef}
           component="main"
           sx={{
             flexGrow: 1,
@@ -131,21 +134,21 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
             minWidth: 0,
             pt: isTablet && isFullScreenPage
               ? 0
-              : { xs: 'max(1rem, env(safe-area-inset-top, 0px))', sm: 1.25, md: 1.5, lg: 2 },
+              : { xs: 'max(1rem, env(safe-area-inset-top, 0px))', sm: 1, md: 1.25, lg: 1.5 },
             pr: isTablet && isFullScreenPage
               ? 0
-              : { xs: 'max(0.75rem, env(safe-area-inset-right, 0px))', sm: 1, md: 1.5, lg: 2 },
+              : { xs: 'max(0.75rem, env(safe-area-inset-right, 0px))', sm: 0.75, md: 1, lg: 1.5 },
             pb: isTablet && isFullScreenPage
               ? 0
               : {
                   xs: 'calc(72px + env(safe-area-inset-bottom, 0px))',
-                  md: 1.5,
-                  lg: 2,
-                  xl: 2.5,
+                  md: 1.25,
+                  lg: 1.5,
+                  xl: 2,
                 },
             pl: isTablet && isFullScreenPage
               ? 0
-              : { xs: 'max(0.75rem, env(safe-area-inset-left, 0px))', sm: 1, md: 1.5, lg: 2 },
+              : { xs: 'max(0.75rem, env(safe-area-inset-left, 0px))', sm: 0.75, md: 1, lg: 1.5 },
             overflowX: 'hidden',
             overflowY: 'auto',
             width: '100%',
@@ -156,7 +159,7 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
           <Box sx={{
             display: 'flex',
             flexDirection: 'column',
-            gap: { xs: 2, sm: 2.5, md: 3, lg: 3 },
+            gap: { xs: 1.5, sm: 2, md: 2, lg: 2.5 },
             flex: { md: 1 },
             minHeight: { md: 0 },
             overflow: 'visible',
@@ -177,6 +180,9 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
 
       {/* Offline Indicator */}
       <OfflineIndicator />
+
+      {/* ScrollToTop - 긴 목록 페이지에서 상단 이동 버튼 */}
+      <ScrollToTop scrollContainerRef={mainScrollRef} className="!bottom-20 md:!bottom-8" />
     </Box>
   )
 }

@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { createSupabaseServerClient } from '@/lib/supabase/server'
 import { getUserIdFromCookies } from '@/lib/auth/user'
 import { AppointmentRemindersRepository } from '@/app/lib/repositories/appointment-reminders.repository'
+import { logger } from '@/app/lib/utils/logger'
 
 /**
  * PATCH /api/appointments/reminders/[reminderId]
@@ -25,7 +26,7 @@ export async function PATCH(
 
     return NextResponse.json(reminder)
   } catch (error) {
-    console.error('Error updating appointment reminder:', error)
+    logger.error('Error updating appointment reminder', error, 'AppointmentReminder')
     return NextResponse.json(
       { error: 'Failed to update appointment reminder' },
       { status: 500 }

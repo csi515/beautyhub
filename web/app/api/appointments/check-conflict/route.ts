@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { createSupabaseServerClient } from '@/lib/supabase/server'
 import { getUserIdFromCookies } from '@/lib/auth/user'
 import { AppointmentsRepository } from '@/app/lib/repositories/appointments.repository'
+import { logger } from '@/app/lib/utils/logger'
 
 /**
  * POST /api/appointments/check-conflict
@@ -36,7 +37,7 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json(result)
   } catch (error) {
-    console.error('Error checking appointment conflict:', error)
+    logger.error('Error checking appointment conflict', error, 'AppointmentCheckConflict')
     return NextResponse.json(
       { error: 'Failed to check appointment conflict' },
       { status: 500 }

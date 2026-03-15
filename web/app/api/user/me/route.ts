@@ -1,5 +1,6 @@
-import { NextResponse } from 'next/server'
+import { NextRequest, NextResponse } from 'next/server'
 import { createSupabaseServerClient } from '@/lib/supabase/server'
+import { logger } from '@/app/lib/utils/logger'
 
 export const dynamic = 'force-dynamic'
 
@@ -31,7 +32,7 @@ export async function GET() {
 			.maybeSingle()
 
 		if (error) {
-			console.error('Database error in /api/user/me:', error)
+			logger.error('Database error in /api/user/me', error, 'UserMeAPI')
 			// RLS/권한 오류는 401로 처리 (클라이언트에서 로그인 유도)
 			const isAuthRelated = ['PGRST301', '42501', '42P01'].includes(error.code ?? '')
 			return NextResponse.json(
@@ -47,7 +48,48 @@ export async function GET() {
 
 		return NextResponse.json({ profile: data })
 	} catch (e: unknown) {
-		console.error('API /api/user/me error:', e)
+		logger.error('API /api/user/me error', e, 'UserMeAPI')
+		const message = e instanceof Error ? e.message : 'unknown error'
+		const isConfigError = message.includes('환경변수') || message.includes('environment')
+		return NextResponse.json(
+			{ error: message },
+			{ status: isConfigError ? 503 : 500 }
+		)
+	}
+}
+
+export async function PUT(request: NextRequest) {
+	try {
+		const supabase = await createSupabaseServerClient()
+		const { data: { user }, error: authError } = await supabase.auth.getUser()
+
+		if (authError || !user) {
+			return NextResponse.json({ error: 'unauthorized' }, { status: 401 })
+		}
+
+		const body = await request.json()
+		const updates: { name?: string; email?: string; phone?: string | null } = {}
+		if (typeof body.name === 'string') updates.name = body.name
+		if (typeof body.email === 'string') updates.email = body.email
+		if (body.phone !== undefined) updates.phone = body.phone ?? null
+
+		if (Object.keys(updates).length === 0) {
+			return NextResponse.json({ error: 'No valid fields to update' }, { status: 400 })
+		}
+
+		const { error } = await supabase
+			.from('users')
+			.update(updates)
+			.eq('id', user.id)
+
+		if (error) {
+			logger.error('Database error in PUT /api/user/me', error, 'UserMeAPI')
+			return NextResponse.json({ error: error.message }, { status: 500 })
+		}
+
+		return NextResponse.json({ success: true })
+	} catch (e: unknown) {
+		logger.error('API /api/user/me error', e, 'UserMeAPI')
 		// 환경변수 누락 등 초기화 실패는 503
 		const message = e instanceof Error ? e.message : 'unknown error'
 		const isConfigError = message.includes('환경변수') || message.includes('environment')

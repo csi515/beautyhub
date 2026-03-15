@@ -83,7 +83,7 @@ export function DataTable<T extends Record<string, unknown>>({
           <TableHead sx={{ bgcolor: 'action.hover' }}>
             <TableRow>
               {columns.map((_, idx) => (
-                <TableCell key={idx} sx={{ fontWeight: 700, py: { xs: 2, md: 1 } }}>
+                <TableCell key={idx} sx={{ fontWeight: 700, py: { xs: 2, md: 1 }, whiteSpace: 'nowrap' }}>
                   <Skeleton width={80} height={20} />
                 </TableCell>
               ))}
@@ -127,7 +127,7 @@ export function DataTable<T extends Record<string, unknown>>({
               maxWidth: '100%',
               minWidth: 0,
               minHeight: { xs: '44px', sm: 'auto' },
-              '&:hover': onRowClick ? { boxShadow: { xs: 'none', md: (theme: any) => theme.shadows[2] }, transform: { xs: 'none', md: 'translateY(-2px)' } } : {},
+              '&:hover': onRowClick ? { boxShadow: { xs: 'none', md: 2 }, transform: { xs: 'none', md: 'translateY(-2px)' } } : {},
               '&:active': onRowClick ? { transform: 'scale(0.98)' } : {},
             }}
           >
@@ -196,7 +196,8 @@ export function DataTable<T extends Record<string, unknown>>({
                     py: { xs: 2, md: 1 },
                     width: col.width,
                     borderBottom: '2px solid',
-                    borderColor: 'divider'
+                    borderColor: 'divider',
+                    whiteSpace: 'nowrap',
                   }}
                 >
                   {col.sortable && onSort ? (

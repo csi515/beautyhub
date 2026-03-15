@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react'
 import { Modal, ModalBody, ModalFooter } from '@/app/components/ui/AdaptiveModal'
 import Button from '@/app/components/ui/Button'
 import ConfirmDialog from '@/app/components/ui/ConfirmDialog'
+import { CONFIRMATION_MESSAGES } from '@/app/lib/utils/messages'
 import { type FinancialSettings } from '@/types/settings'
 import FinancialSettingsSection from '../FinancialSettingsSection'
 
@@ -11,13 +12,14 @@ type Props = {
     open: boolean
     data: FinancialSettings
     onClose: () => void
-    onSave: (data: FinancialSettings) => void
+    onSave: (data: FinancialSettings) => void | Promise<void>
 }
 
 export default function FinancialSettingsModal({ open, data, onClose, onSave }: Props) {
     const [formData, setFormData] = useState<FinancialSettings>(data)
     const [hasChanges, setHasChanges] = useState(false)
     const [confirmCloseOpen, setConfirmCloseOpen] = useState(false)
+    const [saving, setSaving] = useState(false)
 
     // open이 true가 될 때마다 데이터 초기화
     useEffect(() => {
@@ -32,10 +34,15 @@ export default function FinancialSettingsModal({ open, data, onClose, onSave }: 
         setHasChanges(true)
     }
 
-    const handleSave = () => {
-        onSave(formData)
-        setHasChanges(false)
-        onClose()
+    const handleSave = async () => {
+        setSaving(true)
+        try {
+            await onSave(formData)
+            setHasChanges(false)
+            onClose()
+        } finally {
+            setSaving(false)
+        }
     }
 
     const handleCancel = () => {
@@ -79,7 +86,7 @@ export default function FinancialSettingsModal({ open, data, onClose, onSave }: 
                         <Button variant="secondary" onClick={handleRequestClose}>
                             취소
                         </Button>
-                        <Button variant="primary" onClick={handleSave} disabled={!hasChanges}>
+                        <Button variant="primary" onClick={handleSave} disabled={!hasChanges || saving} loading={saving}>
                             저장
                         </Button>
                     </div>
@@ -90,8 +97,9 @@ export default function FinancialSettingsModal({ open, data, onClose, onSave }: 
                 onClose={() => setConfirmCloseOpen(false)}
                 onConfirm={handleCancel}
                 title="변경사항 닫기"
-                description="저장하지 않은 변경사항이 있습니다. 정말 닫으시겠습니까?"
-                confirmText="닫기"
+                description={CONFIRMATION_MESSAGES.cancel}
+                cancelText="계속 편집"
+                confirmText="취소"
                 variant="danger"
             />
         </Modal>

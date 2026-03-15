@@ -9,6 +9,7 @@ import { Eye, EyeOff, CheckCircle, XCircle, AlertTriangle, Loader2, Shield } fro
 import Button from '@/app/components/ui/Button'
 import Input from '@/app/components/ui/Input'
 import Alert from '@/app/components/ui/Alert'
+import { logger } from '@/app/lib/utils/logger'
 
 function ResetPasswordInner() {
   const router = useRouter()
@@ -58,7 +59,7 @@ function ResetPasswordInner() {
           setSessionUserEmail(user.email)
         }
       } catch (error) {
-        console.error('Supabase 초기화 오류:', error)
+        logger.error('Supabase 초기화 오류', error, 'ResetPassword')
         setError('환경설정 오류: Supabase 초기화에 실패했습니다.')
       }
     }

@@ -39,6 +39,9 @@ export const PUT = withAuth(async (req: NextRequest, { userId, supabase, params 
   if (validatedBody.phone !== undefined) {
     body.phone = validatedBody.phone
   }
+  if (validatedBody.active !== undefined) {
+    body.active = validatedBody.active
+  }
   const data = await repository.updateCustomer(id, body)
   return createSuccessResponse(data)
 })

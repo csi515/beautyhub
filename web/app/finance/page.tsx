@@ -1,6 +1,6 @@
 'use client'
 
-import { lazy, Suspense, useState } from 'react'
+import { lazy, Suspense, useState, useCallback } from 'react'
 import { Stack, Box } from '@mui/material'
 import PageContainer from '@/app/components/layout/PageContainer'
 import PageIntro from '@/app/components/common/PageIntro'
@@ -16,14 +16,22 @@ import FinanceCreateModal from '@/app/components/features/finance/FinanceCreateM
 // Modals
 const ExpenseDetailModal = lazy(() => import('@/app/components/modals/ExpenseDetailModal'))
 const TransactionDetailModal = lazy(() => import('@/app/components/modals/TransactionDetailModal'))
+import FinancialSettingsModal from '@/app/components/features/settings/modals/FinancialSettingsModal'
 
 // Hooks
 import { useFinanceData } from '@/app/lib/hooks/useFinanceData'
+import { useAppToast } from '@/app/lib/ui/toast'
+import { settingsApi } from '@/app/lib/api/settings'
+import { DEFAULT_SETTINGS, type FinancialSettings } from '@/types/settings'
 import { useFinanceFilters } from '@/app/lib/hooks/useFinanceFilters'
 import { useFinanceActions } from '@/app/lib/hooks/useFinanceActions'
 import { FinanceModalState, FinanceCombinedRow } from '@/types/finance'
+import type { Expense, Transaction } from '@/types/entities'
 
 export default function FinancePage() {
+  const [categoryModalOpen, setCategoryModalOpen] = useState(false)
+  const [financialSettings, setFinancialSettings] = useState<FinancialSettings>(DEFAULT_SETTINGS.financialSettings)
+
   const [modalState, setModalState] = useState<FinanceModalState>({
     newOpen: false,
     expenseOpen: false,
@@ -42,8 +50,11 @@ export default function FinancePage() {
     error,
     incomeCategories,
     expenseCategories,
-    load
+    load,
+    loadCategories
   } = useFinanceData()
+
+  const toast = useAppToast()
 
   // Filters and pagination hook
   const {
@@ -82,17 +93,41 @@ export default function FinancePage() {
     return await submitCreate(incomeCategories, expenseCategories)
   }
 
+  const openCategoryModal = useCallback(async () => {
+    try {
+      const data = await settingsApi.get()
+      if (data?.financialSettings) {
+        setFinancialSettings(data.financialSettings)
+      }
+    } catch {
+      setFinancialSettings(DEFAULT_SETTINGS.financialSettings)
+      toast.error('카테고리 설정을 불러오는데 실패했습니다. 기본값으로 표시됩니다.')
+    }
+    setCategoryModalOpen(true)
+  }, [toast])
+
+  const handleSaveCategorySettings = useCallback(async (data: FinancialSettings) => {
+    try {
+      await settingsApi.update({ financialSettings: data })
+      setFinancialSettings(data)
+      await loadCategories()
+      toast.success('카테고리가 저장되었습니다.')
+    } catch {
+      toast.error('카테고리 저장에 실패했습니다.')
+    }
+  }, [loadCategories, toast])
+
   const handleItemClick = (row: FinanceCombinedRow) => {
     if (row.type === 'income') {
       setModalState(prev => ({
         ...prev,
-        txDetail: row.raw as any,
+        txDetail: row.raw as Transaction,
         txOpen: true
       }))
     } else {
       setModalState(prev => ({
         ...prev,
-        expenseDetail: row.raw as any,
+        expenseDetail: row.raw as Expense,
         expenseOpen: true
       }))
     }
@@ -100,7 +135,7 @@ export default function FinancePage() {
 
   return (
     <PageContainer maxWidth="xl" fullScreenOnTablet>
-      <Stack spacing={3} sx={{ flex: 1, minHeight: 0, minWidth: 0, overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
+      <Stack spacing={2} sx={{ flex: 1, minHeight: 0, minWidth: 0, overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
       <PageIntro description="수입·지출 내역을 확인하고 관리합니다" />
       {/* 요약 카드 */}
       <Box sx={{ flexShrink: 0 }}>
@@ -122,6 +157,7 @@ export default function FinancePage() {
         onToggleShowFilters={() => updateFilters({ showFilters: !filters.showFilters })}
         onExportExcel={handleExportExcel}
         onGenerateTaxReport={handleGenerateTaxReport}
+        onCategorySettings={openCategoryModal}
       />
       </Box>
 
@@ -163,6 +199,14 @@ export default function FinancePage() {
       </>
       )}
       </Box>
+
+      {/* 카테고리 설정 모달 */}
+      <FinancialSettingsModal
+        open={categoryModalOpen}
+        data={financialSettings}
+        onClose={() => setCategoryModalOpen(false)}
+        onSave={handleSaveCategorySettings}
+      />
 
       {/* 신규 등록 모달 */}
       <FinanceCreateModal

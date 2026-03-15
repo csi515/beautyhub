@@ -1,5 +1,6 @@
 import { cookies } from 'next/headers'
 import { getUserIdFromCookies } from '@/lib/auth/user'
+import { logger } from '@/app/lib/utils/logger'
 import { Box } from '@mui/material'
 import DashboardContent from './DashboardContent'
 
@@ -239,7 +240,7 @@ async function getDashboardData({ start, end, userId, accessToken }: { start: st
       activeProducts
     }
   } catch (error) {
-    console.error('Failed to fetch dashboard data:', error)
+    logger.error('Failed to fetch dashboard data', error, 'DashboardPage')
     return {
       todayAppointments: 0,
       monthlyProfit: 0,

@@ -3,6 +3,7 @@
  */
 
 import { getLocalizedErrorMessage } from './messages'
+import { logger } from '@/app/lib/utils/logger'
 
 export interface AppError {
   message: string
@@ -60,15 +61,9 @@ export function getUserFriendlyMessage(error: AppError | unknown): string {
  */
 export function logError(context: string, error: AppError): void {
   if (process.env.NODE_ENV === 'development') {
-    console.error(`[${context}]`, {
-      message: error.message,
-      code: error.code,
-      status: error.status,
-      originalError: error.originalError,
-    })
+    logger.error(`[${context}] ${error.message}`, error.originalError, context)
   } else {
-    // 프로덕션에서는 간단한 로그만
-    console.error(`[${context}]`, error.message)
+    logger.error(`[${context}] ${error.message}`, undefined, context)
   }
 }
 

@@ -27,13 +27,13 @@ export default function CalendarHeader({
     const theme = useTheme()
 
     return (
-        <Card sx={{ p: { xs: 2, md: 1.5 } }}>
-            <Stack direction={{ xs: 'column', md: 'row' }} spacing={2} justifyContent="space-between" alignItems={{ xs: 'stretch', md: 'center' }}>
+        <Card sx={{ p: { xs: 2, md: 1.5 }, overflow: 'auto' }}>
+            <Stack direction={{ xs: 'column', md: 'row' }} spacing={2} justifyContent="space-between" alignItems={{ xs: 'stretch', md: 'center' }} flexWrap="nowrap" sx={{ minWidth: 0 }}>
                 {/* 날짜 표시 & 모바일 네비게이션 */}
-                <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                    <Stack direction="row" spacing={1} alignItems="center">
+                <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', minWidth: 0, flexShrink: 0 }}>
+                    <Stack direction="row" spacing={1} alignItems="center" flexWrap="nowrap" sx={{ minWidth: 0 }}>
                         <CalendarIcon size={20} color={theme.palette.primary.main} />
-                        <Typography variant="h6" fontWeight="bold">
+                        <Typography variant="h6" fontWeight="bold" sx={{ whiteSpace: 'nowrap' }}>
                             {rangeLabel || '로딩 중...'}
                         </Typography>
                     </Stack>
@@ -55,7 +55,8 @@ export default function CalendarHeader({
                     direction="row"
                     spacing={1}
                     alignItems="center"
-                    sx={{ display: { xs: 'none', md: 'flex' } }}
+                    flexWrap="nowrap"
+                    sx={{ display: { xs: 'none', md: 'flex' }, flexShrink: 0 }}
                 >
                         <ToggleButtonGroup
                             value={view}
@@ -64,9 +65,9 @@ export default function CalendarHeader({
                             size="small"
                             aria-label="달력 보기 모드"
                         >
-                            <ToggleButton value="month">월</ToggleButton>
-                            <ToggleButton value="week">주</ToggleButton>
-                            <ToggleButton value="day">일</ToggleButton>
+                            <ToggleButton value="month" sx={{ whiteSpace: 'nowrap' }}>월</ToggleButton>
+                            <ToggleButton value="week" sx={{ whiteSpace: 'nowrap' }}>주</ToggleButton>
+                            <ToggleButton value="day" sx={{ whiteSpace: 'nowrap' }}>일</ToggleButton>
                         </ToggleButtonGroup>
                     <Stack direction="row" spacing={0.5}>
                         <IconButton onClick={onPrev} sx={{ border: 1, borderColor: 'divider', borderRadius: 2 }}>

@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { useAppToast } from '../../lib/ui/toast'
+import { logger } from '@/app/lib/utils/logger'
 import type { Product } from './useInventoryData'
 
 export function useInventoryActions(onSuccess?: () => void) {
@@ -9,6 +10,7 @@ export function useInventoryActions(onSuccess?: () => void) {
     const [stockType, setStockType] = useState<'purchase' | 'sale' | 'adjustment'>('adjustment')
     const [stockMemo, setStockMemo] = useState('')
     const [savingStock, setSavingStock] = useState(false)
+    const [acknowledging, setAcknowledging] = useState(false)
     const toast = useAppToast()
 
     function openStockModal(product: Product) {
@@ -43,7 +45,7 @@ export function useInventoryActions(onSuccess?: () => void) {
             setStockModalOpen(false)
             onSuccess?.()
         } catch (error) {
-            console.error('Error updating stock:', error)
+            logger.error('Error updating stock', error, 'useInventoryActions')
             toast.error('재고 업데이트에 실패했습니다')
         } finally {
             setSavingStock(false)
@@ -76,12 +78,13 @@ export function useInventoryActions(onSuccess?: () => void) {
             toast.success(adjustment > 0 ? '입고 완료' : '출고 완료')
             onSuccess?.()
         } catch (error) {
-            console.error('Error updating stock:', error)
+            logger.error('Error updating stock', error, 'useInventoryActions')
             toast.error('재고 업데이트에 실패했습니다')
         }
     }
 
     async function acknowledgeAllAlerts() {
+        setAcknowledging(true)
         try {
             const response = await fetch('/api/inventory/alerts', {
                 method: 'PATCH',
@@ -96,8 +99,10 @@ export function useInventoryActions(onSuccess?: () => void) {
             toast.success('모든 알림이 확인되었습니다')
             onSuccess?.()
         } catch (error) {
-            console.error('Error acknowledging alerts:', error)
+            logger.error('Error acknowledging alerts', error, 'useInventoryActions')
             toast.error('알림 확인에 실패했습니다')
+        } finally {
+            setAcknowledging(false)
         }
     }
 
@@ -116,5 +121,6 @@ export function useInventoryActions(onSuccess?: () => void) {
         handleStockUpdate,
         quickStockAdjust,
         acknowledgeAllAlerts,
+        acknowledging,
     }
 }

@@ -68,6 +68,8 @@ export default function Drawer({
             top: 12,
             color: 'text.secondary',
             zIndex: 10,
+            minWidth: { xs: 44, sm: 40 },
+            minHeight: { xs: 44, sm: 40 },
             '&:hover': { bgcolor: 'action.hover' }
           }}
           size="small"

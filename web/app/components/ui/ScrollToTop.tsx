@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, type RefObject } from 'react'
 import clsx from 'clsx'
 import { ArrowUp } from 'lucide-react'
 import Button from './Button'
@@ -10,33 +10,46 @@ type Props = {
   threshold?: number
   className?: string
   smooth?: boolean
+  /** 스크롤 컨테이너 ref (미제공 시 window 사용) */
+  scrollContainerRef?: RefObject<HTMLElement | null>
 }
 
 export default function ScrollToTop({
   threshold = 400,
   className,
   smooth = true,
+  scrollContainerRef,
 }: Props) {
   const [isVisible, setIsVisible] = useState(false)
 
   useEffect(() => {
+    const container = scrollContainerRef?.current
+    const useWindow = !container
+
     const handleScroll = () => {
-      setIsVisible(window.scrollY > threshold)
+      const scrollTop = useWindow ? window.scrollY : container.scrollTop
+      setIsVisible(scrollTop > threshold)
     }
 
-    window.addEventListener('scroll', handleScroll)
+    const target = useWindow ? window : container
+    target.addEventListener('scroll', handleScroll, { passive: true })
     handleScroll()
 
     return () => {
-      window.removeEventListener('scroll', handleScroll)
+      target.removeEventListener('scroll', handleScroll)
     }
-  }, [threshold])
+  }, [threshold, scrollContainerRef])
 
   const scrollToTop = () => {
-    if (smooth) {
-      window.scrollTo({ top: 0, behavior: 'smooth' })
+    const container = scrollContainerRef?.current
+    if (!container) {
+      if (smooth) {
+        window.scrollTo({ top: 0, behavior: 'smooth' })
+      } else {
+        window.scrollTo(0, 0)
+      }
     } else {
-      window.scrollTo(0, 0)
+      container.scrollTo({ top: 0, behavior: smooth ? 'smooth' : 'auto' })
     }
   }
 

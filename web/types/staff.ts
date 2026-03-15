@@ -2,6 +2,8 @@
  * Staff 페이지 관련 타입 정의
  */
 
+import type { Staff, StaffAttendance } from './entities'
+
 export interface StaffStats {
   total: number
   active: number
@@ -24,8 +26,8 @@ export interface StaffModalState {
 }
 
 export interface StaffSelectedItems {
-  selected: any // Staff | null
-  selectedAttendance: any // StaffAttendance | null
+  selected: Staff | null
+  selectedAttendance: StaffAttendance | null
   selectedDate: Date | null
 }
 

@@ -1,6 +1,8 @@
 'use client'
 
 import { Typography } from '@mui/material'
+import { formatCurrency } from '@/app/lib/utils/format'
+import { formatDateTimeShort } from '@/app/lib/utils/date'
 import Badge from '@/app/components/ui/Badge'
 import { DataTable } from '@/app/components/ui/DataTable'
 
@@ -42,7 +44,7 @@ export default function RecentTransactionsTable({ transactions }: RecentTransact
                     key: 'date',
                     header: '날짜',
                     width: 180,
-                    render: (t) => String(t.date || '').slice(0, 16).replace('T', ' ')
+                    render: (t) => formatDateTimeShort(String(t.date || ''))
                 },
                 {
                     key: 'amount',
@@ -53,7 +55,7 @@ export default function RecentTransactionsTable({ transactions }: RecentTransact
                         const isExpense = t.type === 'expense'
                         return (
                             <Typography variant="body2" fontWeight={700} color={isExpense ? 'error.main' : 'success.main'}>
-                                {isExpense ? '-' : '+'}₩{Number(t.amount || 0).toLocaleString()}
+                                {isExpense ? '-' : '+'}{formatCurrency(t.amount || 0)}
                             </Typography>
                         )
                     }

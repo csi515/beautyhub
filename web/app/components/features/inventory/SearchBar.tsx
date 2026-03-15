@@ -11,7 +11,7 @@ interface SearchBarProps {
     fullWidth?: boolean
 }
 
-export default function SearchBar({ value, onChange, placeholder = '제품명 검색...', fullWidth = true }: SearchBarProps) {
+export default function SearchBar({ value, onChange, placeholder = '상품명 검색...', fullWidth = true }: SearchBarProps) {
     const [localValue, setLocalValue] = useState(value)
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -46,7 +46,7 @@ export default function SearchBar({ value, onChange, placeholder = '제품명 �
                 ),
                 endAdornment: localValue && (
                     <InputAdornment position="end">
-                        <IconButton size="small" onClick={handleClear}>
+                        <IconButton size="small" onClick={handleClear} aria-label="검색어 지우기">
                             <X size={18} />
                         </IconButton>
                     </InputAdornment>

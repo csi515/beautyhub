@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server'
 import { createSupabaseServerClient } from '@/lib/supabase/server'
 import { createSupabaseServerAdmin } from '@/lib/supabase/server-admin'
+import { logger } from '@/app/lib/utils/logger'
 
 export const dynamic = 'force-dynamic'
 
@@ -48,7 +49,7 @@ export async function POST() {
 			.from('users')
 			.upsert(payload, { onConflict: 'id', ignoreDuplicates: true })
 		if (error) {
-			console.error('api/user/ensure upsert error:', error)
+			logger.error('api/user/ensure upsert error', error, 'UserEnsure')
 			return NextResponse.json({ error: error.message }, { status: 400 })
 		}
 		return NextResponse.json({ ok: true })

@@ -4,6 +4,7 @@
 
 import { SupabaseClient } from '@supabase/supabase-js'
 import { ApiError, NotFoundError, UnauthorizedError } from '../api/errors'
+import { logger } from '../utils/logger'
 import type { QueryOptions } from './base.repository'
 
 export interface PointsLedger {
@@ -49,7 +50,7 @@ export class PointsRepository {
    * Supabase 에러 처리
    */
   private handleSupabaseError(error: unknown): never {
-    console.error(`[PointsRepository] Supabase Error:`, error)
+    logger.error('Supabase Error', error, 'PointsRepository')
 
     const err = error as { code?: string; message?: string; status?: number }
 

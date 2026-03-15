@@ -1,9 +1,12 @@
 import { useState, useEffect, useCallback } from 'react'
 import { type Customer } from '@/types/entities'
 import { type CustomerPageState } from '@/types/customer'
+import { useAppToast } from '@/app/lib/ui/toast'
+import { logger } from '@/app/lib/utils/logger'
 
 export function useCustomers(searchQuery: string) {
   const [customers, setCustomers] = useState<Customer[]>([])
+  const toast = useAppToast()
   const [state, setState] = useState<CustomerPageState>({
     loading: false,
     error: '',
@@ -72,12 +75,13 @@ export function useCustomers(searchQuery: string) {
           }
         }
       } catch (error) {
-        console.error('포인트 조회 중 오류:', error)
+        logger.error('포인트 조회 중 오류', error, 'useCustomers')
+        toast.error('포인트 정보를 불러오는데 실패했습니다.')
       }
     }
 
     fetchPoints()
-  }, [customers, state.pointsByCustomer])
+  }, [customers, state.pointsByCustomer, toast])
 
   const updateSelectedCustomerIds = (ids: string[]) => {
     setState(prev => ({ ...prev, selectedCustomerIds: ids }))

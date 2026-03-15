@@ -1,6 +1,6 @@
 'use client'
 
-import { Download } from 'lucide-react'
+import { Download, Settings2 } from 'lucide-react'
 import {
   Box,
   Stack,
@@ -21,6 +21,7 @@ interface FinanceFiltersProps {
   onToggleShowFilters: () => void
   onExportExcel: () => void
   onGenerateTaxReport?: () => void
+  onCategorySettings?: () => void
 }
 
 export default function FinanceFilters({
@@ -31,27 +32,39 @@ export default function FinanceFilters({
   showFilters,
   onToggleShowFilters,
   onExportExcel,
-  onGenerateTaxReport
+  onGenerateTaxReport,
+  onCategorySettings
 }: FinanceFiltersProps) {
   return (
     <FilterCard>
       {/* 모바일용 세로 배치 버튼들 */}
         <Stack spacing={1} sx={{ display: { xs: 'flex', md: 'none' } }}>
-          <Box sx={{ display: 'flex', gap: 1 }}>
+          <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap' }}>
             <Button
               variant="ghost"
               size="sm"
               onClick={onToggleShowFilters}
-              sx={{ flex: 1 }}
+              sx={{ flex: 1, minWidth: 80 }}
             >
               {showFilters ? '숨기기' : '보기'}
             </Button>
+            {onCategorySettings && (
+              <Button
+                variant="outline"
+                size="sm"
+                leftIcon={<Settings2 className="h-4 w-4" />}
+                onClick={onCategorySettings}
+                sx={{ flex: 1, minWidth: 100, fontSize: '0.875rem' }}
+              >
+                카테고리
+              </Button>
+            )}
             <Button
               variant="outline"
               size="sm"
               leftIcon={<Download className="h-4 w-4" />}
               onClick={onExportExcel}
-              sx={{ flex: 1, fontSize: '0.875rem', display: { xs: 'none', lg: 'inline-flex' } }}
+              sx={{ flex: 1, minWidth: 80, fontSize: '0.875rem', display: { xs: 'none', lg: 'inline-flex' } }}
             >
               엑셀
             </Button>
@@ -67,7 +80,13 @@ export default function FinanceFilters({
               flexWrap="wrap"
               useFlexGap
             >
-              <Stack direction="row" spacing={0.5} flexWrap="wrap" useFlexGap>
+              <Stack
+                direction="row"
+                spacing={0.5}
+                flexWrap="nowrap"
+                useFlexGap
+                sx={{ overflowX: 'auto', WebkitOverflowScrolling: 'touch', minWidth: 0 }}
+              >
                 <Button
                   size="sm"
                   variant="secondary"
@@ -145,14 +164,25 @@ export default function FinanceFilters({
                 color="primary"
                 sx={{ flexShrink: 0 }}
               >
-                <ToggleButton value="income">수입</ToggleButton>
-                <ToggleButton value="expense">지출</ToggleButton>
+                <ToggleButton value="income" sx={{ whiteSpace: 'nowrap' }}>수입</ToggleButton>
+                <ToggleButton value="expense" sx={{ whiteSpace: 'nowrap' }}>지출</ToggleButton>
               </ToggleButtonGroup>
             </Stack>
 
             {/* 액션 버튼 */}
             <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2} alignItems="center" justifyContent="flex-end">
-              <Stack direction="row" spacing={1} sx={{ width: { xs: '100%', sm: 'auto' }, display: { xs: 'none', lg: 'flex' } }}>
+              <Stack direction="row" spacing={1} sx={{ width: { xs: '100%', sm: 'auto' }, display: { xs: 'none', md: 'flex' } }}>
+                {onCategorySettings && (
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    leftIcon={<Settings2 className="h-4 w-4" />}
+                    onClick={onCategorySettings}
+                    sx={{ whiteSpace: 'nowrap' }}
+                  >
+                    카테고리 설정
+                  </Button>
+                )}
                 <Button
                   variant="outline"
                   size="sm"

@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import { ChevronDown, ChevronUp } from 'lucide-react'
+import { formatDateTime } from '@/app/lib/utils/format'
 import Button from '@/app/components/ui/Button'
 
 type Product = {
@@ -275,13 +276,7 @@ export default function CustomerHoldingsTab({
                       return (
                         <tr key={i} className="border-b border-neutral-100 hover:bg-neutral-50 transition">
                           <td className="p-2 text-xs text-neutral-600">
-                            {r.created_at ? new Date(r.created_at).toLocaleString('ko-KR', {
-                              year: 'numeric',
-                              month: '2-digit',
-                              day: '2-digit',
-                              hour: '2-digit',
-                              minute: '2-digit'
-                            }) : '-'}
+                            {r.created_at ? formatDateTime(r.created_at, { year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' }) : '-'}
                           </td>
                           <td className="p-2 text-xs text-neutral-900 font-medium">
                             {products.find(p => p.id === r.product_id)?.name || '(알 수 없음)'}

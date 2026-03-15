@@ -1,6 +1,26 @@
 import * as XLSX from 'xlsx'
 
 /**
+ * 여러 시트를 포함한 Excel 파일로 내보내기
+ */
+export function exportToExcelMultiSheet(
+    sheets: { name: string; data: Record<string, unknown>[] }[],
+    filename: string
+) {
+    const wb = XLSX.utils.book_new()
+    for (const { name, data } of sheets) {
+        if (data.length === 0) continue
+        const headers = Object.keys(data[0]!)
+        const rows = data.map(row => headers.map(h => row[h] ?? ''))
+        const ws = XLSX.utils.aoa_to_sheet([headers, ...rows])
+        XLSX.utils.book_append_sheet(wb, ws, name.slice(0, 31))
+    }
+    if (wb.SheetNames.length > 0) {
+        XLSX.writeFile(wb, filename)
+    }
+}
+
+/**
  * 배열 데이터를 Excel(.xlsx) 파일로 내보내기
  */
 export function exportToExcel(data: Record<string, unknown>[], filename: string) {
@@ -17,13 +37,15 @@ export function exportToExcel(data: Record<string, unknown>[], filename: string)
 }
 
 /** @deprecated CSV 대신 exportToExcel 사용 */
-export function exportToCSV(data: any[], filename: string) {
+export function exportToCSV(data: Record<string, unknown>[], filename: string) {
     if (data.length === 0) {
         return
     }
 
     // Get headers from first object
-    const headers = Object.keys(data[0])
+    const first = data[0]
+    if (!first) return
+    const headers = Object.keys(first)
 
     // Create CSV content
     const csvContent = [
@@ -56,9 +78,9 @@ export function exportToCSV(data: any[], filename: string) {
     document.body.removeChild(link)
 }
 
-export function prepareInventoryDataForExport(products: any[]) {
+export function prepareInventoryDataForExport(products: { name: string; stock_count?: number; safety_stock?: number; inventory_status?: string; price?: number }[]) {
     return products.map(product => ({
-        '제품명': product.name,
+        '상품명': product.name,
         '현재 재고': product.stock_count ?? 0,
         '안전 재고': product.safety_stock ?? 5,
         '재고 상태': product.inventory_status === 'out_of_stock' ? '품절'
@@ -68,7 +90,7 @@ export function prepareInventoryDataForExport(products: any[]) {
     }))
 }
 
-export function prepareCustomerDataForExport(customers: any[]) {
+export function prepareCustomerDataForExport(customers: { name: string; phone?: string | null; email?: string | null; address?: string | null; created_at?: string }[]) {
     return customers.map(customer => ({
         '이름': customer.name,
         '전화번호': customer.phone || '-',
@@ -78,7 +100,7 @@ export function prepareCustomerDataForExport(customers: any[]) {
     }))
 }
 
-export function prepareProductDataForExport(products: any[]) {
+export function prepareProductDataForExport(products: { name: string; price?: number; description?: string | null; active?: boolean; stock_count?: number; created_at?: string }[]) {
     return products.map(product => ({
         '상품명': product.name,
         '가격': product.price ?? 0,

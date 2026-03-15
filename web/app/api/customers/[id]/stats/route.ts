@@ -4,6 +4,7 @@ import { getUserIdFromCookies } from '@/lib/auth/user'
 import { CustomersRepository } from '@/app/lib/repositories/customers.repository'
 import { TransactionsRepository } from '@/app/lib/repositories/transactions.repository'
 import { AppointmentsRepository } from '@/app/lib/repositories/appointments.repository'
+import { logger } from '@/app/lib/utils/logger'
 
 /**
  * GET /api/customers/[id]/stats
@@ -109,7 +110,7 @@ export async function GET(
             monthly_revenue: monthlyRevenue,
         })
     } catch (error) {
-        console.error('Error fetching customer stats:', error)
+        logger.error('Error fetching customer stats', error, 'CustomerStats')
         return NextResponse.json(
             { error: 'Failed to fetch customer stats' },
             { status: 500 }

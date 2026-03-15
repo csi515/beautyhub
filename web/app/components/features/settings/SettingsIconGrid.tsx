@@ -23,7 +23,7 @@ export default function SettingsIconGrid({ items }: Props) {
         display: 'grid',
         gridTemplateColumns: { xs: 'repeat(2, 1fr)', sm: 'repeat(3, 1fr)', md: 'repeat(4, 1fr)' },
         gridTemplateRows: { xs: 'repeat(2, 1fr)', sm: 'repeat(2, 1fr)', md: '1fr' },
-        gap: { xs: 1.5, sm: 2 },
+        gap: { xs: 1.25, sm: 2 },
         alignContent: 'stretch',
         '& > *': { minHeight: 0 },
       }}
@@ -39,35 +39,35 @@ export default function SettingsIconGrid({ items }: Props) {
             flexDirection: 'column',
             alignItems: 'center',
             justifyContent: 'center',
-            py: { xs: 2.5, md: 2 },
-            minHeight: { xs: 88, md: 0 },
+            py: { xs: 2, md: 1.5 },
+            minHeight: { xs: 72, md: 0 },
             height: '100%',
             transition: 'all 200ms ease',
             '&:hover': {
               borderColor: 'primary.light',
-              bgcolor: 'primary.50',
+              bgcolor: 'action.hover',
             },
           }}
           aria-label={`${label} 설정 열기`}
         >
           <Box
             sx={{
-              width: 48,
-              height: 48,
+              width: 40,
+              height: 40,
               borderRadius: 2,
               bgcolor: 'primary.50',
               color: 'primary.main',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
-              mb: 1.5,
+              mb: 1,
               transition: 'background-color 200ms ease',
-              '& svg': { width: 24, height: 24 },
+              '& svg': { width: 20, height: 20 },
             }}
           >
             {icon}
           </Box>
-          <Typography variant="body2" fontWeight={500} sx={{ color: 'text.primary', textAlign: 'center' }}>
+          <Typography variant="caption" fontWeight={500} sx={{ color: 'text.primary', textAlign: 'center', fontSize: '0.8125rem' }}>
             {label}
           </Typography>
         </Card>

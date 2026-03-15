@@ -3,6 +3,7 @@ import { createSupabaseServerClient } from '@/lib/supabase/server'
 import { getUserIdFromCookies } from '@/lib/auth/user'
 import { InventoryTransactionsRepository } from '@/app/lib/repositories/inventory-transactions.repository'
 import { ProductsRepository } from '@/app/lib/repositories/products.repository'
+import { logger } from '@/app/lib/utils/logger'
 
 /**
  * GET /api/inventory/transactions
@@ -43,7 +44,7 @@ export async function GET(request: NextRequest) {
 
         return NextResponse.json(transactionsWithProducts)
     } catch (error) {
-        console.error('Error fetching inventory transactions:', error)
+        logger.error('Error fetching inventory transactions', error, 'InventoryTransactions')
         return NextResponse.json(
             { error: 'Failed to fetch inventory transactions' },
             { status: 500 }

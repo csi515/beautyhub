@@ -85,6 +85,7 @@ export default function FilterPanel({ filters, onFilterChange, onReset }: Filter
                                 value={filters.minPrice}
                                 onChange={(e) => handleChange('minPrice', e.target.value)}
                                 fullWidth
+                                inputProps={{ 'aria-label': '가격 범위 최소' }}
                             />
                             <Typography sx={{ alignSelf: 'center' }}>-</Typography>
                             <TextField
@@ -94,6 +95,7 @@ export default function FilterPanel({ filters, onFilterChange, onReset }: Filter
                                 value={filters.maxPrice}
                                 onChange={(e) => handleChange('maxPrice', e.target.value)}
                                 fullWidth
+                                inputProps={{ 'aria-label': '가격 범위 최대' }}
                             />
                         </Stack>
                     </Box>
@@ -111,6 +113,7 @@ export default function FilterPanel({ filters, onFilterChange, onReset }: Filter
                                 value={filters.minStock}
                                 onChange={(e) => handleChange('minStock', e.target.value)}
                                 fullWidth
+                                inputProps={{ 'aria-label': '재고 수량 범위 최소' }}
                             />
                             <Typography sx={{ alignSelf: 'center' }}>-</Typography>
                             <TextField
@@ -120,6 +123,7 @@ export default function FilterPanel({ filters, onFilterChange, onReset }: Filter
                                 value={filters.maxStock}
                                 onChange={(e) => handleChange('maxStock', e.target.value)}
                                 fullWidth
+                                inputProps={{ 'aria-label': '재고 수량 범위 최대' }}
                             />
                         </Stack>
                     </Box>

@@ -40,6 +40,23 @@ export function formatDate(isoString: string): string {
   }
 }
 
+/** formatDate 별칭 */
+export const formatDateShort = formatDate
+
+/**
+ * ISO 날짜 문자열을 짧은 날짜+시간 형식으로 변환
+ * @example "2024-01-15T10:30:00" -> "2024-01-15 10:30"
+ */
+export function formatDateTimeShort(isoString: string): string {
+  try {
+    if (!isoString || isoString.length < 10) return ''
+    const s = isoString.slice(0, 16)
+    return s.includes('T') ? s.replace('T', ' ') : s
+  } catch {
+    return isoString || ''
+  }
+}
+
 /**
  * ISO 날짜 문자열을 시간 형식으로 변환
  * @example "2024-01-15T10:30:00" -> "오전 10시 30분"

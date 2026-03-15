@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server'
 import { createClient, type EmailOtpType } from '@supabase/supabase-js'
 import { getEnv } from '@/app/lib/env'
+import { logger } from '@/app/lib/utils/logger'
 
 export const dynamic = 'force-dynamic'
 
@@ -19,7 +20,7 @@ export async function GET(req: Request) {
     const anon = getEnv.supabaseAnonKey()
 
     if (!supaUrl || !anon) {
-      console.error('Supabase environment variables not configured')
+      logger.error('Supabase environment variables not configured', undefined, 'AuthCallback')
       return NextResponse.redirect(new URL('/login?error=config', req.url))
     }
 
@@ -57,7 +58,7 @@ export async function GET(req: Request) {
 
     return res
   } catch (error) {
-    console.error('Auth callback error:', error)
+    logger.error('Auth callback error', error, 'AuthCallback')
     return NextResponse.redirect(new URL('/login?error=server', req.url))
   }
 }

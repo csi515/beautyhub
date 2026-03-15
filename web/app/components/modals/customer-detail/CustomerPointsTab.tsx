@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import { ChevronDown, ChevronUp } from 'lucide-react'
+import { formatDateTime } from '@/app/lib/utils/format'
 import Button from '@/app/components/ui/Button'
 
 type LedgerEntry = {
@@ -24,7 +25,6 @@ type CustomerPointsTabProps = {
   onAddPoints: () => Promise<void>
   onDeductPoints: () => Promise<void>
   onChangePage: (page: number) => void
-  onExportExcel: () => void
 }
 
 export default function CustomerPointsTab({
@@ -40,8 +40,7 @@ export default function CustomerPointsTab({
   onChangeReason,
   onAddPoints,
   onDeductPoints,
-  onChangePage,
-  onExportExcel
+  onChangePage
 }: CustomerPointsTabProps) {
   const [isHistoryExpanded, setIsHistoryExpanded] = useState(false)
 
@@ -125,13 +124,7 @@ export default function CustomerPointsTab({
                   {ledger.map((r, i) => (
                     <tr key={i} className="hover:bg-neutral-50 transition-colors">
                       <td className="p-3 text-neutral-700">
-                        {r.created_at ? new Date(r.created_at).toLocaleString('ko-KR', {
-                          year: 'numeric',
-                          month: '2-digit',
-                          day: '2-digit',
-                          hour: '2-digit',
-                          minute: '2-digit'
-                        }) : '-'}
+                        {r.created_at ? formatDateTime(r.created_at, { year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' }) : '-'}
                       </td>
                       <td
                         className={`p-3 text-right font-semibold ${Number(r.delta) >= 0 ? 'text-emerald-600' : 'text-rose-600'
@@ -178,11 +171,6 @@ export default function CustomerPointsTab({
                   다음
                 </Button>
               </div>
-            </div>
-            <div className="pt-2 flex justify-end">
-              <Button size="sm" variant="secondary" onClick={onExportExcel} className="hidden lg:inline-flex w-auto">
-                엑셀 내보내기
-              </Button>
             </div>
           </div>
         )}

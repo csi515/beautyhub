@@ -1,17 +1,19 @@
 'use client'
 
-import { useEffect, useState, useCallback } from 'react'
+import { useEffect, useState, useCallback, useMemo } from 'react'
 
 import { Box, Typography, Grid, Card, CardContent, Alert, Chip, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, useMediaQuery, Stack } from '@mui/material';
+import Pagination from '@/app/components/common/Pagination';
 import { useTheme } from '@mui/material/styles';
 import MobileDataCard from '@/app/components/ui/MobileDataCard'
 import { CardSkeleton } from '@/app/components/ui/SkeletonLoader'
 import EmptyState from '@/app/components/ui/EmptyState'
-import { Users, Star, DollarSign, BarChart2, Download } from 'lucide-react'
-import Button from '@/app/components/ui/Button'
+import { Users, Star, DollarSign, BarChart2 } from 'lucide-react'
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts'
 import { useAppToast } from '@/app/lib/ui/toast'
-import { exportToCSV } from '@/app/lib/utils/export'
+import { formatCurrency } from '@/app/lib/utils/format'
+import { getLocalizedErrorMessage } from '@/app/lib/utils/messages'
+import { logger } from '@/app/lib/utils/logger'
 import PageContainer from '@/app/components/layout/PageContainer'
 import PageIntro from '@/app/components/common/PageIntro'
 
@@ -35,11 +37,17 @@ interface VIPCustomer {
     last_visit: string
 }
 
+const LTV_PAGE_SIZE = 10
+const VIP_PAGE_SIZE_DESKTOP = 20
+const VIP_PAGE_SIZE_MOBILE = 10
+
 export default function AnalyticsPage() {
     const [ltvData, setLtvData] = useState<CustomerLTV[]>([])
     const [vipData, setVipData] = useState<VIPCustomer[]>([])
     const [loading, setLoading] = useState(true)
     const [error, setError] = useState<string | null>(null)
+    const [ltvPage, setLtvPage] = useState(1)
+    const [vipPage, setVipPage] = useState(1)
     const toast = useAppToast()
     const theme = useTheme()
     const isMobile = useMediaQuery(theme.breakpoints.down('sm'))
@@ -62,9 +70,10 @@ export default function AnalyticsPage() {
             setLtvData(ltv)
             setVipData(vip)
         } catch (err) {
-            console.error(err)
-            setError(err instanceof Error ? err.message : '알 수 없는 오류가 발생했습니다')
-            toast.error('데이터를 불러오는데 실패했습니다')
+            logger.error('Analytics fetch failed', err, 'AnalyticsPage')
+            const msg = getLocalizedErrorMessage(err, '데이터를 불러오는데 실패했습니다')
+            setError(msg)
+            toast.error(msg)
         } finally {
             setLoading(false)
         }
@@ -79,28 +88,29 @@ export default function AnalyticsPage() {
         ? ltvData.reduce((sum, c) => sum + c.total_revenue, 0) / totalCustomers
         : 0
 
-    const chartData = ltvData
+    const chartData = useMemo(() => ltvData
         .sort((a, b) => b.total_revenue - a.total_revenue)
         .slice(0, 10)
         .map(c => ({
             name: c.customer_name,
             구매액: c.total_revenue,
             방문횟수: c.visit_count
-        }))
+        })), [ltvData])
 
-    const handleExport = () => {
-        const dataToExport = ltvData.map(item => ({
-            '고객명': item.customer_name,
-            '총 매출액': item.total_revenue,
-            '방문 횟수': item.visit_count,
-            '평균 매출액': Math.round(item.avg_revenue),
-            '첫 방문일': item.first_visit ? new Date(item.first_visit).toLocaleDateString() : '-',
-            '최근 방문일': item.last_visit ? new Date(item.last_visit).toLocaleDateString() : '-',
-            '재방문율(%)': (item.return_rate * 100).toFixed(1)
-        }))
-        exportToCSV(dataToExport, `고객LTV분석_${new Date().toISOString().slice(0, 10)}.csv`)
-        toast.success('분석 리포트가 다운로드되었습니다')
-    }
+    const sortedLtv = useMemo(() => [...ltvData].sort((a, b) => b.total_revenue - a.total_revenue), [ltvData])
+    const paginatedLtv = useMemo(() => {
+        const start = (ltvPage - 1) * LTV_PAGE_SIZE
+        return sortedLtv.slice(start, start + LTV_PAGE_SIZE)
+    }, [sortedLtv, ltvPage])
+
+    const vipPageSize = isMobile ? VIP_PAGE_SIZE_MOBILE : VIP_PAGE_SIZE_DESKTOP
+    const paginatedVip = useMemo(() => {
+        const start = (vipPage - 1) * vipPageSize
+        return vipData.slice(start, start + vipPageSize)
+    }, [vipData, vipPage, vipPageSize])
+
+    const ltvTotalPages = Math.max(1, Math.ceil(sortedLtv.length / LTV_PAGE_SIZE))
+    const vipTotalPages = Math.max(1, Math.ceil(vipData.length / vipPageSize))
 
     if (loading) {
         return (
@@ -138,17 +148,6 @@ export default function AnalyticsPage() {
     return (
         <PageContainer maxWidth="xl" fullScreenOnTablet>
             <PageIntro description="고객 LTV·VIP 분석 데이터를 확인합니다" count={totalCustomers} />
-            <Stack direction="row" justifyContent="flex-end" sx={{ mb: 2 }}>
-                <Button
-                    variant="secondary"
-                    size="sm"
-                    leftIcon={<Download size={16} />}
-                    onClick={handleExport}
-                    sx={{ whiteSpace: 'nowrap', display: { xs: 'none', lg: 'inline-flex' } }}
-                >
-                    엑셀 내보내기
-                </Button>
-            </Stack>
 
             {/* 요약 카드 */}
             <Grid container spacing={{ xs: 0.75, sm: 1.5, md: 2.5, lg: 3 }} sx={{ mb: 4 }}>
@@ -177,7 +176,7 @@ export default function AnalyticsPage() {
                                 </Typography>
                             </Box>
                             <Typography variant="h4" fontWeight={700}>
-                                ₩{(Math.round(avgLTV) || 0).toLocaleString()}
+                                {formatCurrency(Math.round(avgLTV) || 0)}
                             </Typography>
                         </CardContent>
                     </Card>
@@ -213,7 +212,7 @@ export default function AnalyticsPage() {
                                 <YAxis yAxisId="left" orientation="left" stroke="#667eea" />
                                 <YAxis yAxisId="right" orientation="right" stroke="#10b981" />
                                 <Tooltip
-                                    formatter={(value: number) => (value || 0).toLocaleString()}
+                                    formatter={(value: number) => formatCurrency(value || 0)}
                                     contentStyle={{ borderRadius: 8 }}
                                 />
                                 <Legend />
@@ -233,12 +232,12 @@ export default function AnalyticsPage() {
                     </Typography>
                     {isMobile ? (
                         <Stack spacing={2} sx={{ mt: 2 }}>
-                            {vipData.slice(0, 10).map((customer, index) => (
+                            {paginatedVip.map((customer, index) => (
                                 <MobileDataCard
                                     key={customer.customer_id}
                                     title={
                                         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                                            <Chip label={index + 1} size="small" color={index < 3 ? 'warning' : 'default'} sx={{ height: 20, fontSize: '0.7rem' }} />
+                                            <Chip label={(vipPage - 1) * vipPageSize + index + 1} size="small" color={index < 3 ? 'warning' : 'default'} sx={{ height: 20, fontSize: '0.7rem' }} />
                                             <Typography variant="subtitle2" fontWeight="bold">{customer.customer_name}</Typography>
                                         </Box>
                                     }
@@ -246,7 +245,7 @@ export default function AnalyticsPage() {
                                     status={{ label: 'VIP', color: 'warning' }}
                                     content={
                                         <Typography variant="body2" fontWeight={700} color="success.main" textAlign="right">
-                                            총 구매액: ₩{(customer.total_revenue || 0).toLocaleString()}
+                                            총 구매액: {formatCurrency(customer.total_revenue || 0)}
                                         </Typography>
                                     }
                                 />
@@ -265,11 +264,11 @@ export default function AnalyticsPage() {
                                     </TableRow>
                                 </TableHead>
                                 <TableBody>
-                                    {vipData.slice(0, 20).map((customer, index) => (
+                                    {paginatedVip.map((customer, index) => (
                                         <TableRow key={customer.customer_id}>
                                             <TableCell>
                                                 <Chip
-                                                    label={index + 1}
+                                                    label={(vipPage - 1) * vipPageSize + index + 1}
                                                     size="small"
                                                     color={index < 3 ? 'warning' : 'default'}
                                                 />
@@ -283,7 +282,7 @@ export default function AnalyticsPage() {
                                             <TableCell>{customer.customer_phone || '-'}</TableCell>
                                             <TableCell align="right">
                                                 <Typography variant="body2" fontWeight={600} color="success.main">
-                                                    ₩{(customer.total_revenue || 0).toLocaleString()}
+                                                    {formatCurrency(customer.total_revenue || 0)}
                                                 </Typography>
                                             </TableCell>
                                             <TableCell align="right">{customer.transaction_count}회</TableCell>
@@ -292,6 +291,16 @@ export default function AnalyticsPage() {
                                 </TableBody>
                             </Table>
                         </TableContainer>
+                    )}
+                    {vipData.length > vipPageSize && (
+                        <Pagination
+                            page={vipPage}
+                            totalPages={vipTotalPages}
+                            onPageChange={setVipPage}
+                            totalItems={vipData.length}
+                            pageSize={vipPageSize}
+                            simple
+                        />
                     )}
                 </CardContent>
             </Card>
@@ -304,7 +313,7 @@ export default function AnalyticsPage() {
                     </Typography>
                     {isMobile ? (
                         <Stack spacing={2} sx={{ mt: 2 }}>
-                            {ltvData.slice(0, 10).map((customer) => (
+                            {paginatedLtv.map((customer) => (
                                 <MobileDataCard
                                     key={customer.customer_id}
                                     title={customer.customer_name}
@@ -313,11 +322,11 @@ export default function AnalyticsPage() {
                                         <Grid container spacing={1} sx={{ mt: 0.5 }}>
                                             <Grid item xs={6}>
                                                 <Typography variant="caption" color="text.secondary">총 구매액</Typography>
-                                                <Typography variant="body2" fontWeight={600}>₩{customer.total_revenue.toLocaleString()}</Typography>
+                                                <Typography variant="body2" fontWeight={600}>{formatCurrency(customer.total_revenue)}</Typography>
                                             </Grid>
                                             <Grid item xs={6}>
                                                 <Typography variant="caption" color="text.secondary">평균 객단가</Typography>
-                                                <Typography variant="body2" fontWeight={600}>₩{Math.round(customer.avg_revenue).toLocaleString()}</Typography>
+                                                <Typography variant="body2" fontWeight={600}>{formatCurrency(Math.round(customer.avg_revenue))}</Typography>
                                             </Grid>
                                         </Grid>
                                     }
@@ -337,11 +346,11 @@ export default function AnalyticsPage() {
                                     </TableRow>
                                 </TableHead>
                                 <TableBody>
-                                    {ltvData.map((customer) => (
+                                    {paginatedLtv.map((customer) => (
                                         <TableRow key={customer.customer_id}>
                                             <TableCell>{customer.customer_name}</TableCell>
-                                            <TableCell align="right">₩{customer.total_revenue.toLocaleString()}</TableCell>
-                                            <TableCell align="right">₩{Math.round(customer.avg_revenue).toLocaleString()}</TableCell>
+                                            <TableCell align="right">{formatCurrency(customer.total_revenue)}</TableCell>
+                                            <TableCell align="right">{formatCurrency(Math.round(customer.avg_revenue))}</TableCell>
                                             <TableCell align="right">{customer.visit_count}회</TableCell>
                                             <TableCell align="right">{customer.return_rate.toFixed(1)}%</TableCell>
                                         </TableRow>
@@ -349,6 +358,16 @@ export default function AnalyticsPage() {
                                 </TableBody>
                             </Table>
                         </TableContainer>
+                    )}
+                    {sortedLtv.length > LTV_PAGE_SIZE && (
+                        <Pagination
+                            page={ltvPage}
+                            totalPages={ltvTotalPages}
+                            onPageChange={setLtvPage}
+                            totalItems={sortedLtv.length}
+                            pageSize={LTV_PAGE_SIZE}
+                            simple
+                        />
                     )}
                 </CardContent>
             </Card>

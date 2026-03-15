@@ -148,27 +148,28 @@ export default function CustomerOverviewTab({
       </Card>
 
       {!isNewCustomer && onDelete && (
-        <Box sx={{ mt: 2, display: 'flex', justifyContent: 'flex-end' }}>
-          <Button
-            variant="ghost"
-            className="text-rose-600 hover:bg-rose-50"
-            onClick={() => setIsDeleteDialogOpen(true)}
-            leftIcon={<Trash2 size={18} />}
-          >
-            고객 데이터 삭제
-          </Button>
-        </Box>
+        <>
+          <Box sx={{ mt: 2, display: 'flex', justifyContent: 'flex-end' }}>
+            <Button
+              variant="ghost"
+              className="text-rose-600 hover:bg-rose-50"
+              onClick={() => setIsDeleteDialogOpen(true)}
+              leftIcon={<Trash2 size={18} />}
+            >
+              고객 데이터 삭제
+            </Button>
+          </Box>
+          <ConfirmDialog
+            open={isDeleteDialogOpen}
+            onClose={() => setIsDeleteDialogOpen(false)}
+            onConfirm={onDelete}
+            title="고객 정보 삭제"
+            description={`'${form.name}' 고객의 모든 정보와 거래 내역이 영구적으로 삭제됩니다. 계속하시겠습니까?`}
+            confirmText="삭제하기"
+            variant="danger"
+          />
+        </>
       )}
-
-      <ConfirmDialog
-        open={isDeleteDialogOpen}
-        onClose={() => setIsDeleteDialogOpen(false)}
-        onConfirm={onDelete || (() => { })}
-        title="고객 정보 삭제"
-        description={`'${form.name}' 고객의 모든 정보와 거래 내역이 영구적으로 삭제됩니다. 계속하시겠습니까?`}
-        confirmText="삭제하기"
-        variant="danger"
-      />
     </Box>
   )
 }

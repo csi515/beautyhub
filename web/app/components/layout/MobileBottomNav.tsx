@@ -19,6 +19,7 @@ import {
     DollarSign,
     MoreHorizontal,
     Code2,
+    BarChart2,
 } from 'lucide-react'
 import { BottomSheet, BottomSheetHeader, BottomSheetBody } from '@/app/components/ui/BottomSheet'
 
@@ -29,13 +30,16 @@ const MAIN_NAV_ITEMS = [
     { label: '재무', value: '/finance', icon: DollarSign },
 ]
 
-const BASE_MORE_ITEMS = [
+const BASE_MORE_ITEMS: Array<{ label: string; value: string; icon: typeof Package }> = [
     { label: '상품', value: '/products', icon: Package },
     { label: '재고', value: '/inventory', icon: Warehouse },
+    { label: '고객 분석', value: '/analytics', icon: BarChart2 },
     { label: '설정', value: '/settings', icon: Settings },
     { label: '개발자 화면', value: '/dev', icon: Code2 },
 ]
-const MORE_NAV_ITEMS = BASE_MORE_ITEMS
+const MORE_NAV_ITEMS = process.env.NODE_ENV === 'development'
+    ? BASE_MORE_ITEMS
+    : BASE_MORE_ITEMS.filter((item) => item.value !== '/dev')
 
 export default function MobileBottomNav() {
     const pathname = usePathname()
@@ -102,6 +106,7 @@ export default function MobileBottomNav() {
                         '& .MuiBottomNavigationAction-label': {
                             fontSize: { xs: '0.7rem', sm: '0.75rem' },
                             mt: 0.5,
+                            whiteSpace: 'nowrap',
                         },
                     }}
                 >
@@ -134,7 +139,7 @@ export default function MobileBottomNav() {
                                 <ListItemButton
                                     key={item.value}
                                     onClick={() => handleMoreItemClick(item.value)}
-                                    sx={{ minHeight: 48, minWidth: 44, py: 1.5 }}
+                                    sx={{ minHeight: 48, minWidth: 44, py: 1.5, whiteSpace: 'nowrap' }}
                                     selected={isActive}
                                     aria-label={`${item.label} 메뉴로 이동`}
                                 >

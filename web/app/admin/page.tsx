@@ -2,6 +2,7 @@ import { redirect } from 'next/navigation'
 import { createSupabaseServerClient } from '@/lib/supabase/server'
 import { createSupabaseServerAdmin } from '@/lib/supabase/server-admin'
 import { getServerEnv } from '@/app/lib/env'
+import { logger } from '@/app/lib/utils/logger'
 import AdminUsersList from './AdminUsersList'
 
 type PendingUser = {
@@ -53,7 +54,7 @@ async function getAllUsers(): Promise<PendingUser[]> {
       .order('created_at', { ascending: true })
     return Array.isArray(data) ? (data as PendingUser[]) : []
   } catch (error) {
-    console.error('Failed to fetch users:', error)
+    logger.error('Failed to fetch users', error, 'AdminPage')
     return []
   }
 }

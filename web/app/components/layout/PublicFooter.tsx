@@ -19,7 +19,7 @@ export default function PublicFooter() {
                         <Stack direction="row" spacing={4}>
                             <Box>
                                 <Typography variant="subtitle2" fontWeight={600} gutterBottom>
-                                    제품
+                                    상품
                                 </Typography>
                                 <Stack spacing={1}>
                                     <Link href="/features" style={{ textDecoration: 'none' }}>

@@ -63,9 +63,15 @@ export default function SearchBar({
                 ),
                 endAdornment: localValue && (
                     <InputAdornment position="end">
-                        <IconButton size="small" onClick={handleClear} edge="end">
+                        <IconButton
+                            size="small"
+                            onClick={handleClear}
+                            edge="end"
+                            aria-label="검색어 지우기"
+                            sx={{ minWidth: { xs: 44, sm: 40 }, minHeight: { xs: 44, sm: 40 } }}
+                          >
                             <X size={18} />
-                        </IconButton>
+                          </IconButton>
                     </InputAdornment>
                 ),
             }}

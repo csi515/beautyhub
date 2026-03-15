@@ -3,6 +3,7 @@ import { createSupabaseServerClient } from '@/lib/supabase/server'
 import { getUserIdFromCookies } from '@/lib/auth/user'
 import { CustomerPhotosRepository } from '@/app/lib/repositories/customer-photos.repository'
 import type { CustomerPhotoCreateInput } from '@/types/entities'
+import { logger } from '@/app/lib/utils/logger'
 
 /**
  * GET /api/customers/[id]/photos
@@ -35,7 +36,7 @@ export async function GET(
 
     return NextResponse.json(photos)
   } catch (error) {
-    console.error('Error fetching customer photos:', error)
+    logger.error('Error fetching customer photos', error, 'CustomerPhotos')
     return NextResponse.json(
       { error: 'Failed to fetch customer photos' },
       { status: 500 }
@@ -94,7 +95,7 @@ export async function POST(
       })
 
     if (uploadError) {
-      console.error('Error uploading file:', uploadError)
+      logger.error('Error uploading file', uploadError, 'CustomerPhotos')
       return NextResponse.json(
         { error: 'Failed to upload file' },
         { status: 500 }
@@ -121,7 +122,7 @@ export async function POST(
 
     return NextResponse.json(photo, { status: 201 })
   } catch (error) {
-    console.error('Error creating customer photo:', error)
+    logger.error('Error creating customer photo', error, 'CustomerPhotos')
     const errorMessage = error instanceof Error ? error.message : 'Failed to create customer photo'
     return NextResponse.json(
       { error: errorMessage },

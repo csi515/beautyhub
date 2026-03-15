@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
 import { getEnv } from '@/app/lib/env'
+import { logger } from '@/app/lib/utils/logger'
 
 export const dynamic = 'force-dynamic'
 
@@ -16,7 +17,7 @@ export async function POST(req: Request) {
     const anon = getEnv.supabaseAnonKey()
 
     if (!url || !anon) {
-      console.error('Supabase environment variables not configured for session route')
+      logger.error('Supabase environment variables not configured for session route', undefined, 'AuthSession')
       return NextResponse.json({ message: 'Server configuration error' }, { status: 500 })
     }
 
@@ -52,7 +53,7 @@ export async function POST(req: Request) {
 
     return res
   } catch (e: unknown) {
-    console.error('Session route error:', e)
+    logger.error('Session route error', e, 'AuthSession')
     const message = e instanceof Error ? e.message : 'bad request'
     return NextResponse.json({ message }, { status: 400 })
   }

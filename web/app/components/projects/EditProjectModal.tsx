@@ -6,6 +6,7 @@ import Modal, { ModalBody, ModalFooter, ModalHeader } from '../ui/Modal'
 import Button from '../ui/Button'
 import Input from '../ui/Input'
 import Textarea from '../ui/Textarea'
+import { useAppToast } from '@/app/lib/ui/toast'
 
 export default function EditProjectModal({
   open,
@@ -18,6 +19,7 @@ export default function EditProjectModal({
   onClose: () => void
   onSave: (title: string, content: string) => void
 }) {
+  const toast = useAppToast()
   const [title, setTitle] = useState(project?.title || '')
   const [content, setContent] = useState(project?.content || '')
 
@@ -25,6 +27,12 @@ export default function EditProjectModal({
     setTitle(project?.title || '')
     setContent(project?.content || '')
   }, [project])
+
+  const handleSave = () => {
+    onSave(title.trim(), content.trim())
+    onClose()
+    toast.success('프로젝트가 저장되었습니다.')
+  }
 
   if (!open || !project) return null
   return (
@@ -55,7 +63,7 @@ export default function EditProjectModal({
       </ModalBody>
       <ModalFooter>
         <Button variant="secondary" onClick={onClose}>취소</Button>
-        <Button variant="primary" onClick={() => onSave(title.trim(), content.trim())}>저장</Button>
+        <Button variant="primary" onClick={handleSave}>저장</Button>
       </ModalFooter>
     </Modal>
   )

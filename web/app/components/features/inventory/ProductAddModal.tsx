@@ -14,6 +14,7 @@ import {
     InputAdornment,
 } from '@mui/material'
 import { useAppToast } from '@/app/lib/ui/toast'
+import { logger } from '@/app/lib/utils/logger'
 import { productsApi } from '@/app/lib/api/products'
 import type { ProductCreateInput } from '@/types/entities'
 
@@ -71,25 +72,25 @@ export default function ProductAddModal({ open, onClose, onSuccess }: ProductAdd
         }
     }, [open])
 
-    const validateField = (field: keyof FormData, value: any): string | undefined => {
+    const validateField = (field: keyof FormData, value: string | number | boolean): string | undefined => {
         switch (field) {
             case 'name':
                 if (!value || typeof value === 'string' && value.trim() === '') {
-                    return '제품명은 필수입니다'
+                    return '상품명은 필수입니다'
                 }
                 return undefined
             case 'price':
-                if (value < 0) {
+                if (typeof value === 'number' && value < 0) {
                     return '가격은 0 이상이어야 합니다'
                 }
                 return undefined
             case 'stock_count':
-                if (value < 0) {
+                if (typeof value === 'number' && value < 0) {
                     return '초기 재고는 0 이상이어야 합니다'
                 }
                 return undefined
             case 'safety_stock':
-                if (value < 0) {
+                if (typeof value === 'number' && value < 0) {
                     return '안전 재고는 0 이상이어야 합니다'
                 }
                 return undefined
@@ -98,7 +99,7 @@ export default function ProductAddModal({ open, onClose, onSuccess }: ProductAdd
         }
     }
 
-    const handleFieldChange = (field: keyof FormData, value: any) => {
+    const handleFieldChange = (field: keyof FormData, value: string | number | boolean) => {
         setFormData(prev => ({ ...prev, [field]: value }))
 
         // Clear error when field is being edited
@@ -181,13 +182,13 @@ export default function ProductAddModal({ open, onClose, onSuccess }: ProductAdd
 
             await productsApi.create(productData)
 
-            toast.success('제품이 성공적으로 추가되었습니다')
+            toast.success('상품이 성공적으로 추가되었습니다')
             onSuccess()
             onClose()
 
-        } catch (error: any) {
-            console.error('Error creating product:', error)
-            toast.error(error.message || '제품 추가에 실패했습니다')
+        } catch (error: unknown) {
+            logger.error('Error creating product', error, 'ProductAddModal')
+            toast.error(error instanceof Error ? error.message : '상품 추가에 실패했습니다')
         } finally {
             setLoading(false)
         }
@@ -207,11 +208,11 @@ export default function ProductAddModal({ open, onClose, onSuccess }: ProductAdd
             fullWidth
             disableEscapeKeyDown={loading}
         >
-            <DialogTitle>제품 추가</DialogTitle>
+            <DialogTitle>상품 추가</DialogTitle>
             <DialogContent>
                 <Box sx={{ mt: 1, display: 'flex', flexDirection: 'column', gap: 2 }}>
                     <TextField
-                        label="제품명"
+                        label="상품명"
                         fullWidth
                         required
                         value={formData.name}
@@ -256,7 +257,7 @@ export default function ProductAddModal({ open, onClose, onSuccess }: ProductAdd
                         onChange={(e) => handleFieldChange('stock_count', Number(e.target.value) || 0)}
                         onBlur={() => handleFieldBlur('stock_count')}
                         error={Boolean(errors['stock_count'] && touched['stock_count'])}
-                        helperText={errors['stock_count'] && touched['stock_count'] ? errors['stock_count'] : "제품 등록 시 초기 재고 수량을 설정합니다"}
+                        helperText={errors['stock_count'] && touched['stock_count'] ? errors['stock_count'] : "상품 등록 시 초기 재고 수량을 설정합니다"}
                         disabled={loading}
                     />
 

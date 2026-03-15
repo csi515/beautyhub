@@ -71,14 +71,15 @@ const Button = forwardRef<HTMLButtonElement, Props>(function Button(
   return (
     <MuiButton
       ref={ref as any}
-      variant={muiProps.variant as any}
-      color={muiProps.color as any}
-      size={muiSize as any}
+      variant={muiProps.variant ?? 'contained'}
+      color={muiProps.color ?? 'primary'}
+      size={muiSize ?? 'medium'}
       disabled={isDisabled}
       sx={[
         {
           minHeight: { xs: 44, sm: 40 },
           touchAction: 'manipulation',
+          whiteSpace: 'nowrap',
         },
         ...(Array.isArray(sx) ? sx : [sx]),
       ]}

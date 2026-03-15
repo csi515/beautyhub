@@ -1,6 +1,7 @@
 'use client'
 
 import Link from 'next/link'
+import { logger } from '@/app/lib/utils/logger'
 import { usePathname } from 'next/navigation'
 import { Container, AppBar, Toolbar, Button, Typography, Stack, Skeleton, IconButton, Drawer, List, ListItem, ListItemButton, ListItemText } from '@mui/material'
 import { useTheme } from '@mui/material/styles'
@@ -29,7 +30,7 @@ export default function PublicHeader() {
                     setIsLoggedIn(true)
                 }
             } catch (error) {
-                console.error('Failed to check login status', error)
+                logger.error('Failed to check login status', error, 'PublicHeader')
             } finally {
                 setIsLoading(false)
             }

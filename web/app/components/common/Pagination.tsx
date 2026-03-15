@@ -83,7 +83,9 @@ export default function Pagination({
       {/* 정보 표시 */}
       {showInfo && showingFrom !== undefined && showingTo !== undefined && (
         <div className="text-sm text-neutral-600">
-          총 {totalItems!.toLocaleString()}개 · {showingFrom.toLocaleString()}-{showingTo.toLocaleString()} 표시
+          {totalItems === 0
+            ? '데이터가 없습니다'
+            : `총 ${totalItems!.toLocaleString()}개 · ${showingFrom.toLocaleString()}-${showingTo.toLocaleString()} 표시`}
         </div>
       )}
 
@@ -103,7 +105,7 @@ export default function Pagination({
               sx={{ minWidth: 100, bgcolor: 'background.paper' }}
             >
               {pageSizeOptions.map((size) => (
-                <MenuItem key={size} value={size}>
+                <MenuItem key={size} value={size} sx={{ whiteSpace: 'nowrap' }}>
                   {size} / 페이지
                 </MenuItem>
               ))}

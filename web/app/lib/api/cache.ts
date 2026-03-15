@@ -113,7 +113,6 @@ export const CacheConfig = {
 export const ResourceCacheConfig = {
     products: CacheConfig.semiStatic,
     customers: CacheConfig.dynamic,
-    staff: CacheConfig.semiStatic,
     appointments: CacheConfig.realtime, // 예약은 실시간으로 확인 필요
     transactions: CacheConfig.dynamic,
     expenses: CacheConfig.dynamic,

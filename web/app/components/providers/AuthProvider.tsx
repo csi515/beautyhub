@@ -4,6 +4,7 @@ import { useEffect, useState, createContext, useContext, ReactNode, useMemo } fr
 import { createSupabaseBrowserClient } from '@/lib/supabase/client'
 import type { User, Session, AuthChangeEvent } from '@supabase/supabase-js'
 import { useRouter } from 'next/navigation'
+import { logger } from '@/app/lib/utils/logger'
 
 type SupabaseBrowserClient = ReturnType<typeof createSupabaseBrowserClient> | null
 
@@ -51,7 +52,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         setSession(initialSession)
         setUser(initialSession?.user ?? null)
       } catch (error) {
-        console.error('Failed to get initial session:', error)
+        logger.error('Failed to get initial session', error, 'AuthProvider')
         setSession(null)
         setUser(null)
       } finally {
@@ -87,7 +88,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             }),
           })
         } catch (error) {
-          console.error('Failed to sync refreshed token to cookie:', error)
+          logger.error('Failed to sync refreshed token to cookie', error, 'AuthProvider')
         }
       }
 
@@ -101,7 +102,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             credentials: 'include',
           })
         } catch (error) {
-          console.error('Failed to clear cookie on sign out:', error)
+          logger.error('Failed to clear cookie on sign out', error, 'AuthProvider')
         }
         router.push('/login')
       }
@@ -122,7 +123,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             }),
           })
         } catch (error) {
-          console.error('Failed to sync session to cookie:', error)
+          logger.error('Failed to sync session to cookie', error, 'AuthProvider')
         }
       }
     })

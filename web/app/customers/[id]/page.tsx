@@ -1,4 +1,6 @@
 import type { Transaction } from '@/types/entities'
+import Link from 'next/link'
+import { ChevronLeft } from 'lucide-react'
 
 export default async function CustomerDetailPage({ params }: { params: { id: string } }) {
   const { createSupabaseServerClient } = await import('@/lib/supabase/server')
@@ -15,6 +17,16 @@ export default async function CustomerDetailPage({ params }: { params: { id: str
 
   return (
     <main className="p-6 space-y-6">
+      <Link
+        href="/customers"
+        className="inline-flex items-center gap-1 text-sm text-neutral-600 hover:text-neutral-900 mb-2 -mt-1"
+        style={{ minHeight: 44, minWidth: 44, alignItems: 'center' }}
+        aria-label="고객 목록으로 돌아가기"
+      >
+        <ChevronLeft size={20} />
+        <span className="sm:hidden">뒤로</span>
+        <span className="hidden sm:inline">고객 목록</span>
+      </Link>
       <h1 className="text-2xl font-bold">고객 상세</h1>
 
       <section className="bg-white rounded-md border p-4">

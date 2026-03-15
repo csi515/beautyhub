@@ -9,7 +9,6 @@ export type SelectedAppointment = {
     notes?: string
     service_id?: string
     customer_id?: string
-    staff_id?: string
     no_show?: boolean
 }
 

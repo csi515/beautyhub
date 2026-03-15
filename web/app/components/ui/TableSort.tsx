@@ -5,6 +5,7 @@ import TableSortLabel from '@mui/material/TableSortLabel'
 import TableCell from '@mui/material/TableCell'
 import Box from '@mui/material/Box'
 import { visuallyHidden } from '@mui/utils'
+import type { SxProps, Theme } from '@mui/material/styles'
 
 export type SortDirection = 'asc' | 'desc' | null
 
@@ -53,7 +54,7 @@ export default function TableSort({
       >
         {children}
         {direction ? (
-          <Box component="span" sx={{ ...visuallyHidden as any }}>
+          <Box component="span" sx={visuallyHidden as SxProps<Theme>}>
             {direction === 'desc' ? 'sorted descending' : 'sorted ascending'}
           </Box>
         ) : null}

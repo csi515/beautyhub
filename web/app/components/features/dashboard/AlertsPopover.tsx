@@ -3,8 +3,6 @@
 import { useMemo, useState } from 'react'
 import { Bell } from 'lucide-react'
 import Link from 'next/link'
-import { format } from 'date-fns'
-import { ko } from 'date-fns/locale'
 import IconButton from '@mui/material/IconButton'
 import Popover from '@mui/material/Popover'
 import Box from '@mui/material/Box'
@@ -12,10 +10,7 @@ import Typography from '@mui/material/Typography'
 import Stack from '@mui/material/Stack'
 import Chip from '@mui/material/Chip'
 import Button from '@mui/material/Button'
-import Divider from '@mui/material/Divider'
 import { useAppointmentReminders, useMarkReminderAsSent } from '@/app/lib/hooks/useAppointmentReminders'
-import { customersApi } from '@/app/lib/api/customers'
-import { useQuery } from '@tanstack/react-query'
 import type { AppointmentReminder } from '@/types/entities'
 
 export default function AlertsPopover() {
@@ -24,18 +19,13 @@ export default function AlertsPopover() {
 
   const { data: reminders = [], isLoading: remindersLoading } = useAppointmentReminders({ upcoming: true })
   const markAsSentMutation = useMarkReminderAsSent()
-  const { data: inactiveCustomers = [], isLoading: inactiveLoading } = useQuery({
-    queryKey: ['inactive-customers', 90],
-    queryFn: () => customersApi.inactive(90),
-    staleTime: 5 * 60 * 1000,
-  })
 
   const unsentReminders = useMemo(
     () => reminders.filter((r: AppointmentReminder) => !r.sent_at),
     [reminders]
   )
-  const badgeCount = unsentReminders.length + (inactiveCustomers?.length || 0)
-  const isLoading = remindersLoading || inactiveLoading
+  const badgeCount = unsentReminders.length
+  const isLoading = remindersLoading
 
   const handleOpen = (e: React.MouseEvent<HTMLElement>) => setAnchorEl(e.currentTarget)
   const handleClose = () => setAnchorEl(null)
@@ -178,60 +168,6 @@ export default function AlertsPopover() {
                 </Box>
               )}
 
-              {inactiveCustomers && inactiveCustomers.length > 0 && (
-                <>
-                  {unsentReminders.length > 0 && <Divider sx={{ my: 1 }} />}
-                  <Box>
-                    <Typography variant="subtitle2" fontWeight={600} sx={{ mb: 1.5 }}>
-                      장기 미방문 고객 ({inactiveCustomers.length})
-                    </Typography>
-                    <Stack spacing={1}>
-                      {inactiveCustomers.slice(0, 5).map((customer: any) => {
-                        const daysSinceVisit = customer.days_since_last_visit || 0
-                        return (
-                          <Box
-                            key={customer.id}
-                            sx={{
-                              p: 1.5,
-                              bgcolor: 'blue.50',
-                              border: '1px solid',
-                              borderColor: 'blue.200',
-                              borderRadius: 2,
-                              display: 'flex',
-                              alignItems: 'center',
-                              justifyContent: 'space-between',
-                            }}
-                          >
-                            <Box>
-                              <Typography variant="body2" fontWeight={500}>
-                                {customer.name}
-                              </Typography>
-                              <Typography variant="caption" color="text.secondary">
-                                {daysSinceVisit}일간 방문 없음
-                                {customer.last_visit_date &&
-                                  ` (마지막: ${format(new Date(customer.last_visit_date), 'yyyy.MM.dd', { locale: ko })})`}
-                              </Typography>
-                            </Box>
-                            <Chip label={`${daysSinceVisit}일`} size="small" sx={{ bgcolor: 'blue.100', color: 'blue.800' }} />
-                          </Box>
-                        )
-                      })}
-                      {inactiveCustomers.length > 5 && (
-                        <Typography variant="caption" color="text.secondary" sx={{ textAlign: 'right' }}>
-                          외 {inactiveCustomers.length - 5}명 더
-                        </Typography>
-                      )}
-                    </Stack>
-                    <Box sx={{ mt: 1.5 }}>
-                      <Link href="/customers" style={{ textDecoration: 'none', display: 'block' }} onClick={handleClose}>
-                        <Button variant="outlined" fullWidth size="small">
-                          고객 관리로 이동
-                        </Button>
-                      </Link>
-                    </Box>
-                  </Box>
-                </>
-              )}
             </Stack>
           )}
         </Box>

@@ -3,6 +3,7 @@ import { createSupabaseServerClient } from '@/lib/supabase/server'
 import { getUserIdFromCookies } from '@/lib/auth/user'
 import { CustomersRepository } from '@/app/lib/repositories/customers.repository'
 import { TransactionsRepository } from '@/app/lib/repositories/transactions.repository'
+import { logger } from '@/app/lib/utils/logger'
 
 /**
  * GET /api/analytics/vip-customers
@@ -71,7 +72,7 @@ export async function GET(request: NextRequest) {
             },
         })
     } catch (error) {
-        console.error('Error analyzing VIP customers:', error)
+        logger.error('Error analyzing VIP customers', error, 'VIPCustomers')
         return NextResponse.json(
             { error: 'Failed to analyze VIP customers' },
             { status: 500 }

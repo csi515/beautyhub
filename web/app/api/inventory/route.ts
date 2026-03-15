@@ -3,6 +3,7 @@ import { withAuth } from '@/app/lib/api/middleware'
 import { ProductsRepository } from '@/app/lib/repositories/products.repository'
 import { InventoryTransactionsRepository } from '@/app/lib/repositories/inventory-transactions.repository'
 import { InventoryAlertsRepository } from '@/app/lib/repositories/inventory-alerts.repository'
+import { logger } from '@/app/lib/utils/logger'
 
 /**
  * GET /api/inventory
@@ -101,7 +102,7 @@ export const GET = withAuth(async (request: NextRequest, { userId, supabase }) =
       }
     })
   } catch (error) {
-    console.error('Error fetching inventory:', error)
+    logger.error('Error fetching inventory', error, 'InventoryAPI')
     return NextResponse.json(
       { error: 'Failed to fetch inventory' },
       { status: 500 }
@@ -170,7 +171,7 @@ export const PATCH = withAuth(async (request: NextRequest, { userId, supabase })
       after_count: afterCount,
     })
   } catch (error) {
-    console.error('Error updating inventory:', error)
+    logger.error('Error updating inventory', error, 'InventoryAPI')
     return NextResponse.json(
       { error: 'Failed to update inventory' },
       { status: 500 }

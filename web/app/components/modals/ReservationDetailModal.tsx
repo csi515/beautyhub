@@ -7,14 +7,14 @@ import Input from '@/app/components/ui/Input'
 import Select from '@/app/components/ui/Select'
 import Textarea from '@/app/components/ui/Textarea'
 import { useAppToast } from '@/app/lib/ui/toast'
-import StaffAutoComplete from '@/app/components/features/staff/StaffAutoComplete'
 import { useCustomerAndProductLists } from '@/app/lib/hooks/components/useCustomerAndProductLists'
 import { appointmentsApi } from '@/app/lib/api/appointments'
 import type { AppointmentUpdateInput, Product } from '@/types/entities'
 import { AlertCircle } from 'lucide-react'
 import ConfirmDialog from '@/app/components/ui/ConfirmDialog'
+import { logger } from '@/app/lib/utils/logger'
 
-type Item = { id: string; date: string; start: string; end?: string; status: string; notes?: string; customer_id?: string; staff_id?: string; service_id?: string; no_show?: boolean }
+type Item = { id: string; date: string; start: string; end?: string; status: string; notes?: string; customer_id?: string; service_id?: string; no_show?: boolean }
 
 export default function ReservationDetailModal({ open, onClose, item, onSaved, onDeleted }: { open: boolean; onClose: () => void; item: Item | null; onSaved: () => void; onDeleted: () => void }) {
   const [form, setForm] = useState<Item | null>(item)
@@ -51,13 +51,13 @@ export default function ReservationDetailModal({ open, onClose, item, onSaved, o
           status: appointment.status || 'scheduled',
           notes: appointment.notes || '',
           customer_id: appointment.customer_id || '',
-          staff_id: appointment.staff_id || '',
           service_id: appointment.service_id || '',
           no_show: appointment.no_show || false,
         })
       } catch (error) {
         if (!cancelled && item?.id === targetId) {
-          console.error('예약 상세 로드 실패:', error)
+          logger.error('예약 상세 로드 실패', error, 'ReservationDetailModal')
+          toast.error('예약 상세를 불러오는데 실패했습니다.')
           setForm(item)
         }
       }
@@ -199,18 +199,6 @@ export default function ReservationDetailModal({ open, onClose, item, onSaved, o
                   <option value="">선택 안 함</option>
                   {customers.map((c) => <option key={c.id} value={c.id}>{c.name}</option>)}
                 </Select>
-                <label className="col-span-2 block">
-                  <div className="mb-1 text-sm font-medium text-neutral-700">담당 직원(선택)</div>
-                  <StaffAutoComplete value={form.staff_id || ''} onChange={(v) => setForm(f => {
-                    if (!f) return f
-                    if (v) {
-                      return { ...f, staff_id: v }
-                    }
-                    const next = { ...f }
-                    delete next.staff_id
-                    return next
-                  })} />
-                </label>
                 <div>
                   <Select
                     label="서비스/상품(선택)"

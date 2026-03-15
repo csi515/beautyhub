@@ -3,6 +3,7 @@ import { createSupabaseServerClient } from '@/lib/supabase/server'
 import { getUserIdFromCookies } from '@/lib/auth/user'
 import { AppointmentTemplatesRepository } from '@/app/lib/repositories/appointment-templates.repository'
 import type { AppointmentTemplateUpdateInput } from '@/types/entities'
+import { logger } from '@/app/lib/utils/logger'
 
 /**
  * PATCH /api/appointment-templates/[id]
@@ -35,7 +36,7 @@ export async function PATCH(
 
     return NextResponse.json(template)
   } catch (error) {
-    console.error('Error updating appointment template:', error)
+    logger.error('Error updating appointment template', error, 'AppointmentTemplate')
     const errorMessage = error instanceof Error ? error.message : 'Failed to update appointment template'
     return NextResponse.json(
       { error: errorMessage },
@@ -66,7 +67,7 @@ export async function DELETE(
 
     return NextResponse.json({ success: true })
   } catch (error) {
-    console.error('Error deleting appointment template:', error)
+    logger.error('Error deleting appointment template', error, 'AppointmentTemplate')
     return NextResponse.json(
       { error: 'Failed to delete appointment template' },
       { status: 500 }

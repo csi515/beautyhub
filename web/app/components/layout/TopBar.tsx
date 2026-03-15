@@ -13,13 +13,14 @@ import IconButton from '@mui/material/IconButton'
 import Box from '@mui/material/Box'
 import Typography from '@mui/material/Typography'
 import { useTheme } from '@mui/material'
+import { useAppToast } from '@/app/lib/ui/toast'
+import { logger } from '@/app/lib/utils/logger'
 
 const PAGE_TITLES: Record<string, string> = {
   '/dashboard': '', // useShopName으로 대체
   '/customers': '고객 관리',
   '/finance': '재무 관리',
   '/products': '상품 관리',
-  '/staff': '직원 통합 관리',
   '/inventory': '재고 관리',
   '/appointments': '예약 관리',
   '/analytics': '고객 분석',
@@ -40,6 +41,7 @@ function getPageTitle(pathname: string): string {
 export default function TopBar({ onMenu }: { onMenu?: () => void }) {
   const [userName, setUserName] = useState<string | null>(null)
   const theme = useTheme()
+  const toast = useAppToast()
   const pathname = usePathname() || ''
   const shopName = useShopName()
   const baseTitle = getPageTitle(pathname)
@@ -59,7 +61,8 @@ export default function TopBar({ onMenu }: { onMenu?: () => void }) {
           }
         }
       } catch (error) {
-        console.error('Failed to load user profile:', error)
+        logger.error('Failed to load user profile', error, 'TopBar')
+        toast.error('프로필을 불러오는데 실패했습니다.')
       }
     }
     loadUserProfile()
@@ -121,7 +124,7 @@ export default function TopBar({ onMenu }: { onMenu?: () => void }) {
         <Box sx={{ display: 'flex', alignItems: 'center', gap: { xs: 1, sm: 2 } }}>
           <AlertsPopover />
           {userName && (
-            <Typography variant="body2" color="text.secondary" fontWeight={500}>
+            <Typography variant="body2" color="text.secondary" fontWeight={500} sx={{ whiteSpace: 'nowrap' }}>
               {userName}님
             </Typography>
           )}

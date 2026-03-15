@@ -5,6 +5,7 @@ import { pointsApi } from '@/app/lib/api/points'
 import { customersApi } from '@/app/lib/api/customers'
 import { useAppToast } from '@/app/lib/ui/toast'
 import { getLocalizedErrorMessage } from '@/app/lib/utils/messages'
+import { logger } from '@/app/lib/utils/logger'
 import type { CustomerProduct } from '@/app/lib/repositories/customer-products.repository'
 import type { Customer } from '@/types/entities'
 
@@ -89,12 +90,13 @@ export function useCustomerDetail(
         }
         setHoldingDelta(init)
       } catch (err) {
-        console.error('Failed to load data:', err)
+        logger.error('Failed to load data', err, 'useCustomerDetail')
+        toast.error('고객 정보를 불러오는데 실패했습니다.')
       }
     }
 
     loadData()
-  }, [open, form?.id])
+  }, [open, form?.id, toast])
 
   // 자동 저장 함수
   const autoSave = useCallback(async () => {

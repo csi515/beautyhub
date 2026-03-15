@@ -6,10 +6,12 @@
 
 import { useState, useMemo } from 'react'
 import { Card, Grid, Typography, Box, Stack, TextField, InputAdornment, MenuItem, FormControl, InputLabel, Select, IconButton, Chip } from '@mui/material'
+import Pagination from '@/app/components/common/Pagination'
 import { Plus, Minus, Package, Coins, History, Trash2, ChevronDown, ChevronUp } from 'lucide-react'
 import Button from '@/app/components/ui/Button'
 import { DataTable } from '@/app/components/ui/DataTable'
 import ConfirmDialog from '@/app/components/ui/ConfirmDialog'
+import { formatDateTime } from '@/app/lib/utils/format'
 import type { CustomerProduct } from '@/app/lib/repositories/customer-products.repository'
 
 interface Product {
@@ -100,6 +102,14 @@ export default function CustomerTransactionsTab({
     const [isHistoryExpanded, setIsHistoryExpanded] = useState(false)
     const [historyFilter, setHistoryFilter] = useState<'all' | 'points' | 'products'>('all')
     const [deleteHoldingId, setDeleteHoldingId] = useState<string | null>(null)
+    const [holdingsPage, setHoldingsPage] = useState(1)
+
+    const HOLDINGS_PAGE_SIZE = 5
+    const paginatedHoldings = useMemo(() => {
+        const start = (holdingsPage - 1) * HOLDINGS_PAGE_SIZE
+        return holdings.slice(start, start + HOLDINGS_PAGE_SIZE)
+    }, [holdings, holdingsPage])
+    const holdingsTotalPages = Math.max(1, Math.ceil(holdings.length / HOLDINGS_PAGE_SIZE))
 
     // 통합 변동 내역
     const combinedLedger: LedgerEntry[] = useMemo(() => {
@@ -269,7 +279,8 @@ export default function CustomerTransactionsTab({
                             </Box>
                         </Stack>
                     ) : (
-                        holdings.map(holding => (
+                        <>
+                        {paginatedHoldings.map(holding => (
                             <Box key={holding.id} sx={{ p: 2, border: '1px solid', borderColor: 'divider', borderRadius: 2 }}>
                                 <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 2 }}>
                                     <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
@@ -326,6 +337,7 @@ export default function CustomerTransactionsTab({
                                         <IconButton
                                             size="small"
                                             onClick={() => setDeleteHoldingId(holding.id)}
+                                            aria-label="보유 삭제"
                                             sx={{
                                                 color: 'text.secondary',
                                                 minWidth: 44,
@@ -338,7 +350,18 @@ export default function CustomerTransactionsTab({
                                     </Stack>
                                 </Stack>
                             </Box>
-                        ))
+                        ))}
+                        {holdings.length > HOLDINGS_PAGE_SIZE && (
+                            <Pagination
+                                page={holdingsPage}
+                                totalPages={holdingsTotalPages}
+                                onPageChange={setHoldingsPage}
+                                totalItems={holdings.length}
+                                pageSize={HOLDINGS_PAGE_SIZE}
+                                simple
+                            />
+                        )}
+                        </>
                     )}
                 </Stack>
             </Card>
@@ -394,12 +417,7 @@ export default function CustomerTransactionsTab({
                                     width: 150,
                                     render: (r) => {
                                         const row = r as LedgerEntry
-                                        return row.created_at ? new Date(row.created_at).toLocaleString('ko-KR', {
-                                            month: '2-digit',
-                                            day: '2-digit',
-                                            hour: '2-digit',
-                                            minute: '2-digit'
-                                        }) : '-'
+                                        return row.created_at ? formatDateTime(row.created_at, { month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' }) : '-'
                                     }
                                 },
                                 {
@@ -466,20 +484,27 @@ export default function CustomerTransactionsTab({
                                     render: (r) => {
                                         const row = r as LedgerEntry
                                         if (row.type === 'products') {
+                                            if (onUpdateLedgerNote) {
+                                                return (
+                                                    <TextField
+                                                        size="small"
+                                                        variant="standard"
+                                                        placeholder="메모 입력"
+                                                        defaultValue={row.notes || ''}
+                                                        onBlur={(e) => {
+                                                            const newVal = e.target.value
+                                                            if (newVal !== (row.notes || '')) {
+                                                                onUpdateLedgerNote(row.id, newVal)
+                                                            }
+                                                        }}
+                                                        sx={{ '& .MuiInput-root': { fontSize: '0.8125rem' } }}
+                                                    />
+                                                )
+                                            }
                                             return (
-                                                <TextField
-                                                    size="small"
-                                                    variant="standard"
-                                                    placeholder="메모 입력"
-                                                    defaultValue={row.notes || ''}
-                                                    onBlur={(e) => {
-                                                        const newVal = e.target.value;
-                                                        if (newVal !== (row.notes || '')) {
-                                                            onUpdateLedgerNote?.(row.id, newVal);
-                                                        }
-                                                    }}
-                                                    sx={{ '& .MuiInput-root': { fontSize: '0.8125rem' } }}
-                                                />
+                                                <Typography variant="caption" color="text.secondary" sx={{ fontSize: '0.8125rem' }}>
+                                                    {row.notes || '-'}
+                                                </Typography>
                                             )
                                         }
                                         return null

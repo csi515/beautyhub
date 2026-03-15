@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
 import { getEnv } from '@/app/lib/env'
+import { logger } from '@/app/lib/utils/logger'
 
 export const dynamic = 'force-dynamic'
 
@@ -33,7 +34,7 @@ export async function POST(req: Request) {
     
   return NextResponse.json({ ok: true })
   } catch (error) {
-    console.error('Login route error:', error)
+    logger.error('Login route error', error, 'AuthLogin')
     return NextResponse.json({ message: 'Internal server error' }, { status: 500 })
   }
 }

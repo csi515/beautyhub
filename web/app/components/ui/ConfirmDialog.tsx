@@ -74,7 +74,6 @@ export default function ConfirmDialog({
           variant="secondary"
           onClick={onClose}
           disabled={loading || isLoading}
-          autoFocus={variant === 'danger'}
           sx={{ flex: { xs: 1, sm: 'none' }, minWidth: 0 }}
         >
           {cancelText}
@@ -84,6 +83,7 @@ export default function ConfirmDialog({
           onClick={handleConfirm}
           disabled={!canConfirm}
           loading={loading || isLoading}
+          autoFocus={variant === 'danger'}
           sx={{ flex: { xs: 1, sm: 'none' }, minWidth: 0 }}
         >
           {confirmText}

@@ -117,7 +117,7 @@ export function getLocalizedErrorMessage(
 
     // 객체 에러
     if (typeof error === 'object') {
-        const err = error as any
+        const err = error as { code?: string; status?: number; message?: string; error?: string; msg?: string }
 
         // 1. 에러 코드 확인
         const code = extractErrorCode(err)

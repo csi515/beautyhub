@@ -3,6 +3,7 @@ import { createSupabaseServerClient } from '@/lib/supabase/server'
 import { getUserIdFromCookies } from '@/lib/auth/user'
 import { AppointmentTemplatesRepository } from '@/app/lib/repositories/appointment-templates.repository'
 import type { AppointmentTemplateCreateInput } from '@/types/entities'
+import { logger } from '@/app/lib/utils/logger'
 
 /**
  * GET /api/appointment-templates
@@ -33,7 +34,7 @@ export async function GET(request: NextRequest) {
 
     return NextResponse.json(templates)
   } catch (error) {
-    console.error('Error fetching appointment templates:', error)
+    logger.error('Error fetching appointment templates', error, 'AppointmentTemplates')
     return NextResponse.json(
       { error: 'Failed to fetch appointment templates' },
       { status: 500 }
@@ -68,7 +69,7 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json(template, { status: 201 })
   } catch (error) {
-    console.error('Error creating appointment template:', error)
+    logger.error('Error creating appointment template', error, 'AppointmentTemplates')
     const errorMessage = error instanceof Error ? error.message : 'Failed to create appointment template'
     return NextResponse.json(
       { error: errorMessage },

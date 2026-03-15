@@ -11,6 +11,7 @@ import PageContainer from '@/app/components/layout/PageContainer'
 import { getUsersApi } from '@/app/lib/api/users'
 import { User, UserStatus } from '@/types/entities'
 import { format } from 'date-fns'
+import { logger } from '@/app/lib/utils/logger'
 import { ko } from 'date-fns/locale'
 
 /**
@@ -40,7 +41,7 @@ export default function AdminUsersPage() {
 
                 setCurrentUserRole(profile.role)
             } catch (err) {
-                console.error('권한 확인 실패:', err)
+                logger.error('권한 확인 실패', err, 'AdminUsersPage')
                 router.push('/dashboard')
             }
         }

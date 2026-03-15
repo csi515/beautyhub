@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect } from 'react'
-import { Home, RefreshCw } from 'lucide-react'
+import { Home } from 'lucide-react'
 import Button from './components/ui/Button'
 import ErrorState from './components/common/ErrorState'
 
@@ -41,7 +41,7 @@ export default function Error({ error, reset }: ErrorProps) {
           retryLabel="다시 시도"
         />
 
-        <div className="mt-6 flex flex-col sm:flex-row gap-3 justify-center">
+        <div className="mt-6 flex justify-center">
           <Button
             variant="secondary"
             onClick={() => {
@@ -51,14 +51,6 @@ export default function Error({ error, reset }: ErrorProps) {
             className="w-full sm:w-auto"
           >
             홈으로 이동
-          </Button>
-          <Button
-            variant="primary"
-            onClick={reset}
-            leftIcon={<RefreshCw className="h-4 w-4" />}
-            className="w-full sm:w-auto"
-          >
-            다시 시도
           </Button>
         </div>
 

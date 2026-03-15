@@ -15,6 +15,7 @@ export function middleware(req: NextRequest) {
     '/_next',
     '/favicon.ico',
     '/icon',
+    '/icon.svg',
     '/robots.txt',
     '/sitemap.xml',
     '/manifest.json',

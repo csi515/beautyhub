@@ -97,6 +97,7 @@ export function useApiImmediate<T>(
   React.useEffect(() => {
     execute()
     return () => reset()
+    // execute/reset는 useApi 내부에서 안정화됨. deps는 호출부에서 전달한 의존성 배열
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, deps)
 

@@ -5,19 +5,11 @@
  * 오프라인일 때만 캐시된 리소스를 사용합니다.
  */
 
-const CACHE_NAME = 'beautyhub-v2'
-const RUNTIME_CACHE = 'beautyhub-runtime-v2'
+const CACHE_NAME = 'beautyhub-v4'
+const RUNTIME_CACHE = 'beautyhub-runtime-v4'
 
-// 캐시할 정적 리소스 목록
-const STATIC_ASSETS = [
-  '/',
-  '/dashboard',
-  '/customers',
-  '/products',
-  '/appointments',
-  '/finance',
-  '/staff',
-]
+// 오프라인 시 fallback용 루트 페이지만 캐시 (document 캐시 시 빌드 변경 후 404 방지)
+const STATIC_ASSETS = ['/']
 
 // 설치 이벤트: 정적 리소스 캐싱
 self.addEventListener('install', (event) => {
@@ -68,6 +60,11 @@ self.addEventListener('fetch', (event) => {
     return
   }
 
+  // Next.js 정적 자원(_next)은 캐시하지 않음 - 빌드 변경 시 404 방지
+  if (url.pathname.startsWith('/_next/')) {
+    return
+  }
+
   // GET 요청만 캐싱
   if (request.method !== 'GET') {
     return
@@ -77,10 +74,9 @@ self.addEventListener('fetch', (event) => {
   event.respondWith(
     fetch(request)
       .then((response) => {
-        // 네트워크 요청 성공 시 응답을 캐시에 저장
-        if (response && response.status === 200) {
+        // 네트워크 요청 성공 시 응답을 캐시에 저장 (document 제외 - 빌드 변경 시 404 방지)
+        if (response && response.status === 200 && request.destination !== 'document') {
           const responseToCache = response.clone()
-
           caches.open(RUNTIME_CACHE).then((cache) => {
             cache.put(request, responseToCache)
           })

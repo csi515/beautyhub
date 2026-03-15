@@ -34,8 +34,8 @@ export default function PageContainer({
       maxWidth={useFullScreen ? false : maxWidth}
       disableGutters
       sx={{
-        py: useFullScreen ? 0 : { xs: 1.5, sm: 2, md: 2, lg: 2.5, xl: 3 },
-        px: useFullScreen ? 0 : { xs: 0.5, sm: 1, md: 1.5, lg: 2, xl: 2.5 },
+        py: useFullScreen ? 0 : { xs: 1, sm: 1.5, md: 1.5, lg: 2 },
+        px: useFullScreen ? 0 : { xs: 0.5, sm: 0.75, md: 1, lg: 1.5 },
         width: '100%',
         maxWidth: useFullScreen || maxWidth === false ? '100%' : undefined,
         minWidth: 0,
